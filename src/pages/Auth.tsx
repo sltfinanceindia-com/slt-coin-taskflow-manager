@@ -89,8 +89,11 @@ export default function Auth() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <Coins className="h-8 w-8 text-coin-gold mr-2" />
-            <h1 className="text-2xl font-bold text-primary">SLT Finance India</h1>
+            <img 
+              src="/lovable-uploads/56d5dd03-2808-4b88-9f9c-cc8932c46fe8.png" 
+              alt="SLT Finance India"
+              className="h-12 w-auto object-contain"
+            />
           </div>
           <p className="text-muted-foreground">Coin-Based Workfront System</p>
         </div>

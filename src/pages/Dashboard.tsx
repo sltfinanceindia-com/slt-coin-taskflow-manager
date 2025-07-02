@@ -72,8 +72,11 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="flex items-center">
-                <Coins className="h-6 w-6 text-coin-gold mr-2" />
-                <h1 className="text-xl font-bold text-primary">SLT Finance India</h1>
+                <img 
+                  src="/lovable-uploads/56d5dd03-2808-4b88-9f9c-cc8932c46fe8.png" 
+                  alt="SLT Finance India"
+                  className="h-8 w-auto object-contain"
+                />
               </div>
               <Badge variant={profile?.role === 'admin' ? 'default' : 'secondary'}>
                 {profile?.role === 'admin' ? 'Admin' : 'Intern'}

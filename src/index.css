@@ -8,47 +8,47 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* SLT Finance India Brand Colors */
+    /* SLT Finance India Brand Colors - Grey & Green Theme */
     --background: 210 20% 98%;
-    --foreground: 215 25% 15%;
+    --foreground: 220 10% 25%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 220 10% 25%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 220 10% 25%;
 
-    /* SLT Finance India Primary Brand Colors */
-    --primary: 197 89% 25%;  /* Deep Blue */
+    /* SLT Finance India Primary Brand Colors - Professional Grey & Green */
+    --primary: 220 10% 30%;  /* Professional Dark Grey */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 45 100% 65%;  /* Gold/Amber */
-    --secondary-foreground: 215 25% 15%;
+    --secondary: 140 45% 55%;  /* SLT Green */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 220 15% 96%;
+    --muted-foreground: 220 8% 50%;
 
-    --accent: 197 89% 35%;  /* Lighter Blue */
+    --accent: 140 40% 45%;  /* Darker Green for accent */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 215 28% 88%;
-    --input: 215 28% 88%;
-    --ring: 197 89% 25%;
+    --border: 220 15% 85%;
+    --input: 220 15% 90%;
+    --ring: 140 40% 45%;
 
-    /* SLT Coin Colors with glow effects */
-    --coin-gold: 45 100% 50%;
-    --coin-gold-foreground: 25 95% 15%;
-    --coin-glow: 45 100% 70%;
+    /* SLT Coin Colors with green glow effects */
+    --coin-gold: 140 50% 50%;  /* Green coins instead of gold */
+    --coin-gold-foreground: 0 0% 100%;
+    --coin-glow: 140 60% 60%;
     
     /* Success with enhanced variants */
-    --success: 142 76% 36%;
+    --success: 140 50% 45%;
     --success-foreground: 0 0% 100%;
 
     /* Advanced gradients and effects */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%);
     --gradient-coin: linear-gradient(135deg, hsl(var(--coin-gold)) 0%, hsl(var(--coin-glow)) 100%);
     --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
     
@@ -77,39 +77,39 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 215 25% 8%;
-    --foreground: 210 40% 98%;
+    --background: 220 15% 10%;
+    --foreground: 220 8% 90%;
 
-    --card: 215 25% 10%;
-    --card-foreground: 210 40% 98%;
+    --card: 220 15% 12%;
+    --card-foreground: 220 8% 90%;
 
-    --popover: 215 25% 10%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 220 15% 12%;
+    --popover-foreground: 220 8% 90%;
 
-    --primary: 197 89% 45%;  /* Brighter blue for dark mode */
-    --primary-foreground: 0 0% 100%;
+    --primary: 220 8% 85%;  /* Light grey for dark mode */
+    --primary-foreground: 220 15% 10%;
 
-    --secondary: 45 100% 70%;  /* Brighter gold for dark mode */
-    --secondary-foreground: 215 25% 15%;
+    --secondary: 140 45% 60%;  /* Brighter green for dark mode */
+    --secondary-foreground: 220 15% 10%;
 
-    --muted: 215 25% 15%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 220 15% 20%;
+    --muted-foreground: 220 8% 65%;
 
-    --accent: 197 89% 50%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 140 50% 55%;  /* Bright green accent for dark mode */
+    --accent-foreground: 220 15% 10%;
 
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 215 25% 18%;
-    --input: 215 25% 18%;
-    --ring: 197 89% 45%;
+    --border: 220 15% 25%;
+    --input: 220 15% 20%;
+    --ring: 140 50% 55%;
     
     /* Dark mode coin colors */
-    --coin-gold: 45 100% 60%;
-    --coin-gold-foreground: 25 95% 15%;
+    --coin-gold: 140 55% 60%;  /* Bright green coins for dark mode */
+    --coin-gold-foreground: 220 15% 10%;
     
-    --success: 142 76% 45%;
+    --success: 140 55% 50%;
     --success-foreground: 0 0% 100%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
