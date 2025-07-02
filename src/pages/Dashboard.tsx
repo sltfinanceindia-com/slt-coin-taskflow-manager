@@ -12,6 +12,9 @@ import { TaskCard } from '@/components/TaskCard';
 import { CreateTaskDialog } from '@/components/CreateTaskDialog';
 import { TimeLogDialog } from '@/components/TimeLogDialog';
 import { AnalyticsPage } from '@/components/AnalyticsPage';
+import { InternManagement } from '@/components/InternManagement';
+import { CoinManagement } from '@/components/CoinManagement';
+import { MyCoins } from '@/components/MyCoins';
 import { Coins, LogOut, User, Clock, CheckCircle, BarChart3, Users, Plus } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
@@ -118,10 +121,19 @@ export default function Dashboard() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-4 w-full max-w-md">
+          <TabsList className={`grid w-full ${profile?.role === 'admin' ? 'grid-cols-6 max-w-2xl' : 'grid-cols-4 max-w-md'}`}>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="tasks">Tasks</TabsTrigger>
-            <TabsTrigger value="time">Time Logs</TabsTrigger>
+            <TabsTrigger value="time">Time</TabsTrigger>
+            {profile?.role === 'admin' && (
+              <>
+                <TabsTrigger value="coins">Coins</TabsTrigger>
+                <TabsTrigger value="interns">Interns</TabsTrigger>
+              </>
+            )}
+            {profile?.role === 'intern' && (
+              <TabsTrigger value="my-coins">My Coins</TabsTrigger>
+            )}
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
@@ -213,12 +225,24 @@ export default function Dashboard() {
                       <Button 
                         variant="outline" 
                         className="h-20 text-left flex-col items-start justify-center hover-scale"
+                        onClick={() => setActiveTab('interns')}
                       >
                         <div className="flex items-center space-x-2 mb-1">
                           <Users className="h-4 w-4" />
-                          <span className="font-semibold">Team Overview</span>
+                          <span className="font-semibold">Manage Interns</span>
                         </div>
-                        <span className="text-sm opacity-80">Monitor team performance</span>
+                        <span className="text-sm opacity-80">Add and manage team members</span>
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="h-20 text-left flex-col items-start justify-center hover-scale"
+                        onClick={() => setActiveTab('coins')}
+                      >
+                        <div className="flex items-center space-x-2 mb-1">
+                          <Coins className="h-4 w-4" />
+                          <span className="font-semibold">Coin Management</span>
+                        </div>
+                        <span className="text-sm opacity-80">Approve tasks and award coins</span>
                       </Button>
                     </>
                   ) : (
@@ -237,6 +261,7 @@ export default function Dashboard() {
                       <Button 
                         variant="outline" 
                         className="h-20 text-left flex-col items-start justify-center hover-scale"
+                        onClick={() => setActiveTab('my-coins')}
                       >
                         <div className="flex items-center space-x-2 mb-1">
                           <Coins className="h-4 w-4" />
@@ -356,6 +381,24 @@ export default function Dashboard() {
               </Card>
             </div>
           </TabsContent>
+
+          {profile?.role === 'admin' && (
+            <>
+              <TabsContent value="coins">
+                <CoinManagement />
+              </TabsContent>
+
+              <TabsContent value="interns">
+                <InternManagement />
+              </TabsContent>
+            </>
+          )}
+
+          {profile?.role === 'intern' && (
+            <TabsContent value="my-coins">
+              <MyCoins />
+            </TabsContent>
+          )}
 
           <TabsContent value="analytics">
             <AnalyticsPage />
