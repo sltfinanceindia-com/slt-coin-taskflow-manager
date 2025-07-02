@@ -71,38 +71,43 @@ export default function Dashboard() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="flex items-center">
+              <div className="flex items-center space-x-3">
                 <img 
                   src="/lovable-uploads/56d5dd03-2808-4b88-9f9c-cc8932c46fe8.png" 
                   alt="SLT Finance India"
-                  className="h-8 w-auto object-contain"
+                  className="h-10 sm:h-12 w-auto object-contain"
                 />
+                <div className="hidden sm:block">
+                  <h1 className="font-bold text-lg sm:text-xl text-primary">SLT Finance India</h1>
+                  <p className="text-xs text-muted-foreground">Task Management System</p>
+                </div>
               </div>
-              <Badge variant={profile?.role === 'admin' ? 'default' : 'secondary'}>
+              <Badge variant={profile?.role === 'admin' ? 'default' : 'secondary'} className="text-xs">
                 {profile?.role === 'admin' ? 'Admin' : 'Intern'}
               </Badge>
             </div>
             
             
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <div className="flex items-center space-x-1 sm:space-x-2">
                 <Coins className="h-4 w-4 text-coin-gold" />
-                <span className="font-semibold text-coin-gold">
-                  {profile?.total_coins || 0} SLT Coins
+                <span className="font-semibold text-coin-gold text-sm sm:text-base">
+                  {profile?.total_coins || 0}
+                  <span className="hidden sm:inline"> SLT Coins</span>
                 </span>
                 {pendingCoins > 0 && (
                   <Badge variant="outline" className="text-xs">
-                    +{pendingCoins} pending
+                    +{pendingCoins}
                   </Badge>
                 )}
               </div>
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+              <div className="hidden md:flex items-center space-x-2 text-sm text-muted-foreground">
                 <User className="h-4 w-4" />
                 <span>{profile?.full_name}</span>
               </div>
-              <Button variant="outline" size="sm" onClick={handleSignOut}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
+              <Button variant="outline" size="sm" onClick={handleSignOut} className="text-xs sm:text-sm">
+                <LogOut className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Sign Out</span>
               </Button>
             </div>
           </div>
