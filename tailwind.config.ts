@@ -54,11 +54,22 @@ export default {
 				},
 				'coin-gold': {
 					DEFAULT: 'hsl(var(--coin-gold))',
-					foreground: 'hsl(var(--coin-gold-foreground))'
+					foreground: 'hsl(var(--coin-gold-foreground))',
+					glow: 'hsl(var(--coin-glow))',
+					shine: 'hsl(var(--coin-shine))'
 				},
 				success: {
 					DEFAULT: 'hsl(var(--success))',
-					foreground: 'hsl(var(--success-foreground))'
+					foreground: 'hsl(var(--success-foreground))',
+					glow: 'hsl(var(--success-glow))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					foreground: 'hsl(var(--warning-foreground))'
+				},
+				info: {
+					DEFAULT: 'hsl(var(--info))',
+					foreground: 'hsl(var(--info-foreground))'
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
@@ -70,6 +81,21 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				}
+			},
+			backgroundImage: {
+				'gradient-primary': 'var(--gradient-primary)',
+				'gradient-secondary': 'var(--gradient-secondary)',
+				'gradient-coin': 'var(--gradient-coin)',
+				'gradient-glass': 'var(--gradient-glass)',
+				'gradient-card': 'var(--gradient-card)',
+				'gradient-background': 'var(--gradient-background)'
+			},
+			boxShadow: {
+				'elegant': 'var(--shadow-elegant)',
+				'green': 'var(--shadow-green)',
+				'glow': 'var(--shadow-glow)',
+				'glass': 'var(--shadow-glass)',
+				'card': 'var(--shadow-card)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

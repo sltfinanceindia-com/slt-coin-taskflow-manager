@@ -8,54 +8,74 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* SLT Finance India Brand Colors - Grey & Green Theme */
-    --background: 210 20% 98%;
-    --foreground: 220 10% 25%;
+    /* SLT Finance India Brand Colors - Enhanced Colorful Grey & Green Theme */
+    --background: linear-gradient(135deg, hsl(210, 20%, 98%) 0%, hsl(140, 25%, 97%) 100%);
+    --foreground: 220 15% 20%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 10% 25%;
+    --card: linear-gradient(135deg, hsl(0, 0%, 100%) 0%, hsl(140, 15%, 98%) 100%);
+    --card-foreground: 220 15% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 10% 25%;
+    --popover-foreground: 220 15% 15%;
 
-    /* SLT Finance India Primary Brand Colors - Professional Grey & Green */
-    --primary: 220 10% 30%;  /* Professional Dark Grey */
+    /* SLT Finance India Primary Brand Colors - Vibrant Professional Theme */
+    --primary: 220 20% 25%;  /* Rich Dark Grey */
     --primary-foreground: 0 0% 100%;
+    --primary-hover: 220 25% 30%;
+    --primary-glow: 220 20% 40%;
 
-    --secondary: 140 45% 55%;  /* SLT Green */
+    --secondary: 140 60% 45%;  /* Vibrant SLT Green */
     --secondary-foreground: 0 0% 100%;
+    --secondary-hover: 140 65% 40%;
+    --secondary-glow: 140 55% 60%;
 
-    --muted: 220 15% 96%;
-    --muted-foreground: 220 8% 50%;
+    --muted: linear-gradient(135deg, hsl(220, 20%, 96%) 0%, hsl(140, 20%, 95%) 100%);
+    --muted-foreground: 220 15% 45%;
 
-    --accent: 140 40% 45%;  /* Darker Green for accent */
+    --accent: 140 50% 40%;  /* Deep Green Accent */
     --accent-foreground: 0 0% 100%;
+    --accent-hover: 140 55% 35%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 85%;
-    --input: 220 15% 90%;
-    --ring: 140 40% 45%;
+    --border: linear-gradient(135deg, hsl(220, 20%, 85%) 0%, hsl(140, 25%, 88%) 100%);
+    --input: linear-gradient(135deg, hsl(220, 15%, 92%) 0%, hsl(140, 20%, 94%) 100%);
+    --ring: 140 50% 45%;
 
-    /* SLT Coin Colors with green glow effects */
-    --coin-gold: 140 50% 50%;  /* Green coins instead of gold */
+    /* SLT Coin Colors with vibrant green effects */
+    --coin-gold: 140 65% 45%;  /* Vibrant Green Coins */
     --coin-gold-foreground: 0 0% 100%;
-    --coin-glow: 140 60% 60%;
+    --coin-glow: 140 70% 60%;
+    --coin-shine: 140 80% 75%;
     
     /* Success with enhanced variants */
-    --success: 140 50% 45%;
+    --success: 140 60% 40%;
     --success-foreground: 0 0% 100%;
+    --success-glow: 140 65% 55%;
+
+    /* Warning colors in theme */
+    --warning: 45 85% 55%;
+    --warning-foreground: 45 95% 15%;
+
+    /* Info colors in theme */
+    --info: 200 85% 55%;
+    --info-foreground: 0 0% 100%;
 
     /* Advanced gradients and effects */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%);
-    --gradient-coin: linear-gradient(135deg, hsl(var(--coin-gold)) 0%, hsl(var(--coin-glow)) 100%);
-    --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(220, 20%, 25%) 0%, hsl(220, 25%, 35%) 50%, hsl(140, 50%, 40%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(140, 60%, 45%) 0%, hsl(140, 65%, 55%) 50%, hsl(140, 70%, 65%) 100%);
+    --gradient-coin: linear-gradient(135deg, hsl(140, 65%, 40%) 0%, hsl(140, 70%, 55%) 50%, hsl(140, 80%, 70%) 100%);
+    --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(140, 255, 140, 0.1) 50%, rgba(255,255,255,0.05) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(0, 0%, 100%) 0%, hsl(140, 15%, 98%) 50%, hsl(220, 15%, 99%) 100%);
+    --gradient-background: linear-gradient(135deg, hsl(210, 25%, 97%) 0%, hsl(140, 20%, 96%) 50%, hsl(220, 20%, 98%) 100%);
     
-    /* Premium shadows */
-    --shadow-elegant: 0 4px 20px -2px hsl(var(--primary) / 0.15);
-    --shadow-glow: 0 0 30px hsl(var(--coin-glow) / 0.4);
-    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.1);
+    /* Premium shadows with color */
+    --shadow-elegant: 0 4px 20px -2px hsla(220, 20%, 25%, 0.15);
+    --shadow-green: 0 4px 20px -2px hsla(140, 50%, 40%, 0.2);
+    --shadow-glow: 0 0 30px hsla(140, 70%, 60%, 0.4);
+    --shadow-glass: 0 8px 32px rgba(140, 200, 140, 0.15);
+    --shadow-card: 0 4px 16px hsla(220, 15%, 25%, 0.08);
 
     --radius: 0.75rem;
 
@@ -77,40 +97,64 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 220 15% 10%;
+    --background: linear-gradient(135deg, hsl(220, 25%, 8%) 0%, hsl(140, 20%, 12%) 100%);
     --foreground: 220 8% 90%;
 
-    --card: 220 15% 12%;
+    --card: linear-gradient(135deg, hsl(220, 20%, 10%) 0%, hsl(140, 15%, 12%) 100%);
     --card-foreground: 220 8% 90%;
 
     --popover: 220 15% 12%;
     --popover-foreground: 220 8% 90%;
 
-    --primary: 220 8% 85%;  /* Light grey for dark mode */
-    --primary-foreground: 220 15% 10%;
+    --primary: 220 15% 85%;  /* Bright grey for dark mode */
+    --primary-foreground: 220 20% 8%;
+    --primary-hover: 220 20% 90%;
+    --primary-glow: 220 15% 70%;
 
-    --secondary: 140 45% 60%;  /* Brighter green for dark mode */
-    --secondary-foreground: 220 15% 10%;
+    --secondary: 140 65% 55%;  /* Vibrant green for dark mode */
+    --secondary-foreground: 220 20% 8%;
+    --secondary-hover: 140 70% 60%;
+    --secondary-glow: 140 60% 70%;
 
-    --muted: 220 15% 20%;
+    --muted: linear-gradient(135deg, hsl(220, 20%, 15%) 0%, hsl(140, 15%, 18%) 100%);
     --muted-foreground: 220 8% 65%;
 
-    --accent: 140 50% 55%;  /* Bright green accent for dark mode */
-    --accent-foreground: 220 15% 10%;
+    --accent: 140 60% 50%;  /* Bright green accent for dark mode */
+    --accent-foreground: 220 20% 8%;
+    --accent-hover: 140 65% 55%;
 
-    --destructive: 0 62% 50%;
+    --destructive: 0 75% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 25%;
-    --input: 220 15% 20%;
-    --ring: 140 50% 55%;
+    --border: linear-gradient(135deg, hsl(220, 20%, 20%) 0%, hsl(140, 20%, 22%) 100%);
+    --input: linear-gradient(135deg, hsl(220, 15%, 18%) 0%, hsl(140, 15%, 20%) 100%);
+    --ring: 140 60% 50%;
     
     /* Dark mode coin colors */
-    --coin-gold: 140 55% 60%;  /* Bright green coins for dark mode */
-    --coin-gold-foreground: 220 15% 10%;
+    --coin-gold: 140 70% 55%;  /* Bright green coins for dark mode */
+    --coin-gold-foreground: 220 20% 8%;
+    --coin-glow: 140 75% 65%;
+    --coin-shine: 140 80% 75%;
     
-    --success: 140 55% 50%;
+    --success: 140 70% 50%;
     --success-foreground: 0 0% 100%;
+    --success-glow: 140 75% 60%;
+
+    /* Dark mode gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(220, 20%, 15%) 0%, hsl(220, 25%, 25%) 50%, hsl(140, 50%, 30%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(140, 65%, 35%) 0%, hsl(140, 70%, 45%) 50%, hsl(140, 75%, 55%) 100%);
+    --gradient-coin: linear-gradient(135deg, hsl(140, 70%, 40%) 0%, hsl(140, 75%, 50%) 50%, hsl(140, 80%, 60%) 100%);
+    --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(140, 255, 140, 0.05) 50%, rgba(255,255,255,0.02) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(220, 20%, 10%) 0%, hsl(140, 15%, 12%) 50%, hsl(220, 15%, 14%) 100%);
+    --gradient-background: linear-gradient(135deg, hsl(220, 25%, 8%) 0%, hsl(140, 20%, 10%) 50%, hsl(220, 20%, 12%) 100%);
+    
+    /* Dark mode shadows */
+    --shadow-elegant: 0 4px 20px -2px hsla(220, 20%, 5%, 0.3);
+    --shadow-green: 0 4px 20px -2px hsla(140, 60%, 30%, 0.3);
+    --shadow-glow: 0 0 30px hsla(140, 70%, 50%, 0.4);
+    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --shadow-card: 0 4px 16px hsla(220, 20%, 5%, 0.2);
+
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -128,32 +172,88 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    background: var(--gradient-background);
+    color: hsl(var(--foreground));
+    min-height: 100vh;
   }
 
-  /* Enhanced Animation utilities */
+  /* Enhanced Animation utilities with colorful effects */
   .hover-scale {
-    @apply transition-all duration-300 ease-out hover:scale-105 hover:shadow-lg;
+    @apply transition-all duration-300 ease-out hover:scale-105;
+    box-shadow: var(--shadow-card);
+  }
+  
+  .hover-scale:hover {
+    box-shadow: var(--shadow-green);
+    transform: scale(1.05) translateY(-2px);
   }
   
   .glass-effect {
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(15px);
     background: var(--gradient-glass);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(140, 255, 140, 0.2);
+    box-shadow: var(--shadow-glass);
   }
   
   .coin-shimmer {
-    background: linear-gradient(90deg, transparent, rgba(255,215,0,0.3), transparent);
+    background: linear-gradient(90deg, transparent, rgba(140, 255, 140, 0.4), transparent);
     background-size: 200% 100%;
     animation: shimmer 2s linear infinite;
   }
   
   .hover-glow {
     transition: all 0.3s ease;
+    box-shadow: var(--shadow-card);
   }
   
   .hover-glow:hover {
     box-shadow: var(--shadow-glow);
     transform: translateY(-2px);
   }
+
+  /* Colorful card effects */
+  .card-gradient {
+    background: var(--gradient-card);
+    border: 1px solid rgba(140, 255, 140, 0.1);
+    box-shadow: var(--shadow-card);
+    transition: all 0.3s ease;
+  }
+
+  .card-gradient:hover {
+    box-shadow: var(--shadow-green);
+    transform: translateY(-2px);
+  }
+
+  /* Button enhancements */
+  .btn-primary {
+    background: var(--gradient-primary);
+    box-shadow: var(--shadow-elegant);
+    border: none;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary:hover {
+    box-shadow: var(--shadow-green);
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    background: var(--gradient-secondary);
+    box-shadow: var(--shadow-green);
+    border: none;
+    transition: all 0.3s ease;
+  }
+
+  .btn-secondary:hover {
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-1px);
+  }
+
+  /* Coin effects */
+  .coin-glow {
+    background: var(--gradient-coin);
+    box-shadow: var(--shadow-glow);
+    animation: glow 2s ease-in-out infinite;
+  }
+}
 }
