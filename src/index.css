@@ -38,13 +38,24 @@ All colors MUST be HSL.
     --input: 215 28% 88%;
     --ring: 197 89% 25%;
 
-    /* SLT Coin Colors */
+    /* SLT Coin Colors with glow effects */
     --coin-gold: 45 100% 50%;
     --coin-gold-foreground: 25 95% 15%;
+    --coin-glow: 45 100% 70%;
     
-    /* Success for completed tasks */
+    /* Success with enhanced variants */
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
+
+    /* Advanced gradients and effects */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+    --gradient-coin: linear-gradient(135deg, hsl(var(--coin-gold)) 0%, hsl(var(--coin-glow)) 100%);
+    --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    
+    /* Premium shadows */
+    --shadow-elegant: 0 4px 20px -2px hsl(var(--primary) / 0.15);
+    --shadow-glow: 0 0 30px hsl(var(--coin-glow) / 0.4);
+    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.1);
 
     --radius: 0.75rem;
 
@@ -120,8 +131,29 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 
-  /* Animation utilities */
+  /* Enhanced Animation utilities */
   .hover-scale {
-    @apply transition-transform duration-200 hover:scale-105;
+    @apply transition-all duration-300 ease-out hover:scale-105 hover:shadow-lg;
+  }
+  
+  .glass-effect {
+    backdrop-filter: blur(10px);
+    background: var(--gradient-glass);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .coin-shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255,215,0,0.3), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+  
+  .hover-glow {
+    transition: all 0.3s ease;
+  }
+  
+  .hover-glow:hover {
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-2px);
   }
 }
