@@ -177,7 +177,7 @@ export function useTasks() {
         if (coinError) throw coinError;
 
         // Update user's total coins
-        const { error: updateError } = await supabase.rpc('increment_user_coins', {
+        const { error: updateError } = await (supabase as any).rpc('increment_user_coins', {
           user_profile_id: taskData.assigned_to,
           coin_amount: coinValue
         });
