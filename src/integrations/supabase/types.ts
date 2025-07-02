@@ -209,7 +209,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_user_coins: {
+        Args: { user_profile_id: string; coin_amount: number }
+        Returns: undefined
+      }
     }
     Enums: {
       task_priority: "low" | "medium" | "high" | "urgent"

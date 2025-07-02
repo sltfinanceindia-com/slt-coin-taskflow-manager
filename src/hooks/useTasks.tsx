@@ -177,12 +177,15 @@ export function useTasks() {
         if (coinError) throw coinError;
 
         // Update user's total coins
-        const { error: updateError } = await (supabase as any).rpc('increment_user_coins', {
+        const { error: updateError } = await supabase.rpc('increment_user_coins', {
           user_profile_id: taskData.assigned_to,
           coin_amount: coinValue
         });
 
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error('Error updating coins:', updateError);
+          throw updateError;
+        }
       }
 
       return taskData;
@@ -207,13 +210,22 @@ export function useTasks() {
     },
   });
 
+  // Helper functions that match the expected interface
+  const updateTaskStatus = (taskId: string, status: Task['status'], submissionNotes?: string) => {
+    updateTaskStatusMutation.mutate({ taskId, status, submissionNotes });
+  };
+
+  const verifyTask = (taskId: string, approve: boolean, feedback?: string, coinValue?: number) => {
+    verifyTaskMutation.mutate({ taskId, approve, feedback, coinValue });
+  };
+
   return {
     tasks: tasksQuery.data || [],
     isLoading: tasksQuery.isLoading,
     error: tasksQuery.error,
     createTask: createTaskMutation.mutate,
-    updateTaskStatus: updateTaskStatusMutation.mutate,
-    verifyTask: verifyTaskMutation.mutate,
+    updateTaskStatus,
+    verifyTask,
     isCreating: createTaskMutation.isPending,
     isUpdating: updateTaskStatusMutation.isPending,
     isVerifying: verifyTaskMutation.isPending,
