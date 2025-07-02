@@ -85,9 +85,9 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">
+      <div className="w-full max-w-md space-y-8">
+        <div className="text-center">
           <div className="flex items-center justify-center mb-4">
             <img 
               src="/lovable-uploads/56d5dd03-2808-4b88-9f9c-cc8932c46fe8.png" 
@@ -95,6 +95,7 @@ export default function Auth() {
               className="h-12 w-auto object-contain"
             />
           </div>
+          <h1 className="text-xl font-semibold text-primary mb-2">SLT Finance India</h1>
           <p className="text-muted-foreground">Coin-Based Workfront System</p>
         </div>
 
@@ -105,15 +106,15 @@ export default function Auth() {
               Sign in to your account or create a new one
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-6">
             <Tabs defaultValue="signin" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signin">Sign In</TabsTrigger>
                 <TabsTrigger value="signup">Sign Up</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="signin">
-                <form onSubmit={handleSignIn} className="space-y-4">
+              <TabsContent value="signin" className="space-y-4 mt-6">
+                <form onSubmit={handleSignIn} className="space-y-6">
                   <div className="space-y-2">
                     <Label htmlFor="signin-email">Email</Label>
                     <Input
@@ -122,6 +123,7 @@ export default function Auth() {
                       type="email"
                       placeholder="your.email@sltfinanceindia.com"
                       required
+                      className="min-h-[44px]"
                     />
                   </div>
                   <div className="space-y-2">
@@ -131,16 +133,17 @@ export default function Auth() {
                       name="password"
                       type="password"
                       required
+                      className="min-h-[44px]"
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button type="submit" className="w-full min-h-[44px]" disabled={isLoading}>
                     {isLoading ? "Signing In..." : "Sign In"}
                   </Button>
                 </form>
               </TabsContent>
               
-              <TabsContent value="signup">
-                <form onSubmit={handleSignUp} className="space-y-4">
+              <TabsContent value="signup" className="space-y-4 mt-6">
+                <form onSubmit={handleSignUp} className="space-y-6">
                   <div className="space-y-2">
                     <Label htmlFor="signup-name">Full Name</Label>
                     <Input
@@ -149,6 +152,7 @@ export default function Auth() {
                       type="text"
                       placeholder="Your Full Name"
                       required
+                      className="min-h-[44px]"
                     />
                   </div>
                   <div className="space-y-2">
@@ -159,6 +163,7 @@ export default function Auth() {
                       type="email"
                       placeholder="your.email@sltfinanceindia.com"
                       required
+                      className="min-h-[44px]"
                     />
                   </div>
                   <div className="space-y-2">
@@ -168,12 +173,13 @@ export default function Auth() {
                       name="password"
                       type="password"
                       required
+                      className="min-h-[44px]"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-role">Role</Label>
                     <Select name="role" defaultValue="intern">
-                      <SelectTrigger>
+                      <SelectTrigger className="min-h-[44px]">
                         <SelectValue placeholder="Select your role" />
                       </SelectTrigger>
                       <SelectContent>
@@ -182,7 +188,7 @@ export default function Auth() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button type="submit" className="w-full min-h-[44px]" disabled={isLoading}>
                     {isLoading ? "Creating Account..." : "Create Account"}
                   </Button>
                 </form>

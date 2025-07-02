@@ -129,21 +129,23 @@ export default function Dashboard() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className={`grid w-full ${profile?.role === 'admin' ? 'grid-cols-6 max-w-2xl' : 'grid-cols-4 max-w-md'}`}>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="tasks">Tasks</TabsTrigger>
-            <TabsTrigger value="time">Time</TabsTrigger>
-            {profile?.role === 'admin' && (
-              <>
-                <TabsTrigger value="coins">Coins</TabsTrigger>
-                <TabsTrigger value="interns">Interns</TabsTrigger>
-              </>
-            )}
-            {profile?.role === 'intern' && (
-              <TabsTrigger value="my-coins">My Coins</TabsTrigger>
-            )}
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          </TabsList>
+          <div className="w-full overflow-x-auto">
+            <TabsList className={`grid w-full min-w-max ${profile?.role === 'admin' ? 'grid-cols-6' : 'grid-cols-4'} ${profile?.role === 'admin' ? 'max-w-3xl' : 'max-w-lg'} mx-auto`}>
+              <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 sm:px-4">Overview</TabsTrigger>
+              <TabsTrigger value="tasks" className="text-xs sm:text-sm px-2 sm:px-4">Tasks</TabsTrigger>
+              <TabsTrigger value="time" className="text-xs sm:text-sm px-2 sm:px-4">Time</TabsTrigger>
+              {profile?.role === 'admin' && (
+                <>
+                  <TabsTrigger value="coins" className="text-xs sm:text-sm px-2 sm:px-4">Coins</TabsTrigger>
+                  <TabsTrigger value="interns" className="text-xs sm:text-sm px-2 sm:px-4">Interns</TabsTrigger>
+                </>
+              )}
+              {profile?.role === 'intern' && (
+                <TabsTrigger value="my-coins" className="text-xs sm:text-sm px-2 sm:px-4">My Coins</TabsTrigger>
+              )}
+              <TabsTrigger value="analytics" className="text-xs sm:text-sm px-2 sm:px-4">Analytics</TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="overview">
             {/* Stats Cards */}
