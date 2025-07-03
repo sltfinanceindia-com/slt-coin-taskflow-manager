@@ -99,6 +99,64 @@ export type Database = {
           },
         ]
       }
+      email_notifications: {
+        Row: {
+          comment_id: string | null
+          created_at: string
+          email_to: string
+          email_type: string
+          id: string
+          sent_at: string
+          subject: string
+          task_id: string | null
+          user_id: string
+        }
+        Insert: {
+          comment_id?: string | null
+          created_at?: string
+          email_to: string
+          email_type: string
+          id?: string
+          sent_at?: string
+          subject: string
+          task_id?: string | null
+          user_id: string
+        }
+        Update: {
+          comment_id?: string | null
+          created_at?: string
+          email_to?: string
+          email_type?: string
+          id?: string
+          sent_at?: string
+          subject?: string
+          task_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_notifications_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "task_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_notifications_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
