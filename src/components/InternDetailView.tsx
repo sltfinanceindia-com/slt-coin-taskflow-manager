@@ -1,0 +1,181 @@
+import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { User, Award, Clock, FileText, Eye } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
+import { useTasks } from '@/hooks/useTasks';
+import { useTimeLogs } from '@/hooks/useTimeLogs';
+import { CertificateGenerator } from '@/components/CertificateGenerator';
+import { format } from 'date-fns';
+
+interface InternDetailViewProps {
+  internId: string;
+  onClose: () => void;
+}
+
+export function InternDetailView({ internId, onClose }: InternDetailViewProps) {
+  const { profile: currentProfile } = useAuth();
+  const { profile: internProfile, stats } = useProfile(internId);
+  const { tasks } = useTasks();
+  const { timeLogs } = useTimeLogs();
+  const [showCertificateGenerator, setShowCertificateGenerator] = useState(false);
+
+  if (!currentProfile || currentProfile.role !== 'admin') {
+    return null;
+  }
+
+  const internTasks = tasks.filter(task => task.assigned_to === internId);
+  const internTimeLogs = timeLogs.filter(log => log.user_id === internId);
+
+  return (
+    <Dialog open onOpenChange={() => onClose()}>
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            {internProfile?.full_name} - Intern Details
+          </DialogTitle>
+        </DialogHeader>
+
+        <Tabs defaultValue="overview" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="tasks">Tasks</TabsTrigger>
+            <TabsTrigger value="time">Time Logs</TabsTrigger>
+            <TabsTrigger value="certificate">Certificate</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-4">
+            {/* Profile Info */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Profile Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Full Name</p>
+                    <p className="font-medium">{internProfile?.full_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Email</p>
+                    <p className="font-medium">{internProfile?.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Employee ID</p>
+                    <p className="font-medium">{internProfile?.employee_id || 'Not set'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Department</p>
+                    <p className="font-medium">{internProfile?.department || 'Not set'}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Performance Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <Award className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                  <p className="text-2xl font-bold">{stats?.totalTasks || 0}</p>
+                  <p className="text-sm text-muted-foreground">Total Tasks</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <Award className="h-8 w-8 text-blue-500 mx-auto mb-2" />
+                  <p className="text-2xl font-bold">{stats?.completedTasks || 0}</p>
+                  <p className="text-sm text-muted-foreground">Completed</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <Award className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
+                  <p className="text-2xl font-bold">{stats?.totalCoins || 0}</p>
+                  <p className="text-sm text-muted-foreground">SLT Coins</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <Clock className="h-8 w-8 text-purple-500 mx-auto mb-2" />
+                  <p className="text-2xl font-bold">{stats?.monthlyHours || 0}</p>
+                  <p className="text-sm text-muted-foreground">Monthly Hours</p>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="tasks" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Task History</CardTitle>
+                <CardDescription>All tasks assigned to this intern</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {internTasks.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-4">No tasks assigned yet</p>
+                  ) : (
+                    internTasks.map((task) => (
+                      <div key={task.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                        <div>
+                          <p className="font-medium">{task.title}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {format(new Date(task.created_at), 'MMM dd, yyyy')}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <Badge variant="outline">{task.status.replace('_', ' ')}</Badge>
+                          <p className="text-sm text-muted-foreground mt-1">{task.slt_coin_value} coins</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="time" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Time Tracking</CardTitle>
+                <CardDescription>Hours logged by this intern</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {internTimeLogs.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-4">No time logs yet</p>
+                  ) : (
+                    internTimeLogs.slice(0, 10).map((log) => (
+                      <div key={log.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                        <div>
+                          <p className="font-medium">{log.task?.title}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {format(new Date(log.date_logged), 'MMM dd, yyyy')}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold">{log.hours_worked}h</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="certificate">
+            <CertificateGenerator internData={internProfile} onClose={() => setShowCertificateGenerator(false)} />
+          </TabsContent>
+        </Tabs>
+      </DialogContent>
+    </Dialog>
+  );
+}
