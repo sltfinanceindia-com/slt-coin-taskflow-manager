@@ -32,7 +32,7 @@ export function useTaskComments(taskId?: string) {
         .from('task_comments')
         .select(`
           *,
-          user_profile:profiles(id, full_name, avatar_url)
+          user_profile:profiles!task_comments_user_id_fkey(id, full_name, avatar_url)
         `)
         .eq('task_id', taskId)
         .order('created_at', { ascending: true });
@@ -58,7 +58,7 @@ export function useTaskComments(taskId?: string) {
         }])
         .select(`
           *,
-          user_profile:profiles(id, full_name, avatar_url)
+          user_profile:profiles!task_comments_user_id_fkey(id, full_name, avatar_url)
         `)
         .single();
 

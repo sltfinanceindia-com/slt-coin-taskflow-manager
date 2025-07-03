@@ -34,7 +34,12 @@ export function useProjects() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Project[];
+      return data.map(project => ({
+        ...project,
+        creator_profile: Array.isArray(project.creator_profile) 
+          ? project.creator_profile[0] 
+          : project.creator_profile
+      })) as Project[];
     },
     enabled: !!profile,
   });

@@ -7,6 +7,7 @@ import { Task } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
 import { useState } from 'react';
 import { format } from 'date-fns';
+import { TaskComments } from '@/components/TaskComments';
 
 interface TaskCardProps {
   task: Task;
@@ -247,6 +248,11 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask }: TaskCardProps) 
             </p>
           </div>
         )}
+
+        {/* Task Comments */}
+        <div className="mt-4">
+          <TaskComments taskId={task.id} />
+        </div>
       </CardContent>
     </Card>
   );

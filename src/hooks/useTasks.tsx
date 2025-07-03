@@ -16,6 +16,7 @@ export interface Task {
   end_date: string;
   submission_notes?: string;
   admin_feedback?: string;
+  project_id?: string;
   created_at: string;
   updated_at: string;
   assigned_profile?: {
