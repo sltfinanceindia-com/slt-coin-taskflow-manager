@@ -15,7 +15,10 @@ import { AnalyticsPage } from '@/components/AnalyticsPage';
 import { InternManagement } from '@/components/InternManagement';
 import { CoinManagement } from '@/components/CoinManagement';
 import { MyCoins } from '@/components/MyCoins';
-import { Coins, LogOut, User, Clock, CheckCircle, BarChart3, Users, Plus } from 'lucide-react';
+import { DashboardWidgets } from '@/components/DashboardWidgets';
+import { ProjectManagement } from '@/components/ProjectManagement';
+import { Coins, LogOut, User, Clock, CheckCircle, BarChart3, Users, Plus, UserCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 
 export default function Dashboard() {
@@ -105,6 +108,12 @@ export default function Dashboard() {
                 <User className="h-4 w-4" />
                 <span>{profile?.full_name}</span>
               </div>
+              <Link to="/profile">
+                <Button variant="ghost" size="sm" className="text-xs sm:text-sm">
+                  <UserCircle className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Profile</span>
+                </Button>
+              </Link>
               <Button variant="outline" size="sm" onClick={handleSignOut} className="text-xs sm:text-sm">
                 <LogOut className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">Sign Out</span>
@@ -130,9 +139,10 @@ export default function Dashboard() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="w-full overflow-x-auto">
-            <TabsList className={`grid w-full min-w-max ${profile?.role === 'admin' ? 'grid-cols-6' : 'grid-cols-4'} ${profile?.role === 'admin' ? 'max-w-3xl' : 'max-w-lg'} mx-auto`}>
+            <TabsList className={`grid w-full min-w-max ${profile?.role === 'admin' ? 'grid-cols-7' : 'grid-cols-5'} ${profile?.role === 'admin' ? 'max-w-4xl' : 'max-w-2xl'} mx-auto`}>
               <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 sm:px-4">Overview</TabsTrigger>
               <TabsTrigger value="tasks" className="text-xs sm:text-sm px-2 sm:px-4">Tasks</TabsTrigger>
+              <TabsTrigger value="projects" className="text-xs sm:text-sm px-2 sm:px-4">Projects</TabsTrigger>
               <TabsTrigger value="time" className="text-xs sm:text-sm px-2 sm:px-4">Time</TabsTrigger>
               {profile?.role === 'admin' && (
                 <>
@@ -148,153 +158,7 @@ export default function Dashboard() {
           </div>
 
           <TabsContent value="overview">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <Card className="animate-scale-in">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total SLT Coins</CardTitle>
-                  <Coins className="h-4 w-4 text-coin-gold" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-coin-gold">
-                    {profile?.total_coins || 0}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Earned through completed tasks
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="animate-scale-in">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {profile?.role === 'admin' ? 'Total Tasks' : 'My Tasks'}
-                  </CardTitle>
-                  <CheckCircle className="h-4 w-4 text-primary" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{completedTasksCount}/{myTasks.length}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {profile?.role === 'admin' ? 'Team completion rate' : 'Tasks completed'}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="animate-scale-in">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Hours This Week</CardTitle>
-                  <Clock className="h-4 w-4 text-accent" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{weeklyHours.toFixed(1)}</div>
-                  <p className="text-xs text-muted-foreground">
-                    Time logged this week
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-                <CardDescription>
-                  {profile?.role === 'admin' 
-                    ? 'Manage your team and track progress' 
-                    : 'Manage your tasks and track your time'
-                  }
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {profile?.role === 'admin' ? (
-                    <>
-                      <CreateTaskDialog onCreateTask={createTask} isCreating={isCreating} />
-                      <Button 
-                        variant="outline" 
-                        className="h-20 text-left flex-col items-start justify-center hover-scale"
-                        onClick={() => setActiveTab('analytics')}
-                      >
-                        <div className="flex items-center space-x-2 mb-1">
-                          <BarChart3 className="h-4 w-4" />
-                          <span className="font-semibold">View Analytics</span>
-                        </div>
-                        <span className="text-sm opacity-80">Performance metrics & reports</span>
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        className="h-20 text-left flex-col items-start justify-center hover-scale"
-                        onClick={() => setActiveTab('tasks')}
-                      >
-                        <div className="flex items-center space-x-2 mb-1">
-                          <CheckCircle className="h-4 w-4" />
-                          <span className="font-semibold">Manage Tasks</span>
-                        </div>
-                        <span className="text-sm opacity-80">Review and approve submissions</span>
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        className="h-20 text-left flex-col items-start justify-center hover-scale"
-                        onClick={() => setActiveTab('interns')}
-                      >
-                        <div className="flex items-center space-x-2 mb-1">
-                          <Users className="h-4 w-4" />
-                          <span className="font-semibold">Manage Interns</span>
-                        </div>
-                        <span className="text-sm opacity-80">Add and manage team members</span>
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        className="h-20 text-left flex-col items-start justify-center hover-scale"
-                        onClick={() => setActiveTab('coins')}
-                      >
-                        <div className="flex items-center space-x-2 mb-1">
-                          <Coins className="h-4 w-4" />
-                          <span className="font-semibold">Coin Management</span>
-                        </div>
-                        <span className="text-sm opacity-80">Approve tasks and award coins</span>
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button 
-                        className="h-20 text-left flex-col items-start justify-center hover-scale"
-                        onClick={() => setActiveTab('tasks')}
-                      >
-                        <div className="flex items-center space-x-2 mb-1">
-                          <CheckCircle className="h-4 w-4" />
-                          <span className="font-semibold">My Tasks</span>
-                        </div>
-                        <span className="text-sm opacity-80">View and update assigned tasks</span>
-                      </Button>
-                      <TimeLogDialog onLogTime={logTime} isLogging={isLogging} />
-                      <Button 
-                        variant="outline" 
-                        className="h-20 text-left flex-col items-start justify-center hover-scale"
-                        onClick={() => setActiveTab('my-coins')}
-                      >
-                        <div className="flex items-center space-x-2 mb-1">
-                          <Coins className="h-4 w-4" />
-                          <span className="font-semibold">My Coins</span>
-                        </div>
-                        <span className="text-sm opacity-80">View earnings and history</span>
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        className="h-20 text-left flex-col items-start justify-center hover-scale"
-                        onClick={() => setActiveTab('time')}
-                      >
-                        <div className="flex items-center space-x-2 mb-1">
-                          <Clock className="h-4 w-4" />
-                          <span className="font-semibold">Time Logs</span>
-                        </div>
-                        <span className="text-sm opacity-80">View your logged hours</span>
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            <DashboardWidgets />
           </TabsContent>
 
           <TabsContent value="tasks">
@@ -334,6 +198,10 @@ export default function Dashboard() {
                 )}
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="projects">
+            <ProjectManagement />
           </TabsContent>
 
           <TabsContent value="time">
