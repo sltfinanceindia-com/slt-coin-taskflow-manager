@@ -9,9 +9,53 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_notes: {
+        Row: {
+          admin_id: string
+          content: string
+          created_at: string
+          id: string
+          intern_id: string
+          updated_at: string
+        }
+        Insert: {
+          admin_id: string
+          content: string
+          created_at?: string
+          id?: string
+          intern_id: string
+          updated_at?: string
+        }
+        Update: {
+          admin_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          intern_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_notes_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_notes_intern_id_fkey"
+            columns: ["intern_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coin_transactions: {
         Row: {
+          bonus_coins: number | null
           coins_earned: number
+          description: string | null
           id: string
           status: string
           task_id: string
@@ -19,7 +63,9 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          bonus_coins?: number | null
           coins_earned: number
+          description?: string | null
           id?: string
           status?: string
           task_id: string
@@ -27,7 +73,9 @@ export type Database = {
           user_id: string
         }
         Update: {
+          bonus_coins?: number | null
           coins_earned?: number
+          description?: string | null
           id?: string
           status?: string
           task_id?: string
@@ -54,40 +102,112 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           created_at: string
           department: string | null
           email: string
           employee_id: string | null
+          end_date: string | null
           full_name: string
           id: string
           role: Database["public"]["Enums"]["user_role"]
+          start_date: string | null
           total_coins: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           department?: string | null
           email: string
           employee_id?: string | null
+          end_date?: string | null
           full_name: string
           id?: string
           role?: Database["public"]["Enums"]["user_role"]
+          start_date?: string | null
           total_coins?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           department?: string | null
           email?: string
           employee_id?: string | null
+          end_date?: string | null
           full_name?: string
           id?: string
           role?: Database["public"]["Enums"]["user_role"]
+          start_date?: string | null
           total_coins?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          name: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          name: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          name?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      task_comments: {
+        Row: {
+          attachments: Json | null
+          content: string
+          created_at: string
+          id: string
+          mentions: string[] | null
+          task_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attachments?: Json | null
+          content: string
+          created_at?: string
+          id?: string
+          mentions?: string[] | null
+          task_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attachments?: Json | null
+          content?: string
+          created_at?: string
+          id?: string
+          mentions?: string[] | null
+          task_id?: string
           updated_at?: string
           user_id?: string
         }
@@ -103,6 +223,7 @@ export type Database = {
           end_date: string | null
           id: string
           priority: Database["public"]["Enums"]["task_priority"] | null
+          project_id: string | null
           slt_coin_value: number
           start_date: string | null
           status: Database["public"]["Enums"]["task_status"]
@@ -119,6 +240,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           priority?: Database["public"]["Enums"]["task_priority"] | null
+          project_id?: string | null
           slt_coin_value?: number
           start_date?: string | null
           status?: Database["public"]["Enums"]["task_status"]
@@ -135,6 +257,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           priority?: Database["public"]["Enums"]["task_priority"] | null
+          project_id?: string | null
           slt_coin_value?: number
           start_date?: string | null
           status?: Database["public"]["Enums"]["task_status"]
@@ -155,6 +278,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
