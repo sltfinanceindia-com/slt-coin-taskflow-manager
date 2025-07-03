@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
+import { useEmailNotifications } from '@/hooks/useEmailNotifications';
 
 export interface TaskComment {
   id: string;
@@ -22,6 +23,7 @@ export interface TaskComment {
 export function useTaskComments(taskId?: string) {
   const { profile } = useAuth();
   const queryClient = useQueryClient();
+  const emailNotifications = useEmailNotifications();
 
   const commentsQuery = useQuery({
     queryKey: ['task-comments', taskId],
@@ -65,12 +67,62 @@ export function useTaskComments(taskId?: string) {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: async (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['task-comments', taskId] });
       toast({
         title: "Comment Added",
         description: "Your comment has been posted successfully.",
       });
+
+      // Send email notification about the comment
+      try {
+        const { data: taskData } = await supabase
+          .from('tasks')
+          .select(`
+            title,
+            assigned_to,
+            created_by,
+            assigned_profile:profiles!tasks_assigned_to_fkey(email, full_name),
+            creator_profile:profiles!tasks_created_by_fkey(email, full_name)
+          `)
+          .eq('id', variables.task_id)
+          .single();
+
+        if (taskData) {
+          const notifyEmails = [];
+          
+          // Notify assigned user (if not the commenter)
+          if (taskData.assigned_to !== profile?.id && taskData.assigned_profile) {
+            notifyEmails.push({
+              to: taskData.assigned_profile.email,
+              recipientName: taskData.assigned_profile.full_name,
+            });
+          }
+          
+          // Notify task creator (if not the commenter and not already notified)
+          if (taskData.created_by !== profile?.id && 
+              taskData.created_by !== taskData.assigned_to && 
+              taskData.creator_profile) {
+            notifyEmails.push({
+              to: taskData.creator_profile.email,
+              recipientName: taskData.creator_profile.full_name,
+            });
+          }
+
+          // Send emails
+          for (const emailData of notifyEmails) {
+            await emailNotifications.sendCommentAddedEmail({
+              ...emailData,
+              taskTitle: taskData.title,
+              taskId: variables.task_id,
+              commentId: data.id,
+              commenterName: profile?.full_name || 'Unknown User',
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Failed to send comment notification email:', error);
+      }
     },
     onError: (error) => {
       toast({

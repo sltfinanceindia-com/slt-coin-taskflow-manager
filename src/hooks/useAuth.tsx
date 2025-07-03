@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { useEmailNotifications } from '@/hooks/useEmailNotifications';
 
 interface Profile {
   id: string;
@@ -34,6 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const emailNotifications = useEmailNotifications();
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -72,7 +74,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setTimeout(() => {
             fetchProfile(session.user.id);
           }, 0);
+          
+          // Send login notification email
+          if (event === 'SIGNED_IN') {
+            setTimeout(async () => {
+              try {
+                const { data: userProfile } = await supabase
+                  .from('profiles')
+                  .select('full_name, email')
+                  .eq('user_id', session.user.id)
+                  .single();
+
+                if (userProfile) {
+                  await emailNotifications.sendLoginNotificationEmail({
+                    to: userProfile.email,
+                    recipientName: userProfile.full_name,
+                  });
+                }
+              } catch (error) {
+                console.error('Failed to send login notification:', error);
+              }
+            }, 1000);
+          }
         } else {
+          // Send logout notification email if signing out
+          if (event === 'SIGNED_OUT' && profile) {
+            try {
+              await emailNotifications.sendLogoutNotificationEmail({
+                to: profile.email,
+                recipientName: profile.full_name,
+              });
+            } catch (error) {
+              console.error('Failed to send logout notification:', error);
+            }
+          }
           setProfile(null);
         }
         

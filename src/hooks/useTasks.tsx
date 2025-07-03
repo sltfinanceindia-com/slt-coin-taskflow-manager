@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
+import { useEmailNotifications } from '@/hooks/useEmailNotifications';
 
 export interface Task {
   id: string;
@@ -34,6 +35,7 @@ export interface Task {
 export function useTasks() {
   const { profile } = useAuth();
   const queryClient = useQueryClient();
+  const emailNotifications = useEmailNotifications();
 
   const tasksQuery = useQuery({
     queryKey: ['tasks'],
@@ -75,12 +77,33 @@ export function useTasks() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: async (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       toast({
         title: "Task Created",
         description: "Task has been successfully created and assigned.",
       });
+
+      // Send email notification to assigned intern
+      try {
+        const { data: assignedProfile } = await supabase
+          .from('profiles')
+          .select('full_name, email')
+          .eq('id', variables.assigned_to)
+          .single();
+
+        if (assignedProfile) {
+          await emailNotifications.sendTaskAssignedEmail({
+            to: assignedProfile.email,
+            recipientName: assignedProfile.full_name,
+            taskTitle: variables.title,
+            taskId: data.id,
+            assignerName: profile?.full_name || 'Admin',
+          });
+        }
+      } catch (error) {
+        console.error('Failed to send task assignment email:', error);
+      }
     },
     onError: (error) => {
       toast({
@@ -116,13 +139,34 @@ export function useTasks() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: async (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       if (variables.status === 'completed') {
         toast({
           title: "Task Completed",
           description: "Task marked as completed. Awaiting admin approval for SLT Coins.",
         });
+
+        // Send email notification to admin
+        try {
+          const { data: adminProfiles } = await supabase
+            .from('profiles')
+            .select('email, full_name')
+            .eq('role', 'admin');
+
+          if (adminProfiles && adminProfiles.length > 0) {
+            for (const admin of adminProfiles) {
+              await emailNotifications.sendTaskCompletedEmail({
+                to: admin.email,
+                recipientName: admin.full_name,
+                taskTitle: data.title,
+                taskId: data.id,
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Failed to send task completion email:', error);
+        }
       } else if (variables.status === 'verified') {
         toast({
           title: "Task Verified",
@@ -191,7 +235,7 @@ export function useTasks() {
 
       return taskData;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: async (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       queryClient.invalidateQueries({ queryKey: ['coin-transactions'] });
       toast({
@@ -201,6 +245,29 @@ export function useTasks() {
           : "Task has been rejected with feedback.",
         variant: variables.approve ? "default" : "destructive",
       });
+
+      // Send email notification for coin earning (if approved)
+      if (variables.approve && variables.coinValue) {
+        try {
+          const { data: assignedProfile } = await supabase
+            .from('profiles')
+            .select('full_name, email')
+            .eq('id', data.assigned_to)
+            .single();
+
+          if (assignedProfile) {
+            await emailNotifications.sendCoinsEarnedEmail({
+              to: assignedProfile.email,
+              recipientName: assignedProfile.full_name,
+              taskTitle: data.title,
+              taskId: data.id,
+              coinAmount: variables.coinValue,
+            });
+          }
+        } catch (error) {
+          console.error('Failed to send coins earned email:', error);
+        }
+      }
     },
     onError: (error) => {
       toast({
