@@ -5,7 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { useAuthEmailNotifications } from "@/hooks/useAuthEmailNotifications";
-import Dashboard from "./pages/Dashboard";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import ModernDashboard from "./pages/ModernDashboard";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -21,7 +22,7 @@ function AppContent() {
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<ModernDashboard />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/auth" element={<Auth />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
@@ -34,9 +35,11 @@ function AppContent() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <ThemeProvider defaultTheme="system" storageKey="slt-ui-theme">
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
