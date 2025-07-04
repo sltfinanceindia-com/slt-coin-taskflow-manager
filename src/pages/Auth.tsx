@@ -74,7 +74,7 @@ export default function Auth() {
           <CardHeader>
             <CardTitle>Sign In to Dashboard</CardTitle>
             <CardDescription>
-              Admin-only access to the SLT Finance India system
+              Empowering productivity through smart task management and rewards
             </CardDescription>
           </CardHeader>
           <CardContent>
