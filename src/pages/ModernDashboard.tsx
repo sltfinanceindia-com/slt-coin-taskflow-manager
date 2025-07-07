@@ -186,12 +186,12 @@ export default function ModernDashboard() {
           <AppHeader />
           
           <main className="flex-1 overflow-auto">
-            <div className="container mx-auto px-6 py-8">
-              <div className="mb-8">
-                <h1 className="text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
+            <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
+              <div className="mb-6 sm:mb-8">
+                <h1 className="text-2xl sm:text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
                   Welcome back, {profile?.full_name}!
                 </h1>
-                <p className="text-muted-foreground text-lg">
+                <p className="text-muted-foreground text-sm sm:text-lg">
                   {profile?.role === 'admin' 
                     ? 'Manage tasks, track progress, and assign SLT Coins to your team.'
                     : 'View your assigned tasks, log your hours, and earn SLT Coins.'

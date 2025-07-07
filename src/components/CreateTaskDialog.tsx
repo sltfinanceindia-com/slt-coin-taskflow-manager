@@ -96,7 +96,7 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
           Create New Task
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto mx-4">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <Coins className="h-5 w-5 text-coin-gold" />
@@ -130,7 +130,7 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Assign to Interns *</Label>
               <div className="space-y-3">
@@ -210,7 +210,7 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="start_date">Start Date</Label>
               <Input
