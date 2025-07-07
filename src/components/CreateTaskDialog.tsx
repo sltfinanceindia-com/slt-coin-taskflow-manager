@@ -5,7 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Coins } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Coins, X } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -13,7 +15,7 @@ interface CreateTaskDialogProps {
   onCreateTask: (taskData: {
     title: string;
     description: string;
-    assigned_to: string;
+    assigned_to: string[];
     priority: 'low' | 'medium' | 'high' | 'urgent';
     slt_coin_value: number;
     start_date: string;
@@ -27,7 +29,7 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    assigned_to: '',
+    assigned_to: [] as string[],
     priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent',
     slt_coin_value: 10,
     start_date: new Date().toISOString().split('T')[0],
@@ -51,19 +53,39 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title || !formData.assigned_to || !formData.end_date) return;
+    if (!formData.title || formData.assigned_to.length === 0 || !formData.end_date) return;
 
     onCreateTask(formData);
     setOpen(false);
     setFormData({
       title: '',
       description: '',
-      assigned_to: '',
+      assigned_to: [],
       priority: 'medium',
       slt_coin_value: 10,
       start_date: new Date().toISOString().split('T')[0],
       end_date: '',
     });
+  };
+
+  const handleInternToggle = (internId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      assigned_to: prev.assigned_to.includes(internId) 
+        ? prev.assigned_to.filter(id => id !== internId)
+        : [...prev.assigned_to, internId]
+    }));
+  };
+
+  const removeIntern = (internId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      assigned_to: prev.assigned_to.filter(id => id !== internId)
+    }));
+  };
+
+  const getInternName = (internId: string) => {
+    return interns?.find(intern => intern.id === internId)?.full_name || 'Unknown';
   };
 
   return (
@@ -110,22 +132,45 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Assign to Intern *</Label>
-              <Select 
-                value={formData.assigned_to} 
-                onValueChange={(value) => setFormData({ ...formData, assigned_to: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select intern" />
-                </SelectTrigger>
-                <SelectContent>
+              <Label>Assign to Interns *</Label>
+              <div className="space-y-3">
+                {/* Selected Interns */}
+                {formData.assigned_to.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">Selected:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.assigned_to.map(internId => (
+                        <Badge key={internId} variant="secondary" className="flex items-center gap-1">
+                          {getInternName(internId)}
+                          <X 
+                            className="h-3 w-3 cursor-pointer" 
+                            onClick={() => removeIntern(internId)}
+                          />
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Intern Selection */}
+                <div className="border rounded-md p-3 max-h-32 overflow-y-auto space-y-2">
                   {interns?.map((intern) => (
-                    <SelectItem key={intern.id} value={intern.id}>
-                      {intern.full_name}
-                    </SelectItem>
+                    <div key={intern.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={intern.id}
+                        checked={formData.assigned_to.includes(intern.id)}
+                        onCheckedChange={() => handleInternToggle(intern.id)}
+                      />
+                      <Label htmlFor={intern.id} className="flex-1 cursor-pointer">
+                        {intern.full_name}
+                      </Label>
+                    </div>
                   ))}
-                </SelectContent>
-              </Select>
+                  {(!interns || interns.length === 0) && (
+                    <p className="text-sm text-muted-foreground">No interns available</p>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="space-y-2">

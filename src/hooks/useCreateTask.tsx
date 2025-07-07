@@ -12,41 +12,56 @@ export function useCreateTask() {
 
   const createTaskMutation = useMutation({
     mutationFn: async (taskData: CreateTaskData) => {
-      const { data, error } = await supabase
-        .from('tasks')
-        .insert([{
-          ...taskData,
-          created_by: profile?.id,
-        }])
-        .select()
-        .single();
+      // Handle both single assignment (string) and multiple assignments (string[])
+      const assignedUsers = Array.isArray(taskData.assigned_to) ? taskData.assigned_to : [taskData.assigned_to];
+      
+      // Create a task for each assigned user
+      const createdTasks = [];
+      
+      for (const userId of assignedUsers) {
+        const { data: newTask, error: taskError } = await supabase
+          .from('tasks')
+          .insert([{
+            ...taskData,
+            assigned_to: userId,
+            created_by: profile?.id,
+          }])
+          .select()
+          .single();
 
-      if (error) throw error;
-      return data;
+        if (taskError) throw taskError;
+        createdTasks.push(newTask);
+      }
+
+      return { tasks: createdTasks, assignedUsers };
     },
     onSuccess: async (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       toast({
         title: "Task Created",
-        description: "Task has been successfully created and assigned.",
+        description: `Task has been successfully created and assigned to ${data.assignedUsers.length} user(s).`,
       });
 
-      // Send email notification to assigned intern
+      // Send email notification to all assigned interns
       try {
-        const { data: assignedProfile } = await supabase
-          .from('profiles')
-          .select('full_name, email')
-          .eq('id', variables.assigned_to)
-          .single();
+        const assignedUsers = Array.isArray(variables.assigned_to) ? variables.assigned_to : [variables.assigned_to];
+        
+        for (const userId of assignedUsers) {
+          const { data: assignedProfile } = await supabase
+            .from('profiles')
+            .select('full_name, email')
+            .eq('id', userId)
+            .single();
 
-        if (assignedProfile) {
-          await emailNotifications.sendTaskAssignedEmail({
-            to: assignedProfile.email,
-            recipientName: assignedProfile.full_name,
-            taskTitle: variables.title,
-            taskId: data.id,
-            assignerName: profile?.full_name || 'Admin',
-          });
+          if (assignedProfile) {
+            await emailNotifications.sendTaskAssignedEmail({
+              to: assignedProfile.email,
+              recipientName: assignedProfile.full_name,
+              taskTitle: variables.title,
+              taskId: data.tasks[0].id, // Use first task ID for email reference
+              assignerName: profile?.full_name || 'Admin',
+            });
+          }
         }
       } catch (error) {
         console.error('Failed to send task assignment email:', error);

@@ -29,7 +29,7 @@ export interface Task {
 export interface CreateTaskData {
   title: string;
   description: string;
-  assigned_to: string;
+  assigned_to: string | string[];
   priority: 'low' | 'medium' | 'high' | 'urgent';
   slt_coin_value: number;
   start_date: string;
