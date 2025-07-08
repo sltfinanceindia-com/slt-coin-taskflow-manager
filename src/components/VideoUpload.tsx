@@ -38,6 +38,8 @@ export function VideoUpload({ onVideoUploaded, currentVideoUrl }: VideoUploadPro
     setIsUploading(true);
     setUploadProgress(0);
 
+    let progressInterval: NodeJS.Timeout;
+
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
@@ -49,7 +51,7 @@ export function VideoUpload({ onVideoUploaded, currentVideoUrl }: VideoUploadPro
 
       // Simulate realistic progress for large files
       let progress = 0;
-      const progressInterval = setInterval(() => {
+      progressInterval = setInterval(() => {
         progress += Math.random() * 2; // Slower, more realistic progress
         if (progress > 95) progress = 95; // Cap at 95% until actual upload completes
         setUploadProgress(progress);
@@ -87,9 +89,16 @@ export function VideoUpload({ onVideoUploaded, currentVideoUrl }: VideoUploadPro
 
     } catch (error) {
       console.error('Upload error:', error);
+      clearInterval(progressInterval);
+      
+      let errorMessage = "Failed to upload video. Please try again.";
+      if (error && typeof error === 'object' && 'statusCode' in error && error.statusCode === '413') {
+        errorMessage = "File too large. Supabase has a file size limit. Please use a video URL instead or compress your video.";
+      }
+      
       toast({ 
         title: "Upload failed", 
-        description: "Failed to upload video. Please try again.", 
+        description: errorMessage, 
         variant: "destructive" 
       });
     } finally {
