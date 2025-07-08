@@ -420,6 +420,126 @@ export type Database = {
           },
         ]
       }
+      training_assessment_attempts: {
+        Row: {
+          answers: Json
+          assessment_id: string
+          attempt_number: number | null
+          completed_at: string | null
+          id: string
+          is_passed: boolean | null
+          max_score: number
+          score: number
+          started_at: string | null
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          assessment_id: string
+          attempt_number?: number | null
+          completed_at?: string | null
+          id?: string
+          is_passed?: boolean | null
+          max_score?: number
+          score?: number
+          started_at?: string | null
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          assessment_id?: string
+          attempt_number?: number | null
+          completed_at?: string | null
+          id?: string
+          is_passed?: boolean | null
+          max_score?: number
+          score?: number
+          started_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_assessment_attempts_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "training_assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_assessment_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_assessments: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          description: string | null
+          id: string
+          instructions: string | null
+          is_published: boolean | null
+          max_attempts: number | null
+          order_index: number | null
+          passing_score: number | null
+          questions: Json
+          section_id: string
+          time_limit_minutes: number | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          id?: string
+          instructions?: string | null
+          is_published?: boolean | null
+          max_attempts?: number | null
+          order_index?: number | null
+          passing_score?: number | null
+          questions?: Json
+          section_id: string
+          time_limit_minutes?: number | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          id?: string
+          instructions?: string | null
+          is_published?: boolean | null
+          max_attempts?: number | null
+          order_index?: number | null
+          passing_score?: number | null
+          questions?: Json
+          section_id?: string
+          time_limit_minutes?: number | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_assessments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_assessments_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "training_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_assignments: {
         Row: {
           created_at: string
@@ -586,6 +706,57 @@ export type Database = {
           },
         ]
       }
+      training_video_progress: {
+        Row: {
+          completion_percentage: number | null
+          created_at: string | null
+          id: string
+          is_completed: boolean | null
+          last_watched_at: string | null
+          total_duration_seconds: number
+          user_id: string
+          video_id: string
+          watch_time_seconds: number | null
+        }
+        Insert: {
+          completion_percentage?: number | null
+          created_at?: string | null
+          id?: string
+          is_completed?: boolean | null
+          last_watched_at?: string | null
+          total_duration_seconds: number
+          user_id: string
+          video_id: string
+          watch_time_seconds?: number | null
+        }
+        Update: {
+          completion_percentage?: number | null
+          created_at?: string | null
+          id?: string
+          is_completed?: boolean | null
+          last_watched_at?: string | null
+          total_duration_seconds?: number
+          user_id?: string
+          video_id?: string
+          watch_time_seconds?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_video_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_video_progress_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "training_videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_videos: {
         Row: {
           created_at: string
@@ -651,6 +822,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      extract_video_duration: {
+        Args: { video_url: string }
+        Returns: number
+      }
       increment_user_coins: {
         Args: { user_profile_id: string; coin_amount: number }
         Returns: undefined
