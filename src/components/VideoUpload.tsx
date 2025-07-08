@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Upload, Video, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { LargeVideoUploadGuide } from '@/components/training/LargeVideoUploadGuide';
 
 interface VideoUploadProps {
   onVideoUploaded: (videoUrl: string, duration: number) => void;
@@ -28,8 +29,9 @@ export function VideoUpload({ onVideoUploaded, currentVideoUrl }: VideoUploadPro
       return;
     }
 
-    if (file.size > 100 * 1024 * 1024) { // 100MB limit
-      toast({ title: "File too large", description: "Video files must be under 100MB", variant: "destructive" });
+    // Increased limit to 2GB for training videos
+    if (file.size > 2 * 1024 * 1024 * 1024) { // 2GB limit
+      toast({ title: "File too large", description: "Video files must be under 2GB", variant: "destructive" });
       return;
     }
 
@@ -41,16 +43,26 @@ export function VideoUpload({ onVideoUploaded, currentVideoUrl }: VideoUploadPro
       const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `training-videos/${fileName}`;
 
+      // For large files, show better progress feedback
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
+      toast({ title: `Uploading ${fileSizeMB}MB video...`, description: "This may take several minutes for large files" });
+
+      // Simulate realistic progress for large files
+      let progress = 0;
+      const progressInterval = setInterval(() => {
+        progress += Math.random() * 2; // Slower, more realistic progress
+        if (progress > 95) progress = 95; // Cap at 95% until actual upload completes
+        setUploadProgress(progress);
+      }, 1000);
+
       // Upload to Supabase Storage
       const { data, error } = await supabase.storage
         .from('training-videos')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
       
-      // Simulate progress for better UX
-      const progressInterval = setInterval(() => {
-        setUploadProgress(prev => Math.min(prev + 10, 90));
-      }, 100);
-
       clearInterval(progressInterval);
       
       if (error) throw error;
@@ -120,6 +132,7 @@ export function VideoUpload({ onVideoUploaded, currentVideoUrl }: VideoUploadPro
 
   return (
     <div className="space-y-4">
+      <LargeVideoUploadGuide />
       <div className="space-y-2">
         <Label>Upload Video File</Label>
         <Card
@@ -147,7 +160,7 @@ export function VideoUpload({ onVideoUploaded, currentVideoUrl }: VideoUploadPro
               <>
                 <Upload className="h-10 w-10 text-muted-foreground mb-4" />
                 <p className="text-sm font-medium mb-2">Drop video file here or click to browse</p>
-                <p className="text-xs text-muted-foreground mb-4">Supports MP4, MOV, AVI (max 100MB)</p>
+                <p className="text-xs text-muted-foreground mb-4">Supports MP4, MOV, AVI, WEBM (max 2GB)</p>
                 <Button
                   type="button"
                   variant="outline"
