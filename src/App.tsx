@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import ModernDashboard from "./pages/ModernDashboard";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
+import Training from "./pages/Training";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<ModernDashboard />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/training" element={<Training />} />
           <Route path="/auth" element={<Auth />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

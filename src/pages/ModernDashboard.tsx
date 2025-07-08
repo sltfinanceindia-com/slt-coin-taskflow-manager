@@ -100,6 +100,11 @@ export default function ModernDashboard() {
       case 'projects':
         return <ProjectManagement />;
       
+      case 'training':
+        // Redirect to training page instead of inline component
+        window.location.href = '/training';
+        return null;
+      
       case 'time':
         return (
           <div className="space-y-6">

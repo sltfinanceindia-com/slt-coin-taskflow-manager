@@ -8,6 +8,7 @@ import {
   Users, 
   BarChart3, 
   FolderOpen,
+  BookOpen,
   User,
   Settings
 } from "lucide-react"
@@ -32,6 +33,7 @@ const adminItems = [
   { title: "Tasks", url: "tasks", icon: CheckSquare },
   { title: "Projects", url: "projects", icon: FolderOpen },
   { title: "Time Logs", url: "time", icon: Clock },
+  { title: "Training", url: "training", icon: BookOpen },
   { title: "Coins", url: "coins", icon: Coins },
   { title: "Interns", url: "interns", icon: Users },
   { title: "Analytics", url: "analytics", icon: BarChart3 },
@@ -41,6 +43,7 @@ const internItems = [
   { title: "Overview", url: "overview", icon: LayoutDashboard },
   { title: "My Tasks", url: "tasks", icon: CheckSquare },
   { title: "Projects", url: "projects", icon: FolderOpen },
+  { title: "Training", url: "training", icon: BookOpen },
   { title: "Time Logs", url: "time", icon: Clock },
   { title: "My Coins", url: "my-coins", icon: Coins },
   { title: "Analytics", url: "analytics", icon: BarChart3 },
