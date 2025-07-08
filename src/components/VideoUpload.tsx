@@ -44,13 +44,18 @@ export function VideoUpload({ onVideoUploaded, currentVideoUrl }: VideoUploadPro
       // Upload to Supabase Storage
       const { data, error } = await supabase.storage
         .from('training-videos')
-        .upload(filePath, file, {
-          onUploadProgress: (progress) => {
-            setUploadProgress((progress.loaded / progress.total) * 100);
-          }
-        });
+        .upload(filePath, file);
+      
+      // Simulate progress for better UX
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => Math.min(prev + 10, 90));
+      }, 100);
 
+      clearInterval(progressInterval);
+      
       if (error) throw error;
+
+      setUploadProgress(100);
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage

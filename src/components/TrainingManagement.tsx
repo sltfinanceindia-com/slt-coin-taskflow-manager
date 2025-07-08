@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { VideoUpload } from '@/components/VideoUpload';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -401,18 +402,18 @@ export function TrainingManagement() {
                 rows={3}
               />
             </div>
+            <VideoUpload
+              onVideoUploaded={(videoUrl, duration) => {
+                setFormData({ 
+                  ...formData, 
+                  video_url: videoUrl,
+                  duration_minutes: duration || formData.duration_minutes
+                });
+              }}
+              currentVideoUrl={formData.video_url}
+            />
             <div className="space-y-2">
-              <Label htmlFor="video-url">Video URL *</Label>
-              <Input
-                id="video-url"
-                value={formData.video_url}
-                onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
-                placeholder="https://youtube.com/watch?v=... or embed URL"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="thumbnail-url">Thumbnail URL</Label>
+              <Label htmlFor="thumbnail-url">Thumbnail URL (Optional)</Label>
               <Input
                 id="thumbnail-url"
                 value={formData.thumbnail_url}
