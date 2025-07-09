@@ -1,14 +1,15 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
 };
 
+const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
+
 interface EmailRequest {
-  emailType: 'task_assigned' | 'task_completed' | 'comment_added' | 'coins_earned' | 'login_notification' | 'logout_notification';
+  emailType: string;
   to: string;
   recipientName: string;
   taskTitle?: string;
@@ -18,8 +19,6 @@ interface EmailRequest {
   assignerName?: string;
   commenterName?: string;
 }
-
-const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
 const getEmailTemplate = (data: EmailRequest) => {
   const { emailType, recipientName, taskTitle, coinAmount, assignerName, commenterName } = data;
@@ -112,7 +111,7 @@ const getEmailTemplate = (data: EmailRequest) => {
       }
     </style>
   `;
-  
+
   switch (emailType) {
     case 'task_assigned':
       return {
@@ -343,9 +342,9 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const emailData: EmailRequest = await req.json();
     console.log('Sending email via Resend:', emailData);
-
+    
     const template = getEmailTemplate(emailData);
-
+    
     // Send email using Resend
     const emailResponse = await resend.emails.send({
       from: 'SLT Finance India <info@sltfinanceindia.com>',
@@ -356,33 +355,31 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Email sent successfully via Resend:', emailResponse);
 
-    return new Response(JSON.stringify({ 
-      success: true, 
+    return new Response(JSON.stringify({
+      success: true,
       message: 'Email sent successfully via Resend',
-      id: emailResponse.data?.id 
+      id: emailResponse.data?.id
     }), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        ...corsHeaders,
-      },
+        ...corsHeaders
+      }
     });
 
   } catch (error: any) {
     console.error('Error sending email via Resend:', error);
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message 
-      }),
-      {
-        status: 500,
-        headers: { 
-          'Content-Type': 'application/json', 
-          ...corsHeaders 
-        },
+    
+    return new Response(JSON.stringify({
+      success: false,
+      error: error.message
+    }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
       }
-    );
+    });
   }
 };
 
