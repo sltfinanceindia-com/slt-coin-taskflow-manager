@@ -33,7 +33,7 @@ export function useExamAnswers(attempt: UIUXExamAttempt | null, isOpen: boolean)
           userAnswers.forEach((answer: any) => {
             if (answer.exam_questions && answer.question_options) {
               const questionIndex = answer.exam_questions.question_number - 1; // Convert to 0-based index
-              const selectedOption = answer.question_options.option_number;
+              const selectedOption = answer.question_options.option_number - 1; // Convert to 0-based index for consistency
               answersMap[questionIndex] = selectedOption;
             }
           });
@@ -51,10 +51,15 @@ export function useExamAnswers(attempt: UIUXExamAttempt | null, isOpen: boolean)
   }, [isOpen, attempt]);
 
   const handleAnswerSelect = (questionIndex: number, optionIndex: number) => {
-    setAnswers(prev => ({
-      ...prev,
-      [questionIndex]: optionIndex
-    }));
+    console.log(`Answer selected for question ${questionIndex}: option ${optionIndex}`);
+    setAnswers(prev => {
+      const newAnswers = {
+        ...prev,
+        [questionIndex]: optionIndex
+      };
+      console.log('Updated answers state:', newAnswers);
+      return newAnswers;
+    });
   };
 
   return { answers, handleAnswerSelect };

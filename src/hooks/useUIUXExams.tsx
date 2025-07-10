@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -265,6 +264,7 @@ export const useUIUXExams = () => {
       
       console.log('Starting exam submission with data:', { attemptId, examAnswers });
       console.log('Questions available:', questions.length);
+      console.log('Total answers received:', Object.keys(examAnswers).length);
 
       // Get the attempt
       const { data: attempt } = await supabase
@@ -292,52 +292,57 @@ export const useUIUXExams = () => {
         .eq('attempt_id', attemptId);
 
       // Process each question
-      for (const question of questions) {
-        const questionIndex = question.question_number - 1; // Questions are 1-based, answers are 0-based
-        const userAnswerIndex = examAnswers[questionIndex]; // This is the selected option index (0-based)
+      for (let i = 0; i < questions.length; i++) {
+        const question = questions[i];
+        const userAnswerIndex = examAnswers[i]; // Get answer for this question index
         
-        console.log(`Processing question ${question.question_number}:`, {
-          questionId: question.id,
-          questionIndex,
+        console.log(`Processing question ${i + 1} (ID: ${question.id}):`, {
+          questionIndex: i,
           userAnswerIndex,
-          totalOptions: question.options.length
+          totalOptions: question.options.length,
+          hasAnswer: userAnswerIndex !== undefined && userAnswerIndex !== null
         });
 
         let selectedOption = null;
         let isCorrect = false;
 
         if (userAnswerIndex !== undefined && userAnswerIndex !== null) {
-          // Find the selected option (userAnswerIndex is 0-based array index)
+          // Find the selected option by index
           selectedOption = question.options[userAnswerIndex];
-          isCorrect = selectedOption?.is_correct || false;
           
-          if (isCorrect) {
-            correctAnswers++;
+          if (selectedOption) {
+            isCorrect = selectedOption.is_correct || false;
+            
+            if (isCorrect) {
+              correctAnswers++;
+            }
+
+            console.log(`Question ${i + 1} - User selected option ${userAnswerIndex}:`, {
+              selectedOptionText: selectedOption.option_text,
+              isCorrect,
+              correctOption: question.options.find(opt => opt.is_correct)?.option_text
+            });
+
+            // Insert user answer into database
+            const { error: answerError } = await supabase
+              .from('user_answers')
+              .insert({
+                attempt_id: attemptId,
+                question_id: question.id,
+                selected_option_id: selectedOption.id,
+                is_correct: isCorrect
+              });
+
+            if (answerError) {
+              console.error(`Error inserting answer for question ${i + 1}:`, answerError);
+            } else {
+              console.log(`Successfully inserted answer for question ${i + 1}`);
+            }
+          } else {
+            console.error(`Question ${i + 1} - Selected option index ${userAnswerIndex} not found in options array`);
           }
-
-          console.log(`Question ${question.question_number} - User selected option ${userAnswerIndex}:`, {
-            selectedOption: selectedOption?.option_text,
-            isCorrect,
-            correctOption: question.options.find(opt => opt.is_correct)?.option_text
-          });
         } else {
-          console.log(`Question ${question.question_number} - No answer provided`);
-        }
-
-        // Insert user answer into database
-        const { error: answerError } = await supabase
-          .from('user_answers')
-          .insert({
-            attempt_id: attemptId,
-            question_id: question.id,
-            selected_option_id: selectedOption?.id || null,
-            is_correct: isCorrect
-          });
-
-        if (answerError) {
-          console.error(`Error inserting answer for question ${question.question_number}:`, answerError);
-        } else {
-          console.log(`Successfully inserted answer for question ${question.question_number}`);
+          console.log(`Question ${i + 1} - No answer provided`);
         }
       }
 
@@ -348,7 +353,8 @@ export const useUIUXExams = () => {
         correctAnswers,
         totalQuestions,
         percentage,
-        isPassed
+        isPassed,
+        answersProcessed: Object.keys(examAnswers).length
       });
 
       // Update exam attempt

@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { UIUXExam, UIUXExamAttempt } from '@/hooks/useUIUXExams';
 import { ExamHeader } from './ExamHeader';
@@ -41,6 +40,12 @@ export function ExamTakingScreen({
   const progress = ((currentQuestionIndex + 1) / exam.questions.length) * 100;
   const answeredQuestions = Object.keys(answers).length;
 
+  // Debug log to see answers state
+  useEffect(() => {
+    console.log('Current answers state in ExamTakingScreen:', answers);
+    console.log('Answered questions count:', answeredQuestions);
+  }, [answers, answeredQuestions]);
+
   const handleAnswerChange = (optionIndex: number) => {
     console.log(`Answer selected for question ${currentQuestionIndex}: option ${optionIndex}`);
     onAnswerSelect(currentQuestionIndex, optionIndex);
@@ -48,27 +53,12 @@ export function ExamTakingScreen({
 
   const handleCompleteExam = () => {
     console.log('Submitting exam with answers:', answers);
+    console.log('Total answers to submit:', Object.keys(answers).length);
     onSubmitExam({
       attemptId: attempt.id,
       answers
     });
     setShowConfirmSubmit(false);
-  };
-
-  const nextQuestion = () => {
-    if (currentQuestionIndex < exam.questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    }
-  };
-
-  const prevQuestion = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
-    }
-  };
-
-  const goToQuestion = (index: number) => {
-    setCurrentQuestionIndex(index);
   };
 
   if (!currentQuestion) {
@@ -99,7 +89,7 @@ export function ExamTakingScreen({
                 totalQuestions={exam.questions.length}
                 currentQuestionIndex={currentQuestionIndex}
                 answers={answers}
-                onQuestionSelect={goToQuestion}
+                onQuestionSelect={setCurrentQuestionIndex}
               />
             </div>
 
@@ -115,8 +105,16 @@ export function ExamTakingScreen({
                 <NavigationButtons 
                   currentQuestionIndex={currentQuestionIndex}
                   totalQuestions={exam.questions.length}
-                  onPrevious={prevQuestion}
-                  onNext={nextQuestion}
+                  onPrevious={() => {
+                    if (currentQuestionIndex > 0) {
+                      setCurrentQuestionIndex(currentQuestionIndex - 1);
+                    }
+                  }}
+                  onNext={() => {
+                    if (currentQuestionIndex < exam.questions.length - 1) {
+                      setCurrentQuestionIndex(currentQuestionIndex + 1);
+                    }
+                  }}
                 />
               </div>
             </div>
