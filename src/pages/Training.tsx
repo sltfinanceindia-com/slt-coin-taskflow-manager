@@ -67,16 +67,9 @@ export default function Training() {
       setSelectedExam({ exam, attempt: existingAttempt });
       setExamPopupOpen(true);
     } else {
-      // Start new attempt
-      startExam(examId);
-      // The mutation will handle creating the attempt and we'll show it in the popup
-      setTimeout(() => {
-        const newAttempt = attempts.find(a => a.exam_id === examId && !a.completed_at);
-        if (newAttempt) {
-          setSelectedExam({ exam, attempt: newAttempt });
-          setExamPopupOpen(true);
-        }
-      }, 1000);
+      // Start new attempt - just set the exam and let the popup handle the creation
+      setSelectedExam({ exam, attempt: null });
+      setExamPopupOpen(true);
     }
   };
 
@@ -232,16 +225,7 @@ export default function Training() {
         attempt={selectedExam?.attempt || null}
         open={examPopupOpen}
         onOpenChange={setExamPopupOpen}
-        onStartExam={(examId) => {
-          startExam(examId);
-          // Will need to refresh the attempt after starting
-          setTimeout(() => {
-            const newAttempt = attempts.find(a => a.exam_id === examId && !a.completed_at);
-            if (newAttempt && selectedExam) {
-              setSelectedExam({ ...selectedExam, attempt: newAttempt });
-            }
-          }, 1000);
-        }}
+        onStartExam={startExam}
         onSubmitExam={submitExam}
         isStarting={isStarting}
         isSubmitting={isSubmitting}

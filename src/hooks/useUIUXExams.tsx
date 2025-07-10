@@ -43,8 +43,16 @@ export function useUIUXExams() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as UIUXExam[];
+      
+      // Remove duplicates based on ID (in case there are any)
+      const uniqueExams = data?.filter((exam, index, self) => 
+        index === self.findIndex(e => e.id === exam.id)
+      ) || [];
+      
+      return uniqueExams as UIUXExam[];
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
   // Fetch user's exam attempts
@@ -60,9 +68,17 @@ export function useUIUXExams() {
         .order('started_at', { ascending: false });
 
       if (error) throw error;
-      return data as UIUXExamAttempt[];
+      
+      // Remove duplicates based on ID (in case there are any)
+      const uniqueAttempts = data?.filter((attempt, index, self) => 
+        index === self.findIndex(a => a.id === attempt.id)
+      ) || [];
+      
+      return uniqueAttempts as UIUXExamAttempt[];
     },
     enabled: !!profile?.id,
+    staleTime: 30 * 1000, // 30 seconds
+    gcTime: 2 * 60 * 1000, // 2 minutes
   });
 
   // Start exam mutation
