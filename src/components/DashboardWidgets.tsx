@@ -1,17 +1,20 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Coins, Clock, Target, TrendingUp, Calendar, Award } from 'lucide-react';
+import { Coins, Clock, Target, TrendingUp, Calendar, Award, GraduationCap } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { useTasks } from '@/hooks/useTasks';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
+import { useUIUXExams } from '@/hooks/useUIUXExams';
 
 export function DashboardWidgets() {
   const { profile } = useAuth();
   const { stats } = useProfile();
   const { tasks } = useTasks();
   const { getWeeklyHours } = useTimeLogs();
+  const { attempts } = useUIUXExams();
 
   const myTasks = tasks.filter(task => task.assigned_to === profile?.id);
   const pendingTasks = myTasks.filter(task => 
@@ -27,6 +30,13 @@ export function DashboardWidgets() {
 
   const weeklyHours = getWeeklyHours();
   const completionRate = stats?.totalTasks ? (stats.completedTasks / stats.totalTasks) * 100 : 0;
+
+  // Calculate exam statistics
+  const completedExams = attempts.filter(attempt => attempt.completed_at);
+  const averageScore = completedExams.length > 0 
+    ? completedExams.reduce((sum, attempt) => sum + (attempt.score / attempt.total_questions * 100), 0) / completedExams.length
+    : 0;
+  const latestExam = completedExams[0]; // Most recent exam
 
   const widgets = [
     {
@@ -57,13 +67,13 @@ export function DashboardWidgets() {
       urgent: pendingTasks.some(task => task.priority === 'urgent'),
     },
     {
-      title: 'Completion Rate',
-      value: `${Math.round(completionRate)}%`,
-      icon: Award,
-      color: 'text-green-500',
-      bgColor: 'bg-green-50',
-      change: `${stats?.completedTasks || 0}/${stats?.totalTasks || 0} tasks`,
-      progress: completionRate,
+      title: 'Exam Average',
+      value: `${Math.round(averageScore)}%`,
+      icon: GraduationCap,
+      color: 'text-purple-500',
+      bgColor: 'bg-purple-50',
+      change: `${completedExams.length} completed`,
+      progress: averageScore,
     },
   ];
 
@@ -144,35 +154,55 @@ export function DashboardWidgets() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Weekly Progress
+              <GraduationCap className="h-5 w-5" />
+              Exam Results
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Tasks Completed</span>
-                  <span>{completedThisWeek.length}/7 goal</span>
+              {latestExam && (
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium">Latest Exam</span>
+                    <Badge variant="outline" className="text-xs">
+                      {Math.round((latestExam.score / latestExam.total_questions) * 100)}%
+                    </Badge>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Score: {latestExam.score}/{latestExam.total_questions}</span>
+                      <span className="text-muted-foreground">
+                        {new Date(latestExam.completed_at!).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <Progress 
+                      value={(latestExam.score / latestExam.total_questions) * 100} 
+                      className="h-2" 
+                    />
+                  </div>
                 </div>
-                <Progress value={(completedThisWeek.length / 7) * 100} className="h-2" />
-              </div>
+              )}
               
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span>Hours Logged</span>
-                  <span>{weeklyHours}/40 hours</span>
+                  <span>Overall Average</span>
+                  <span>{Math.round(averageScore)}%</span>
                 </div>
-                <Progress value={(weeklyHours / 40) * 100} className="h-2" />
+                <Progress value={averageScore} className="h-2" />
               </div>
 
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span>Overall Completion</span>
-                  <span>{Math.round(completionRate)}%</span>
+                  <span>Exams Completed</span>
+                  <span>{completedExams.length}</span>
                 </div>
-                <Progress value={completionRate} className="h-2" />
               </div>
+
+              {completedExams.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No exams completed yet
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

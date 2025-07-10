@@ -1017,6 +1017,90 @@ export type Database = {
           },
         ]
       }
+      ui_ux_exam_attempts: {
+        Row: {
+          answers: Json
+          completed_at: string | null
+          exam_id: string
+          id: string
+          score: number
+          started_at: string
+          time_taken_minutes: number | null
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          completed_at?: string | null
+          exam_id: string
+          id?: string
+          score?: number
+          started_at?: string
+          time_taken_minutes?: number | null
+          total_questions?: number
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          completed_at?: string | null
+          exam_id?: string
+          id?: string
+          score?: number
+          started_at?: string
+          time_taken_minutes?: number | null
+          total_questions?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ui_ux_exam_attempts_exam_id_fkey"
+            columns: ["exam_id"]
+            isOneToOne: false
+            referencedRelation: "ui_ux_exams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ui_ux_exam_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ui_ux_exams: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          questions: Json
+          time_limit_minutes: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          questions?: Json
+          time_limit_minutes?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          questions?: Json
+          time_limit_minutes?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
