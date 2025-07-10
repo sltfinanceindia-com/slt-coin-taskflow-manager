@@ -25,7 +25,20 @@ export default function ModernDashboard() {
   const { timeLogs, logTime, isLogging } = useTimeLogs();
   const [activeTab, setActiveTab] = useState('overview');
 
-  // Authentication is now handled at the route level
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <Coins className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
 
   const myTasks = tasks.filter(task => 
     profile?.role === 'admin' ? true : task.assigned_to === profile?.id
@@ -88,22 +101,9 @@ export default function ModernDashboard() {
         return <ProjectManagement />;
       
       case 'training':
-        return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <h3 className="text-2xl font-bold mb-4">Training Section</h3>
-              <p className="text-muted-foreground mb-6">
-                Access comprehensive training materials and complete assessments.
-              </p>
-              <a 
-                href="/training" 
-                className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-              >
-                Go to Training Portal
-              </a>
-            </div>
-          </div>
-        );
+        // Redirect to training page instead of inline component
+        window.location.href = '/training';
+        return null;
       
       case 'time':
         return (

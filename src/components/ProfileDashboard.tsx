@@ -7,8 +7,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { AvatarUpload } from '@/components/AvatarUpload';
-import { UserExamResults } from '@/components/UserExamResults';
-import { AdminExamResults } from '@/components/AdminExamResults';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { Coins, Clock, Target, User, Calendar, Award } from 'lucide-react';
@@ -168,11 +166,10 @@ export function ProfileDashboard() {
         {/* Profile Details */}
         <Tabs defaultValue="personal" className="space-y-4">
           <div className="w-full overflow-x-auto">
-            <TabsList className="grid w-full grid-cols-4 min-w-max">
+            <TabsList className="grid w-full grid-cols-3 min-w-max">
               <TabsTrigger value="personal" className="text-xs sm:text-sm px-2 sm:px-4">Personal Info</TabsTrigger>
               <TabsTrigger value="professional" className="text-xs sm:text-sm px-2 sm:px-4">Professional</TabsTrigger>
               <TabsTrigger value="performance" className="text-xs sm:text-sm px-2 sm:px-4">Performance</TabsTrigger>
-              <TabsTrigger value="exams" className="text-xs sm:text-sm px-2 sm:px-4">UI/UX Exams</TabsTrigger>
             </TabsList>
           </div>
 
@@ -332,10 +329,6 @@ export function ProfileDashboard() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          <TabsContent value="exams" className="space-y-4">
-            {currentProfile?.role === 'admin' ? <AdminExamResults /> : <UserExamResults />}
           </TabsContent>
         </Tabs>
       </main>

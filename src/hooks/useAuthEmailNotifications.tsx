@@ -8,33 +8,12 @@ export function useAuthEmailNotifications() {
   const emailNotifications = useEmailNotifications();
 
   useEffect(() => {
-    // Only set up listener once when component mounts
-    let hasTriggeredLogin = false;
-    
+    // Set up auth state listener for email notifications
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user && !hasTriggeredLogin) {
-          hasTriggeredLogin = true;
-          
-          // Get profile data if not available
-          if (!profile) {
-            const { data: userProfile } = await supabase
-              .from('profiles')
-              .select('email, full_name')
-              .eq('user_id', session.user.id)
-              .single();
-            
-            if (userProfile) {
-              try {
-                await emailNotifications.sendLoginNotificationEmail({
-                  to: userProfile.email,
-                  recipientName: userProfile.full_name,
-                });
-              } catch (error) {
-                console.error('Failed to send login notification:', error);
-              }
-            }
-          } else {
+        if (event === 'SIGNED_IN' && session?.user && profile) {
+          // Send login notification email
+          setTimeout(async () => {
             try {
               await emailNotifications.sendLoginNotificationEmail({
                 to: profile.email,
@@ -43,7 +22,7 @@ export function useAuthEmailNotifications() {
             } catch (error) {
               console.error('Failed to send login notification:', error);
             }
-          }
+          }, 2000); // Delay to ensure profile is loaded
         }
 
         if (event === 'SIGNED_OUT' && profile) {
@@ -61,5 +40,5 @@ export function useAuthEmailNotifications() {
     );
 
     return () => subscription.unsubscribe();
-  }, []); // Empty dependency array to run only once
+  }, [profile, emailNotifications]);
 }
