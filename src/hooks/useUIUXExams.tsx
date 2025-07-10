@@ -9,50 +9,104 @@ export interface UIUXExam {
   id: string;
   title: string;
   description: string | null;
-  questions: any[];
+  questions: UIUXQuestion[];
   time_limit_minutes: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  total_questions: number;
+}
+
+export interface UIUXQuestion {
+  id: string;
+  question_number: number;
+  question_text: string;
+  options: string[];
+  correct_answer?: number; // Only available for admins
 }
 
 export interface UIUXExamAttempt {
   id: string;
   exam_id: string;
   user_id: string;
-  answers: any;
   score: number;
   total_questions: number;
   started_at: string;
   completed_at: string | null;
   time_taken_minutes: number | null;
+  is_passed: boolean | null;
 }
 
 export function useUIUXExams() {
   const { profile } = useAuth();
   const queryClient = useQueryClient();
 
-  // Fetch available exams
+  // Fetch available exams with questions (without correct answers for users)
   const { data: exams = [], isLoading: examsLoading } = useQuery({
     queryKey: ['ui-ux-exams'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: examData, error: examError } = await supabase
         .from('ui_ux_exams')
         .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      
-      // Remove duplicates based on ID (in case there are any)
-      const uniqueExams = data?.filter((exam, index, self) => 
-        index === self.findIndex(e => e.id === exam.id)
-      ) || [];
-      
-      return uniqueExams as UIUXExam[];
+      if (examError) throw examError;
+
+      // Fetch questions and options for each exam
+      const examsWithQuestions = await Promise.all(
+        examData.map(async (exam) => {
+          const { data: questions, error: questionsError } = await supabase
+            .from('exam_questions')
+            .select(`
+              id,
+              question_number,
+              question_text,
+              question_options (
+                option_number,
+                option_text,
+                is_correct
+              )
+            `)
+            .eq('exam_id', exam.id)
+            .order('question_number');
+
+          if (questionsError) throw questionsError;
+
+          const formattedQuestions = questions.map((q: any) => {
+            const options = q.question_options
+              .sort((a: any, b: any) => a.option_number - b.option_number)
+              .map((opt: any) => opt.option_text);
+
+            const question: UIUXQuestion = {
+              id: q.id,
+              question_number: q.question_number,
+              question_text: q.question_text,
+              options
+            };
+
+            // Only include correct answer for admins
+            if (profile?.role === 'admin') {
+              const correctOption = q.question_options.find((opt: any) => opt.is_correct);
+              if (correctOption) {
+                question.correct_answer = correctOption.option_number;
+              }
+            }
+
+            return question;
+          });
+
+          return {
+            ...exam,
+            questions: formattedQuestions
+          } as UIUXExam;
+        })
+      );
+
+      return examsWithQuestions;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
   // Fetch user's exam attempts
@@ -69,33 +123,49 @@ export function useUIUXExams() {
 
       if (error) throw error;
       
-      // Get only the most recent attempt per exam
-      const latestAttempts = data?.reduce((acc, attempt) => {
-        const existing = acc.find(a => a.exam_id === attempt.exam_id);
-        if (!existing || new Date(attempt.started_at) > new Date(existing.started_at)) {
-          return [...acc.filter(a => a.exam_id !== attempt.exam_id), attempt];
-        }
-        return acc;
-      }, [] as any[]) || [];
-      
-      return latestAttempts as UIUXExamAttempt[];
+      return data as UIUXExamAttempt[];
     },
     enabled: !!profile?.id,
-    staleTime: 30 * 1000, // 30 seconds
-    gcTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 30 * 1000,
+    gcTime: 2 * 60 * 1000,
   });
 
-  // Start exam mutation
+  // Start exam mutation - prevents duplicates
   const startExam = useMutation({
     mutationFn: async (examId: string) => {
       if (!profile?.id) throw new Error('User not authenticated');
+
+      // Check for existing incomplete attempt
+      const { data: existingAttempt } = await supabase
+        .from('ui_ux_exam_attempts')
+        .select('*')
+        .eq('exam_id', examId)
+        .eq('user_id', profile.id)
+        .is('completed_at', null)
+        .maybeSingle();
+
+      if (existingAttempt) {
+        return existingAttempt as UIUXExamAttempt;
+      }
+
+      // Check if user has already completed this exam
+      const { data: completedAttempt } = await supabase
+        .from('ui_ux_exam_attempts')
+        .select('*')
+        .eq('exam_id', examId)
+        .eq('user_id', profile.id)
+        .not('completed_at', 'is', null)
+        .maybeSingle();
+
+      if (completedAttempt) {
+        throw new Error('You have already completed this exam');
+      }
 
       const { data, error } = await supabase
         .from('ui_ux_exam_attempts')
         .insert({
           exam_id: examId,
           user_id: profile.id,
-          answers: {},
           score: 0,
           total_questions: 0,
           started_at: new Date().toISOString(),
@@ -113,62 +183,120 @@ export function useUIUXExams() {
         description: "Your exam has been started. Good luck!",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Failed to start exam:', error);
       toast({
         title: "Error",
-        description: "Failed to start exam. Please try again.",
+        description: error.message || "Failed to start exam. Please try again.",
         variant: "destructive",
       });
     },
   });
 
-  // Submit exam mutation
+  // Submit exam mutation with server-side auto-evaluation
   const submitExam = useMutation({
     mutationFn: async ({ 
       attemptId, 
-      answers, 
-      score, 
-      totalQuestions 
+      answers 
     }: { 
       attemptId: string; 
-      answers: any; 
-      score: number; 
-      totalQuestions: number;
+      answers: { [key: number]: number };
     }) => {
-      console.log('Submitting exam with data:', { attemptId, answers, score, totalQuestions });
+      console.log('Submitting exam with data:', { attemptId, answers });
       
-      const { data, error } = await supabase
+      // Get the attempt to find the exam
+      const { data: attempt, error: attemptError } = await supabase
+        .from('ui_ux_exam_attempts')
+        .select('exam_id')
+        .eq('id', attemptId)
+        .single();
+
+      if (attemptError) throw attemptError;
+
+      // Get exam questions with correct answers for scoring
+      const { data: questions, error: questionsError } = await supabase
+        .from('exam_questions')
+        .select(`
+          id,
+          question_number,
+          question_options (
+            option_number,
+            is_correct
+          )
+        `)
+        .eq('exam_id', attempt.exam_id)
+        .order('question_number');
+
+      if (questionsError) throw questionsError;
+
+      // Calculate score and store individual answers
+      let correctCount = 0;
+      const userAnswerPromises = [];
+
+      for (const question of questions) {
+        const questionIndex = question.question_number - 1; // Convert to 0-based index
+        const userSelectedOption = answers[questionIndex];
+        
+        let isCorrect = false;
+        let selectedOptionId = null;
+
+        if (userSelectedOption !== undefined) {
+          const correctOption = question.question_options.find((opt: any) => opt.is_correct);
+          const selectedOption = question.question_options.find((opt: any) => opt.option_number === userSelectedOption);
+          
+          if (selectedOption) {
+            selectedOptionId = selectedOption.id;
+            isCorrect = selectedOption.is_correct;
+            if (isCorrect) correctCount++;
+          }
+        }
+
+        // Store individual answer
+        userAnswerPromises.push(
+          supabase
+            .from('user_answers')
+            .insert({
+              attempt_id: attemptId,
+              question_id: question.id,
+              selected_option_id: selectedOptionId,
+              is_correct: isCorrect
+            })
+        );
+      }
+
+      // Save all user answers
+      await Promise.all(userAnswerPromises);
+
+      // Calculate final score and update attempt
+      const totalQuestions = questions.length;
+      const scorePercentage = Math.round((correctCount / totalQuestions) * 100);
+      const isPassed = scorePercentage >= 70; // Assuming 70% is passing
+
+      const { data: updatedAttempt, error: updateError } = await supabase
         .from('ui_ux_exam_attempts')
         .update({
-          answers,
-          score,
+          score: correctCount,
           total_questions: totalQuestions,
           completed_at: new Date().toISOString(),
-          time_taken_minutes: null, // Will be calculated on frontend
+          is_passed: isPassed
         })
         .eq('id', attemptId)
         .select()
-        .maybeSingle();
+        .single();
 
-      if (error) {
-        console.error('Database error during submission:', error);
-        throw error;
-      }
+      if (updateError) throw updateError;
       
-      if (!data) {
-        console.error('No data returned from update, attemptId:', attemptId);
-        throw new Error('Failed to update exam attempt');
-      }
-      
-      console.log('Exam submitted successfully:', data);
-      return data as UIUXExamAttempt;
+      console.log('Exam submitted successfully:', updatedAttempt);
+      return updatedAttempt as UIUXExamAttempt;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['ui-ux-exam-attempts'] });
+      queryClient.invalidateQueries({ queryKey: ['profile-stats'] });
+      const percentage = Math.round((data.score / data.total_questions) * 100);
       toast({
-        title: "Exam Submitted",
-        description: `Your exam has been submitted. Score: ${data.score}/${data.total_questions}`,
+        title: data.is_passed ? "Exam Passed!" : "Exam Completed",
+        description: `Your score: ${data.score}/${data.total_questions} (${percentage}%)`,
+        variant: data.is_passed ? "default" : "destructive",
       });
     },
     onError: (error) => {

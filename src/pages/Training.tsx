@@ -55,25 +55,8 @@ export default function Training() {
     );
   }
 
-  const handleStartExam = (examId: string) => {
-    const exam = exams.find(e => e.id === examId);
-    if (!exam) return;
-
-    // Check if user already has an attempt for this exam
-    const existingAttempt = attempts.find(a => a.exam_id === examId && !a.completed_at);
-    
-    if (existingAttempt) {
-      // Resume existing attempt
-      setSelectedExam({ exam, attempt: existingAttempt });
-      setExamPopupOpen(true);
-    } else {
-      // Start new attempt - just set the exam and let the popup handle the creation
-      setSelectedExam({ exam, attempt: null });
-      setExamPopupOpen(true);
-    }
-  };
-
   const handleExamClick = (exam: any) => {
+    // Find the most recent attempt for this exam
     const userAttempt = attempts.find(a => a.exam_id === exam.id);
     
     if (userAttempt?.completed_at) {
@@ -85,7 +68,7 @@ export default function Training() {
       setSelectedExam({ exam, attempt: userAttempt });
       setExamPopupOpen(true);
     } else {
-      // Start new exam
+      // Start new exam (will be handled by the popup)
       setSelectedExam({ exam, attempt: null });
       setExamPopupOpen(true);
     }
@@ -96,6 +79,15 @@ export default function Training() {
     if (!attempt) return 'not_started';
     if (attempt.completed_at) return 'completed';
     return 'in_progress';
+  };
+
+  const getExamButtonText = (examId: string) => {
+    const status = getExamStatus(examId);
+    switch (status) {
+      case 'completed': return 'View Results';
+      case 'in_progress': return 'Resume Exam';
+      default: return 'Start Exam';
+    }
   };
 
   // Intern view - show training content
@@ -145,10 +137,7 @@ export default function Training() {
               ) : (
                 exams.map((exam) => {
                   const status = getExamStatus(exam.id);
-                  // Get the most recent completed attempt for this exam
-                  const attempt = attempts
-                    .filter(a => a.exam_id === exam.id && a.completed_at)
-                    .sort((a, b) => new Date(b.completed_at!).getTime() - new Date(a.completed_at!).getTime())[0];
+                  const attempt = attempts.find(a => a.exam_id === exam.id && a.completed_at);
                   
                   return (
                     <Card key={exam.id} className="card-gradient hover-scale cursor-pointer" onClick={() => handleExamClick(exam)}>
@@ -183,7 +172,7 @@ export default function Training() {
                           <div className="flex items-center space-x-2">
                             <GraduationCap className="h-4 w-4 text-primary" />
                             <span className="text-sm">
-                              {exam.questions?.length || 0} questions
+                              {exam.total_questions} questions
                             </span>
                           </div>
                           <div className="flex items-center space-x-2">
@@ -196,7 +185,7 @@ export default function Training() {
                             <div className="flex items-center space-x-2">
                               <Award className="h-4 w-4 text-secondary" />
                               <span className="text-sm">
-                                Score: {attempt.score}/{attempt.total_questions}
+                                Score: {attempt.score}/{attempt.total_questions} ({Math.round((attempt.score / attempt.total_questions) * 100)}%)
                               </span>
                             </div>
                           )}
@@ -208,9 +197,9 @@ export default function Training() {
                             e.stopPropagation();
                             handleExamClick(exam);
                           }}
+                          disabled={status === 'completed'}
                         >
-                          {status === 'completed' ? 'View Results' : 
-                           status === 'in_progress' ? 'Continue Exam' : 'Start Exam'}
+                          {getExamButtonText(exam.id)}
                         </Button>
                       </CardContent>
                     </Card>

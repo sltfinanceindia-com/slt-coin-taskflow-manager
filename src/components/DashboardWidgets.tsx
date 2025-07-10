@@ -20,18 +20,10 @@ export function DashboardWidgets() {
   const pendingTasks = myTasks.filter(task => 
     task.status === 'assigned' || task.status === 'in_progress'
   );
-  const completedThisWeek = myTasks.filter(task => {
-    if (task.status !== 'completed' && task.status !== 'verified') return false;
-    const taskDate = new Date(task.updated_at);
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    return taskDate >= weekAgo;
-  });
 
   const weeklyHours = getWeeklyHours();
-  const completionRate = stats?.totalTasks ? (stats.completedTasks / stats.totalTasks) * 100 : 0;
 
-  // Calculate exam statistics
+  // Calculate exam statistics from attempts
   const completedExams = attempts.filter(attempt => attempt.completed_at);
   const averageScore = completedExams.length > 0 
     ? completedExams.reduce((sum, attempt) => sum + (attempt.score / attempt.total_questions * 100), 0) / completedExams.length
@@ -164,8 +156,11 @@ export function DashboardWidgets() {
                 <div className="p-3 bg-muted/50 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium">Latest Exam</span>
-                    <Badge variant="outline" className="text-xs">
-                      {Math.round((latestExam.score / latestExam.total_questions) * 100)}%
+                    <Badge 
+                      variant={latestExam.is_passed ? "default" : "destructive"} 
+                      className="text-xs"
+                    >
+                      {latestExam.is_passed ? "Passed" : "Failed"}
                     </Badge>
                   </div>
                   <div className="space-y-2">
@@ -191,10 +186,14 @@ export function DashboardWidgets() {
                 <Progress value={averageScore} className="h-2" />
               </div>
 
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Exams Completed</span>
-                  <span>{completedExams.length}</span>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="space-y-1">
+                  <span className="text-muted-foreground">Completed</span>
+                  <p className="font-medium">{completedExams.length}</p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-muted-foreground">Passed</span>
+                  <p className="font-medium">{completedExams.filter(e => e.is_passed).length}</p>
                 </div>
               </div>
 

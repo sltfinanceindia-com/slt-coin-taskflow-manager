@@ -1,3 +1,4 @@
+
 import { UIUXExam, UIUXExamAttempt } from '@/hooks/useUIUXExams';
 import { useExamTimer } from '@/hooks/useExamTimer';
 import { useExamAnswers } from '@/hooks/useExamAnswers';
@@ -11,7 +12,7 @@ interface UIUXExamPopupProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onStartExam: (examId: string) => void;
-  onSubmitExam: (data: { attemptId: string; answers: any; score: number; totalQuestions: number }) => void;
+  onSubmitExam: (data: { attemptId: string; answers: { [key: number]: number } }) => void;
   isStarting: boolean;
   isSubmitting: boolean;
 }
@@ -31,23 +32,10 @@ export function UIUXExamPopup({
   const handleTimeExpired = () => {
     if (attempt && exam) {
       // Auto-submit when time expires
-      const questions = exam.questions || [];
-      let correctAnswers = 0;
-      
-      questions.forEach((question, index) => {
-        const userAnswer = answers[index];
-        const correctAnswer = Number(question.correct_answer);
-        
-        if (userAnswer !== undefined && userAnswer === correctAnswer) {
-          correctAnswers++;
-        }
-      });
-
+      console.log('Time expired, auto-submitting exam');
       onSubmitExam({
         attemptId: attempt.id,
-        answers,
-        score: correctAnswers,
-        totalQuestions: questions.length,
+        answers
       });
     }
   };

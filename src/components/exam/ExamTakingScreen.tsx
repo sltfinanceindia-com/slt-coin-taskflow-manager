@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ interface ExamTakingScreenProps {
   attempt: UIUXExamAttempt;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmitExam: (data: { attemptId: string; answers: any; score: number; totalQuestions: number }) => void;
+  onSubmitExam: (data: { attemptId: string; answers: { [key: number]: number } }) => void;
   isSubmitting: boolean;
   answers: { [key: number]: number };
   onAnswerSelect: (questionIndex: number, optionIndex: number) => void;
@@ -54,40 +55,11 @@ export function ExamTakingScreen({
   };
 
   const handleSubmitExam = () => {
-    // Calculate score
-    let correctAnswers = 0;
-    console.log('Starting score calculation...');
-    console.log('Total questions:', questions.length);
-    console.log('User answers:', answers);
+    console.log('Submitting exam with answers:', answers);
     
-    questions.forEach((question, index) => {
-      const userAnswer = answers[index];
-      const correctAnswer = Number(question.correct_answer);
-      
-      console.log(`Question ${index + 1}:`, {
-        question: question.question,
-        userSelected: userAnswer,
-        userSelectedText: question.options?.[userAnswer],
-        correctAnswer: correctAnswer,
-        correctAnswerText: question.options?.[correctAnswer],
-        isCorrect: userAnswer === correctAnswer
-      });
-      
-      if (userAnswer !== undefined && userAnswer === correctAnswer) {
-        correctAnswers++;
-        console.log(`✓ Question ${index + 1} correct!`);
-      } else {
-        console.log(`✗ Question ${index + 1} incorrect`);
-      }
-    });
-
-    console.log(`Final calculated score: ${correctAnswers}/${questions.length}`);
-
     onSubmitExam({
       attemptId: attempt.id,
-      answers,
-      score: correctAnswers,
-      totalQuestions: questions.length,
+      answers
     });
   };
 
@@ -120,7 +92,7 @@ export function ExamTakingScreen({
           {currentQuestion && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">{currentQuestion.question}</CardTitle>
+                <CardTitle className="text-lg">{currentQuestion.question_text}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {currentQuestion.options?.map((option: string, index: number) => (

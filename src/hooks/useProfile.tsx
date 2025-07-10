@@ -9,6 +9,12 @@ export interface ProfileStats {
   totalCoins: number;
   weeklyHours: number;
   monthlyHours: number;
+  examStats: {
+    totalExams: number;
+    completedExams: number;
+    averageScore: number;
+    passedExams: number;
+  };
 }
 
 export function useProfile(userId?: string) {
@@ -58,6 +64,12 @@ export function useProfile(userId?: string) {
         .select('hours_worked, date_logged')
         .eq('user_id', targetId);
 
+      // Get exam stats
+      const { data: examAttempts } = await supabase
+        .from('ui_ux_exam_attempts')
+        .select('score, total_questions, is_passed, completed_at')
+        .eq('user_id', targetId);
+
       const totalTasks = tasks?.length || 0;
       const completedTasks = tasks?.filter(t => t.status === 'completed' || t.status === 'verified').length || 0;
       const totalCoins = coinTransactions?.reduce((sum, t) => sum + t.coins_earned, 0) || 0;
@@ -75,12 +87,28 @@ export function useProfile(userId?: string) {
         new Date(log.date_logged) >= oneMonthAgo
       ).reduce((sum, log) => sum + Number(log.hours_worked), 0) || 0;
 
+      // Calculate exam stats
+      const completedExamAttempts = examAttempts?.filter(attempt => attempt.completed_at) || [];
+      const totalExams = completedExamAttempts.length;
+      const passedExams = completedExamAttempts.filter(attempt => attempt.is_passed).length;
+      const averageScore = totalExams > 0 
+        ? completedExamAttempts.reduce((sum, attempt) => {
+            return sum + (attempt.score / attempt.total_questions * 100);
+          }, 0) / totalExams
+        : 0;
+
       return {
         totalTasks,
         completedTasks,
         totalCoins,
         weeklyHours,
         monthlyHours,
+        examStats: {
+          totalExams,
+          completedExams: totalExams,
+          averageScore: Math.round(averageScore),
+          passedExams
+        }
       } as ProfileStats;
     },
     enabled: !!(userId || currentProfile?.id),
