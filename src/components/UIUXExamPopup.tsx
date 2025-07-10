@@ -66,13 +66,20 @@ export function UIUXExamPopup({
     return () => clearInterval(timer);
   }, [timeLeft]);
 
-  // Reset state when dialog opens
+  // Reset state when dialog opens and load existing answers if resuming
   useEffect(() => {
     if (open) {
       setCurrentQuestionIndex(0);
-      setAnswers({});
+      
+      // If resuming an existing attempt, load the answers
+      if (attempt?.answers && Object.keys(attempt.answers).length > 0) {
+        console.log('Loading existing answers:', attempt.answers);
+        setAnswers(attempt.answers);
+      } else {
+        setAnswers({});
+      }
     }
-  }, [open]);
+  }, [open, attempt]);
 
   const handleAnswerSelect = (optionIndex: number) => {
     setAnswers(prev => ({
@@ -100,18 +107,32 @@ export function UIUXExamPopup({
 
     // Calculate score
     let correctAnswers = 0;
+    console.log('Starting score calculation...');
+    console.log('Total questions:', questions.length);
+    console.log('User answers:', answers);
+    
     questions.forEach((question, index) => {
       const userAnswer = answers[index];
       const correctAnswer = question.correct_answer;
       
-      console.log(`Question ${index + 1}: User selected ${userAnswer}, Correct answer is ${correctAnswer}`);
+      console.log(`Question ${index + 1}:`, {
+        question: question.question,
+        userSelected: userAnswer,
+        userSelectedText: question.options?.[userAnswer],
+        correctAnswer: correctAnswer,
+        correctAnswerText: question.options?.[correctAnswer],
+        isCorrect: userAnswer === correctAnswer
+      });
       
       if (userAnswer !== undefined && userAnswer === correctAnswer) {
         correctAnswers++;
+        console.log(`✓ Question ${index + 1} correct!`);
+      } else {
+        console.log(`✗ Question ${index + 1} incorrect`);
       }
     });
 
-    console.log(`Final score: ${correctAnswers}/${questions.length}`);
+    console.log(`Final calculated score: ${correctAnswers}/${questions.length}`);
 
     onSubmitExam({
       attemptId: attempt.id,

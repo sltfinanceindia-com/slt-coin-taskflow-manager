@@ -626,11 +626,13 @@ export type Database = {
           assessment_id: string
           attempt_number: number | null
           completed_at: string | null
+          created_at: string | null
           id: string
           is_passed: boolean | null
           max_score: number
           score: number
           started_at: string | null
+          updated_at: string | null
           user_id: string
         }
         Insert: {
@@ -638,11 +640,13 @@ export type Database = {
           assessment_id: string
           attempt_number?: number | null
           completed_at?: string | null
+          created_at?: string | null
           id?: string
           is_passed?: boolean | null
           max_score?: number
           score?: number
           started_at?: string | null
+          updated_at?: string | null
           user_id: string
         }
         Update: {
@@ -650,11 +654,13 @@ export type Database = {
           assessment_id?: string
           attempt_number?: number | null
           completed_at?: string | null
+          created_at?: string | null
           id?: string
           is_passed?: boolean | null
           max_score?: number
           score?: number
           started_at?: string | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: [
