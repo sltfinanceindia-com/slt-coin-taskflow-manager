@@ -289,117 +289,6 @@ export type Database = {
           },
         ]
       }
-      quiz_attempts: {
-        Row: {
-          answers: Json
-          completed_at: string | null
-          created_at: string
-          id: string
-          max_score: number
-          quiz_template_id: string
-          score: number
-          started_at: string
-          task_id: string | null
-          time_taken_seconds: number | null
-          user_id: string
-        }
-        Insert: {
-          answers?: Json
-          completed_at?: string | null
-          created_at?: string
-          id?: string
-          max_score?: number
-          quiz_template_id: string
-          score?: number
-          started_at?: string
-          task_id?: string | null
-          time_taken_seconds?: number | null
-          user_id: string
-        }
-        Update: {
-          answers?: Json
-          completed_at?: string | null
-          created_at?: string
-          id?: string
-          max_score?: number
-          quiz_template_id?: string
-          score?: number
-          started_at?: string
-          task_id?: string | null
-          time_taken_seconds?: number | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quiz_attempts_quiz_template_id_fkey"
-            columns: ["quiz_template_id"]
-            isOneToOne: false
-            referencedRelation: "quiz_templates"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quiz_attempts_task_id_fkey"
-            columns: ["task_id"]
-            isOneToOne: false
-            referencedRelation: "tasks"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quiz_attempts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      quiz_templates: {
-        Row: {
-          created_at: string
-          created_by: string
-          description: string | null
-          id: string
-          is_published: boolean
-          questions: Json
-          time_per_question_seconds: number
-          title: string
-          total_questions: number
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          created_by: string
-          description?: string | null
-          id?: string
-          is_published?: boolean
-          questions?: Json
-          time_per_question_seconds?: number
-          title: string
-          total_questions?: number
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string
-          description?: string | null
-          id?: string
-          is_published?: boolean
-          questions?: Json
-          time_per_question_seconds?: number
-          title?: string
-          total_questions?: number
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quiz_templates_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       session_logs: {
         Row: {
           created_at: string
@@ -566,13 +455,6 @@ export type Database = {
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "tasks_quiz_template_id_fkey"
-            columns: ["quiz_template_id"]
-            isOneToOne: false
-            referencedRelation: "quiz_templates"
-            referencedColumns: ["id"]
-          },
         ]
       }
       time_logs: {
@@ -616,132 +498,6 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      training_assessment_attempts: {
-        Row: {
-          answers: Json
-          assessment_id: string
-          attempt_number: number | null
-          completed_at: string | null
-          created_at: string | null
-          id: string
-          is_passed: boolean | null
-          max_score: number
-          score: number
-          started_at: string | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          answers?: Json
-          assessment_id: string
-          attempt_number?: number | null
-          completed_at?: string | null
-          created_at?: string | null
-          id?: string
-          is_passed?: boolean | null
-          max_score?: number
-          score?: number
-          started_at?: string | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          answers?: Json
-          assessment_id?: string
-          attempt_number?: number | null
-          completed_at?: string | null
-          created_at?: string | null
-          id?: string
-          is_passed?: boolean | null
-          max_score?: number
-          score?: number
-          started_at?: string | null
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "training_assessment_attempts_assessment_id_fkey"
-            columns: ["assessment_id"]
-            isOneToOne: false
-            referencedRelation: "training_assessments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "training_assessment_attempts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      training_assessments: {
-        Row: {
-          created_at: string | null
-          created_by: string
-          description: string | null
-          id: string
-          instructions: string | null
-          is_published: boolean | null
-          max_attempts: number | null
-          order_index: number | null
-          passing_score: number | null
-          questions: Json
-          section_id: string
-          time_limit_minutes: number | null
-          title: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          created_by: string
-          description?: string | null
-          id?: string
-          instructions?: string | null
-          is_published?: boolean | null
-          max_attempts?: number | null
-          order_index?: number | null
-          passing_score?: number | null
-          questions?: Json
-          section_id: string
-          time_limit_minutes?: number | null
-          title: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          created_by?: string
-          description?: string | null
-          id?: string
-          instructions?: string | null
-          is_published?: boolean | null
-          max_attempts?: number | null
-          order_index?: number | null
-          passing_score?: number | null
-          questions?: Json
-          section_id?: string
-          time_limit_minutes?: number | null
-          title?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "training_assessments_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "training_assessments_section_id_fkey"
-            columns: ["section_id"]
-            isOneToOne: false
-            referencedRelation: "training_sections"
             referencedColumns: ["id"]
           },
         ]
@@ -1029,6 +785,7 @@ export type Database = {
           completed_at: string | null
           exam_id: string
           id: string
+          is_passed: boolean | null
           score: number
           started_at: string
           time_taken_minutes: number | null
@@ -1040,6 +797,7 @@ export type Database = {
           completed_at?: string | null
           exam_id: string
           id?: string
+          is_passed?: boolean | null
           score?: number
           started_at?: string
           time_taken_minutes?: number | null
@@ -1051,6 +809,7 @@ export type Database = {
           completed_at?: string | null
           exam_id?: string
           id?: string
+          is_passed?: boolean | null
           score?: number
           started_at?: string
           time_taken_minutes?: number | null
@@ -1080,6 +839,7 @@ export type Database = {
           description: string | null
           id: string
           is_active: boolean
+          passing_score: number
           questions: Json
           time_limit_minutes: number
           title: string
@@ -1090,6 +850,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          passing_score?: number
           questions?: Json
           time_limit_minutes?: number
           title: string
@@ -1100,6 +861,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          passing_score?: number
           questions?: Json
           time_limit_minutes?: number
           title?: string
