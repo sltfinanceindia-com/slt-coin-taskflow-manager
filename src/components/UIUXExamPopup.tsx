@@ -56,18 +56,21 @@ export function UIUXExamPopup({ exam, isOpen, onClose }: UIUXExamPopupProps) {
     if (!exam) return;
 
     try {
+      console.log('Starting exam:', exam.id);
       const attempt = await startExam({ examId: exam.id });
       setCurrentAttempt(attempt);
       setExamStarted(true);
       setTimeLeft(exam.time_limit_minutes * 60); // Convert to seconds
       setCurrentQuestionIndex(0);
       setAnswers({});
+      console.log('Exam started successfully');
     } catch (error) {
       console.error('Error starting exam:', error);
     }
   };
 
   const handleAnswerSelect = (questionId: string, answerIndex: number) => {
+    console.log('Answer selected:', questionId, answerIndex);
     setAnswers(prev => ({
       ...prev,
       [questionId]: answerIndex
@@ -93,6 +96,7 @@ export function UIUXExamPopup({ exam, isOpen, onClose }: UIUXExamPopupProps) {
         score++;
       }
     });
+    console.log('Calculated score:', score, 'out of', questions.length);
     return score;
   };
 
@@ -100,6 +104,7 @@ export function UIUXExamPopup({ exam, isOpen, onClose }: UIUXExamPopupProps) {
     if (!currentAttempt || !exam) return;
 
     try {
+      console.log('Submitting exam...');
       const score = calculateScore();
       const timeTaken = Math.ceil((exam.time_limit_minutes * 60 - timeLeft) / 60);
 
@@ -112,6 +117,7 @@ export function UIUXExamPopup({ exam, isOpen, onClose }: UIUXExamPopupProps) {
       });
 
       setExamCompleted(true);
+      console.log('Exam submitted successfully');
     } catch (error) {
       console.error('Error submitting exam:', error);
     }

@@ -46,6 +46,7 @@ export default function Training() {
   }
 
   const handleStartExam = (exam: any) => {
+    console.log('Opening exam popup for:', exam);
     setSelectedExam(exam);
     setIsExamPopupOpen(true);
   };
@@ -167,6 +168,7 @@ export default function Training() {
           exam={selectedExam}
           isOpen={isExamPopupOpen}
           onClose={() => {
+            console.log('Closing exam popup');
             setIsExamPopupOpen(false);
             setSelectedExam(null);
           }}

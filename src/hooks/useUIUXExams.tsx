@@ -34,13 +34,18 @@ export function useUIUXExams() {
   const examsQuery = useQuery({
     queryKey: ['ui-ux-exams'],
     queryFn: async () => {
+      console.log('Fetching UI/UX exams...');
       const { data, error } = await supabase
         .from('ui_ux_exams')
         .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching exams:', error);
+        throw error;
+      }
+      console.log('Fetched exams:', data);
       return data as UIUXExam[];
     },
     enabled: !!profile,
@@ -51,13 +56,18 @@ export function useUIUXExams() {
     queryFn: async () => {
       if (!profile?.id) return [];
       
+      console.log('Fetching exam attempts for user:', profile.id);
       const { data, error } = await supabase
         .from('ui_ux_exam_attempts')
         .select('*')
         .eq('user_id', profile.id)
         .order('started_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching attempts:', error);
+        throw error;
+      }
+      console.log('Fetched attempts:', data);
       return data as UIUXExamAttempt[];
     },
     enabled: !!profile?.id,
@@ -69,6 +79,7 @@ export function useUIUXExams() {
         throw new Error('User not authenticated');
       }
 
+      console.log('Starting exam:', examId, 'for user:', profile.id);
       const { data, error } = await supabase
         .from('ui_ux_exam_attempts')
         .insert([{
@@ -79,7 +90,11 @@ export function useUIUXExams() {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error starting exam:', error);
+        throw error;
+      }
+      console.log('Started exam attempt:', data);
       return data as UIUXExamAttempt;
     },
     onSuccess: () => {
@@ -87,6 +102,7 @@ export function useUIUXExams() {
       toast.success('Exam started successfully');
     },
     onError: (error: any) => {
+      console.error('Start exam error:', error);
       toast.error(error.message || 'Failed to start exam');
     },
   });
@@ -105,6 +121,7 @@ export function useUIUXExams() {
       totalQuestions: number;
       timeTaken: number;
     }) => {
+      console.log('Submitting exam:', { attemptId, answers, score, totalQuestions, timeTaken });
       const { data, error } = await supabase
         .from('ui_ux_exam_attempts')
         .update({
@@ -118,7 +135,11 @@ export function useUIUXExams() {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error submitting exam:', error);
+        throw error;
+      }
+      console.log('Submitted exam:', data);
       return data as UIUXExamAttempt;
     },
     onSuccess: (data) => {
@@ -127,6 +148,7 @@ export function useUIUXExams() {
       toast.success(`Exam submitted! Your score: ${data.score}/${data.total_questions} (${percentage}%)`);
     },
     onError: (error: any) => {
+      console.error('Submit exam error:', error);
       toast.error(error.message || 'Failed to submit exam');
     },
   });
