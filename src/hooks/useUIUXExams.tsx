@@ -212,7 +212,50 @@ export function useUIUXExams() {
       attemptId: string; 
       answers: { [key: number]: number }; 
     }) => {
-      // Calculate score based on correct answers
+      if (!examWithQuestions?.questions) {
+        throw new Error('Exam questions not available');
+      }
+
+      console.log('Submitting exam with answers:', answers);
+      console.log('Exam questions:', examWithQuestions.questions.length);
+
+      // First, save all the answers to the database
+      const answerPromises = Object.entries(answers).map(async ([questionIndex, optionIndex]) => {
+        const questionIndexNum = parseInt(questionIndex);
+        const question = examWithQuestions.questions[questionIndexNum];
+        const selectedOption = question.options[optionIndex];
+        
+        if (!question || !selectedOption) {
+          console.error(`Question or option not found for index ${questionIndex}, option ${optionIndex}`);
+          return null;
+        }
+
+        console.log(`Saving answer for question ${question.question_number}: ${selectedOption.option_text} (correct: ${selectedOption.is_correct})`);
+
+        const { data, error } = await supabase
+          .from('user_answers')
+          .upsert({
+            attempt_id: attemptId,
+            question_id: question.id,
+            selected_option_id: selectedOption.id,
+            is_correct: selectedOption.is_correct,
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error saving answer:', error);
+          throw error;
+        }
+
+        return data;
+      });
+
+      // Wait for all answers to be saved
+      const savedAnswers = await Promise.all(answerPromises);
+      console.log('Saved answers:', savedAnswers.filter(Boolean).length);
+
+      // Now calculate score based on saved answers
       const { data: userAnswers, error: answersError } = await supabase
         .from('user_answers')
         .select('is_correct')
@@ -223,7 +266,10 @@ export function useUIUXExams() {
       const correctAnswers = userAnswers.filter(answer => answer.is_correct).length;
       const totalQuestions = examWithQuestions?.total_questions || 0;
       const score = correctAnswers;
-      const isPassed = score >= Math.ceil((examWithQuestions?.passing_score || 70) * totalQuestions / 100);
+      const percentage = Math.round((score / totalQuestions) * 100);
+      const isPassed = percentage >= (examWithQuestions?.passing_score || 70);
+
+      console.log(`Score calculation: ${correctAnswers}/${totalQuestions} = ${percentage}% (passed: ${isPassed})`);
 
       // Calculate time taken
       const { data: attempt, error: attemptError } = await supabase
