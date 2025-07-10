@@ -16,6 +16,9 @@ import { InternManagement } from '@/components/InternManagement';
 import { CoinManagement } from '@/components/CoinManagement';
 import { MyCoins } from '@/components/MyCoins';
 import { DashboardWidgets } from '@/components/DashboardWidgets';
+import { EnhancedOverview } from '@/components/EnhancedOverview';
+import { QuizCreator } from '@/components/QuizCreator';
+import { useSessionLogs } from '@/hooks/useSessionLogs';
 import { ProjectManagement } from '@/components/ProjectManagement';
 import { Coins, LogOut, User, Clock, CheckCircle, BarChart3, Users, Plus, UserCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -23,7 +26,8 @@ import { toast } from '@/hooks/use-toast';
 
 export default function Dashboard() {
   const { user, profile, signOut, loading } = useAuth();
-  const { tasks, createTask, updateTaskStatus, verifyTask, isCreating } = useTasks();
+  const { tasks, createTask, updateTaskStatus, verifyTask, updateTask, isCreating, isUpdating } = useTasks();
+  const { startSession } = useSessionLogs();
   const { timeLogs, logTime, isLogging, getWeeklyHours } = useTimeLogs();
   const { getTotalEarned, getPendingCoins } = useCoinTransactions();
   const [activeTab, setActiveTab] = useState('overview');
@@ -158,7 +162,7 @@ export default function Dashboard() {
           </div>
 
           <TabsContent value="overview">
-            <DashboardWidgets />
+            <EnhancedOverview />
           </TabsContent>
 
           <TabsContent value="tasks">
@@ -168,7 +172,10 @@ export default function Dashboard() {
                   {profile?.role === 'admin' ? 'All Tasks' : 'My Tasks'}
                 </h3>
                 {profile?.role === 'admin' && (
-                  <CreateTaskDialog onCreateTask={createTask} isCreating={isCreating} />
+                  <div className="flex gap-2">
+                    <CreateTaskDialog onCreateTask={createTask} isCreating={isCreating} />
+                    <QuizCreator />
+                  </div>
                 )}
               </div>
               
@@ -180,6 +187,8 @@ export default function Dashboard() {
                       task={task}
                       onUpdateStatus={updateTaskStatus}
                       onVerifyTask={verifyTask}
+                      onUpdateTask={updateTask}
+                      isUpdating={isUpdating}
                     />
                   ))
                 ) : (

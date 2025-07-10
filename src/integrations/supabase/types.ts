@@ -251,6 +251,155 @@ export type Database = {
           },
         ]
       }
+      quiz_attempts: {
+        Row: {
+          answers: Json
+          completed_at: string | null
+          created_at: string
+          id: string
+          max_score: number
+          quiz_template_id: string
+          score: number
+          started_at: string
+          task_id: string | null
+          time_taken_seconds: number | null
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          max_score?: number
+          quiz_template_id: string
+          score?: number
+          started_at?: string
+          task_id?: string | null
+          time_taken_seconds?: number | null
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          max_score?: number
+          quiz_template_id?: string
+          score?: number
+          started_at?: string
+          task_id?: string | null
+          time_taken_seconds?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_quiz_template_id_fkey"
+            columns: ["quiz_template_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_templates: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_published: boolean
+          questions: Json
+          time_per_question_seconds: number
+          title: string
+          total_questions: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          questions?: Json
+          time_per_question_seconds?: number
+          title: string
+          total_questions?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          questions?: Json
+          time_per_question_seconds?: number
+          title?: string
+          total_questions?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_logs: {
+        Row: {
+          created_at: string
+          id: string
+          login_time: string
+          logout_time: string | null
+          session_duration_minutes: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          login_time?: string
+          logout_time?: string | null
+          session_duration_minutes?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          login_time?: string
+          logout_time?: string | null
+          session_duration_minutes?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_comments: {
         Row: {
           attachments: Json | null
@@ -310,10 +459,12 @@ export type Database = {
           id: string
           priority: Database["public"]["Enums"]["task_priority"] | null
           project_id: string | null
+          quiz_template_id: string | null
           slt_coin_value: number
           start_date: string | null
           status: Database["public"]["Enums"]["task_status"]
           submission_notes: string | null
+          task_type: string | null
           title: string
           updated_at: string
         }
@@ -327,10 +478,12 @@ export type Database = {
           id?: string
           priority?: Database["public"]["Enums"]["task_priority"] | null
           project_id?: string | null
+          quiz_template_id?: string | null
           slt_coin_value?: number
           start_date?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           submission_notes?: string | null
+          task_type?: string | null
           title: string
           updated_at?: string
         }
@@ -344,10 +497,12 @@ export type Database = {
           id?: string
           priority?: Database["public"]["Enums"]["task_priority"] | null
           project_id?: string | null
+          quiz_template_id?: string | null
           slt_coin_value?: number
           start_date?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           submission_notes?: string | null
+          task_type?: string | null
           title?: string
           updated_at?: string
         }
@@ -371,6 +526,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_quiz_template_id_fkey"
+            columns: ["quiz_template_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_templates"
             referencedColumns: ["id"]
           },
         ]

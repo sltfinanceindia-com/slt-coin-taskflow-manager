@@ -2,20 +2,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Coins, Clock, User, Calendar, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { Coins, Clock, User, Calendar, AlertCircle, CheckCircle, XCircle, Edit, Eye } from 'lucide-react';
 import { Task } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { TaskComments } from '@/components/TaskComments';
+import { TaskEditDialog } from '@/components/TaskEditDialog';
+import { TaskDetailDialog } from '@/components/TaskDetailDialog';
 
 interface TaskCardProps {
   task: Task;
   onUpdateStatus: (taskId: string, status: Task['status'], submissionNotes?: string) => void;
   onVerifyTask: (taskId: string, approve: boolean, feedback?: string, coinValue?: number) => void;
+  onUpdateTask?: (taskId: string, updates: Partial<Task>) => void;
+  isUpdating?: boolean;
 }
 
-export function TaskCard({ task, onUpdateStatus, onVerifyTask }: TaskCardProps) {
+export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isUpdating }: TaskCardProps) {
   const { profile } = useAuth();
   const [submissionNotes, setSubmissionNotes] = useState('');
   const [adminFeedback, setAdminFeedback] = useState('');
@@ -80,9 +84,23 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask }: TaskCardProps) 
               </Badge>
             </div>
           </div>
-          <div className="flex items-center space-x-2 text-coin-gold">
-            <Coins className="h-5 w-5" />
-            <span className="font-bold">{task.slt_coin_value}</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center space-x-2 text-coin-gold">
+              <Coins className="h-5 w-5" />
+              <span className="font-bold">{task.slt_coin_value}</span>
+            </div>
+            {isAdmin && (
+              <div className="flex gap-2">
+                <TaskDetailDialog task={task} />
+                {onUpdateTask && (
+                  <TaskEditDialog 
+                    task={task} 
+                    onUpdateTask={onUpdateTask} 
+                    isUpdating={isUpdating || false} 
+                  />
+                )}
+              </div>
+            )}
           </div>
         </div>
         
