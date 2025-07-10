@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate } from 'react-router-dom';
 import { TrainingManagement } from '@/components/TrainingManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TrendingUp, BookOpen, FileText } from 'lucide-react';
@@ -43,9 +42,7 @@ export default function Training() {
     return <LoadingSpinner />;
   }
 
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
+  // Authentication is now handled at the route level
 
   // Admin view - show training management
   if (profile?.role === 'admin') {
