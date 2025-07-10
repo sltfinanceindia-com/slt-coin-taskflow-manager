@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useEmailNotifications } from '@/hooks/useEmailNotifications';
@@ -26,19 +25,15 @@ export function useAuthEmailNotifications() {
           }, 2000); // Delay to ensure profile is loaded
         }
 
-        // For logout, we need to capture profile data before it's cleared
-        if (event === 'SIGNED_OUT') {
-          // Only send logout email if we have profile data from before logout
-          const currentProfile = profile;
-          if (currentProfile) {
-            try {
-              await emailNotifications.sendLogoutNotificationEmail({
-                to: currentProfile.email,
-                recipientName: currentProfile.full_name,
-              });
-            } catch (error) {
-              console.error('Failed to send logout notification:', error);
-            }
+        if (event === 'SIGNED_OUT' && profile) {
+          // Send logout notification email
+          try {
+            await emailNotifications.sendLogoutNotificationEmail({
+              to: profile.email,
+              recipientName: profile.full_name,
+            });
+          } catch (error) {
+            console.error('Failed to send logout notification:', error);
           }
         }
       }

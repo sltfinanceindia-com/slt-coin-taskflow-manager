@@ -1,4 +1,3 @@
-
 import { Moon, Sun, Bell, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -24,31 +23,18 @@ export function AppHeader() {
   const pendingCoins = getPendingCoins()
 
   const handleSignOut = async () => {
-    try {
-      console.log('Starting sign out process...');
-      const { error } = await signOut();
-      
-      if (error) {
-        console.error('Sign out error:', error);
-        toast({
-          title: "Sign Out Failed",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        console.log('Sign out successful');
-        toast({
-          title: "Signed Out",
-          description: "You have been successfully signed out.",
-        });
-      }
-    } catch (error) {
-      console.error('Unexpected sign out error:', error);
+    const { error } = await signOut()
+    if (error) {
       toast({
         title: "Sign Out Failed",
-        description: "An unexpected error occurred during sign out.",
+        description: error.message,
         variant: "destructive",
-      });
+      })
+    } else {
+      toast({
+        title: "Signed Out",
+        description: "You have been successfully signed out.",
+      })
     }
   }
 
@@ -124,7 +110,7 @@ export function AppHeader() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Sign Out</span>
+                  <span>Log out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
