@@ -223,10 +223,16 @@ export function useUIUXExams() {
       const answerPromises = Object.entries(answers).map(async ([questionIndex, optionIndex]) => {
         const questionIndexNum = parseInt(questionIndex);
         const question = examWithQuestions.questions[questionIndexNum];
-        const selectedOption = question.options[optionIndex];
         
-        if (!question || !selectedOption) {
-          console.error(`Question or option not found for index ${questionIndex}, option ${optionIndex}`);
+        if (!question) {
+          console.error(`Question not found for index ${questionIndex}`);
+          return null;
+        }
+
+        const selectedOption = question.options.find(opt => opt.option_number === optionIndex + 1);
+        
+        if (!selectedOption) {
+          console.error(`Option not found for question ${questionIndex}, option ${optionIndex}`);
           return null;
         }
 
@@ -239,6 +245,8 @@ export function useUIUXExams() {
             question_id: question.id,
             selected_option_id: selectedOption.id,
             is_correct: selectedOption.is_correct,
+          }, {
+            onConflict: 'attempt_id,question_id'
           })
           .select()
           .single();
@@ -253,18 +261,12 @@ export function useUIUXExams() {
 
       // Wait for all answers to be saved
       const savedAnswers = await Promise.all(answerPromises);
-      console.log('Saved answers:', savedAnswers.filter(Boolean).length);
+      const validAnswers = savedAnswers.filter(Boolean);
+      console.log('Saved answers:', validAnswers.length);
 
-      // Now calculate score based on saved answers
-      const { data: userAnswers, error: answersError } = await supabase
-        .from('user_answers')
-        .select('is_correct')
-        .eq('attempt_id', attemptId);
-
-      if (answersError) throw answersError;
-
-      const correctAnswers = userAnswers.filter(answer => answer.is_correct).length;
-      const totalQuestions = examWithQuestions?.total_questions || 0;
+      // Calculate score directly from the answers we just saved
+      const correctAnswers = validAnswers.filter(answer => answer.is_correct).length;
+      const totalQuestions = examWithQuestions?.total_questions || validAnswers.length;
       const score = correctAnswers;
       const percentage = Math.round((score / totalQuestions) * 100);
       const isPassed = percentage >= (examWithQuestions?.passing_score || 70);
