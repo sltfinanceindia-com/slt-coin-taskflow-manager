@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Clock, CheckCircle } from 'lucide-react';
 import { useUIUXExams, UIUXExam, UIUXExamAttempt } from '@/hooks/useUIUXExams';
-import { toast } from 'sonner';
 
 interface UIUXExamPopupProps {
   exam: UIUXExam | null;
