@@ -1,5 +1,5 @@
 
-import { UIUXExam, UIUXExamAttempt } from '@/hooks/useUIUXExams';
+import { UIUXExam, UIUXExamAttempt, useUIUXExams } from '@/hooks/useUIUXExams';
 import { useExamTimer } from '@/hooks/useExamTimer';
 import { useExamAnswers } from '@/hooks/useExamAnswers';
 import { ExamStartScreen } from '@/components/exam/ExamStartScreen';
@@ -27,6 +27,7 @@ export function UIUXExamPopup({
   isStarting,
   isSubmitting,
 }: UIUXExamPopupProps) {
+  const { examWithQuestions } = useUIUXExams();
   const { answers, handleAnswerSelect } = useExamAnswers(attempt, open);
   
   const handleTimeExpired = () => {
@@ -68,10 +69,10 @@ export function UIUXExamPopup({
   }
 
   // Show exam taking interface
-  if (exam) {
+  if (exam && examWithQuestions && examWithQuestions.questions?.length > 0) {
     return (
       <ExamTakingScreen
-        exam={exam}
+        exam={examWithQuestions}
         attempt={attempt}
         open={open}
         onOpenChange={onOpenChange}
