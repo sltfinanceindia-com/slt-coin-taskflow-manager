@@ -104,6 +104,44 @@ export type Database = {
           },
         ]
       }
+      daily_email_log: {
+        Row: {
+          created_at: string
+          email_date: string
+          email_type: string
+          id: string
+          sent_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_date?: string
+          email_type: string
+          id?: string
+          sent_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_date?: string
+          email_type?: string
+          id?: string
+          sent_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_email_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_notifications: {
         Row: {
           comment_id: string | null
@@ -984,6 +1022,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_and_log_daily_email: {
+        Args: { p_user_id: string; p_email_type: string }
+        Returns: boolean
+      }
       extract_video_duration: {
         Args: { video_url: string }
         Returns: number

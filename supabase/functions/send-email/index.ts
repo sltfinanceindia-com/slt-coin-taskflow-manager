@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
 import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
@@ -7,6 +8,12 @@ const corsHeaders = {
 };
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
+
+// Initialize Supabase client for daily email tracking
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL') ?? '',
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+);
 
 interface EmailRequest {
   emailType: string;
@@ -341,7 +348,55 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const emailData: EmailRequest = await req.json();
-    console.log('Sending email via Resend:', emailData);
+    console.log('Sending email notification:', emailData);
+    
+    // Get user profile to check daily email limits
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('email', emailData.to)
+      .single();
+
+    if (profileError || !profile) {
+      console.error('Error finding user profile:', profileError);
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'User profile not found'
+      }), {
+        status: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        }
+      });
+    }
+
+    // Check if this email type was already sent today for this user
+    const { data: canSend, error: checkError } = await supabase
+      .rpc('check_and_log_daily_email', {
+        p_user_id: profile.id,
+        p_email_type: emailData.emailType
+      });
+
+    if (checkError) {
+      console.error('Error checking daily email limit:', checkError);
+    }
+
+    // If email was already sent today, skip sending
+    if (!canSend) {
+      console.log(`Daily ${emailData.emailType} email already sent for user ${profile.id}`);
+      return new Response(JSON.stringify({
+        success: true,
+        message: 'Email already sent today - skipped to prevent spam',
+        skipped: true
+      }), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        }
+      });
+    }
     
     const template = getEmailTemplate(emailData);
     
@@ -358,7 +413,8 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(JSON.stringify({
       success: true,
       message: 'Email sent successfully via Resend',
-      id: emailResponse.data?.id
+      id: emailResponse.data?.id,
+      dailyLimit: true
     }), {
       status: 200,
       headers: {
