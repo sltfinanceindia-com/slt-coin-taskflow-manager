@@ -145,7 +145,10 @@ export default function Training() {
               ) : (
                 exams.map((exam) => {
                   const status = getExamStatus(exam.id);
-                  const attempt = attempts.find(a => a.exam_id === exam.id && a.completed_at);
+                  // Get the most recent completed attempt for this exam
+                  const attempt = attempts
+                    .filter(a => a.exam_id === exam.id && a.completed_at)
+                    .sort((a, b) => new Date(b.completed_at!).getTime() - new Date(a.completed_at!).getTime())[0];
                   
                   return (
                     <Card key={exam.id} className="card-gradient hover-scale cursor-pointer" onClick={() => handleExamClick(exam)}>

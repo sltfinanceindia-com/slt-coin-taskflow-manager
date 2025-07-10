@@ -103,10 +103,15 @@ export function UIUXExamPopup({
     questions.forEach((question, index) => {
       const userAnswer = answers[index];
       const correctAnswer = question.correct_answer;
-      if (userAnswer === correctAnswer) {
+      
+      console.log(`Question ${index + 1}: User selected ${userAnswer}, Correct answer is ${correctAnswer}`);
+      
+      if (userAnswer !== undefined && userAnswer === correctAnswer) {
         correctAnswers++;
       }
     });
+
+    console.log(`Final score: ${correctAnswers}/${questions.length}`);
 
     onSubmitExam({
       attemptId: attempt.id,

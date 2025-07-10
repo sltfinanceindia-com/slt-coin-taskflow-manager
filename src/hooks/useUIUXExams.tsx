@@ -69,12 +69,16 @@ export function useUIUXExams() {
 
       if (error) throw error;
       
-      // Remove duplicates based on ID (in case there are any)
-      const uniqueAttempts = data?.filter((attempt, index, self) => 
-        index === self.findIndex(a => a.id === attempt.id)
-      ) || [];
+      // Get only the most recent attempt per exam
+      const latestAttempts = data?.reduce((acc, attempt) => {
+        const existing = acc.find(a => a.exam_id === attempt.exam_id);
+        if (!existing || new Date(attempt.started_at) > new Date(existing.started_at)) {
+          return [...acc.filter(a => a.exam_id !== attempt.exam_id), attempt];
+        }
+        return acc;
+      }, [] as any[]) || [];
       
-      return uniqueAttempts as UIUXExamAttempt[];
+      return latestAttempts as UIUXExamAttempt[];
     },
     enabled: !!profile?.id,
     staleTime: 30 * 1000, // 30 seconds
