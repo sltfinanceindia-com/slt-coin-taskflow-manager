@@ -126,10 +126,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (mounted) {
         setLoading(false);
       }
+    }).catch((error) => {
+      console.error('Error getting session:', error);
+      if (mounted) {
+        setLoading(false);
+      }
     });
+
+    // Fallback timeout to ensure loading state is cleared
+    const timeoutId = setTimeout(() => {
+      if (mounted) {
+        console.log('Timeout: Setting loading to false');
+        setLoading(false);
+      }
+    }, 3000);
 
     return () => {
       mounted = false;
+      clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
   }, []);
