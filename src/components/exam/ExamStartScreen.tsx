@@ -2,36 +2,40 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Clock, FileText, Target, AlertCircle } from 'lucide-react';
-import { ExamData, ExamAttempt } from '@/hooks/useUIUXExams';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Clock, FileText, Target } from 'lucide-react';
+import { UIUXExam, UIUXExamAttempt } from '@/hooks/useUIUXExams';
 
 interface ExamStartScreenProps {
-  exam: ExamData;
-  attempts: ExamAttempt[];
+  exam: UIUXExam | null;
+  attempt: UIUXExamAttempt | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onStartExam: (examId: string) => void;
-  isStartingExam: boolean;
+  isStarting: boolean;
 }
 
 export function ExamStartScreen({ 
   exam, 
-  attempts, 
+  attempt,
+  open,
+  onOpenChange,
   onStartExam, 
-  isStartingExam 
+  isStarting 
 }: ExamStartScreenProps) {
-  const hasAttempted = attempts.length > 0;
-  const latestAttempt = attempts[0];
-  const hasActiveAttempt = latestAttempt && !latestAttempt.completed_at;
+  if (!exam) return null;
 
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">{exam.title}</CardTitle>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[600px]" aria-describedby="exam-start-description">
+        <DialogHeader>
+          <DialogTitle>{exam.title}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-6" id="exam-start-description">
           {exam.description && (
             <p className="text-muted-foreground">{exam.description}</p>
           )}
-        </CardHeader>
-        <CardContent className="space-y-6">
+
           {/* Exam Details */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center space-x-3 p-4 bg-muted/50 rounded-lg">
@@ -67,7 +71,7 @@ export function ExamStartScreen({
               </li>
               <li className="flex items-start space-x-2">
                 <span className="text-blue-500 mt-1">•</span>
-                <span>Each question has 4 multiple choice options</span>
+                <span>Each question has multiple choice options</span>
               </li>
               <li className="flex items-start space-x-2">
                 <span className="text-blue-500 mt-1">•</span>
@@ -88,63 +92,17 @@ export function ExamStartScreen({
             </ul>
           </div>
 
-          {/* Previous Attempts */}
-          {hasAttempted && (
-            <div className="space-y-4">
-              <h3 className="font-semibold">Previous Attempts:</h3>
-              <div className="space-y-2">
-                {attempts.slice(0, 3).map((attempt, index) => (
-                  <div key={attempt.id} className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                    <div>
-                      <p className="font-medium">Attempt {attempts.length - index}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(attempt.started_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      {attempt.completed_at ? (
-                        <>
-                          <p className={`font-medium ${attempt.is_passed ? 'text-green-600' : 'text-red-600'}`}>
-                            {attempt.score}%
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {attempt.is_passed ? 'Passed' : 'Failed'}
-                          </p>
-                        </>
-                      ) : (
-                        <p className="text-sm text-yellow-600">In Progress</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Warning for active attempt */}
-          {hasActiveAttempt && (
-            <div className="flex items-center space-x-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <AlertCircle className="h-5 w-5 text-yellow-600" />
-              <div>
-                <p className="font-medium text-yellow-800">Active Attempt Detected</p>
-                <p className="text-sm text-yellow-700">
-                  You have an ongoing exam attempt. You can only have one active attempt at a time.
-                </p>
-              </div>
-            </div>
-          )}
-
           {/* Start Button */}
           <Button
             onClick={() => onStartExam(exam.id)}
-            disabled={isStartingExam || hasActiveAttempt}
+            disabled={isStarting}
             className="w-full"
             size="lg"
           >
-            {isStartingExam ? 'Starting Exam...' : hasActiveAttempt ? 'Resume Exam' : 'Start Exam'}
+            {isStarting ? 'Starting Exam...' : 'Start Exam'}
           </Button>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

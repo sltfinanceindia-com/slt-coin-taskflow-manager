@@ -47,6 +47,7 @@ export function UIUXExamPopup({
     return (
       <ExamStartScreen
         exam={exam}
+        attempt={attempt}
         open={open}
         onOpenChange={onOpenChange}
         onStartExam={onStartExam}

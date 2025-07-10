@@ -18,7 +18,7 @@ export interface ExamOption {
   is_correct: boolean;
 }
 
-export interface ExamData {
+export interface UIUXExam {
   id: string;
   title: string;
   description: string | null;
@@ -29,7 +29,7 @@ export interface ExamData {
   questions: ExamQuestion[];
 }
 
-export interface ExamAttempt {
+export interface UIUXExamAttempt {
   id: string;
   exam_id: string;
   user_id: string;
@@ -49,8 +49,9 @@ export interface UserAnswer {
 
 export function useUIUXExams() {
   const { profile } = useAuth();
+  const queryClient = useQueryClient();
 
-  const { data: exams, isLoading: examsLoading, error: examsError } = useQuery({
+  const { data: exams = [], isLoading: examsLoading, error: examsError } = useQuery({
     queryKey: ['ui-ux-exams'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -60,12 +61,12 @@ export function useUIUXExams() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
   const { data: examWithQuestions, isLoading: examQuestionsLoading } = useQuery({
-    queryKey: ['exam-with-questions'],
+    queryKey: ['exam-with-questions', exams[0]?.id],
     queryFn: async () => {
       if (!exams || exams.length === 0) return null;
       
@@ -103,7 +104,7 @@ export function useUIUXExams() {
         })).sort((a: ExamOption, b: ExamOption) => a.option_number - b.option_number)
       }));
 
-      const examData: ExamData = {
+      const examData: UIUXExam = {
         ...exam,
         questions: transformedQuestions
       };
@@ -113,7 +114,7 @@ export function useUIUXExams() {
     enabled: !!exams && exams.length > 0,
   });
 
-  const { data: attempts, isLoading: attemptsLoading } = useQuery({
+  const { data: attempts = [], isLoading: attemptsLoading } = useQuery({
     queryKey: ['exam-attempts', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -125,12 +126,10 @@ export function useUIUXExams() {
         .order('started_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data || [];
     },
     enabled: !!profile?.id,
   });
-
-  const queryClient = useQueryClient();
 
   const startExamMutation = useMutation({
     mutationFn: async (examId: string) => {
@@ -205,15 +204,15 @@ export function useUIUXExams() {
     },
   });
 
-  const completeExamMutation = useMutation({
+  const submitExamMutation = useMutation({
     mutationFn: async ({ 
       attemptId, 
       answers 
     }: { 
       attemptId: string; 
-      answers: Record<string, string>; 
+      answers: { [key: number]: number }; 
     }) => {
-      // Calculate score
+      // Calculate score based on correct answers
       const { data: userAnswers, error: answersError } = await supabase
         .from('user_answers')
         .select('is_correct')
@@ -223,8 +222,8 @@ export function useUIUXExams() {
 
       const correctAnswers = userAnswers.filter(answer => answer.is_correct).length;
       const totalQuestions = examWithQuestions?.total_questions || 0;
-      const score = Math.round((correctAnswers / totalQuestions) * 100);
-      const isPassed = score >= (examWithQuestions?.passing_score || 70);
+      const score = correctAnswers;
+      const isPassed = score >= Math.ceil((examWithQuestions?.passing_score || 70) * totalQuestions / 100);
 
       // Calculate time taken
       const { data: attempt, error: attemptError } = await supabase
@@ -257,9 +256,10 @@ export function useUIUXExams() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['exam-attempts'] });
+      const percentage = Math.round((data?.score || 0) / (examWithQuestions?.total_questions || 1) * 100);
       const message = data?.is_passed 
-        ? `Congratulations! You passed with ${data.score}%` 
-        : `You scored ${data?.score}%. You need ${examWithQuestions?.passing_score}% to pass.`;
+        ? `Congratulations! You passed with ${percentage}%` 
+        : `You scored ${percentage}%. You need ${examWithQuestions?.passing_score}% to pass.`;
       
       toast({
         title: data?.is_passed ? "Exam Passed!" : "Exam Completed",
@@ -277,26 +277,6 @@ export function useUIUXExams() {
     },
   });
 
-  const getUserAnswersMutation = useMutation({
-    mutationFn: async (attemptId: string) => {
-      const { data, error } = await supabase
-        .from('user_answers')
-        .select(`
-          question_id,
-          selected_option_id,
-          is_correct,
-          question_options (
-            option_text,
-            is_correct
-          )
-        `)
-        .eq('attempt_id', attemptId);
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
   return {
     exams,
     examWithQuestions,
@@ -304,13 +284,10 @@ export function useUIUXExams() {
     isLoading: examsLoading || examQuestionsLoading || attemptsLoading,
     error: examsError,
     startExam: startExamMutation.mutate,
-    isStartingExam: startExamMutation.isPending,
+    isStarting: startExamMutation.isPending,
+    submitExam: submitExamMutation.mutate,
+    isSubmitting: submitExamMutation.isPending,
     submitAnswer: submitAnswerMutation.mutate,
     isSubmittingAnswer: submitAnswerMutation.isPending,
-    completeExam: completeExamMutation.mutate,
-    isCompletingExam: completeExamMutation.isPending,
-    getUserAnswers: getUserAnswersMutation.mutate,
-    isGettingAnswers: getUserAnswersMutation.isPending,
-    userAnswersData: getUserAnswersMutation.data,
   };
 }

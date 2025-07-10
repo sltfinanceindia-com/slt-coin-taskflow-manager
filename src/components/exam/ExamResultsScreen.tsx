@@ -1,5 +1,8 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { UIUXExamAttempt } from '@/hooks/useUIUXExams';
+import { Badge } from '@/components/ui/badge';
+import { Award, Clock, CheckCircle } from 'lucide-react';
 
 interface ExamResultsScreenProps {
   attempt: UIUXExamAttempt;
@@ -12,22 +15,60 @@ export function ExamResultsScreen({
   open,
   onOpenChange,
 }: ExamResultsScreenProps) {
+  const percentage = Math.round((attempt.score / attempt.total_questions) * 100);
+  const isPassed = attempt.is_passed;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]" aria-describedby="exam-results">
         <DialogHeader>
-          <DialogTitle>Exam Completed</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Award className="h-5 w-5" />
+            Exam Results
+          </DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 text-center">
-          <div className="text-4xl font-bold text-primary">
-            {attempt.score}/{attempt.total_questions}
+        <div className="space-y-6 text-center" id="exam-results">
+          <div className="space-y-2">
+            <div className="text-6xl font-bold text-primary">
+              {percentage}%
+            </div>
+            <Badge variant={isPassed ? "default" : "destructive"} className="text-lg px-4 py-1">
+              {isPassed ? "PASSED" : "FAILED"}
+            </Badge>
           </div>
-          <p id="exam-results" className="text-lg">
-            You scored {Math.round((attempt.score / attempt.total_questions) * 100)}%
-          </p>
-          <p className="text-muted-foreground">
-            Completed on {new Date(attempt.completed_at).toLocaleDateString()}
-          </p>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5" />
+                <span>Questions Correct</span>
+              </div>
+              <span className="font-semibold">{attempt.score} / {attempt.total_questions}</span>
+            </div>
+
+            {attempt.time_taken_minutes && (
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  <span>Time Taken</span>
+                </div>
+                <span className="font-semibold">{attempt.time_taken_minutes} minutes</span>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+              <span>Completed On</span>
+              <span className="font-semibold">
+                {new Date(attempt.completed_at || '').toLocaleDateString()}
+              </span>
+            </div>
+          </div>
+
+          {!isPassed && (
+            <p className="text-muted-foreground text-sm">
+              You can retake the exam to improve your score.
+            </p>
+          )}
         </div>
       </DialogContent>
     </Dialog>
