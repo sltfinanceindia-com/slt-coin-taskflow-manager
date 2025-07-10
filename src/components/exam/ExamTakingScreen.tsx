@@ -177,17 +177,14 @@ export function ExamTakingScreen({
                     onValueChange={(value) => handleAnswerChange(parseInt(value))}
                     className="space-y-3"
                   >
-                    {currentQuestion.options.map((option, index) => {
-                      console.log('Option data:', option, 'Index:', index);
-                      return (
-                        <div key={option.id} className="flex items-start space-x-3 p-3 rounded-lg border hover:bg-muted/50">
-                          <RadioGroupItem value={index.toString()} id={`option-${index}`} className="mt-0.5" />
-                          <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer text-sm md:text-base leading-relaxed">
-                            {option.option_text || `Option ${String.fromCharCode(65 + index)}`}
-                          </Label>
-                        </div>
-                      );
-                    })}
+                    {currentQuestion.options.map((option, index) => (
+                      <div key={option.id} className="flex items-start space-x-3 p-3 rounded-lg border hover:bg-muted/50">
+                        <RadioGroupItem value={index.toString()} id={`option-${index}`} className="mt-0.5" />
+                        <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer text-sm md:text-base leading-relaxed">
+                          {option.option_text}
+                        </Label>
+                      </div>
+                    ))}
                   </RadioGroup>
 
                   {/* Navigation Buttons */}
