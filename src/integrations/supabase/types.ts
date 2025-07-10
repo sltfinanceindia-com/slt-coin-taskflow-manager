@@ -200,6 +200,38 @@ export type Database = {
           },
         ]
       }
+      exam_questions: {
+        Row: {
+          created_at: string
+          exam_id: string
+          id: string
+          question_number: number
+          question_text: string
+        }
+        Insert: {
+          created_at?: string
+          exam_id: string
+          id?: string
+          question_number: number
+          question_text: string
+        }
+        Update: {
+          created_at?: string
+          exam_id?: string
+          id?: string
+          question_number?: number
+          question_text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_questions_exam_id_fkey"
+            columns: ["exam_id"]
+            isOneToOne: false
+            referencedRelation: "ui_ux_exams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -285,6 +317,41 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      question_options: {
+        Row: {
+          created_at: string
+          id: string
+          is_correct: boolean
+          option_number: number
+          option_text: string
+          question_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_correct?: boolean
+          option_number: number
+          option_text: string
+          question_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_correct?: boolean
+          option_number?: number
+          option_text?: string
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_options_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "exam_questions"
             referencedColumns: ["id"]
           },
         ]
@@ -781,7 +848,6 @@ export type Database = {
       }
       ui_ux_exam_attempts: {
         Row: {
-          answers: Json
           completed_at: string | null
           exam_id: string
           id: string
@@ -793,7 +859,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          answers?: Json
           completed_at?: string | null
           exam_id: string
           id?: string
@@ -805,7 +870,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          answers?: Json
           completed_at?: string | null
           exam_id?: string
           id?: string
@@ -840,9 +904,9 @@ export type Database = {
           id: string
           is_active: boolean
           passing_score: number
-          questions: Json
           time_limit_minutes: number
           title: string
+          total_questions: number
           updated_at: string
         }
         Insert: {
@@ -851,9 +915,9 @@ export type Database = {
           id?: string
           is_active?: boolean
           passing_score?: number
-          questions?: Json
           time_limit_minutes?: number
           title: string
+          total_questions?: number
           updated_at?: string
         }
         Update: {
@@ -862,12 +926,61 @@ export type Database = {
           id?: string
           is_active?: boolean
           passing_score?: number
-          questions?: Json
           time_limit_minutes?: number
           title?: string
+          total_questions?: number
           updated_at?: string
         }
         Relationships: []
+      }
+      user_answers: {
+        Row: {
+          attempt_id: string
+          created_at: string
+          id: string
+          is_correct: boolean | null
+          question_id: string
+          selected_option_id: string | null
+        }
+        Insert: {
+          attempt_id: string
+          created_at?: string
+          id?: string
+          is_correct?: boolean | null
+          question_id: string
+          selected_option_id?: string | null
+        }
+        Update: {
+          attempt_id?: string
+          created_at?: string
+          id?: string
+          is_correct?: boolean | null
+          question_id?: string
+          selected_option_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_answers_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "ui_ux_exam_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "exam_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_answers_selected_option_id_fkey"
+            columns: ["selected_option_id"]
+            isOneToOne: false
+            referencedRelation: "question_options"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
