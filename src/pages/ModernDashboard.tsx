@@ -101,9 +101,22 @@ export default function ModernDashboard() {
         return <ProjectManagement />;
       
       case 'training':
-        // Redirect to training page instead of inline component
-        window.location.href = '/training';
-        return null;
+        return (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h3 className="text-2xl font-bold mb-4">Training Section</h3>
+              <p className="text-muted-foreground mb-6">
+                Access comprehensive training materials and complete assessments.
+              </p>
+              <a 
+                href="/training" 
+                className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                Go to Training Portal
+              </a>
+            </div>
+          </div>
+        );
       
       case 'time':
         return (
