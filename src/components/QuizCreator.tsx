@@ -1,244 +1,235 @@
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useQuizzes, QuizQuestion } from '@/hooks/useQuizzes';
-import { Plus, Trash2, Edit, Save } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { useUIUXExams } from '@/hooks/useUIUXExams';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 
-export function QuizCreator() {
-  const [open, setOpen] = useState(false);
-  const { createQuizTemplate, isCreating } = useQuizzes();
-  
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    timePerQuestion: 30,
-  });
+interface Question {
+  question_text: string;
+  options: string[];
+  correct_answer: number;
+}
 
-  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
-  const [currentQuestion, setCurrentQuestion] = useState<Partial<QuizQuestion>>({
-    question: '',
+export function QuizCreator() {
+  const { profile } = useAuth();
+  const [examTitle, setExamTitle] = useState('');
+  const [examDescription, setExamDescription] = useState('');
+  const [timeLimit, setTimeLimit] = useState(90);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [currentQuestion, setCurrentQuestion] = useState<Question>({
+    question_text: '',
     options: ['', '', '', ''],
-    correctAnswer: 0,
+    correct_answer: 0
   });
 
   const addQuestion = () => {
-    if (!currentQuestion.question || !currentQuestion.options?.every(opt => opt.trim())) {
+    if (currentQuestion.question_text && currentQuestion.options.every(opt => opt.trim())) {
+      setQuestions([...questions, currentQuestion]);
+      setCurrentQuestion({
+        question_text: '',
+        options: ['', '', '', ''],
+        correct_answer: 0
+      });
+    }
+  };
+
+  const createExam = async () => {
+    if (!profile?.id || !examTitle || questions.length === 0) {
       toast({
-        title: "Incomplete Question",
-        description: "Please fill in the question and all options.",
+        title: "Error",
+        description: "Please fill in all required fields and add at least one question.",
         variant: "destructive",
       });
       return;
     }
 
-    const newQuestion: QuizQuestion = {
-      id: Date.now().toString(),
-      question: currentQuestion.question,
-      options: currentQuestion.options,
-      correctAnswer: currentQuestion.correctAnswer || 0,
-      timeLimit: formData.timePerQuestion,
-    };
+    try {
+      // Create exam
+      const { data: exam, error: examError } = await supabase
+        .from('ui_ux_exams')
+        .insert({
+          title: examTitle,
+          description: examDescription,
+          time_limit_minutes: timeLimit,
+          total_questions: questions.length,
+          is_active: true
+        })
+        .select()
+        .single();
 
-    setQuestions([...questions, newQuestion]);
-    setCurrentQuestion({
-      question: '',
-      options: ['', '', '', ''],
-      correctAnswer: 0,
-    });
-  };
+      if (examError) throw examError;
 
-  const removeQuestion = (index: number) => {
-    setQuestions(questions.filter((_, i) => i !== index));
-  };
+      // Create questions and options
+      for (let i = 0; i < questions.length; i++) {
+        const question = questions[i];
+        
+        const { data: questionData, error: questionError } = await supabase
+          .from('exam_questions')
+          .insert({
+            exam_id: exam.id,
+            question_number: i + 1,
+            question_text: question.question_text
+          })
+          .select()
+          .single();
 
-  const updateQuestionOption = (optionIndex: number, value: string) => {
-    const newOptions = [...(currentQuestion.options || ['', '', '', ''])];
-    newOptions[optionIndex] = value;
-    setCurrentQuestion({ ...currentQuestion, options: newOptions });
-  };
+        if (questionError) throw questionError;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (questions.length < 10) {
+        // Create options
+        for (let j = 0; j < question.options.length; j++) {
+          await supabase
+            .from('question_options')
+            .insert({
+              question_id: questionData.id,
+              option_number: j,
+              option_text: question.options[j],
+              is_correct: j === question.correct_answer
+            });
+        }
+      }
+
       toast({
-        title: "Not Enough Questions",
-        description: "Please add at least 10 questions for the quiz.",
+        title: "Success",
+        description: "Exam created successfully!",
+      });
+
+      // Reset form
+      setExamTitle('');
+      setExamDescription('');
+      setTimeLimit(90);
+      setQuestions([]);
+      setCurrentQuestion({
+        question_text: '',
+        options: ['', '', '', ''],
+        correct_answer: 0
+      });
+
+    } catch (error) {
+      console.error('Error creating exam:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create exam. Please try again.",
         variant: "destructive",
       });
-      return;
     }
-
-    if (questions.length > 50) {
-      toast({
-        title: "Too Many Questions",
-        description: "Maximum 50 questions allowed per quiz.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    createQuizTemplate({
-      title: formData.title,
-      description: formData.description,
-      questions,
-      time_per_question_seconds: formData.timePerQuestion,
-      total_questions: questions.length,
-    });
-
-    // Reset form
-    setFormData({ title: '', description: '', timePerQuestion: 30 });
-    setQuestions([]);
-    setCurrentQuestion({ question: '', options: ['', '', '', ''], correctAnswer: 0 });
-    setOpen(false);
   };
+
+  if (profile?.role !== 'admin') {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <p>Access denied. Admin privileges required.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Create UI/UX Quiz
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Create UI/UX Quiz Template</DialogTitle>
-          <DialogDescription>
-            Create a timed multiple-choice quiz for UI/UX assessment. Each question will have 30 seconds time limit.
-          </DialogDescription>
-        </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Quiz Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Quiz Title</Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="UI/UX Fundamentals Quiz"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="timePerQuestion">Time per Question (seconds)</Label>
-              <Input
-                id="timePerQuestion"
-                type="number"
-                min="10"
-                max="60"
-                value={formData.timePerQuestion}
-                onChange={(e) => setFormData({ ...formData, timePerQuestion: parseInt(e.target.value) || 30 })}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Test knowledge of UI/UX principles, design patterns, and best practices"
-              rows={2}
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Create UI/UX Exam</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="title">Exam Title</Label>
+            <Input
+              id="title"
+              value={examTitle}
+              onChange={(e) => setExamTitle(e.target.value)}
+              placeholder="Enter exam title"
             />
           </div>
 
-          {/* Current Question Builder */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Add Question #{questions.length + 1}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="question">Question</Label>
-                <Textarea
-                  id="question"
-                  value={currentQuestion.question}
-                  onChange={(e) => setCurrentQuestion({ ...currentQuestion, question: e.target.value })}
-                  placeholder="What is the primary goal of user experience design?"
-                  rows={2}
-                />
-              </div>
-
-              <div className="space-y-3">
-                <Label>Answer Options</Label>
-                {currentQuestion.options?.map((option, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <input
-                      type="radio"
-                      name="correctAnswer"
-                      checked={currentQuestion.correctAnswer === index}
-                      onChange={() => setCurrentQuestion({ ...currentQuestion, correctAnswer: index })}
-                      className="mt-1"
-                    />
-                    <Input
-                      value={option}
-                      onChange={(e) => updateQuestionOption(index, e.target.value)}
-                      placeholder={`Option ${index + 1}`}
-                      className="flex-1"
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <Button type="button" onClick={addQuestion} variant="outline" className="w-full">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Question
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Questions List */}
-          {questions.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Questions Added ({questions.length}/50)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3 max-h-60 overflow-y-auto">
-                  {questions.map((question, index) => (
-                    <div key={question.id} className="flex items-start justify-between p-3 bg-muted rounded-lg">
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">Q{index + 1}: {question.question}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Correct: {question.options[question.correctAnswer]}
-                        </p>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeQuestion(index)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isCreating || questions.length < 10}>
-              <Save className="h-4 w-4 mr-2" />
-              {isCreating ? 'Creating...' : 'Create Quiz Template'}
-            </Button>
+          <div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={examDescription}
+              onChange={(e) => setExamDescription(e.target.value)}
+              placeholder="Enter exam description"
+            />
           </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+
+          <div>
+            <Label htmlFor="timeLimit">Time Limit (minutes)</Label>
+            <Input
+              id="timeLimit"
+              type="number"
+              value={timeLimit}
+              onChange={(e) => setTimeLimit(parseInt(e.target.value))}
+              min="1"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Add Question</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="question">Question</Label>
+            <Textarea
+              id="question"
+              value={currentQuestion.question_text}
+              onChange={(e) => setCurrentQuestion({
+                ...currentQuestion,
+                question_text: e.target.value
+              })}
+              placeholder="Enter question"
+            />
+          </div>
+
+          {currentQuestion.options.map((option, index) => (
+            <div key={index} className="flex items-center space-x-2">
+              <input
+                type="radio"
+                name="correct"
+                checked={currentQuestion.correct_answer === index}
+                onChange={() => setCurrentQuestion({
+                  ...currentQuestion,
+                  correct_answer: index
+                })}
+              />
+              <Input
+                value={option}
+                onChange={(e) => {
+                  const newOptions = [...currentQuestion.options];
+                  newOptions[index] = e.target.value;
+                  setCurrentQuestion({
+                    ...currentQuestion,
+                    options: newOptions
+                  });
+                }}
+                placeholder={`Option ${index + 1}`}
+              />
+            </div>
+          ))}
+
+          <Button onClick={addQuestion}>Add Question</Button>
+        </CardContent>
+      </Card>
+
+      {questions.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Questions Added: {questions.length}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={createExam} className="w-full">
+              Create Exam
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }
