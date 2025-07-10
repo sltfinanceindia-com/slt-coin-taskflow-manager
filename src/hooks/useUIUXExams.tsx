@@ -1,252 +1,36 @@
+
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-
-export interface UIUXExam {
-  id: string;
-  title: string;
-  description: string | null;
-  time_limit_minutes: number;
-  passing_score: number;
-  total_questions: number;
-  is_active: boolean;
-  questions?: ExamQuestion[];
-}
-
-export interface UIUXExamAttempt {
-  id: string;
-  exam_id: string;
-  user_id: string;
-  score: number;
-  total_questions: number;
-  is_passed: boolean | null;
-  completed_at: string | null;
-  started_at: string;
-  time_taken_minutes: number | null;
-}
-
-interface ExamQuestion {
-  id: string;
-  question_number: number;
-  question_text: string;
-  options: ExamOption[];
-}
-
-interface ExamOption {
-  id: string;
-  option_number: number;
-  option_text: string;
-  is_correct: boolean;
-}
-
-interface ExamAttempt {
-  id: string;
-  score: number;
-  total_questions: number;
-  is_passed: boolean;
-  completed_at: string | null;
-  time_taken_minutes: number | null;
-}
+import { useExamData } from './useExamData';
+import { useExamQuestions } from './useExamQuestions';
+import { useExamAttempts } from './useExamAttempts';
+import { useExamSubmission } from './useExamSubmission';
 
 export const useUIUXExams = () => {
-  const [exams, setExams] = useState<UIUXExam[]>([]);
-  const [attempts, setAttempts] = useState<UIUXExamAttempt[]>([]);
-  const [questions, setQuestions] = useState<ExamQuestion[]>([]);
-  const [currentAttempt, setCurrentAttempt] = useState<ExamAttempt | null>(null);
   const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [loading, setLoading] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isStarting, setIsStarting] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
-  const [examStartTime, setExamStartTime] = useState<Date | null>(null);
-  const [examWithQuestions, setExamWithQuestions] = useState<UIUXExam | null>(null);
-  const { toast } = useToast();
 
-  const fetchExams = async () => {
-    try {
-      setIsLoading(true);
-      
-      const { data: examsData, error } = await supabase
-        .from('ui_ux_exams')
-        .select('*')
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
+  const { 
+    exams, 
+    attempts, 
+    isLoading, 
+    fetchUserAttempts 
+  } = useExamData();
 
-      if (error) {
-        console.error('Error fetching exams:', error);
-        return;
-      }
+  const { 
+    questions, 
+    examWithQuestions, 
+    loading,
+    fetchExamQuestions 
+  } = useExamQuestions();
 
-      setExams(examsData || []);
-    } catch (error) {
-      console.error('Error fetching exams:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { 
+    currentAttempt, 
+    isStarting, 
+    startExam: startExamAttempt,
+    setCurrentAttempt 
+  } = useExamAttempts();
 
-  const fetchUserAttempts = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!profile) return;
-
-      const { data: attemptsData, error } = await supabase
-        .from('ui_ux_exam_attempts')
-        .select('*')
-        .eq('user_id', profile.id)
-        .order('started_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching attempts:', error);
-        return;
-      }
-
-      setAttempts(attemptsData || []);
-    } catch (error) {
-      console.error('Error fetching attempts:', error);
-    }
-  };
-
-  const fetchExamQuestions = async () => {
-    try {
-      setLoading(true);
-      
-      // Get active exam
-      const { data: exam, error: examError } = await supabase
-        .from('ui_ux_exams')
-        .select('*')
-        .eq('is_active', true)
-        .single();
-
-      if (examError || !exam) {
-        throw new Error('No active exam found');
-      }
-
-      // Get questions with options
-      const { data: questionsData, error: questionsError } = await supabase
-        .from('exam_questions')
-        .select(`
-          id,
-          question_number,
-          question_text,
-          question_options (
-            id,
-            option_number,
-            option_text,
-            is_correct
-          )
-        `)
-        .eq('exam_id', exam.id)
-        .order('question_number');
-
-      if (questionsError) {
-        throw new Error('Failed to fetch questions');
-      }
-
-      // Transform the data
-      const formattedQuestions: ExamQuestion[] = questionsData.map(q => ({
-        id: q.id,
-        question_number: q.question_number,
-        question_text: q.question_text,
-        options: (q.question_options || [])
-          .sort((a, b) => a.option_number - b.option_number)
-          .map(opt => ({
-            id: opt.id,
-            option_number: opt.option_number,
-            option_text: opt.option_text,
-            is_correct: opt.is_correct
-          }))
-      }));
-
-      setQuestions(formattedQuestions);
-      setTimeRemaining(exam.time_limit_minutes * 60); // Convert to seconds
-      
-      // Set exam with questions for the popup
-      setExamWithQuestions({
-        ...exam,
-        questions: formattedQuestions
-      });
-      
-      console.log('Loaded questions:', formattedQuestions.length);
-      
-    } catch (error) {
-      console.error('Error fetching exam questions:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load exam questions",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const startExam = async (examId: string) => {
-    try {
-      setIsStarting(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      // Get user profile
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!profile) throw new Error('Profile not found');
-
-      // Get exam details
-      const { data: exam } = await supabase
-        .from('ui_ux_exams')
-        .select('*')
-        .eq('id', examId)
-        .single();
-
-      if (!exam) throw new Error('Exam not found');
-
-      // Create exam attempt
-      const { data: attempt, error } = await supabase
-        .from('ui_ux_exam_attempts')
-        .insert({
-          exam_id: examId,
-          user_id: profile.id,
-          total_questions: exam.total_questions,
-          started_at: new Date().toISOString()
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setCurrentAttempt(attempt);
-      setExamStartTime(new Date());
-      
-      // Refresh attempts list
-      await fetchUserAttempts();
-      
-      console.log('Exam started, attempt ID:', attempt.id);
-
-    } catch (error) {
-      console.error('Error starting exam:', error);
-      toast({
-        title: "Error",
-        description: "Failed to start exam",
-        variant: "destructive",
-      });
-    } finally {
-      setIsStarting(false);
-    }
-  };
+  const { submitExam: submitExamData, isSubmitting } = useExamSubmission(questions);
 
   const submitAnswer = (questionId: string, optionNumber: number) => {
     console.log('Submitting answer:', { questionId, optionNumber });
@@ -256,190 +40,23 @@ export const useUIUXExams = () => {
     }));
   };
 
+  const startExam = async (examId: string) => {
+    const attempt = await startExamAttempt(examId);
+    if (attempt) {
+      await fetchUserAttempts();
+    }
+  };
+
   const submitExam = async (data: { attemptId: string; answers: { [key: number]: number } }) => {
-    try {
-      setIsSubmitting(true);
-      
-      const { attemptId, answers: examAnswers } = data;
-      
-      console.log('Starting exam submission with data:', { attemptId, examAnswers });
-      console.log('Questions available:', questions.length);
-      console.log('Total answers received:', Object.keys(examAnswers).length);
-
-      // Get the attempt
-      const { data: attempt } = await supabase
-        .from('ui_ux_exam_attempts')
-        .select('*')
-        .eq('id', attemptId)
-        .single();
-
-      if (!attempt) throw new Error('Attempt not found');
-
-      const timeTaken = Math.floor((new Date().getTime() - new Date(attempt.started_at).getTime()) / (1000 * 60));
-      
-      // Calculate score
-      let correctAnswers = 0;
-      const totalQuestions = questions.length;
-
-      console.log('Calculating score...');
-      console.log('Total questions:', totalQuestions);
-      console.log('User answers received:', examAnswers);
-
-      // Clear any existing answers for this attempt (in case of retake)
-      await supabase
-        .from('user_answers')
-        .delete()
-        .eq('attempt_id', attemptId);
-
-      // Process each question
-      for (let i = 0; i < questions.length; i++) {
-        const question = questions[i];
-        const userAnswerIndex = examAnswers[i]; // Get answer for this question index
-        
-        console.log(`Processing question ${i + 1} (ID: ${question.id}):`, {
-          questionIndex: i,
-          userAnswerIndex,
-          totalOptions: question.options.length,
-          hasAnswer: userAnswerIndex !== undefined && userAnswerIndex !== null
-        });
-
-        let selectedOption = null;
-        let isCorrect = false;
-
-        if (userAnswerIndex !== undefined && userAnswerIndex !== null) {
-          // Find the selected option by index
-          selectedOption = question.options[userAnswerIndex];
-          
-          if (selectedOption) {
-            isCorrect = selectedOption.is_correct || false;
-            
-            if (isCorrect) {
-              correctAnswers++;
-            }
-
-            console.log(`Question ${i + 1} - User selected option ${userAnswerIndex}:`, {
-              selectedOptionText: selectedOption.option_text,
-              isCorrect,
-              correctOption: question.options.find(opt => opt.is_correct)?.option_text
-            });
-
-            // Insert user answer into database
-            const { error: answerError } = await supabase
-              .from('user_answers')
-              .insert({
-                attempt_id: attemptId,
-                question_id: question.id,
-                selected_option_id: selectedOption.id,
-                is_correct: isCorrect
-              });
-
-            if (answerError) {
-              console.error(`Error inserting answer for question ${i + 1}:`, answerError);
-            } else {
-              console.log(`Successfully inserted answer for question ${i + 1}`);
-            }
-          } else {
-            console.error(`Question ${i + 1} - Selected option index ${userAnswerIndex} not found in options array`);
-          }
-        } else {
-          console.log(`Question ${i + 1} - No answer provided`);
-        }
-      }
-
-      const percentage = Math.round((correctAnswers / totalQuestions) * 100);
-      const isPassed = percentage >= 70; // 70% passing score
-
-      console.log('Final score calculation:', {
-        correctAnswers,
-        totalQuestions,
-        percentage,
-        isPassed,
-        answersProcessed: Object.keys(examAnswers).length
-      });
-
-      // Update exam attempt
-      const { error: updateError } = await supabase
-        .from('ui_ux_exam_attempts')
-        .update({
-          score: correctAnswers,
-          completed_at: new Date().toISOString(),
-          time_taken_minutes: timeTaken,
-          is_passed: isPassed
-        })
-        .eq('id', attemptId);
-
-      if (updateError) {
-        console.error('Error updating exam attempt:', updateError);
-        throw updateError;
-      }
-
-      console.log('Successfully updated exam attempt');
-
-      // Update current attempt state
+    const result = await submitExamData(data);
+    if (result) {
       setCurrentAttempt(prev => prev ? {
         ...prev,
-        score: correctAnswers,
-        is_passed: isPassed,
-        completed_at: new Date().toISOString(),
-        time_taken_minutes: timeTaken
+        ...result
       } : null);
-
-      // Refresh attempts list
       await fetchUserAttempts();
-
-      toast({
-        title: isPassed ? "Congratulations!" : "Exam Complete",
-        description: `You scored ${percentage}% (${correctAnswers}/${totalQuestions} correct). ${isPassed ? 'You passed!' : 'You need 70% to pass.'}`,
-        variant: isPassed ? "default" : "destructive",
-      });
-
-    } catch (error) {
-      console.error('Error submitting exam:', error);
-      toast({
-        title: "Error",
-        description: "Failed to submit exam",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
     }
   };
-
-  const getUserAttempt = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!profile) return;
-
-      const { data: attempt } = await supabase
-        .from('ui_ux_exam_attempts')
-        .select('*')
-        .eq('user_id', profile.id)
-        .order('started_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (attempt) {
-        setCurrentAttempt(attempt);
-      }
-    } catch (error) {
-      console.error('Error fetching user attempt:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchExams();
-    fetchUserAttempts();
-    fetchExamQuestions();
-    getUserAttempt();
-  }, []);
 
   // Timer effect
   useEffect(() => {
@@ -453,7 +70,7 @@ export const useUIUXExams = () => {
                 acc[parseInt(key)] = answers[key];
                 return acc;
               }, {} as { [key: number]: number })
-            }); // Auto-submit when time runs out
+            });
             return 0;
           }
           return prev - 1;
@@ -463,6 +80,13 @@ export const useUIUXExams = () => {
       return () => clearInterval(timer);
     }
   }, [currentAttempt, timeRemaining]);
+
+  // Initialize timer when exam questions are loaded
+  useEffect(() => {
+    if (examWithQuestions) {
+      setTimeRemaining(examWithQuestions.time_limit_minutes * 60);
+    }
+  }, [examWithQuestions]);
 
   return {
     exams,
@@ -482,3 +106,6 @@ export const useUIUXExams = () => {
     fetchExamQuestions,
   };
 };
+
+// Re-export types for backward compatibility
+export type { UIUXExam, UIUXExamAttempt } from '@/types/exam';
