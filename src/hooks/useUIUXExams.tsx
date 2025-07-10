@@ -263,6 +263,8 @@ export const useUIUXExams = () => {
       
       const { attemptId, answers: examAnswers } = data;
       
+      console.log('Starting exam submission with data:', { attemptId, examAnswers });
+
       // Get the attempt
       const { data: attempt } = await supabase
         .from('ui_ux_exam_attempts')
@@ -281,33 +283,40 @@ export const useUIUXExams = () => {
       console.log('Calculating score...');
       console.log('Total questions:', totalQuestions);
       console.log('User answers:', examAnswers);
+      console.log('Questions data:', questions);
 
       // Insert user answers and calculate score
       for (const question of questions) {
         const questionIndex = question.question_number - 1; // Convert to 0-based index
         const userAnswer = examAnswers[questionIndex];
         
-        if (userAnswer !== undefined) {
-          // Find the correct option for this question
+        console.log(`Processing question ${question.question_number} (index ${questionIndex}):`, {
+          questionId: question.id,
+          userAnswer,
+          options: question.options
+        });
+        
+        if (userAnswer !== undefined && userAnswer !== null) {
+          // Find the selected option by option_number (userAnswer is 0-based, but option_number is 1-based)
+          const selectedOption = question.options.find(opt => opt.option_number === (userAnswer + 1));
           const correctOption = question.options.find(opt => opt.is_correct);
-          const selectedOption = question.options.find(opt => opt.option_number === (userAnswer + 1)); // Convert back to 1-based
           
-          const isCorrect = correctOption && selectedOption && correctOption.id === selectedOption.id;
+          const isCorrect = selectedOption?.is_correct || false;
           
           if (isCorrect) {
             correctAnswers++;
           }
 
-          console.log(`Question ${question.question_number}:`, {
-            userAnswer,
-            correctOptionNumber: correctOption?.option_number,
-            selectedOptionId: selectedOption?.id,
-            correctOptionId: correctOption?.id,
+          console.log(`Question ${question.question_number} evaluation:`, {
+            userAnswerIndex: userAnswer,
+            selectedOptionNumber: userAnswer + 1,
+            selectedOption: selectedOption,
+            correctOption: correctOption,
             isCorrect
           });
 
-          // Insert user answer
-          await supabase
+          // Insert user answer into database
+          const { error: answerError } = await supabase
             .from('user_answers')
             .insert({
               attempt_id: attemptId,
@@ -315,14 +324,38 @@ export const useUIUXExams = () => {
               selected_option_id: selectedOption?.id || null,
               is_correct: isCorrect
             });
+
+          if (answerError) {
+            console.error('Error inserting user answer:', answerError);
+          } else {
+            console.log('Successfully inserted answer for question:', question.question_number);
+          }
+        } else {
+          console.log(`No answer provided for question ${question.question_number}`);
+          
+          // Insert null answer
+          const { error: answerError } = await supabase
+            .from('user_answers')
+            .insert({
+              attempt_id: attemptId,
+              question_id: question.id,
+              selected_option_id: null,
+              is_correct: false
+            });
+
+          if (answerError) {
+            console.error('Error inserting null answer:', answerError);
+          }
         }
       }
 
-      const isPassed = correctAnswers >= Math.ceil(totalQuestions * 0.7); // 70% passing score
+      const percentage = Math.round((correctAnswers / totalQuestions) * 100);
+      const isPassed = percentage >= 70; // 70% passing score
 
       console.log('Final score calculation:', {
         correctAnswers,
         totalQuestions,
+        percentage,
         isPassed
       });
 
@@ -337,7 +370,12 @@ export const useUIUXExams = () => {
         })
         .eq('id', attemptId);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Error updating exam attempt:', updateError);
+        throw updateError;
+      }
+
+      console.log('Successfully updated exam attempt');
 
       // Update current attempt state
       setCurrentAttempt(prev => prev ? {
@@ -350,8 +388,6 @@ export const useUIUXExams = () => {
 
       // Refresh attempts list
       await fetchUserAttempts();
-
-      const percentage = Math.round((correctAnswers / totalQuestions) * 100);
 
       toast({
         title: isPassed ? "Congratulations!" : "Exam Complete",
