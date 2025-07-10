@@ -62,7 +62,7 @@ export function ExamTakingScreen({
     
     questions.forEach((question, index) => {
       const userAnswer = answers[index];
-      const correctAnswer = question.correct_answer;
+      const correctAnswer = Number(question.correct_answer);
       
       console.log(`Question ${index + 1}:`, {
         question: question.question,

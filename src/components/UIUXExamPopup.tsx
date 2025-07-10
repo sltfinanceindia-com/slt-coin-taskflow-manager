@@ -36,7 +36,7 @@ export function UIUXExamPopup({
       
       questions.forEach((question, index) => {
         const userAnswer = answers[index];
-        const correctAnswer = question.correct_answer;
+        const correctAnswer = Number(question.correct_answer);
         
         if (userAnswer !== undefined && userAnswer === correctAnswer) {
           correctAnswers++;
