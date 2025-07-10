@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { TrainingManagement } from '@/components/TrainingManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TrendingUp, BookOpen, GraduationCap } from 'lucide-react';
+import { TrendingUp, BookOpen, GraduationCap, Clock, Award } from 'lucide-react';
 import { useTrainingSections } from '@/hooks/useTrainingSections';
 import { useUIUXExams } from '@/hooks/useUIUXExams';
 import { TrainingHeader } from '@/components/training/TrainingHeader';
