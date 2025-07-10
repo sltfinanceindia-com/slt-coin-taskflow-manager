@@ -136,6 +136,8 @@ export function useUIUXExams() {
       score: number; 
       totalQuestions: number;
     }) => {
+      console.log('Submitting exam with data:', { attemptId, answers, score, totalQuestions });
+      
       const { data, error } = await supabase
         .from('ui_ux_exam_attempts')
         .update({
@@ -147,9 +149,19 @@ export function useUIUXExams() {
         })
         .eq('id', attemptId)
         .select()
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error during submission:', error);
+        throw error;
+      }
+      
+      if (!data) {
+        console.error('No data returned from update, attemptId:', attemptId);
+        throw new Error('Failed to update exam attempt');
+      }
+      
+      console.log('Exam submitted successfully:', data);
       return data as UIUXExamAttempt;
     },
     onSuccess: (data) => {

@@ -155,12 +155,12 @@ export function UIUXExamPopup({
   if (!attempt) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px]" aria-describedby="exam-description">
           <DialogHeader>
             <DialogTitle>{exam?.title}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-muted-foreground">{exam?.description}</p>
+            <p id="exam-description" className="text-muted-foreground">{exam?.description}</p>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="font-medium">Questions:</span> {questions.length}
@@ -186,7 +186,7 @@ export function UIUXExamPopup({
   if (attempt.completed_at) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px]" aria-describedby="exam-results">
           <DialogHeader>
             <DialogTitle>Exam Completed</DialogTitle>
           </DialogHeader>
@@ -194,7 +194,7 @@ export function UIUXExamPopup({
             <div className="text-4xl font-bold text-primary">
               {attempt.score}/{attempt.total_questions}
             </div>
-            <p className="text-lg">
+            <p id="exam-results" className="text-lg">
               You scored {Math.round((attempt.score / attempt.total_questions) * 100)}%
             </p>
             <p className="text-muted-foreground">
@@ -208,7 +208,7 @@ export function UIUXExamPopup({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto" aria-describedby="exam-progress">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>{exam?.title}</span>
@@ -224,7 +224,7 @@ export function UIUXExamPopup({
         <div className="space-y-6">
           {/* Progress */}
           <div className="space-y-2">
-            <div className="flex justify-between text-sm">
+            <div id="exam-progress" className="flex justify-between text-sm">
               <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
               <span>{answeredQuestions}/{questions.length} answered</span>
             </div>
