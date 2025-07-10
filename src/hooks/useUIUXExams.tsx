@@ -6,7 +6,7 @@ export interface UIUXExam {
   id: string;
   title: string;
   description: string;
-  questions: any[];
+  questions: any;
   time_limit_minutes: number;
   is_active: boolean;
   created_at: string;
@@ -69,11 +69,21 @@ export function useUIUXExams() {
   // Start exam attempt
   const startExamMutation = useMutation({
     mutationFn: async (examId: string) => {
+      // First get the user's profile ID
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .single();
+
+      if (!profile) throw new Error('Profile not found');
+
       const { data, error } = await supabase
         .from('ui_ux_exam_attempts')
         .insert([
           {
             exam_id: examId,
+            user_id: profile.id,
           },
         ])
         .select()

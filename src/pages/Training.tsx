@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { TrainingManagement } from '@/components/TrainingManagement';
@@ -9,13 +9,33 @@ import { TrainingHeader } from '@/components/training/TrainingHeader';
 import { TrainingOverview } from '@/components/training/TrainingOverview';
 import { TrainingCourses } from '@/components/training/TrainingCourses';
 import { LoadingSpinner } from '@/components/training/LoadingSpinner';
+import { UIUXExamPopup } from '@/components/UIUXExamPopup';
+import { useUIUXExams } from '@/hooks/useUIUXExams';
 
 export default function Training() {
   const { user, profile, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
+  const [examPopupOpen, setExamPopupOpen] = useState(false);
 
   // Fetch published training sections for interns
   const { data: sections = [], isLoading } = useTrainingSections(!!user);
+  
+  // Fetch active exam for interns
+  const { activeExam, isLoadingActiveExam, userAttempts } = useUIUXExams();
+
+  // Check if user has an active exam and hasn't completed it
+  useEffect(() => {
+    if (profile?.role === 'intern' && activeExam && !isLoadingActiveExam) {
+      // Check if user has already completed this exam
+      const hasCompleted = userAttempts.some(
+        attempt => attempt.exam_id === activeExam.id && attempt.completed_at
+      );
+      
+      if (!hasCompleted) {
+        setExamPopupOpen(true);
+      }
+    }
+  }, [profile?.role, activeExam, isLoadingActiveExam, userAttempts]);
 
   if (loading) {
     return <LoadingSpinner />;
@@ -62,6 +82,15 @@ export default function Training() {
             <TrainingCourses sections={sections} isLoading={isLoading} />
           </TabsContent>
         </Tabs>
+
+        {/* UI/UX Exam Popup for Interns */}
+        {activeExam && (
+          <UIUXExamPopup
+            open={examPopupOpen}
+            onOpenChange={setExamPopupOpen}
+            exam={activeExam}
+          />
+        )}
       </div>
     </div>
   );

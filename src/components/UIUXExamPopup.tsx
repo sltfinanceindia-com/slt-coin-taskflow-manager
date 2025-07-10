@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Clock, BookOpen, CheckCircle } from 'lucide-react';
 import { useUIUXExams, UIUXExam, UIUXExamAttempt } from '@/hooks/useUIUXExams';
+import { supabase } from '@/integrations/supabase/client';
 
 interface UIUXExamPopupProps {
   open: boolean;
@@ -22,9 +23,10 @@ export function UIUXExamPopup({ open, onOpenChange, exam }: UIUXExamPopupProps) 
   const [timeLeft, setTimeLeft] = useState(exam.time_limit_minutes * 60); // in seconds
   const [examStartTime, setExamStartTime] = useState<Date | null>(null);
 
-  const currentQuestion = exam.questions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex + 1) / exam.questions.length) * 100;
-  const isLastQuestion = currentQuestionIndex === exam.questions.length - 1;
+  const questions = Array.isArray(exam.questions) ? exam.questions : [];
+  const currentQuestion = questions[currentQuestionIndex];
+  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+  const isLastQuestion = currentQuestionIndex === questions.length - 1;
 
   // Timer effect
   useEffect(() => {
@@ -57,16 +59,12 @@ export function UIUXExamPopup({ open, onOpenChange, exam }: UIUXExamPopupProps) 
 
   const handleStartExam = async () => {
     try {
-      const attempt = await new Promise<UIUXExamAttempt>((resolve, reject) => {
-        startExam(exam.id, {
-          onSuccess: (data: UIUXExamAttempt) => resolve(data),
-          onError: (error: any) => reject(error),
-        });
-      });
-      
-      setCurrentAttempt(attempt);
-      setExamStarted(true);
-      setExamStartTime(new Date());
+      startExam(exam.id);
+      // Wait for the mutation to complete
+      setTimeout(() => {
+        setExamStarted(true);
+        setExamStartTime(new Date());
+      }, 100);
     } catch (error) {
       console.error('Failed to start exam:', error);
     }
@@ -94,11 +92,11 @@ export function UIUXExamPopup({ open, onOpenChange, exam }: UIUXExamPopupProps) 
   };
 
   const handleSubmitExam = async () => {
-    if (!currentAttempt || !examStartTime) return;
+    if (!examStartTime) return;
 
     // Calculate score
     let score = 0;
-    exam.questions.forEach((question, index) => {
+    questions.forEach((question, index) => {
       const userAnswer = answers[index];
       if (userAnswer === question.correct_answer) {
         score++;
@@ -107,23 +105,30 @@ export function UIUXExamPopup({ open, onOpenChange, exam }: UIUXExamPopupProps) 
 
     const timeTaken = Math.floor((new Date().getTime() - examStartTime.getTime()) / 1000);
 
-    try {
-      await new Promise<void>((resolve, reject) => {
+    // Get the latest attempt for this user and exam
+    const { data: attempts } = await supabase
+      .from('ui_ux_exam_attempts')
+      .select('id')
+      .eq('exam_id', exam.id)
+      .order('started_at', { ascending: false })
+      .limit(1);
+
+    if (attempts && attempts.length > 0) {
+      try {
         submitExam({
-          attemptId: currentAttempt.id,
+          attemptId: attempts[0].id,
           answers,
           score,
-          totalQuestions: exam.questions.length,
+          totalQuestions: questions.length,
           timeTaken,
-        }, {
-          onSuccess: () => resolve(),
-          onError: (error: any) => reject(error),
         });
-      });
-      
-      onOpenChange(false);
-    } catch (error) {
-      console.error('Failed to submit exam:', error);
+        
+        setTimeout(() => {
+          onOpenChange(false);
+        }, 1000);
+      } catch (error) {
+        console.error('Failed to submit exam:', error);
+      }
     }
   };
 
@@ -159,7 +164,7 @@ export function UIUXExamPopup({ open, onOpenChange, exam }: UIUXExamPopupProps) 
                   </div>
                   <div className="flex items-center gap-2">
                     <BookOpen className="h-4 w-4" />
-                    <span>Total questions: {exam.questions.length}</span>
+                    <span>Total questions: {questions.length}</span>
                   </div>
                 </div>
 
@@ -197,7 +202,7 @@ export function UIUXExamPopup({ open, onOpenChange, exam }: UIUXExamPopupProps) 
           
           <div className="space-y-2">
             <div className="flex justify-between text-sm text-muted-foreground">
-              <span>Question {currentQuestionIndex + 1} of {exam.questions.length}</span>
+              <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
               <span>{Math.round(progress)}% Complete</span>
             </div>
             <Progress value={progress} className="w-full" />
