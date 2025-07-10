@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -5,11 +6,33 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Clock, CheckCircle2 } from 'lucide-react';
-import { TrainingAssessment, AssessmentAttempt } from '@/hooks/useTrainingAssessments';
+
+interface Assessment {
+  id: string;
+  title: string;
+  description: string;
+  instructions?: string;
+  questions: Question[];
+  time_limit_minutes?: number;
+  passing_score?: number;
+  max_attempts?: number;
+}
+
+interface Question {
+  id: string;
+  question: string;
+  options: string[];
+  correct_answer: number;
+}
+
+interface Attempt {
+  id: string;
+  started_at: string;
+}
 
 interface AssessmentTakerProps {
-  assessment: TrainingAssessment;
-  attempt: AssessmentAttempt | null;
+  assessment: Assessment;
+  attempt: Attempt | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (answers: any, score: number) => Promise<void>;

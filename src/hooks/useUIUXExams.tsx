@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -63,6 +62,7 @@ export function useUIUXExams() {
               question_number,
               question_text,
               question_options (
+                id,
                 option_number,
                 option_text,
                 is_correct
@@ -220,6 +220,7 @@ export function useUIUXExams() {
           id,
           question_number,
           question_options (
+            id,
             option_number,
             is_correct
           )
