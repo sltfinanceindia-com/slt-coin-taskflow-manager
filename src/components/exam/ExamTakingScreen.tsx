@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { UIUXExam, UIUXExamAttempt } from '@/hooks/useUIUXExams';
@@ -40,34 +41,81 @@ export function ExamTakingScreen({
   const progress = ((currentQuestionIndex + 1) / exam.questions.length) * 100;
   const answeredQuestions = Object.keys(answers).length;
 
-  // Debug log to see answers state
+  // Debug logging for answer tracking
   useEffect(() => {
-    console.log('Current answers state in ExamTakingScreen:', answers);
+    console.log('=== EXAM TAKING SCREEN STATE ===');
+    console.log('Current question index:', currentQuestionIndex + 1);
+    console.log('Current answers state:', answers);
     console.log('Answered questions count:', answeredQuestions);
-  }, [answers, answeredQuestions]);
+    console.log('Total questions:', exam.questions.length);
+    console.log('Progress:', Math.round(progress) + '%');
+    console.log('================================');
+  }, [answers, answeredQuestions, currentQuestionIndex, exam.questions.length, progress]);
 
   const handleAnswerChange = (optionIndex: number) => {
-    console.log(`Answer selected for question ${currentQuestionIndex}: option ${optionIndex}`);
+    console.log(`=== ANSWER SELECTION ===`);
+    console.log(`Question: ${currentQuestionIndex + 1}`);
+    console.log(`Selected option: ${String.fromCharCode(65 + optionIndex)} (index: ${optionIndex})`);
+    console.log(`========================`);
+    
     onAnswerSelect(currentQuestionIndex, optionIndex);
   };
 
   const handleCompleteExam = () => {
-    console.log('Submitting exam with answers:', answers);
-    console.log('Total answers to submit:', Object.keys(answers).length);
+    console.log('=== EXAM SUBMISSION ===');
+    console.log('Final answers to submit:', answers);
+    console.log('Total answers being submitted:', Object.keys(answers).length);
+    console.log('Attempt ID:', attempt.id);
+    
+    // Validate answers before submission
+    const validAnswers = Object.keys(answers).reduce((acc, key) => {
+      const questionIndex = parseInt(key);
+      const answerIndex = answers[questionIndex];
+      if (answerIndex >= 0 && questionIndex >= 0) {
+        acc[questionIndex] = answerIndex;
+      }
+      return acc;
+    }, {} as { [key: number]: number });
+    
+    console.log('Validated answers for submission:', validAnswers);
+    console.log('======================');
+
     onSubmitExam({
       attemptId: attempt.id,
-      answers
+      answers: validAnswers
     });
     setShowConfirmSubmit(false);
   };
 
+  const handleNavigateToQuestion = (questionIndex: number) => {
+    setCurrentQuestionIndex(questionIndex);
+  };
+
+  const handlePrevious = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentQuestionIndex < exam.questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    }
+  };
+
   if (!currentQuestion) {
-    return <div>Loading question...</div>;
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="w-full max-w-md">
+          <div className="text-center p-4">Loading question...</div>
+        </DialogContent>
+      </Dialog>
+    );
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full max-w-full h-full max-h-full m-0 p-0 rounded-none md:max-w-[90vw] md:max-h-[90vh] md:m-6 md:rounded-lg" aria-describedby="exam-taking-description">
+      <DialogContent className="w-full max-w-full h-full max-h-full m-0 p-0 rounded-none md:max-w-[95vw] md:max-h-[95vh] md:m-4 md:rounded-lg" aria-describedby="exam-taking-description">
         <ExamHeader 
           examTitle={exam.title}
           timeLeft={timeLeft}
@@ -76,45 +124,39 @@ export function ExamTakingScreen({
           isSubmitting={isSubmitting}
         />
         
-        <div className="flex-1 overflow-y-auto p-4 space-y-4" id="exam-taking-description">
-          <ExamProgressBar 
-            currentQuestionIndex={currentQuestionIndex}
-            totalQuestions={exam.questions.length}
-            answeredQuestions={answeredQuestions}
-          />
+        <div className="flex-1 overflow-y-auto" id="exam-taking-description">
+          <div className="p-4 md:p-6 space-y-6">
+            <ExamProgressBar 
+              currentQuestionIndex={currentQuestionIndex}
+              totalQuestions={exam.questions.length}
+              answeredQuestions={answeredQuestions}
+            />
 
-          <div className="flex flex-col space-y-4 lg:grid lg:grid-cols-4 lg:gap-6 lg:space-y-0">
-            <div className="order-2 lg:order-1 lg:col-span-1">
-              <QuestionNavigation 
-                totalQuestions={exam.questions.length}
-                currentQuestionIndex={currentQuestionIndex}
-                answers={answers}
-                onQuestionSelect={setCurrentQuestionIndex}
-              />
-            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Question Navigation - Left sidebar on desktop, top on mobile */}
+              <div className="lg:col-span-1 order-2 lg:order-1">
+                <QuestionNavigation 
+                  totalQuestions={exam.questions.length}
+                  currentQuestionIndex={currentQuestionIndex}
+                  answers={answers}
+                  onQuestionSelect={handleNavigateToQuestion}
+                />
+              </div>
 
-            <div className="order-1 lg:order-2 lg:col-span-3">
-              <QuestionContent 
-                question={currentQuestion}
-                currentQuestionIndex={currentQuestionIndex}
-                selectedAnswer={answers[currentQuestionIndex]}
-                onAnswerChange={handleAnswerChange}
-              />
-              
-              <div className="mt-4">
+              {/* Question Content - Main area */}
+              <div className="lg:col-span-3 order-1 lg:order-2 space-y-6">
+                <QuestionContent 
+                  question={currentQuestion}
+                  currentQuestionIndex={currentQuestionIndex}
+                  selectedAnswer={answers[currentQuestionIndex]}
+                  onAnswerChange={handleAnswerChange}
+                />
+                
                 <NavigationButtons 
                   currentQuestionIndex={currentQuestionIndex}
                   totalQuestions={exam.questions.length}
-                  onPrevious={() => {
-                    if (currentQuestionIndex > 0) {
-                      setCurrentQuestionIndex(currentQuestionIndex - 1);
-                    }
-                  }}
-                  onNext={() => {
-                    if (currentQuestionIndex < exam.questions.length - 1) {
-                      setCurrentQuestionIndex(currentQuestionIndex + 1);
-                    }
-                  }}
+                  onPrevious={handlePrevious}
+                  onNext={handleNext}
                 />
               </div>
             </div>

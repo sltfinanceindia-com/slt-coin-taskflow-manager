@@ -28,12 +28,11 @@ export function UIUXExamPopup({
   isSubmitting,
 }: UIUXExamPopupProps) {
   const { examWithQuestions } = useUIUXExams();
-  const { answers, handleAnswerSelect } = useExamAnswers(attempt, open);
+  const { answers, handleAnswerSelect, isLoading, totalAnswered } = useExamAnswers(attempt, open);
   
   const handleTimeExpired = () => {
     if (attempt && exam) {
-      // Auto-submit when time expires
-      console.log('Time expired, auto-submitting exam');
+      console.log('Time expired, auto-submitting exam with current answers:', answers);
       onSubmitExam({
         attemptId: attempt.id,
         answers
@@ -42,6 +41,15 @@ export function UIUXExamPopup({
   };
 
   const { timeLeft, formatTime } = useExamTimer(exam, attempt, open, handleTimeExpired);
+
+  // Debug logging for popup state
+  console.log('=== EXAM POPUP STATE ===');
+  console.log('Exam:', exam?.title);
+  console.log('Attempt:', attempt ? `ID: ${attempt.id}, Completed: ${!!attempt.completed_at}` : 'None');
+  console.log('Current answers:', answers);
+  console.log('Total answered:', totalAnswered);
+  console.log('Is loading answers:', isLoading);
+  console.log('========================');
 
   // If no attempt, show exam start screen
   if (!attempt) {
