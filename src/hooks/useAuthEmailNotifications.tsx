@@ -1,44 +1,77 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useEmailNotifications } from '@/hooks/useEmailNotifications';
+import { useSessionLogs } from '@/hooks/useSessionLogs';
 import { supabase } from '@/integrations/supabase/client';
 
 export function useAuthEmailNotifications() {
   const { profile, user } = useAuth();
   const emailNotifications = useEmailNotifications();
+  const { startSession, endSession } = useSessionLogs();
+  const currentSessionId = useRef<string | null>(null);
+  const profileRef = useRef(profile);
+
+  // Keep profile ref updated
+  useEffect(() => {
+    profileRef.current = profile;
+  }, [profile]);
 
   useEffect(() => {
-    // Set up auth state listener for email notifications
+    // Set up auth state listener for email notifications and session tracking
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user && profile) {
-          // Send login notification email
+      (event, session) => {
+        console.log('Auth state change:', event, session?.user?.id);
+
+        if (event === 'SIGNED_IN' && session?.user) {
+          // Start session tracking immediately
+          setTimeout(() => {
+            startSession();
+          }, 0);
+
+          // Send login notification after profile is loaded
           setTimeout(async () => {
-            try {
-              await emailNotifications.sendLoginNotificationEmail({
-                to: profile.email,
-                recipientName: profile.full_name,
-              });
-            } catch (error) {
-              console.error('Failed to send login notification:', error);
+            const currentProfile = profileRef.current;
+            if (currentProfile) {
+              try {
+                await emailNotifications.sendLoginNotificationEmail({
+                  to: currentProfile.email,
+                  recipientName: currentProfile.full_name,
+                });
+              } catch (error) {
+                console.error('Failed to send login notification:', error);
+              }
             }
-          }, 2000); // Delay to ensure profile is loaded
+          }, 2000);
         }
 
-        if (event === 'SIGNED_OUT' && profile) {
-          // Send logout notification email
-          try {
-            await emailNotifications.sendLogoutNotificationEmail({
-              to: profile.email,
-              recipientName: profile.full_name,
-            });
-          } catch (error) {
-            console.error('Failed to send logout notification:', error);
+        if (event === 'SIGNED_OUT') {
+          // Use stored profile info for logout notification
+          const currentProfile = profileRef.current;
+          if (currentProfile) {
+            // Send logout notification immediately
+            setTimeout(async () => {
+              try {
+                await emailNotifications.sendLogoutNotificationEmail({
+                  to: currentProfile.email,
+                  recipientName: currentProfile.full_name,
+                });
+              } catch (error) {
+                console.error('Failed to send logout notification:', error);
+              }
+            }, 0);
+          }
+
+          // End session if we have an active session
+          if (currentSessionId.current) {
+            setTimeout(() => {
+              endSession(currentSessionId.current!);
+              currentSessionId.current = null;
+            }, 0);
           }
         }
       }
     );
 
     return () => subscription.unsubscribe();
-  }, [profile, emailNotifications]);
+  }, [emailNotifications, startSession, endSession]);
 }

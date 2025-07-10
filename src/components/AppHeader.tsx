@@ -23,18 +23,29 @@ export function AppHeader() {
   const pendingCoins = getPendingCoins()
 
   const handleSignOut = async () => {
-    const { error } = await signOut()
-    if (error) {
+    try {
+      const { error } = await signOut();
+      
+      if (error) {
+        console.error('Sign out error:', error);
+        toast({
+          title: "Sign Out Failed",
+          description: error.message || "An error occurred during sign out",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Signed Out",
+          description: "You have been successfully signed out.",
+        });
+      }
+    } catch (error) {
+      console.error('Unexpected sign out error:', error);
       toast({
-        title: "Sign Out Failed",
-        description: error.message,
+        title: "Sign Out Error",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
-      })
-    } else {
-      toast({
-        title: "Signed Out",
-        description: "You have been successfully signed out.",
-      })
+      });
     }
   }
 

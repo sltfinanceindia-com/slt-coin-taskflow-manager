@@ -33,20 +33,23 @@ export function useEmailNotifications() {
       }
 
       // Log the email notification in the database
-      const { error: dbError } = await supabase
-        .from('email_notifications')
-        .insert({
-          user_id: profile?.id || '',
-          email_type: emailData.emailType,
-          email_to: emailData.to,
-          subject: `${emailData.emailType.replace('_', ' ').toUpperCase()}: ${emailData.taskTitle || 'Notification'}`,
-          task_id: emailData.taskId || null,
-          comment_id: emailData.commentId || null,
-        });
+      try {
+        const { error: dbError } = await supabase
+          .from('email_notifications')
+          .insert({
+            user_id: profile?.id || '',
+            email_type: emailData.emailType,
+            email_to: emailData.to,
+            subject: `${emailData.emailType.replace('_', ' ').toUpperCase()}: ${emailData.taskTitle || 'Notification'}`,
+            task_id: emailData.taskId || null,
+            comment_id: emailData.commentId || null,
+          });
 
-      if (dbError) {
-        console.error('Error logging email notification:', dbError);
-        // Don't throw here as the email might have been sent successfully
+        if (dbError) {
+          console.error('Error logging email notification:', dbError);
+        }
+      } catch (logError) {
+        console.error('Failed to log email notification:', logError);
       }
 
       return data;
