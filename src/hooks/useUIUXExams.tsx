@@ -1,30 +1,35 @@
-import { useState } from 'react';
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 
-export interface UIUXExam {
-  id: string;
-  title: string;
-  description: string | null;
-  questions: UIUXQuestion[];
-  time_limit_minutes: number;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  total_questions: number;
-}
-
-export interface UIUXQuestion {
+export interface ExamQuestion {
   id: string;
   question_number: number;
   question_text: string;
-  options: string[];
-  correct_answer?: number; // Only available for admins
+  options: ExamOption[];
 }
 
-export interface UIUXExamAttempt {
+export interface ExamOption {
+  id: string;
+  option_number: number;
+  option_text: string;
+  is_correct: boolean;
+}
+
+export interface ExamData {
+  id: string;
+  title: string;
+  description: string | null;
+  time_limit_minutes: number;
+  passing_score: number;
+  total_questions: number;
+  is_active: boolean;
+  questions: ExamQuestion[];
+}
+
+export interface ExamAttempt {
   id: string;
   exam_id: string;
   user_id: string;
@@ -33,85 +38,83 @@ export interface UIUXExamAttempt {
   started_at: string;
   completed_at: string | null;
   time_taken_minutes: number | null;
-  is_passed: boolean | null;
+  is_passed: boolean;
+}
+
+export interface UserAnswer {
+  question_id: string;
+  selected_option_id: string | null;
+  is_correct: boolean;
 }
 
 export function useUIUXExams() {
   const { profile } = useAuth();
-  const queryClient = useQueryClient();
 
-  // Fetch available exams with questions (without correct answers for users)
-  const { data: exams = [], isLoading: examsLoading } = useQuery({
+  const { data: exams, isLoading: examsLoading, error: examsError } = useQuery({
     queryKey: ['ui-ux-exams'],
     queryFn: async () => {
-      const { data: examData, error: examError } = await supabase
+      const { data, error } = await supabase
         .from('ui_ux_exams')
         .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
-      if (examError) throw examError;
-
-      // Fetch questions and options for each exam
-      const examsWithQuestions = await Promise.all(
-        examData.map(async (exam) => {
-          const { data: questions, error: questionsError } = await supabase
-            .from('exam_questions')
-            .select(`
-              id,
-              question_number,
-              question_text,
-              question_options (
-                id,
-                option_number,
-                option_text,
-                is_correct
-              )
-            `)
-            .eq('exam_id', exam.id)
-            .order('question_number');
-
-          if (questionsError) throw questionsError;
-
-          const formattedQuestions = questions.map((q: any) => {
-            const options = q.question_options
-              .sort((a: any, b: any) => a.option_number - b.option_number)
-              .map((opt: any) => opt.option_text);
-
-            const question: UIUXQuestion = {
-              id: q.id,
-              question_number: q.question_number,
-              question_text: q.question_text,
-              options
-            };
-
-            // Only include correct answer for admins
-            if (profile?.role === 'admin') {
-              const correctOption = q.question_options.find((opt: any) => opt.is_correct);
-              if (correctOption) {
-                question.correct_answer = correctOption.option_number;
-              }
-            }
-
-            return question;
-          });
-
-          return {
-            ...exam,
-            questions: formattedQuestions
-          } as UIUXExam;
-        })
-      );
-
-      return examsWithQuestions;
+      if (error) throw error;
+      return data;
     },
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
   });
 
-  // Fetch user's exam attempts
-  const { data: attempts = [], isLoading: attemptsLoading } = useQuery({
-    queryKey: ['ui-ux-exam-attempts', profile?.id],
+  const { data: examWithQuestions, isLoading: examQuestionsLoading } = useQuery({
+    queryKey: ['exam-with-questions'],
+    queryFn: async () => {
+      if (!exams || exams.length === 0) return null;
+      
+      const exam = exams[0]; // Get the first active exam
+      
+      // Fetch questions for this exam
+      const { data: questions, error: questionsError } = await supabase
+        .from('exam_questions')
+        .select(`
+          id,
+          question_number,
+          question_text,
+          question_options (
+            id,
+            option_number,
+            option_text,
+            is_correct
+          )
+        `)
+        .eq('exam_id', exam.id)
+        .order('question_number', { ascending: true });
+
+      if (questionsError) throw questionsError;
+
+      // Transform the data to match our interface
+      const transformedQuestions: ExamQuestion[] = questions.map(q => ({
+        id: q.id,
+        question_number: q.question_number,
+        question_text: q.question_text,
+        options: (q.question_options || []).map((opt: any) => ({
+          id: opt.id,
+          option_number: opt.option_number,
+          option_text: opt.option_text,
+          is_correct: opt.is_correct
+        })).sort((a: ExamOption, b: ExamOption) => a.option_number - b.option_number)
+      }));
+
+      const examData: ExamData = {
+        ...exam,
+        questions: transformedQuestions
+      };
+
+      return examData;
+    },
+    enabled: !!exams && exams.length > 0,
+  });
+
+  const { data: attempts, isLoading: attemptsLoading } = useQuery({
+    queryKey: ['exam-attempts', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
       
@@ -122,44 +125,16 @@ export function useUIUXExams() {
         .order('started_at', { ascending: false });
 
       if (error) throw error;
-      
-      return data as UIUXExamAttempt[];
+      return data;
     },
     enabled: !!profile?.id,
-    staleTime: 30 * 1000,
-    gcTime: 2 * 60 * 1000,
   });
 
-  // Start exam mutation - prevents duplicates
-  const startExam = useMutation({
+  const queryClient = useQueryClient();
+
+  const startExamMutation = useMutation({
     mutationFn: async (examId: string) => {
       if (!profile?.id) throw new Error('User not authenticated');
-
-      // Check for existing incomplete attempt
-      const { data: existingAttempt } = await supabase
-        .from('ui_ux_exam_attempts')
-        .select('*')
-        .eq('exam_id', examId)
-        .eq('user_id', profile.id)
-        .is('completed_at', null)
-        .maybeSingle();
-
-      if (existingAttempt) {
-        return existingAttempt as UIUXExamAttempt;
-      }
-
-      // Check if user has already completed this exam
-      const { data: completedAttempt } = await supabase
-        .from('ui_ux_exam_attempts')
-        .select('*')
-        .eq('exam_id', examId)
-        .eq('user_id', profile.id)
-        .not('completed_at', 'is', null)
-        .maybeSingle();
-
-      if (completedAttempt) {
-        throw new Error('You have already completed this exam');
-      }
 
       const { data, error } = await supabase
         .from('ui_ux_exam_attempts')
@@ -167,156 +142,175 @@ export function useUIUXExams() {
           exam_id: examId,
           user_id: profile.id,
           score: 0,
-          total_questions: 0,
+          total_questions: examWithQuestions?.total_questions || 0,
           started_at: new Date().toISOString(),
         })
         .select()
         .single();
 
       if (error) throw error;
-      return data as UIUXExamAttempt;
+      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ui-ux-exam-attempts'] });
+      queryClient.invalidateQueries({ queryKey: ['exam-attempts'] });
       toast({
         title: "Exam Started",
         description: "Your exam has been started. Good luck!",
       });
     },
-    onError: (error: any) => {
-      console.error('Failed to start exam:', error);
+    onError: (error) => {
+      console.error('Error starting exam:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to start exam. Please try again.",
+        description: "Failed to start exam. Please try again.",
         variant: "destructive",
       });
     },
   });
 
-  // Submit exam mutation with server-side auto-evaluation
-  const submitExam = useMutation({
+  const submitAnswerMutation = useMutation({
+    mutationFn: async ({ 
+      attemptId, 
+      questionId, 
+      selectedOptionId 
+    }: { 
+      attemptId: string; 
+      questionId: string; 
+      selectedOptionId: string | null; 
+    }) => {
+      if (!selectedOptionId) return null;
+
+      // Get the correct answer for this question
+      const { data: correctOption, error: optionError } = await supabase
+        .from('question_options')
+        .select('is_correct')
+        .eq('id', selectedOptionId)
+        .single();
+
+      if (optionError) throw optionError;
+
+      const { data, error } = await supabase
+        .from('user_answers')
+        .upsert({
+          attempt_id: attemptId,
+          question_id: questionId,
+          selected_option_id: selectedOptionId,
+          is_correct: correctOption.is_correct || false,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const completeExamMutation = useMutation({
     mutationFn: async ({ 
       attemptId, 
       answers 
     }: { 
       attemptId: string; 
-      answers: { [key: number]: number };
+      answers: Record<string, string>; 
     }) => {
-      console.log('Submitting exam with data:', { attemptId, answers });
-      
-      // Get the attempt to find the exam
+      // Calculate score
+      const { data: userAnswers, error: answersError } = await supabase
+        .from('user_answers')
+        .select('is_correct')
+        .eq('attempt_id', attemptId);
+
+      if (answersError) throw answersError;
+
+      const correctAnswers = userAnswers.filter(answer => answer.is_correct).length;
+      const totalQuestions = examWithQuestions?.total_questions || 0;
+      const score = Math.round((correctAnswers / totalQuestions) * 100);
+      const isPassed = score >= (examWithQuestions?.passing_score || 70);
+
+      // Calculate time taken
       const { data: attempt, error: attemptError } = await supabase
         .from('ui_ux_exam_attempts')
-        .select('exam_id')
+        .select('started_at')
         .eq('id', attemptId)
         .single();
 
       if (attemptError) throw attemptError;
 
-      // Get exam questions with correct answers for scoring
-      const { data: questions, error: questionsError } = await supabase
-        .from('exam_questions')
-        .select(`
-          id,
-          question_number,
-          question_options (
-            id,
-            option_number,
-            is_correct
-          )
-        `)
-        .eq('exam_id', attempt.exam_id)
-        .order('question_number');
+      const startTime = new Date(attempt.started_at);
+      const endTime = new Date();
+      const timeTakenMinutes = Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60));
 
-      if (questionsError) throw questionsError;
-
-      // Calculate score and store individual answers
-      let correctCount = 0;
-      const userAnswerPromises = [];
-
-      for (const question of questions) {
-        const questionIndex = question.question_number - 1; // Convert to 0-based index
-        const userSelectedOption = answers[questionIndex];
-        
-        let isCorrect = false;
-        let selectedOptionId = null;
-
-        if (userSelectedOption !== undefined) {
-          const correctOption = question.question_options.find((opt: any) => opt.is_correct);
-          const selectedOption = question.question_options.find((opt: any) => opt.option_number === userSelectedOption);
-          
-          if (selectedOption) {
-            selectedOptionId = selectedOption.id;
-            isCorrect = selectedOption.is_correct;
-            if (isCorrect) correctCount++;
-          }
-        }
-
-        // Store individual answer
-        userAnswerPromises.push(
-          supabase
-            .from('user_answers')
-            .insert({
-              attempt_id: attemptId,
-              question_id: question.id,
-              selected_option_id: selectedOptionId,
-              is_correct: isCorrect
-            })
-        );
-      }
-
-      // Save all user answers
-      await Promise.all(userAnswerPromises);
-
-      // Calculate final score and update attempt
-      const totalQuestions = questions.length;
-      const scorePercentage = Math.round((correctCount / totalQuestions) * 100);
-      const isPassed = scorePercentage >= 70; // Assuming 70% is passing
-
-      const { data: updatedAttempt, error: updateError } = await supabase
+      // Update the attempt
+      const { data, error } = await supabase
         .from('ui_ux_exam_attempts')
         .update({
-          score: correctCount,
-          total_questions: totalQuestions,
           completed_at: new Date().toISOString(),
-          is_passed: isPassed
+          score,
+          time_taken_minutes: timeTakenMinutes,
+          is_passed: isPassed,
         })
         .eq('id', attemptId)
         .select()
         .single();
 
-      if (updateError) throw updateError;
-      
-      console.log('Exam submitted successfully:', updatedAttempt);
-      return updatedAttempt as UIUXExamAttempt;
+      if (error) throw error;
+      return data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['ui-ux-exam-attempts'] });
-      queryClient.invalidateQueries({ queryKey: ['profile-stats'] });
-      const percentage = Math.round((data.score / data.total_questions) * 100);
+      queryClient.invalidateQueries({ queryKey: ['exam-attempts'] });
+      const message = data?.is_passed 
+        ? `Congratulations! You passed with ${data.score}%` 
+        : `You scored ${data?.score}%. You need ${examWithQuestions?.passing_score}% to pass.`;
+      
       toast({
-        title: data.is_passed ? "Exam Passed!" : "Exam Completed",
-        description: `Your score: ${data.score}/${data.total_questions} (${percentage}%)`,
-        variant: data.is_passed ? "default" : "destructive",
+        title: data?.is_passed ? "Exam Passed!" : "Exam Completed",
+        description: message,
+        variant: data?.is_passed ? "default" : "destructive",
       });
     },
     onError: (error) => {
-      console.error('Failed to submit exam:', error);
+      console.error('Error completing exam:', error);
       toast({
         title: "Error",
-        description: "Failed to submit exam. Please try again.",
+        description: "Failed to complete exam. Please try again.",
         variant: "destructive",
       });
     },
   });
 
+  const getUserAnswersMutation = useMutation({
+    mutationFn: async (attemptId: string) => {
+      const { data, error } = await supabase
+        .from('user_answers')
+        .select(`
+          question_id,
+          selected_option_id,
+          is_correct,
+          question_options (
+            option_text,
+            is_correct
+          )
+        `)
+        .eq('attempt_id', attemptId);
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return {
     exams,
+    examWithQuestions,
     attempts,
-    isLoading: examsLoading || attemptsLoading,
-    startExam: startExam.mutate,
-    isStarting: startExam.isPending,
-    submitExam: submitExam.mutate,
-    isSubmitting: submitExam.isPending,
+    isLoading: examsLoading || examQuestionsLoading || attemptsLoading,
+    error: examsError,
+    startExam: startExamMutation.mutate,
+    isStartingExam: startExamMutation.isPending,
+    submitAnswer: submitAnswerMutation.mutate,
+    isSubmittingAnswer: submitAnswerMutation.isPending,
+    completeExam: completeExamMutation.mutate,
+    isCompletingExam: completeExamMutation.isPending,
+    getUserAnswers: getUserAnswersMutation.mutate,
+    isGettingAnswers: getUserAnswersMutation.isPending,
+    userAnswersData: getUserAnswersMutation.data,
   };
 }
