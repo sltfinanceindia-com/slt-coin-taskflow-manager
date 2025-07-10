@@ -42,10 +42,12 @@ export function ExamTakingScreen({
   const answeredQuestions = Object.keys(answers).length;
 
   const handleAnswerChange = (optionIndex: number) => {
+    console.log(`Answer selected for question ${currentQuestionIndex}: option ${optionIndex}`);
     onAnswerSelect(currentQuestionIndex, optionIndex);
   };
 
   const handleCompleteExam = () => {
+    console.log('Submitting exam with answers:', answers);
     onSubmitExam({
       attemptId: attempt.id,
       answers

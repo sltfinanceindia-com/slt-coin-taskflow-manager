@@ -264,6 +264,7 @@ export const useUIUXExams = () => {
       const { attemptId, answers: examAnswers } = data;
       
       console.log('Starting exam submission with data:', { attemptId, examAnswers });
+      console.log('Questions available:', questions.length);
 
       // Get the attempt
       const { data: attempt } = await supabase
@@ -282,70 +283,61 @@ export const useUIUXExams = () => {
 
       console.log('Calculating score...');
       console.log('Total questions:', totalQuestions);
-      console.log('User answers:', examAnswers);
-      console.log('Questions data:', questions);
+      console.log('User answers received:', examAnswers);
 
-      // Insert user answers and calculate score
+      // Clear any existing answers for this attempt (in case of retake)
+      await supabase
+        .from('user_answers')
+        .delete()
+        .eq('attempt_id', attemptId);
+
+      // Process each question
       for (const question of questions) {
-        const questionIndex = question.question_number - 1; // Convert to 0-based index
-        const userAnswer = examAnswers[questionIndex];
+        const questionIndex = question.question_number - 1; // Questions are 1-based, answers are 0-based
+        const userAnswerIndex = examAnswers[questionIndex]; // This is the selected option index (0-based)
         
-        console.log(`Processing question ${question.question_number} (index ${questionIndex}):`, {
+        console.log(`Processing question ${question.question_number}:`, {
           questionId: question.id,
-          userAnswer,
-          options: question.options
+          questionIndex,
+          userAnswerIndex,
+          totalOptions: question.options.length
         });
-        
-        if (userAnswer !== undefined && userAnswer !== null) {
-          // Find the selected option by option_number (userAnswer is 0-based, but option_number is 1-based)
-          const selectedOption = question.options.find(opt => opt.option_number === (userAnswer + 1));
-          const correctOption = question.options.find(opt => opt.is_correct);
-          
-          const isCorrect = selectedOption?.is_correct || false;
+
+        let selectedOption = null;
+        let isCorrect = false;
+
+        if (userAnswerIndex !== undefined && userAnswerIndex !== null) {
+          // Find the selected option (userAnswerIndex is 0-based array index)
+          selectedOption = question.options[userAnswerIndex];
+          isCorrect = selectedOption?.is_correct || false;
           
           if (isCorrect) {
             correctAnswers++;
           }
 
-          console.log(`Question ${question.question_number} evaluation:`, {
-            userAnswerIndex: userAnswer,
-            selectedOptionNumber: userAnswer + 1,
-            selectedOption: selectedOption,
-            correctOption: correctOption,
-            isCorrect
+          console.log(`Question ${question.question_number} - User selected option ${userAnswerIndex}:`, {
+            selectedOption: selectedOption?.option_text,
+            isCorrect,
+            correctOption: question.options.find(opt => opt.is_correct)?.option_text
+          });
+        } else {
+          console.log(`Question ${question.question_number} - No answer provided`);
+        }
+
+        // Insert user answer into database
+        const { error: answerError } = await supabase
+          .from('user_answers')
+          .insert({
+            attempt_id: attemptId,
+            question_id: question.id,
+            selected_option_id: selectedOption?.id || null,
+            is_correct: isCorrect
           });
 
-          // Insert user answer into database
-          const { error: answerError } = await supabase
-            .from('user_answers')
-            .insert({
-              attempt_id: attemptId,
-              question_id: question.id,
-              selected_option_id: selectedOption?.id || null,
-              is_correct: isCorrect
-            });
-
-          if (answerError) {
-            console.error('Error inserting user answer:', answerError);
-          } else {
-            console.log('Successfully inserted answer for question:', question.question_number);
-          }
+        if (answerError) {
+          console.error(`Error inserting answer for question ${question.question_number}:`, answerError);
         } else {
-          console.log(`No answer provided for question ${question.question_number}`);
-          
-          // Insert null answer
-          const { error: answerError } = await supabase
-            .from('user_answers')
-            .insert({
-              attempt_id: attemptId,
-              question_id: question.id,
-              selected_option_id: null,
-              is_correct: false
-            });
-
-          if (answerError) {
-            console.error('Error inserting null answer:', answerError);
-          }
+          console.log(`Successfully inserted answer for question ${question.question_number}`);
         }
       }
 
