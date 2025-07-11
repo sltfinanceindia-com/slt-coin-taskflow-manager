@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTasks } from '@/hooks/useTasks';
@@ -17,7 +18,6 @@ import { CoinManagement } from '@/components/CoinManagement';
 import { MyCoins } from '@/components/MyCoins';
 import { DashboardWidgets } from '@/components/DashboardWidgets';
 import { EnhancedOverview } from '@/components/EnhancedOverview';
-import { QuizCreator } from '@/components/QuizCreator';
 import { useSessionLogs } from '@/hooks/useSessionLogs';
 import { ProjectManagement } from '@/components/ProjectManagement';
 import { Coins, LogOut, User, Clock, CheckCircle, BarChart3, Users, Plus, UserCircle } from 'lucide-react';
@@ -174,7 +174,6 @@ export default function Dashboard() {
                 {profile?.role === 'admin' && (
                   <div className="flex gap-2">
                     <CreateTaskDialog onCreateTask={createTask} isCreating={isCreating} />
-                    <QuizCreator />
                   </div>
                 )}
               </div>

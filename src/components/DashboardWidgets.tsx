@@ -2,19 +2,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Coins, Clock, Target, TrendingUp, Calendar, Award, GraduationCap } from 'lucide-react';
+import { Coins, Clock, Target, TrendingUp, Calendar } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { useTasks } from '@/hooks/useTasks';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
-import { useUIUXExams } from '@/hooks/useUIUXExams';
 
 export function DashboardWidgets() {
   const { profile } = useAuth();
   const { stats } = useProfile();
   const { tasks } = useTasks();
   const { getWeeklyHours } = useTimeLogs();
-  const { attempts } = useUIUXExams();
 
   const myTasks = tasks.filter(task => task.assigned_to === profile?.id);
   const pendingTasks = myTasks.filter(task => 
@@ -22,13 +20,6 @@ export function DashboardWidgets() {
   );
 
   const weeklyHours = getWeeklyHours();
-
-  // Calculate exam statistics from attempts
-  const completedExams = attempts.filter(attempt => attempt.completed_at);
-  const averageScore = completedExams.length > 0 
-    ? completedExams.reduce((sum, attempt) => sum + (attempt.score / attempt.total_questions * 100), 0) / completedExams.length
-    : 0;
-  const latestExam = completedExams[0]; // Most recent exam
 
   const widgets = [
     {
@@ -58,21 +49,12 @@ export function DashboardWidgets() {
       change: `${myTasks.length} total`,
       urgent: pendingTasks.some(task => task.priority === 'urgent'),
     },
-    {
-      title: 'Exam Average',
-      value: `${Math.round(averageScore)}%`,
-      icon: GraduationCap,
-      color: 'text-purple-500',
-      bgColor: 'bg-purple-50',
-      change: `${completedExams.length} completed`,
-      progress: averageScore,
-    },
   ];
 
   return (
     <div className="space-y-6">
       {/* Quick Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {widgets.map((widget, index) => (
           <Card key={index} className="hover:shadow-md transition-shadow">
             <CardContent className="p-4">
@@ -146,62 +128,30 @@ export function DashboardWidgets() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <GraduationCap className="h-5 w-5" />
-              Exam Results
+              <TrendingUp className="h-5 w-5" />
+              Weekly Progress
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {latestExam && (
-                <div className="p-3 bg-muted/50 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">Latest Exam</span>
-                    <Badge 
-                      variant={latestExam.is_passed ? "default" : "destructive"} 
-                      className="text-xs"
-                    >
-                      {latestExam.is_passed ? "Passed" : "Failed"}
-                    </Badge>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Score: {latestExam.score}/{latestExam.total_questions}</span>
-                      <span className="text-muted-foreground">
-                        {new Date(latestExam.completed_at!).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <Progress 
-                      value={(latestExam.score / latestExam.total_questions) * 100} 
-                      className="h-2" 
-                    />
-                  </div>
-                </div>
-              )}
-              
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span>Overall Average</span>
-                  <span>{Math.round(averageScore)}%</span>
+                  <span>Hours Logged</span>
+                  <span>{weeklyHours}h / 40h</span>
                 </div>
-                <Progress value={averageScore} className="h-2" />
+                <Progress value={Math.min((weeklyHours / 40) * 100, 100)} className="h-2" />
               </div>
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="space-y-1">
-                  <span className="text-muted-foreground">Completed</span>
-                  <p className="font-medium">{completedExams.length}</p>
+                  <span className="text-muted-foreground">Completed Tasks</span>
+                  <p className="font-medium">{myTasks.filter(t => t.status === 'verified').length}</p>
                 </div>
                 <div className="space-y-1">
-                  <span className="text-muted-foreground">Passed</span>
-                  <p className="font-medium">{completedExams.filter(e => e.is_passed).length}</p>
+                  <span className="text-muted-foreground">Pending Tasks</span>
+                  <p className="font-medium">{pendingTasks.length}</p>
                 </div>
               </div>
-
-              {completedExams.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  No exams completed yet
-                </p>
-              )}
             </div>
           </CardContent>
         </Card>
