@@ -56,6 +56,205 @@ export type Database = {
           },
         ]
       }
+      assessment_answers: {
+        Row: {
+          answered_at: string
+          attempt_id: string
+          id: string
+          is_correct: boolean | null
+          question_id: string
+          selected_answer: string | null
+        }
+        Insert: {
+          answered_at?: string
+          attempt_id: string
+          id?: string
+          is_correct?: boolean | null
+          question_id: string
+          selected_answer?: string | null
+        }
+        Update: {
+          answered_at?: string
+          attempt_id?: string
+          id?: string
+          is_correct?: boolean | null
+          question_id?: string
+          selected_answer?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_answers_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assessment_attempts: {
+        Row: {
+          assessment_id: string
+          correct_answers: number | null
+          created_at: string
+          id: string
+          is_passed: boolean | null
+          score: number | null
+          started_at: string
+          status: string
+          submitted_at: string | null
+          time_remaining_seconds: number | null
+          total_questions: number | null
+          user_id: string
+        }
+        Insert: {
+          assessment_id: string
+          correct_answers?: number | null
+          created_at?: string
+          id?: string
+          is_passed?: boolean | null
+          score?: number | null
+          started_at?: string
+          status?: string
+          submitted_at?: string | null
+          time_remaining_seconds?: number | null
+          total_questions?: number | null
+          user_id: string
+        }
+        Update: {
+          assessment_id?: string
+          correct_answers?: number | null
+          created_at?: string
+          id?: string
+          is_passed?: boolean | null
+          score?: number | null
+          started_at?: string
+          status?: string
+          submitted_at?: string | null
+          time_remaining_seconds?: number | null
+          total_questions?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_attempts_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assessment_questions: {
+        Row: {
+          assessment_id: string
+          correct_answer: string
+          created_at: string
+          id: string
+          option_a: string
+          option_b: string
+          option_c: string
+          option_d: string
+          question_order: number
+          question_text: string
+        }
+        Insert: {
+          assessment_id: string
+          correct_answer: string
+          created_at?: string
+          id?: string
+          option_a: string
+          option_b: string
+          option_c: string
+          option_d: string
+          question_order: number
+          question_text: string
+        }
+        Update: {
+          assessment_id?: string
+          correct_answer?: string
+          created_at?: string
+          id?: string
+          option_a?: string
+          option_b?: string
+          option_c?: string
+          option_d?: string
+          question_order?: number
+          question_text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_questions_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assessments: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          instructions: string | null
+          is_published: boolean
+          passing_score: number
+          time_limit_minutes: number
+          title: string
+          total_questions: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          instructions?: string | null
+          is_published?: boolean
+          passing_score?: number
+          time_limit_minutes?: number
+          title: string
+          total_questions?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          instructions?: string | null
+          is_published?: boolean
+          passing_score?: number
+          time_limit_minutes?: number
+          title?: string
+          total_questions?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coin_transactions: {
         Row: {
           bonus_coins: number | null

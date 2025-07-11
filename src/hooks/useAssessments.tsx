@@ -223,13 +223,9 @@ export function useAssessments() {
     isLoading: assessmentsQuery.isLoading,
     error: assessmentsQuery.error,
     getAssessmentQuestions,
-    startAssessment: (assessmentId: string, options?: { onSuccess?: (data: AssessmentAttempt) => void; onError?: (error: any) => void }) => {
-      startAssessmentMutation.mutate(assessmentId, options);
-    },
+    startAssessment: startAssessmentMutation.mutate,
     submitAnswer: submitAnswerMutation.mutate,
-    submitAssessment: (attemptId: string, options?: { onSuccess?: (data: AssessmentAttempt) => void; onError?: (error: any) => void }) => {
-      submitAssessmentMutation.mutate(attemptId, options);
-    },
+    submitAssessment: submitAssessmentMutation.mutate,
     isStarting: startAssessmentMutation.isPending,
     isSubmitting: submitAssessmentMutation.isPending,
   };

@@ -40,19 +40,16 @@ export function AssessmentInterface({ assessmentId }: AssessmentInterfaceProps) 
     loadQuestions();
   }, [assessmentId, assessment, getAssessmentQuestions]);
 
-  const handleStartAssessment = async () => {
-    try {
-      const attempt = await new Promise<AssessmentAttempt>((resolve, reject) => {
-        startAssessment(assessmentId, {
-          onSuccess: (data) => resolve(data),
-          onError: (error) => reject(error)
-        });
-      });
-      setCurrentAttempt(attempt);
-      setPhase('taking');
-    } catch (error) {
-      console.error('Error starting assessment:', error);
-    }
+  const handleStartAssessment = () => {
+    startAssessment(assessmentId, {
+      onSuccess: (data: AssessmentAttempt) => {
+        setCurrentAttempt(data);
+        setPhase('taking');
+      },
+      onError: (error: any) => {
+        console.error('Error starting assessment:', error);
+      }
+    });
   };
 
   const handleAnswerSelect = (questionId: string, answer: 'A' | 'B' | 'C' | 'D') => {
@@ -62,21 +59,18 @@ export function AssessmentInterface({ assessmentId }: AssessmentInterfaceProps) 
     }
   };
 
-  const handleSubmitAssessment = async () => {
+  const handleSubmitAssessment = () => {
     if (!currentAttempt) return;
     
-    try {
-      const result = await new Promise<AssessmentAttempt>((resolve, reject) => {
-        submitAssessment(currentAttempt.id, {
-          onSuccess: (data) => resolve(data),
-          onError: (error) => reject(error)
-        });
-      });
-      setCurrentAttempt(result);
-      setPhase('results');
-    } catch (error) {
-      console.error('Error submitting assessment:', error);
-    }
+    submitAssessment(currentAttempt.id, {
+      onSuccess: (data: AssessmentAttempt) => {
+        setCurrentAttempt(data);
+        setPhase('results');
+      },
+      onError: (error: any) => {
+        console.error('Error submitting assessment:', error);
+      }
+    });
   };
 
   const handleReturnToTraining = () => {
