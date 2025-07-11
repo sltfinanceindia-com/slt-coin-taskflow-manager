@@ -9,12 +9,21 @@ import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Play, FileText, BookOpen, Award, Clock, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { TrainingSection } from '@/types/training';
 
-export function TrainingCourses() {
+interface TrainingCoursesProps {
+  sections?: TrainingSection[];
+  isLoading?: boolean;
+}
+
+export function TrainingCourses({ sections: propSections, isLoading: propIsLoading }: TrainingCoursesProps) {
   const navigate = useNavigate();
-  const { sections, isLoading } = useTrainingSections();
+  const { data: hookSections = [], isLoading: hookIsLoading } = useTrainingSections();
   const { assessments } = useAssessments();
-  const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+  
+  // Use props if provided, otherwise use hook data
+  const sections = propSections || hookSections;
+  const isLoading = propIsLoading !== undefined ? propIsLoading : hookIsLoading;
 
   if (isLoading) {
     return (
@@ -44,7 +53,7 @@ export function TrainingCourses() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Award className="h-5 w-5 text-primary" />
-              Assessments
+              Assessments & Exams
             </CardTitle>
           </CardHeader>
           <CardContent>
