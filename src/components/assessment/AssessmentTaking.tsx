@@ -39,6 +39,7 @@ export function AssessmentTaking({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(assessment.time_limit_minutes * 60);
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
+  const [isTimerActive, setIsTimerActive] = useState(true);
 
   const currentQuestion = questions[currentQuestionIndex];
   const totalQuestions = questions.length;
@@ -48,11 +49,14 @@ export function AssessmentTaking({
   // Memoized submit handler to prevent dependency issues
   const handleAutoSubmit = useCallback(() => {
     console.log('Auto-submitting assessment due to time limit');
+    setIsTimerActive(false);
     onSubmit();
   }, [onSubmit]);
 
   // Timer effect
   useEffect(() => {
+    if (!isTimerActive) return;
+    
     console.log('Timer started, initial time:', timeRemaining);
     
     const timer = setInterval(() => {
@@ -62,7 +66,7 @@ export function AssessmentTaking({
         
         if (newTime <= 0) {
           console.log('Time expired, auto-submitting');
-          clearInterval(timer);
+          setIsTimerActive(false);
           handleAutoSubmit();
           return 0;
         }
@@ -74,7 +78,14 @@ export function AssessmentTaking({
       console.log('Cleaning up timer');
       clearInterval(timer);
     };
-  }, []); // Empty dependency array to run only once
+  }, [isTimerActive, handleAutoSubmit]);
+
+  // Stop timer when submitting
+  useEffect(() => {
+    if (isSubmitting) {
+      setIsTimerActive(false);
+    }
+  }, [isSubmitting]);
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -103,8 +114,15 @@ export function AssessmentTaking({
     if (answeredQuestions < totalQuestions) {
       setShowSubmitDialog(true);
     } else {
+      setIsTimerActive(false);
       onSubmit();
     }
+  };
+
+  const handleConfirmSubmit = () => {
+    setIsTimerActive(false);
+    setShowSubmitDialog(false);
+    onSubmit();
   };
 
   const options = [
@@ -113,6 +131,9 @@ export function AssessmentTaking({
     { key: 'C' as const, text: currentQuestion?.option_c },
     { key: 'D' as const, text: currentQuestion?.option_d },
   ];
+
+  // Show warning when time is running low
+  const isTimeRunningLow = timeRemaining <= 300; // 5 minutes
 
   return (
     <div className="min-h-screen bg-gradient-background p-4">
@@ -133,13 +154,20 @@ export function AssessmentTaking({
                 </div>
               </div>
               <div className="flex items-center space-x-2">
-                <Clock className={`h-5 w-5 ${timeRemaining < 300 ? 'text-red-500' : 'text-primary'}`} />
-                <span className={`font-mono text-lg font-bold ${timeRemaining < 300 ? 'text-red-500 animate-pulse' : ''}`}>
+                <Clock className={`h-5 w-5 ${isTimeRunningLow ? 'text-red-500' : 'text-primary'}`} />
+                <span className={`font-mono text-lg font-bold ${isTimeRunningLow ? 'text-red-500 animate-pulse' : ''}`}>
                   {formatTime(timeRemaining)}
                 </span>
               </div>
             </div>
             <Progress value={progress} className="mt-4" />
+            {isTimeRunningLow && (
+              <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-600 font-medium">
+                  ⚠️ Time is running low! Your assessment will auto-submit when time expires.
+                </p>
+              </div>
+            )}
           </CardHeader>
         </Card>
 
@@ -251,7 +279,7 @@ export function AssessmentTaking({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Continue Assessment</AlertDialogCancel>
-            <AlertDialogAction onClick={onSubmit} disabled={isSubmitting}>
+            <AlertDialogAction onClick={handleConfirmSubmit} disabled={isSubmitting}>
               {isSubmitting ? "Submitting..." : "Submit Assessment"}
             </AlertDialogAction>
           </AlertDialogFooter>
