@@ -3,6 +3,29 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
+interface AssessmentAttemptWithDetails {
+  id: string;
+  assessment_id: string;
+  user_id: string;
+  started_at: string;
+  submitted_at?: string;
+  time_remaining_seconds?: number;
+  status: 'in_progress' | 'submitted' | 'expired';
+  score?: number;
+  total_questions?: number;
+  correct_answers?: number;
+  is_passed?: boolean;
+  created_at: string;
+  assessments: {
+    title: string;
+    passing_score: number;
+  };
+  profiles: {
+    full_name: string;
+    email: string;
+  };
+}
+
 export function useAssessmentAttempts(assessmentId?: string) {
   const { profile } = useAuth();
 
@@ -13,8 +36,8 @@ export function useAssessmentAttempts(assessmentId?: string) {
         .from('assessment_attempts')
         .select(`
           *,
-          assessments!inner(title, passing_score),
-          profiles!inner(full_name, email)
+          assessments!assessment_attempts_assessment_id_fkey(title, passing_score),
+          profiles!assessment_attempts_user_id_fkey(full_name, email)
         `)
         .order('created_at', { ascending: false });
 
@@ -30,7 +53,7 @@ export function useAssessmentAttempts(assessmentId?: string) {
       const { data, error } = await query;
 
       if (error) throw error;
-      return data;
+      return data as AssessmentAttemptWithDetails[];
     },
     enabled: !!profile,
   });

@@ -15,9 +15,9 @@ export function AssessmentManagement() {
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredAttempts = attempts.filter(attempt =>
-    attempt.profiles.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    attempt.profiles.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    attempt.assessments.title.toLowerCase().includes(searchTerm.toLowerCase())
+    attempt.profiles?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    attempt.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    attempt.assessments?.title?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalAttempts = attempts.length;
@@ -141,26 +141,26 @@ export function AssessmentManagement() {
                       <div className="flex items-center justify-between">
                         <div className="space-y-1">
                           <div className="flex items-center space-x-2">
-                            <h3 className="font-semibold">{attempt.profiles.full_name}</h3>
+                            <h3 className="font-semibold">{attempt.profiles?.full_name || 'Unknown User'}</h3>
                             <Badge variant="secondary" className="text-xs">
-                              {attempt.profiles.email}
+                              {attempt.profiles?.email || 'No email'}
                             </Badge>
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {attempt.assessments.title}
+                            {attempt.assessments?.title || 'Unknown Assessment'}
                           </p>
                           <div className="flex items-center space-x-4 text-xs text-muted-foreground">
                             <span>
-                              Completed: {new Date(attempt.submitted_at!).toLocaleDateString()}
+                              Completed: {attempt.submitted_at ? new Date(attempt.submitted_at).toLocaleDateString() : 'In Progress'}
                             </span>
                             <span>
-                              Questions: {attempt.correct_answers}/{attempt.total_questions}
+                              Questions: {attempt.correct_answers || 0}/{attempt.total_questions || 0}
                             </span>
                           </div>
                         </div>
                         <div className="text-right space-y-2">
                           <div className="text-2xl font-bold">
-                            {attempt.score}%
+                            {attempt.score || 0}%
                           </div>
                           <Badge variant={attempt.is_passed ? "default" : "destructive"}>
                             {attempt.is_passed ? (

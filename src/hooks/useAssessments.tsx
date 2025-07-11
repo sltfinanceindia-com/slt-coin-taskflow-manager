@@ -205,7 +205,7 @@ export function useAssessments() {
         title: result.is_passed ? "Assessment Passed!" : "Assessment Completed",
         description: result.is_passed 
           ? `Congratulations! You scored ${result.score}%`
-          : `You scored ${result.score}%. You need ${result.assessments?.passing_score || 70}% to pass.`,
+          : `You scored ${result.score}%. You need 70% to pass.`,
         variant: result.is_passed ? "default" : "destructive",
       });
     },
@@ -223,9 +223,13 @@ export function useAssessments() {
     isLoading: assessmentsQuery.isLoading,
     error: assessmentsQuery.error,
     getAssessmentQuestions,
-    startAssessment: startAssessmentMutation.mutate,
+    startAssessment: (assessmentId: string, options?: { onSuccess?: (data: AssessmentAttempt) => void; onError?: (error: any) => void }) => {
+      startAssessmentMutation.mutate(assessmentId, options);
+    },
     submitAnswer: submitAnswerMutation.mutate,
-    submitAssessment: submitAssessmentMutation.mutate,
+    submitAssessment: (attemptId: string, options?: { onSuccess?: (data: AssessmentAttempt) => void; onError?: (error: any) => void }) => {
+      submitAssessmentMutation.mutate(attemptId, options);
+    },
     isStarting: startAssessmentMutation.isPending,
     isSubmitting: submitAssessmentMutation.isPending,
   };

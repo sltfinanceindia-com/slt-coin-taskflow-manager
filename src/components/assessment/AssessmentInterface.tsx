@@ -42,7 +42,12 @@ export function AssessmentInterface({ assessmentId }: AssessmentInterfaceProps) 
 
   const handleStartAssessment = async () => {
     try {
-      const attempt = await startAssessment(assessmentId);
+      const attempt = await new Promise<AssessmentAttempt>((resolve, reject) => {
+        startAssessment(assessmentId, {
+          onSuccess: (data) => resolve(data),
+          onError: (error) => reject(error)
+        });
+      });
       setCurrentAttempt(attempt);
       setPhase('taking');
     } catch (error) {
@@ -61,7 +66,12 @@ export function AssessmentInterface({ assessmentId }: AssessmentInterfaceProps) 
     if (!currentAttempt) return;
     
     try {
-      const result = await submitAssessment(currentAttempt.id);
+      const result = await new Promise<AssessmentAttempt>((resolve, reject) => {
+        submitAssessment(currentAttempt.id, {
+          onSuccess: (data) => resolve(data),
+          onError: (error) => reject(error)
+        });
+      });
       setCurrentAttempt(result);
       setPhase('results');
     } catch (error) {
