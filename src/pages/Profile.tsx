@@ -82,12 +82,10 @@ export default function Profile() {
                     </div>
                   )}
                   
-                  {profile?.start_date && (
-                    <div className="flex items-center space-x-3 text-sm">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span>Started: {new Date(profile.start_date).toLocaleDateString()}</span>
-                    </div>
-                  )}
+                  <div className="flex items-center space-x-3 text-sm">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span>Joined: {new Date(profile?.created_at || '').toLocaleDateString()}</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>

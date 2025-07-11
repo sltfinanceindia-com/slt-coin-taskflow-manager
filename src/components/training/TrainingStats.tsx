@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from '@/components/ui/card';
 import { BookOpen, Play, Award, Clock } from 'lucide-react';
 import { TrainingSection } from '@/types/training';
@@ -7,10 +8,10 @@ interface TrainingStatsProps {
 }
 
 export function TrainingStats({ sections }: TrainingStatsProps) {
-  const totalVideos = sections.reduce((acc, section) => acc + (section.videos?.length || 0), 0);
-  const totalAssignments = sections.reduce((acc, section) => acc + (section.assignments?.length || 0), 0);
+  const totalVideos = sections.reduce((acc, section) => acc + (section.training_videos?.length || 0), 0);
+  const totalAssignments = sections.reduce((acc, section) => acc + (section.training_assignments?.length || 0), 0);
   const totalDuration = sections.reduce((acc, section) => 
-    acc + (section.videos?.reduce((videoAcc, video) => videoAcc + (video.duration_minutes || 0), 0) || 0), 0
+    acc + (section.training_videos?.reduce((videoAcc, video) => videoAcc + (video.duration_minutes || 0), 0) || 0), 0
   );
 
   const stats = [
