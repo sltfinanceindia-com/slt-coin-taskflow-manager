@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -45,21 +45,36 @@ export function AssessmentTaking({
   const answeredQuestions = Object.keys(selectedAnswers).length;
   const progress = (answeredQuestions / totalQuestions) * 100;
 
+  // Memoized submit handler to prevent dependency issues
+  const handleAutoSubmit = useCallback(() => {
+    console.log('Auto-submitting assessment due to time limit');
+    onSubmit();
+  }, [onSubmit]);
+
   // Timer effect
   useEffect(() => {
+    console.log('Timer started, initial time:', timeRemaining);
+    
     const timer = setInterval(() => {
       setTimeRemaining((prev) => {
-        if (prev <= 1) {
+        const newTime = prev - 1;
+        console.log('Timer tick, time remaining:', newTime);
+        
+        if (newTime <= 0) {
+          console.log('Time expired, auto-submitting');
           clearInterval(timer);
-          onSubmit(); // Auto-submit when time runs out
+          handleAutoSubmit();
           return 0;
         }
-        return prev - 1;
+        return newTime;
       });
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, [onSubmit]);
+    return () => {
+      console.log('Cleaning up timer');
+      clearInterval(timer);
+    };
+  }, []); // Empty dependency array to run only once
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -68,6 +83,7 @@ export function AssessmentTaking({
   };
 
   const handleAnswerSelect = (answer: 'A' | 'B' | 'C' | 'D') => {
+    console.log('Answer selected:', answer, 'for question:', currentQuestion.id);
     onAnswerSelect(currentQuestion.id, answer);
   };
 
@@ -118,7 +134,7 @@ export function AssessmentTaking({
               </div>
               <div className="flex items-center space-x-2">
                 <Clock className={`h-5 w-5 ${timeRemaining < 300 ? 'text-red-500' : 'text-primary'}`} />
-                <span className={`font-mono text-lg ${timeRemaining < 300 ? 'text-red-500' : ''}`}>
+                <span className={`font-mono text-lg font-bold ${timeRemaining < 300 ? 'text-red-500 animate-pulse' : ''}`}>
                   {formatTime(timeRemaining)}
                 </span>
               </div>
