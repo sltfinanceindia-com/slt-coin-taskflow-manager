@@ -399,6 +399,96 @@ export type Database = {
           },
         ]
       }
+      kanban_events: {
+        Row: {
+          analytics_data: Json | null
+          created_at: string
+          event_type: string
+          from_status: string | null
+          id: string
+          metadata: Json | null
+          task_id: string
+          timestamp: string
+          to_status: string | null
+          user_id: string
+        }
+        Insert: {
+          analytics_data?: Json | null
+          created_at?: string
+          event_type: string
+          from_status?: string | null
+          id?: string
+          metadata?: Json | null
+          task_id: string
+          timestamp?: string
+          to_status?: string | null
+          user_id: string
+        }
+        Update: {
+          analytics_data?: Json | null
+          created_at?: string
+          event_type?: string
+          from_status?: string | null
+          id?: string
+          metadata?: Json | null
+          task_id?: string
+          timestamp?: string
+          to_status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kanban_events_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kanban_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kanban_metrics: {
+        Row: {
+          avg_cycle_time: number | null
+          created_at: string
+          date: string
+          id: string
+          status_changes: number | null
+          throughput: number | null
+          total_events: number | null
+          updated_at: string
+          wip_limit_violations: number | null
+        }
+        Insert: {
+          avg_cycle_time?: number | null
+          created_at?: string
+          date: string
+          id?: string
+          status_changes?: number | null
+          throughput?: number | null
+          total_events?: number | null
+          updated_at?: string
+          wip_limit_violations?: number | null
+        }
+        Update: {
+          avg_cycle_time?: number | null
+          created_at?: string
+          date?: string
+          id?: string
+          status_changes?: number | null
+          throughput?: number | null
+          total_events?: number | null
+          updated_at?: string
+          wip_limit_violations?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -983,6 +1073,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_kanban_metrics: {
+        Args: { start_date?: string; end_date?: string }
+        Returns: {
+          metric_name: string
+          metric_value: number
+          metric_date: string
+          category: string
+        }[]
+      }
       check_and_log_daily_email: {
         Args: { p_user_id: string; p_email_type: string }
         Returns: boolean

@@ -30,7 +30,7 @@ import { Badge } from "@/components/ui/badge"
 
 const adminItems = [
   { title: "Overview", url: "overview", icon: LayoutDashboard },
-  { title: "Tasks", url: "tasks", icon: CheckSquare },
+  { title: "Kanban Board", url: "tasks", icon: CheckSquare },
   { title: "Projects", url: "projects", icon: FolderOpen },
   { title: "Time Logs", url: "time", icon: Clock },
   { title: "Training", url: "training", icon: BookOpen },

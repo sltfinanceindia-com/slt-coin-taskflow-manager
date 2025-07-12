@@ -14,6 +14,7 @@ import { CoinManagement } from '@/components/CoinManagement';
 import { MyCoins } from '@/components/MyCoins';
 import { EnhancedDashboardWidgets } from '@/components/EnhancedDashboardWidgets';
 import { ProjectManagement } from '@/components/ProjectManagement';
+import { KanbanBoard } from '@/components/KanbanBoard';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AppHeader } from '@/components/AppHeader';
 import { SidebarProvider } from '@/components/ui/sidebar';
@@ -21,7 +22,7 @@ import { Coins, Clock, CheckCircle, Plus } from 'lucide-react';
 
 export default function ModernDashboard() {
   const { user, profile, loading } = useAuth();
-  const { tasks, createTask, updateTaskStatus, verifyTask, isCreating } = useTasks();
+  const { tasks, createTask, updateTaskStatus, verifyTask, updateTask, isCreating, isUpdating } = useTasks();
   const { timeLogs, logTime, isLogging } = useTimeLogs();
   const [activeTab, setActiveTab] = useState('overview');
 
@@ -51,50 +52,13 @@ export default function ModernDashboard() {
       
       case 'tasks':
         return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-2xl font-bold">
-                  {profile?.role === 'admin' ? 'All Tasks' : 'My Tasks'}
-                </h3>
-                <p className="text-muted-foreground">
-                  {profile?.role === 'admin' 
-                    ? 'Manage and assign tasks to team members'
-                    : 'View and complete your assigned tasks'
-                  }
-                </p>
-              </div>
-              {profile?.role === 'admin' && (
-                <CreateTaskDialog onCreateTask={createTask} isCreating={isCreating} />
-              )}
-            </div>
-            
-            <div className="grid grid-cols-1 gap-6">
-              {myTasks.length > 0 ? (
-                myTasks.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    onUpdateStatus={updateTaskStatus}
-                    onVerifyTask={verifyTask}
-                  />
-                ))
-              ) : (
-                <Card className="card-gradient">
-                  <CardContent className="flex flex-col items-center justify-center py-12">
-                    <CheckCircle className="h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No tasks yet</h3>
-                    <p className="text-muted-foreground text-center max-w-md">
-                      {profile?.role === 'admin' 
-                        ? "Start by creating tasks for your team members."
-                        : "No tasks have been assigned to you yet. Check back later!"
-                      }
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </div>
+          <KanbanBoard
+            tasks={myTasks}
+            onUpdateStatus={updateTaskStatus}
+            onVerifyTask={verifyTask}
+            onUpdateTask={updateTask}
+            isUpdating={isUpdating}
+          />
         );
       
       case 'projects':
