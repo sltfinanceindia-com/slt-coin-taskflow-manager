@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Coins, Clock, User, Calendar, AlertCircle, CheckCircle, XCircle, Edit, Eye } from 'lucide-react';
+import { Coins, Clock, User, Calendar, AlertCircle, CheckCircle, XCircle, Edit, Eye, ChevronDown, ChevronRight } from 'lucide-react';
 import { Task } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
 import { useState } from 'react';
@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { TaskComments } from '@/components/TaskComments';
 import { TaskEditDialog } from '@/components/TaskEditDialog';
 import { TaskDetailDialog } from '@/components/TaskDetailDialog';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface TaskCardProps {
   task: Task;
@@ -25,6 +26,7 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
   const [adminFeedback, setAdminFeedback] = useState('');
   const [showSubmissionForm, setShowSubmissionForm] = useState(false);
   const [showVerificationForm, setShowVerificationForm] = useState(false);
+  const [showDescription, setShowDescription] = useState(false);
 
   const isAssignedToMe = task.assigned_to === profile?.id;
   const isCreatedByMe = task.created_by === profile?.id;
@@ -104,9 +106,32 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
           </div>
         </div>
         
-        <CardDescription className="text-sm">
-          {task.description}
-        </CardDescription>
+        {/* Collapsible Task Description */}
+        <Collapsible open={showDescription} onOpenChange={setShowDescription}>
+          <CollapsibleTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="w-full justify-between hover:bg-muted/50 transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Eye className="h-4 w-4" />
+                View Details
+              </span>
+              {showDescription ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-2">
+            <div className="bg-muted/30 p-3 rounded-md border-l-4 border-primary">
+              <p className="text-sm text-muted-foreground font-medium mb-1">Description:</p>
+              <p className="text-sm leading-relaxed">{task.description}</p>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </CardHeader>
 
       <CardContent className="space-y-4">

@@ -124,6 +124,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
+      // End current session before signing out
+      if (profile?.id) {
+        const { data: sessions } = await supabase
+          .from('session_logs')
+          .select('id')
+          .eq('user_id', profile.id)
+          .is('logout_time', null)
+          .limit(1);
+        
+        if (sessions && sessions.length > 0) {
+          await supabase
+            .from('session_logs')
+            .update({ logout_time: new Date().toISOString() })
+            .eq('id', sessions[0].id);
+        }
+      }
+      
       const { error } = await supabase.auth.signOut();
       return { error };
     } catch (error) {

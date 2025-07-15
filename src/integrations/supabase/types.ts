@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          activity_type: string
+          created_at: string
+          duration_minutes: number | null
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          task_id: string | null
+          timestamp: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          task_id?: string | null
+          timestamp?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          task_id?: string | null
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_logs_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_notes: {
         Row: {
           admin_id: string
@@ -1090,9 +1144,30 @@ export type Database = {
         Args: { video_url: string }
         Returns: number
       }
+      get_user_productivity_metrics: {
+        Args: { p_user_id: string; p_start_date?: string; p_end_date?: string }
+        Returns: {
+          total_hours: number
+          active_hours: number
+          idle_hours: number
+          productivity_score: number
+          task_completion_rate: number
+          avg_task_duration: number
+        }[]
+      }
       increment_user_coins: {
         Args: { user_profile_id: string; coin_amount: number }
         Returns: undefined
+      }
+      track_user_activity: {
+        Args: {
+          p_user_id: string
+          p_activity_type: string
+          p_task_id?: string
+          p_duration_minutes?: number
+          p_metadata?: Json
+        }
+        Returns: string
       }
     }
     Enums: {

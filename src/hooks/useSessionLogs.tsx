@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
+import { useEffect, useCallback } from 'react';
 
 export interface SessionLog {
   id: string;
@@ -21,6 +22,52 @@ export interface SessionLog {
 export function useSessionLogs() {
   const { profile } = useAuth();
   const queryClient = useQueryClient();
+  
+  // Enhanced session tracking with real-time updates
+  const getCurrentSession = useCallback(async () => {
+    if (!profile?.id) return null;
+    
+    const { data, error } = await supabase
+      .from('session_logs')
+      .select('*')
+      .eq('user_id', profile.id)
+      .is('logout_time', null)
+      .order('login_time', { ascending: false })
+      .limit(1);
+    
+    if (error) {
+      console.error('Error fetching current session:', error);
+      return null;
+    }
+    
+    return data?.[0] || null;
+  }, [profile?.id]);
+  
+  // Auto-start session on app load
+  useEffect(() => {
+    if (!profile?.id) return;
+    
+    const initializeSession = async () => {
+      const currentSession = await getCurrentSession();
+      
+      if (!currentSession) {
+        // Start new session
+        startSessionMutation.mutate();
+      } else {
+        // Update existing session to show activity
+        const { error } = await supabase
+          .from('session_logs')
+          .update({ updated_at: new Date().toISOString() })
+          .eq('id', currentSession.id);
+          
+        if (error) {
+          console.error('Error updating session:', error);
+        }
+      }
+    };
+    
+    initializeSession();
+  }, [profile?.id]);
 
   const sessionLogsQuery = useQuery({
     queryKey: ['session-logs'],
