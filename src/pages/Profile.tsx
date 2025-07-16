@@ -3,11 +3,15 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Coins, User, Calendar, Mail, Briefcase } from 'lucide-react';
+import { AvatarUpload } from '@/components/AvatarUpload';
+import { Coins, User, Calendar, Mail, Briefcase, Settings } from 'lucide-react';
 import { UserAssessmentResults } from '@/components/assessment/UserAssessmentResults';
+import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 
 export default function Profile() {
   const { user, profile, loading } = useAuth();
+  const [isEditing, setIsEditing] = useState(false);
 
   if (loading) {
     return (
@@ -41,8 +45,23 @@ export default function Profile() {
           <div className="lg:col-span-1">
             <Card className="card-gradient">
               <CardHeader className="text-center">
-                <div className="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                  <User className="h-10 w-10 text-white" />
+                <div className="flex justify-between items-start mb-4">
+                  <div></div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsEditing(!isEditing)}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="mb-4">
+                  <AvatarUpload
+                    currentAvatarUrl={profile?.avatar_url}
+                    userName={profile?.full_name}
+                    size="lg"
+                  />
                 </div>
                 <CardTitle className="text-2xl">{profile?.full_name}</CardTitle>
                 <CardDescription className="text-lg">

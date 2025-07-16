@@ -15,6 +15,7 @@ import { MyCoins } from '@/components/MyCoins';
 import { EnhancedDashboardWidgets } from '@/components/EnhancedDashboardWidgets';
 import { ProjectManagement } from '@/components/ProjectManagement';
 import { KanbanBoard } from '@/components/KanbanBoard';
+import { ProductivityDashboard } from '@/components/ProductivityDashboard';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AppHeader } from '@/components/AppHeader';
 import { SidebarProvider } from '@/components/ui/sidebar';
@@ -51,15 +52,42 @@ export default function ModernDashboard() {
         return <EnhancedDashboardWidgets />;
       
       case 'tasks':
-        return (
-          <KanbanBoard
-            tasks={myTasks}
-            onUpdateStatus={updateTaskStatus}
-            onVerifyTask={verifyTask}
-            onUpdateTask={updateTask}
-            isUpdating={isUpdating}
-          />
-        );
+        if (profile?.role === 'admin') {
+          return (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold">Task Management</h2>
+                  <p className="text-muted-foreground">Create and manage tasks for your team</p>
+                </div>
+                <CreateTaskDialog onCreateTask={createTask} isCreating={isCreating} />
+              </div>
+              <KanbanBoard
+                tasks={myTasks}
+                onUpdateStatus={updateTaskStatus}
+                onVerifyTask={verifyTask}
+                onUpdateTask={updateTask}
+                isUpdating={isUpdating}
+              />
+            </div>
+          );
+        } else {
+          return (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold">My Tasks</h2>
+                <p className="text-muted-foreground">View and manage your assigned tasks</p>
+              </div>
+              <KanbanBoard
+                tasks={myTasks}
+                onUpdateStatus={updateTaskStatus}
+                onVerifyTask={verifyTask}
+                onUpdateTask={updateTask}
+                isUpdating={isUpdating}
+              />
+            </div>
+          );
+        }
       
       case 'projects':
         return <ProjectManagement />;
@@ -140,6 +168,9 @@ export default function ModernDashboard() {
       
       case 'analytics':
         return <AnalyticsPage />;
+      
+      case 'productivity':
+        return profile?.role === 'admin' ? <ProductivityDashboard /> : null;
       
       default:
         return <EnhancedDashboardWidgets />;

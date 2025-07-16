@@ -10,7 +10,8 @@ import {
   FolderOpen,
   BookOpen,
   User,
-  Settings
+  Settings,
+  Activity
 } from "lucide-react"
 
 import {
@@ -36,6 +37,7 @@ const adminItems = [
   { title: "Training", url: "training", icon: BookOpen },
   { title: "Coins", url: "coins", icon: Coins },
   { title: "Interns", url: "interns", icon: Users },
+  { title: "Productivity", url: "productivity", icon: Activity },
   { title: "Analytics", url: "analytics", icon: BarChart3 },
 ]
 
