@@ -54,13 +54,15 @@ export default function ModernDashboard() {
       case 'tasks':
         if (profile?.role === 'admin') {
           return (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
+            <div className="space-y-4 sm:space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <h2 className="text-2xl font-bold">Task Management</h2>
-                  <p className="text-muted-foreground">Create and manage tasks for your team</p>
+                  <h2 className="text-xl sm:text-2xl font-bold">Task Management</h2>
+                  <p className="text-muted-foreground text-sm">Create and manage tasks for your team</p>
                 </div>
-                <CreateTaskDialog onCreateTask={createTask} isCreating={isCreating} />
+                <div className="flex-shrink-0">
+                  <CreateTaskDialog onCreateTask={createTask} isCreating={isCreating} />
+                </div>
               </div>
               <KanbanBoard
                 tasks={myTasks}
@@ -73,10 +75,10 @@ export default function ModernDashboard() {
           );
         } else {
           return (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div>
-                <h2 className="text-2xl font-bold">My Tasks</h2>
-                <p className="text-muted-foreground">View and manage your assigned tasks</p>
+                <h2 className="text-xl sm:text-2xl font-bold">My Tasks</h2>
+                <p className="text-muted-foreground text-sm">View and manage your assigned tasks</p>
               </div>
               <KanbanBoard
                 tasks={myTasks}
@@ -99,14 +101,16 @@ export default function ModernDashboard() {
       
       case 'time':
         return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
+          <div className="space-y-4 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h3 className="text-2xl font-bold">Time Logs</h3>
-                <p className="text-muted-foreground">Track your working hours across tasks</p>
+                <h3 className="text-xl sm:text-2xl font-bold">Time Logs</h3>
+                <p className="text-muted-foreground text-sm">Track your working hours across tasks</p>
               </div>
               {profile?.role === 'intern' && (
-                <TimeLogDialog onLogTime={logTime} isLogging={isLogging} />
+                <div className="flex-shrink-0">
+                  <TimeLogDialog onLogTime={logTime} isLogging={isLogging} />
+                </div>
               )}
             </div>
             
@@ -182,16 +186,16 @@ export default function ModernDashboard() {
       <div className="flex min-h-screen w-full bg-gradient-background">
         <AppSidebar activeTab={activeTab} onTabChange={setActiveTab} />
         
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           <AppHeader />
           
           <main className="flex-1 overflow-auto">
-            <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
-              <div className="mb-6 sm:mb-8">
-                <h1 className="text-2xl sm:text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
+            <div className="w-full max-w-none px-2 sm:px-4 lg:px-6 xl:px-8 py-2 sm:py-4 lg:py-6">
+              <div className="mb-4 sm:mb-6 lg:mb-8">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
                   Welcome back, {profile?.full_name}!
                 </h1>
-                <p className="text-muted-foreground text-sm sm:text-lg">
+                <p className="text-muted-foreground text-xs sm:text-sm lg:text-base">
                   {profile?.role === 'admin' 
                     ? 'Manage tasks, track progress, and assign SLT Coins to your team.'
                     : 'View your assigned tasks, log your hours, and earn SLT Coins.'
@@ -199,7 +203,7 @@ export default function ModernDashboard() {
                 </p>
               </div>
               
-              <div className="animate-fade-in">
+              <div className="animate-fade-in w-full">
                 {renderTabContent()}
               </div>
             </div>

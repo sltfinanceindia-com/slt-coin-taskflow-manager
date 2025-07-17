@@ -209,35 +209,41 @@ export function KanbanBoard({
   return (
     <div className="space-y-6">
       {/* Header with controls */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Task Kanban Board</h2>
-          <p className="text-muted-foreground">Drag and drop tasks to update their status</p>
+          <h2 className="text-xl sm:text-2xl font-bold">Task Kanban Board</h2>
+          <p className="text-muted-foreground text-sm">Drag and drop tasks to update their status</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={() => setShowFilters(!showFilters)}
+            className="text-xs sm:text-sm"
           >
-            <Filter className="h-4 w-4 mr-2" />
-            Filters
+            <Filter className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Filters</span>
+            <span className="sm:hidden">Filter</span>
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setShowAnalytics(!showAnalytics)}
+            className="text-xs sm:text-sm"
           >
-            <BarChart3 className="h-4 w-4 mr-2" />
-            Analytics
+            <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Analytics</span>
+            <span className="sm:hidden">Chart</span>
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={generateOptimizationSuggestions}
+            className="text-xs sm:text-sm"
           >
-            <Zap className="h-4 w-4 mr-2" />
-            Optimize
+            <Zap className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Optimize</span>
+            <span className="sm:hidden">Opt</span>
           </Button>
         </div>
       </div>
@@ -273,14 +279,14 @@ export function KanbanBoard({
 
       {/* Kanban Board */}
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 min-h-[600px]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-3 lg:gap-4 min-h-[400px] sm:min-h-[500px] lg:min-h-[600px]">
           {columns.map((column) => (
-            <div key={column.id} className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-sm uppercase tracking-wide">
+            <div key={column.id} className="space-y-2 sm:space-y-3 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="font-semibold text-xs sm:text-sm uppercase tracking-wide truncate">
                   {column.title}
                 </h3>
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className="text-xs shrink-0">
                   {getTaskCountForColumn(column.status)}
                 </Badge>
               </div>
@@ -291,12 +297,12 @@ export function KanbanBoard({
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                     className={`
-                      min-h-[500px] p-3 rounded-lg border-2 border-dashed transition-colors
+                      min-h-[300px] sm:min-h-[400px] lg:min-h-[500px] p-2 sm:p-3 rounded-lg border-2 border-dashed transition-colors
                       ${getColumnColor(column.id)}
                       ${snapshot.isDraggingOver ? 'border-primary bg-primary/10' : ''}
                     `}
                   >
-                    <div className="space-y-3">
+                    <div className="space-y-2 sm:space-y-3">
                       {filteredTasks
                         .filter(task => task.status === column.status)
                         .map((task, index) => (

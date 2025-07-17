@@ -149,31 +149,31 @@ export function EnhancedDashboardWidgets() {
   return (
     <div className="space-y-8">
       {/* Main Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
         {mainStats.map((stat, index) => (
           <Card key={index} className="hover-scale card-gradient">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-4 lg:p-6">
               <div className="flex items-center justify-between">
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                  <div className="flex items-center gap-2">
-                    <p className="text-3xl font-bold">{stat.value}</p>
+                <div className="space-y-1 sm:space-y-2 min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{stat.title}</p>
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <p className="text-xl sm:text-2xl lg:text-3xl font-bold truncate">{stat.value}</p>
                     {stat.pending && stat.pending > 0 && (
-                      <Badge variant="outline" className="text-xs animate-pulse">
+                      <Badge variant="outline" className="text-xs animate-pulse shrink-0">
                         +{stat.pending}
                       </Badge>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    {stat.trending && <TrendingUp className="h-3 w-3 text-success" />}
-                    {stat.change}
+                  <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
+                    {stat.trending && <TrendingUp className="h-3 w-3 text-success shrink-0" />}
+                    <span className="truncate">{stat.change}</span>
                   </p>
                   {stat.progress !== undefined && (
-                    <Progress value={stat.progress} className="h-2" />
+                    <Progress value={stat.progress} className="h-1.5 sm:h-2" />
                   )}
                 </div>
-                <div className={`p-3 rounded-full ${stat.bgColor} hover-glow`}>
-                  <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                <div className={`p-2 sm:p-3 rounded-full ${stat.bgColor} hover-glow shrink-0 ml-2`}>
+                  <stat.icon className={`h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 ${stat.color}`} />
                 </div>
               </div>
             </CardContent>
@@ -182,15 +182,15 @@ export function EnhancedDashboardWidgets() {
       </div>
 
       {/* Quick Action Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {quickActions.map((action, index) => (
           <Card key={index} className="hover-scale">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <action.icon className={`h-5 w-5 ${action.color}`} />
-                <div>
-                  <p className="text-sm font-medium">{action.title}</p>
-                  <p className={`text-lg font-bold ${action.color}`}>{action.count}</p>
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <action.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${action.color} shrink-0`} />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium truncate">{action.title}</p>
+                  <p className={`text-base sm:text-lg font-bold ${action.color}`}>{action.count}</p>
                 </div>
               </div>
             </CardContent>
@@ -199,28 +199,37 @@ export function EnhancedDashboardWidgets() {
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Weekly Activity Chart */}
         <Card className="card-gradient">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
+          <CardHeader className="pb-3 sm:pb-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
               Weekly Activity
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="h-[200px] sm:h-[250px] lg:h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={weeklyData}>
+                <LineChart data={weeklyData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                  <XAxis dataKey="day" />
-                  <YAxis />
+                  <XAxis 
+                    dataKey="day" 
+                    fontSize={12}
+                    tickMargin={5}
+                  />
+                  <YAxis 
+                    fontSize={12}
+                    tickMargin={5}
+                    width={30}
+                  />
                   <Line 
                     type="monotone" 
                     dataKey="hours" 
                     stroke="hsl(var(--primary))" 
-                    strokeWidth={3}
-                    dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
+                    strokeWidth={2}
+                    dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 3 }}
+                    activeDot={{ r: 4 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -230,22 +239,22 @@ export function EnhancedDashboardWidgets() {
 
         {/* Task Status Distribution */}
         <Card className="card-gradient">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
+          <CardHeader className="pb-3 sm:pb-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
               Task Distribution
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="h-[200px] sm:h-[250px] lg:h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={taskStatusData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
+                    innerRadius={40}
+                    outerRadius={80}
                     paddingAngle={5}
                     dataKey="value"
                   >
@@ -255,17 +264,17 @@ export function EnhancedDashboardWidgets() {
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>
-              <div className="mt-4 space-y-2">
+              <div className="mt-3 sm:mt-4 space-y-1 sm:space-y-2">
                 {taskStatusData.map((entry, index) => (
-                  <div key={index} className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
+                  <div key={index} className="flex items-center justify-between text-xs sm:text-sm">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
                       <div 
-                        className="w-3 h-3 rounded-full" 
+                        className="w-2 h-2 sm:w-3 sm:h-3 rounded-full shrink-0" 
                         style={{ backgroundColor: entry.color }}
                       />
-                      <span>{entry.name}</span>
+                      <span className="truncate">{entry.name}</span>
                     </div>
-                    <span className="font-semibold">{entry.value}</span>
+                    <span className="font-semibold shrink-0 ml-2">{entry.value}</span>
                   </div>
                 ))}
               </div>
