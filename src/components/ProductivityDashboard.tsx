@@ -1,3 +1,4 @@
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -40,6 +41,30 @@ export function ProductivityDashboard({ userId }: ProductivityDashboardProps) {
   const userTasks = tasks.filter(task => 
     isAdmin && !isOwnDashboard ? task.assigned_to === targetUserId : task.assigned_to === profile?.id
   );
+
+  // Real-time data updates every 30 seconds
+  const [realTimeData, setRealTimeData] = React.useState({
+    focusTime: 0,
+    idleTime: 0,
+    activeApps: [] as string[],
+    lastScreenshot: null as string | null,
+  });
+
+  React.useEffect(() => {
+    const updateRealTimeData = () => {
+      // Simulate real activity tracking
+      setRealTimeData({
+        focusTime: Math.random() * 8,
+        idleTime: Math.random() * 2,
+        activeApps: ['Chrome', 'VSCode', 'Slack', 'Teams'].slice(0, Math.floor(Math.random() * 4) + 1),
+        lastScreenshot: `Screenshot_${new Date().toLocaleTimeString()}`,
+      });
+    };
+
+    updateRealTimeData();
+    const interval = setInterval(updateRealTimeData, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Generate weekly productivity data
   const generateWeeklyProductivity = () => {

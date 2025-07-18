@@ -1,6 +1,6 @@
 
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AvatarUpload } from '@/components/AvatarUpload';
@@ -11,6 +11,7 @@ import { useState } from 'react';
 
 export default function Profile() {
   const { user, profile, loading } = useAuth();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
 
   if (loading) {
@@ -31,6 +32,17 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gradient-background">
       <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
+        <div className="flex items-center justify-between mb-6">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2"
+          >
+            ← Back to Dashboard
+          </Button>
+          <h1 className="text-2xl font-bold">Profile Settings</h1>
+        </div>
+        
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
             Profile

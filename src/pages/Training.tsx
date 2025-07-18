@@ -1,7 +1,8 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 import { TrainingManagement } from '@/components/TrainingManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TrendingUp, BookOpen, Clock } from 'lucide-react';
@@ -14,6 +15,7 @@ import { Card, CardContent } from '@/components/ui/card';
 
 export default function Training() {
   const { user, profile, loading } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
 
   // Fetch published training sections for interns
@@ -32,6 +34,16 @@ export default function Training() {
     return (
       <div className="min-h-screen bg-gradient-background">
         <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
+          <div className="flex items-center justify-between mb-6">
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2"
+            >
+              ← Back to Dashboard
+            </Button>
+            <h1 className="text-2xl font-bold">Training Management</h1>
+          </div>
           <TrainingManagement />
         </div>
       </div>
@@ -42,6 +54,15 @@ export default function Training() {
   return (
     <div className="min-h-screen bg-gradient-background">
       <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
+        <div className="flex items-center justify-between mb-6">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2"
+          >
+            ← Back to Dashboard
+          </Button>
+        </div>
         <TrainingHeader />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">

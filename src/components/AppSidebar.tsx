@@ -11,7 +11,8 @@ import {
   BookOpen,
   User,
   Settings,
-  Activity
+  Activity,
+  Monitor
 } from "lucide-react"
 
 import {
@@ -28,6 +29,7 @@ import {
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/hooks/useAuth"
 import { Badge } from "@/components/ui/badge"
+import { NotificationCenter } from "@/components/NotificationCenter"
 
 const adminItems = [
   { title: "Overview", url: "overview", icon: LayoutDashboard },
@@ -38,6 +40,7 @@ const adminItems = [
   { title: "Coins", url: "coins", icon: Coins },
   { title: "Interns", url: "interns", icon: Users },
   { title: "Productivity", url: "productivity", icon: Activity },
+  { title: "Time Tracking", url: "time-tracking", icon: Monitor },
   { title: "Analytics", url: "analytics", icon: BarChart3 },
 ]
 
@@ -73,18 +76,21 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
       <SidebarContent className="bg-sidebar">
         {/* Logo Section */}
         <div className="p-2 sm:p-4 border-b border-sidebar-border">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <img 
-              src="/lovable-uploads/56d5dd03-2808-4b88-9f9c-cc8932c46fe8.png" 
-              alt="SLT Finance India"
-              className="h-6 w-6 sm:h-8 sm:w-8 object-contain shrink-0"
-            />
-            {!collapsed && (
-              <div className="min-w-0 flex-1">
-                <h2 className="font-semibold text-sidebar-foreground text-sm sm:text-base truncate">SLT Finance</h2>
-                <p className="text-xs text-sidebar-foreground/60 truncate">Task Management</p>
-              </div>
-            )}
+          <div className="flex items-center justify-between gap-2 sm:gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <img 
+                src="/lovable-uploads/56d5dd03-2808-4b88-9f9c-cc8932c46fe8.png" 
+                alt="SLT Finance India"
+                className="h-6 w-6 sm:h-8 sm:w-8 object-contain shrink-0"
+              />
+              {!collapsed && (
+                <div className="min-w-0 flex-1">
+                  <h2 className="font-semibold text-sidebar-foreground text-sm sm:text-base truncate">SLT Finance</h2>
+                  <p className="text-xs text-sidebar-foreground/60 truncate">Task Management</p>
+                </div>
+              )}
+            </div>
+            {!collapsed && <NotificationCenter />}
           </div>
         </div>
 

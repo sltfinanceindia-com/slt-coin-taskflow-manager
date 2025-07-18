@@ -164,6 +164,7 @@ export function KanbanBoard({
   };
 
   const canUserUpdateStatus = (task: Task, newStatus: Task['status']): boolean => {
+    // Admins can change any status and override any intern updates
     if (profile?.role === 'admin') return true;
     
     // Interns can only update their own tasks to specific statuses
@@ -172,6 +173,19 @@ export function KanbanBoard({
     }
     
     return false;
+  };
+
+  // Admin override function - allows admins to force status changes
+  const handleAdminOverride = async (taskId: string, newStatus: Task['status']) => {
+    if (profile?.role !== 'admin') return;
+    
+    await logStatusChange(taskId, tasks.find(t => t.id === taskId)?.status || 'assigned', newStatus);
+    onUpdateStatus(taskId, newStatus);
+    
+    toast({
+      title: 'Status Override',
+      description: `Task status has been overridden to ${newStatus.replace('_', ' ')}.`,
+    });
   };
 
   const logStatusChange = async (taskId: string, fromStatus: Task['status'], toStatus: Task['status']) => {

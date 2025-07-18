@@ -16,6 +16,8 @@ import { EnhancedDashboardWidgets } from '@/components/EnhancedDashboardWidgets'
 import { ProjectManagement } from '@/components/ProjectManagement';
 import { KanbanBoard } from '@/components/KanbanBoard';
 import { ProductivityDashboard } from '@/components/ProductivityDashboard';
+import { AdvancedTimeTracking } from '@/components/AdvancedTimeTracking';
+import { NotificationCenter } from '@/components/NotificationCenter';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AppHeader } from '@/components/AppHeader';
 import { SidebarProvider } from '@/components/ui/sidebar';
@@ -175,6 +177,9 @@ export default function ModernDashboard() {
       
       case 'productivity':
         return profile?.role === 'admin' ? <ProductivityDashboard /> : null;
+      
+      case 'time-tracking':
+        return profile?.role === 'admin' ? <AdvancedTimeTracking /> : null;
       
       default:
         return <EnhancedDashboardWidgets />;
