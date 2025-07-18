@@ -179,7 +179,7 @@ export default function ModernDashboard() {
         return profile?.role === 'admin' ? <ProductivityDashboard /> : null;
       
       case 'time-tracking':
-        return profile?.role === 'admin' ? <AdvancedTimeTracking /> : null;
+        return profile?.role === 'admin' ? <AdvancedTimeTracking userId={profile.id} /> : null;
       
       default:
         return <EnhancedDashboardWidgets />;

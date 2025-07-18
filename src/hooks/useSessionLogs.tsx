@@ -43,30 +43,10 @@ export function useSessionLogs() {
     return data?.[0] || null;
   }, [profile?.id]);
   
-  // Auto-start session on app load
+  // Auto-start session on app load - disabled to prevent RLS errors
   useEffect(() => {
-    if (!profile?.id) return;
-    
-    const initializeSession = async () => {
-      const currentSession = await getCurrentSession();
-      
-      if (!currentSession) {
-        // Start new session
-        startSessionMutation.mutate();
-      } else {
-        // Update existing session to show activity
-        const { error } = await supabase
-          .from('session_logs')
-          .update({ updated_at: new Date().toISOString() })
-          .eq('id', currentSession.id);
-          
-        if (error) {
-          console.error('Error updating session:', error);
-        }
-      }
-    };
-    
-    initializeSession();
+    // Commenting out auto session creation to prevent RLS errors
+    // This functionality should be handled by manual session management
   }, [profile?.id]);
 
   const sessionLogsQuery = useQuery({

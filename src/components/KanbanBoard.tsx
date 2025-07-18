@@ -176,15 +176,20 @@ export function KanbanBoard({
   };
 
   // Admin override function - allows admins to force status changes
-  const handleAdminOverride = async (taskId: string, newStatus: Task['status']) => {
+  const handleAdminOverride = async (task: Task, newStatus?: Task['status']) => {
     if (profile?.role !== 'admin') return;
     
-    await logStatusChange(taskId, tasks.find(t => t.id === taskId)?.status || 'assigned', newStatus);
-    onUpdateStatus(taskId, newStatus);
+    // If no specific status provided, cycle through available statuses
+    const statusOptions: Task['status'][] = ['assigned', 'in_progress', 'completed', 'verified', 'rejected'];
+    const currentIndex = statusOptions.indexOf(task.status);
+    const nextStatus = newStatus || statusOptions[(currentIndex + 1) % statusOptions.length];
+    
+    await logStatusChange(task.id, task.status, nextStatus);
+    onUpdateStatus(task.id, nextStatus);
     
     toast({
       title: 'Status Override',
-      description: `Task status has been overridden to ${newStatus.replace('_', ' ')}.`,
+      description: `Task status has been overridden to ${nextStatus.replace('_', ' ')}.`,
     });
   };
 
@@ -342,6 +347,7 @@ export function KanbanBoard({
                                   onVerifyTask={onVerifyTask}
                                   onUpdateTask={onUpdateTask}
                                   isUpdating={isUpdating}
+                                  onAdminOverride={handleAdminOverride}
                                 />
                               </div>
                             )}

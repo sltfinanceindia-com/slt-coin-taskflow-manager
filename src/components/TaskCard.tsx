@@ -18,9 +18,10 @@ interface TaskCardProps {
   onVerifyTask: (taskId: string, approve: boolean, feedback?: string, coinValue?: number) => void;
   onUpdateTask?: (taskId: string, updates: Partial<Task>) => void;
   isUpdating?: boolean;
+  onAdminOverride?: (task: Task, newStatus?: Task['status']) => void;
 }
 
-export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isUpdating }: TaskCardProps) {
+export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isUpdating, onAdminOverride }: TaskCardProps) {
   const { profile } = useAuth();
   const [submissionNotes, setSubmissionNotes] = useState('');
   const [adminFeedback, setAdminFeedback] = useState('');
@@ -289,6 +290,21 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
             <p className="text-sm text-red-800">
               ❌ Task rejected. Please review feedback and resubmit if needed.
             </p>
+          </div>
+        )}
+
+        {/* Admin Override */}
+        {isAdmin && onAdminOverride && (
+          <div className="border-t pt-3 mt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onAdminOverride(task)}
+              className="w-full"
+            >
+              <Edit className="h-3 w-3 mr-2" />
+              Admin Override Status
+            </Button>
           </div>
         )}
 
