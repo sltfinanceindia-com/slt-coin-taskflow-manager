@@ -1,8 +1,10 @@
 import { useState, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Camera, Upload } from 'lucide-react';
+import { Camera, Upload, AlertCircle } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
+import { validateFile, AllowedFileTypes, MaxFileSizes } from '@/utils/security';
+import { toast } from '@/hooks/use-toast';
 
 interface AvatarUploadProps {
   currentAvatarUrl?: string;
@@ -25,22 +27,34 @@ export function AvatarUpload({ currentAvatarUrl, userName, size = 'md' }: Avatar
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+    // Comprehensive security validation
+    const validation = validateFile(file, AllowedFileTypes.images, MaxFileSizes.avatar);
+    
+    if (!validation.isValid) {
+      toast({
+        title: "File Upload Error",
+        description: validation.errors.join(', '),
+        variant: "destructive",
+      });
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('File size must be less than 5MB');
-      return;
-    }
-
-    // Create preview
+    // Additional security check for file content
     const reader = new FileReader();
     reader.onload = (e) => {
-      setPreview(e.target?.result as string);
+      const result = e.target?.result as string;
+      
+      // Basic check for image file signature
+      if (!result.startsWith('data:image/')) {
+        toast({
+          title: "Invalid File",
+          description: "File does not appear to be a valid image",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setPreview(result);
     };
     reader.readAsDataURL(file);
 

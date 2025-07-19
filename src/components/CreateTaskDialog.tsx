@@ -7,9 +7,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Coins, X } from 'lucide-react';
+import { Plus, Coins, X, AlertCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { validateTaskData } from '@/utils/security';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface CreateTaskDialogProps {
   onCreateTask: (taskData: {
@@ -26,6 +28,7 @@ interface CreateTaskDialogProps {
 
 export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogProps) {
   const [open, setOpen] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -53,10 +56,45 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title || formData.assigned_to.length === 0 || !formData.end_date) return;
+    setValidationErrors([]);
 
-    onCreateTask(formData);
+    // Validate task data
+    const validation = validateTaskData({
+      title: formData.title,
+      description: formData.description,
+      priority: formData.priority,
+      slt_coin_value: formData.slt_coin_value
+    });
+
+    const errors = [...validation.errors];
+
+    // Additional validations
+    if (formData.assigned_to.length === 0) {
+      errors.push('At least one intern must be assigned to the task');
+    }
+
+    if (!formData.end_date) {
+      errors.push('Due date is required');
+    }
+
+    if (formData.start_date && formData.end_date && formData.start_date > formData.end_date) {
+      errors.push('Due date must be after start date');
+    }
+
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+
+    // Use sanitized data
+    onCreateTask({
+      ...formData,
+      title: validation.sanitizedData.title || formData.title,
+      description: validation.sanitizedData.description || formData.description,
+    });
+    
     setOpen(false);
+    setValidationErrors([]);
     setFormData({
       title: '',
       description: '',
@@ -106,6 +144,19 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
             Create a new task and assign SLT Coins as reward for completion.
           </DialogDescription>
         </DialogHeader>
+
+        {validationErrors.length > 0 && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              <ul className="list-disc pl-4 space-y-1">
+                {validationErrors.map((error, index) => (
+                  <li key={index}>{error}</li>
+                ))}
+              </ul>
+            </AlertDescription>
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">

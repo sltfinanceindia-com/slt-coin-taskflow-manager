@@ -6,8 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Task } from '@/hooks/useTasks';
-import { Edit, Calendar } from 'lucide-react';
+import { Edit, Calendar, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
+import { validateTaskData } from '@/utils/security';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface TaskEditDialogProps {
   task: Task;
@@ -17,6 +19,7 @@ interface TaskEditDialogProps {
 
 export function TaskEditDialog({ task, onUpdateTask, isUpdating }: TaskEditDialogProps) {
   const [open, setOpen] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     title: task.title,
     description: task.description || '',
@@ -39,8 +42,37 @@ export function TaskEditDialog({ task, onUpdateTask, isUpdating }: TaskEditDialo
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onUpdateTask(task.id, formData);
+    setValidationErrors([]);
+
+    // Validate task data
+    const validation = validateTaskData({
+      title: formData.title,
+      description: formData.description,
+      priority: formData.priority,
+      slt_coin_value: formData.slt_coin_value
+    });
+
+    const errors = [...validation.errors];
+
+    // Additional validations
+    if (formData.start_date && formData.end_date && formData.start_date > formData.end_date) {
+      errors.push('End date must be after start date');
+    }
+
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+
+    // Use sanitized data
+    onUpdateTask(task.id, {
+      ...formData,
+      title: validation.sanitizedData.title || formData.title,
+      description: validation.sanitizedData.description || formData.description,
+    });
+    
     setOpen(false);
+    setValidationErrors([]);
   };
 
   return (
@@ -58,6 +90,19 @@ export function TaskEditDialog({ task, onUpdateTask, isUpdating }: TaskEditDialo
             Update task details and requirements.
           </DialogDescription>
         </DialogHeader>
+        
+        {validationErrors.length > 0 && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              <ul className="list-disc pl-4 space-y-1">
+                {validationErrors.map((error, index) => (
+                  <li key={index}>{error}</li>
+                ))}
+              </ul>
+            </AlertDescription>
+          </Alert>
+        )}
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">

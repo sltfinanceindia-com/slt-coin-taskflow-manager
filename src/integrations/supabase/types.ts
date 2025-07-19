@@ -309,6 +309,48 @@ export type Database = {
           },
         ]
       }
+      audit_logs: {
+        Row: {
+          action: string
+          id: string
+          ip_address: unknown | null
+          new_values: Json | null
+          old_values: Json | null
+          performed_by: string
+          record_id: string | null
+          table_name: string
+          timestamp: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          performed_by: string
+          record_id?: string | null
+          table_name: string
+          timestamp?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          performed_by?: string
+          record_id?: string | null
+          table_name?: string
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       coin_transactions: {
         Row: {
           bonus_coins: number | null
@@ -1135,6 +1177,10 @@ export type Database = {
           metric_date: string
           category: string
         }[]
+      }
+      can_update_profile: {
+        Args: { profile_id: string; new_role: string }
+        Returns: boolean
       }
       check_and_log_daily_email: {
         Args: { p_user_id: string; p_email_type: string }

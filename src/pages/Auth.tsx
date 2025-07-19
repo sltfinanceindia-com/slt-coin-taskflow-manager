@@ -6,11 +6,15 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
-import { Coins } from 'lucide-react';
+import { Coins, AlertCircle, Lock } from 'lucide-react';
+import { validateEmail, rateLimiter } from '@/utils/security';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function Auth() {
   const { user, signIn, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [isRateLimited, setIsRateLimited] = useState(false);
   
   // Redirect if already authenticated
   if (user && !loading) {
@@ -19,23 +23,58 @@ export default function Auth() {
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
+    setValidationErrors([]);
     
     const formData = new FormData(e.currentTarget);
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
+
+    // Client-side validation
+    const errors: string[] = [];
+    
+    if (!validateEmail(email)) {
+      errors.push('Please enter a valid email address');
+    }
+    
+    if (password.length < 6) {
+      errors.push('Password must be at least 6 characters long');
+    }
+
+    // Rate limiting check
+    const rateLimitKey = `signin:${email}`;
+    if (!rateLimiter.isAllowed(rateLimitKey, 5, 15 * 60 * 1000)) { // 5 attempts per 15 minutes
+      errors.push('Too many sign-in attempts. Please try again in 15 minutes.');
+      setIsRateLimited(true);
+    }
+
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+
+    setIsLoading(true);
 
     try {
       const { error } = await signIn(email, password);
       
       if (error) {
         console.error('Sign in error:', error);
+        
+        // Security: Don't reveal specific error details to prevent user enumeration
+        const genericMessage = error.message?.includes('Invalid login credentials') 
+          ? "Invalid email or password. Please check your credentials and try again."
+          : "Sign in failed. Please try again or contact support if the problem persists.";
+        
         toast({
           title: "Sign In Failed",
-          description: error.message || "Invalid email or password",
+          description: genericMessage,
           variant: "destructive",
         });
       } else {
+        // Reset rate limit on successful login
+        rateLimiter.reset(rateLimitKey);
+        setIsRateLimited(false);
+        
         toast({
           title: "Welcome back!",
           description: "You have successfully signed in.",
@@ -88,6 +127,28 @@ export default function Auth() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {validationErrors.length > 0 && (
+              <Alert variant="destructive" className="mb-6">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  <ul className="list-disc pl-4 space-y-1">
+                    {validationErrors.map((error, index) => (
+                      <li key={index}>{error}</li>
+                    ))}
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {isRateLimited && (
+              <Alert variant="destructive" className="mb-6">
+                <Lock className="h-4 w-4" />
+                <AlertDescription>
+                  Account temporarily locked due to too many failed attempts. Please wait 15 minutes before trying again.
+                </AlertDescription>
+              </Alert>
+            )}
+
             <form onSubmit={handleSignIn} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="signin-email">Email</Label>
@@ -98,6 +159,7 @@ export default function Auth() {
                   placeholder="your.email@sltfinanceindia.com"
                   required
                   className="min-h-[44px]"
+                  autoComplete="email"
                 />
               </div>
               <div className="space-y-2">
@@ -108,9 +170,14 @@ export default function Auth() {
                   type="password"
                   required
                   className="min-h-[44px]"
+                  autoComplete="current-password"
                 />
               </div>
-              <Button type="submit" className="w-full min-h-[44px]" disabled={isLoading}>
+              <Button 
+                type="submit" 
+                className="w-full min-h-[44px]" 
+                disabled={isLoading || isRateLimited}
+              >
                 {isLoading ? "Signing In..." : "Sign In"}
               </Button>
             </form>
