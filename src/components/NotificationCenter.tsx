@@ -62,51 +62,56 @@ export function NotificationCenter() {
     setNotifications(initialNotifications);
     setUnreadCount(initialNotifications.filter(n => !n.read).length);
 
-    // Simulate real-time notifications
+    // Simulate periodic notifications (less frequent)
     const interval = setInterval(() => {
-      const notificationTypes = [
-        'task_updated', 'comment', 'coins', 'time_log', 'task_progress'
-      ];
-      
-      const messages = {
-        task_updated: 'A task status has been updated.',
-        comment: 'Someone commented on your task.',
-        coins: 'You earned SLT coins!',
-        time_log: 'Time log has been submitted.',
-        task_progress: 'Task progress updated.',
-      };
+      if (Math.random() > 0.7) { // 30% chance every 2 minutes
+        const notificationTypes = [
+          'task_updated', 'comment', 'coins', 'time_log', 'task_progress'
+        ];
+        
+        const messages = {
+          task_updated: 'A task status has been updated.',
+          comment: 'Someone commented on your task.',
+          coins: 'You earned SLT coins!',
+          time_log: 'Time log has been submitted.',
+          task_progress: 'Task progress updated.',
+        };
 
-      const randomType = notificationTypes[Math.floor(Math.random() * notificationTypes.length)] as keyof typeof messages;
-      
-      const newNotification: Notification = {
-        id: Date.now().toString(),
-        type: randomType,
-        title: randomType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
-        message: messages[randomType],
-        timestamp: new Date(),
-        read: false,
-        userId: profile.id,
-      };
+        const randomType = notificationTypes[Math.floor(Math.random() * notificationTypes.length)] as keyof typeof messages;
+        
+        const newNotification: Notification = {
+          id: Date.now().toString(),
+          type: randomType,
+          title: randomType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+          message: messages[randomType],
+          timestamp: new Date(),
+          read: false,
+          userId: profile.id,
+        };
 
-      setNotifications(prev => [newNotification, ...prev].slice(0, 50));
-      setUnreadCount(prev => prev + 1);
+        setNotifications(prev => [newNotification, ...prev].slice(0, 50));
+        setUnreadCount(prev => prev + 1);
 
-      // Show toast for new notification
-      toast({
-        title: newNotification.title,
-        description: newNotification.message,
-      });
-    }, 60000); // Every minute
+        // Show toast for new notification
+        toast({
+          title: newNotification.title,
+          description: newNotification.message,
+        });
+      }
+    }, 120000); // Every 2 minutes
 
     return () => clearInterval(interval);
   }, [profile]);
 
-  // Listen for real-time updates
+  // Listen for real-time updates from multiple tables
   useEffect(() => {
     if (!profile) return;
 
-    const channel = supabase
-      .channel('notifications')
+    const channels = [];
+
+    // Listen to task changes
+    const taskChannel = supabase
+      .channel('task-changes')
       .on('postgres_changes', 
         { 
           event: '*', 
@@ -114,27 +119,76 @@ export function NotificationCenter() {
           table: 'tasks' 
         }, 
         (payload) => {
-          if (payload.eventType === 'UPDATE' && payload.new.assigned_to === profile.id) {
-            const newNotification: Notification = {
-              id: Date.now().toString(),
-              type: 'task_updated',
-              title: 'Task Updated',
-              message: `Task "${payload.new.title}" has been updated.`,
-              timestamp: new Date(),
-              read: false,
-              userId: profile.id,
-              metadata: payload.new,
-            };
-            
-            setNotifications(prev => [newNotification, ...prev]);
-            setUnreadCount(prev => prev + 1);
+          try {
+            if (payload.eventType === 'UPDATE' && payload.new?.assigned_to === profile.id) {
+              const newNotification: Notification = {
+                id: `task-${Date.now()}`,
+                type: 'task_updated',
+                title: 'Task Updated',
+                message: `Task "${payload.new.title}" status changed to ${payload.new.status}.`,
+                timestamp: new Date(),
+                read: false,
+                userId: profile.id,
+                metadata: payload.new,
+              };
+              
+              setNotifications(prev => [newNotification, ...prev].slice(0, 50));
+              setUnreadCount(prev => prev + 1);
+              
+              toast({
+                title: newNotification.title,
+                description: newNotification.message,
+              });
+            }
+          } catch (error) {
+            console.error('Error processing task notification:', error);
           }
         }
       )
       .subscribe();
 
+    // Listen to comment changes
+    const commentChannel = supabase
+      .channel('comment-changes')
+      .on('postgres_changes', 
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'task_comments' 
+        }, 
+        (payload) => {
+          try {
+            if (payload.new && payload.new.user_id !== profile.id) {
+              const newNotification: Notification = {
+                id: `comment-${Date.now()}`,
+                type: 'comment',
+                title: 'New Comment',
+                message: 'Someone commented on a task you\'re involved in.',
+                timestamp: new Date(),
+                read: false,
+                userId: profile.id,
+                metadata: payload.new,
+              };
+              
+              setNotifications(prev => [newNotification, ...prev].slice(0, 50));
+              setUnreadCount(prev => prev + 1);
+              
+              toast({
+                title: newNotification.title,
+                description: newNotification.message,
+              });
+            }
+          } catch (error) {
+            console.error('Error processing comment notification:', error);
+          }
+        }
+      )
+      .subscribe();
+
+    channels.push(taskChannel, commentChannel);
+
     return () => {
-      supabase.removeChannel(channel);
+      channels.forEach(channel => supabase.removeChannel(channel));
     };
   }, [profile]);
 
@@ -178,17 +232,17 @@ export function NotificationCenter() {
 
   const getNotificationColor = (type: Notification['type']) => {
     const colorMap = {
-      login: 'text-green-600',
-      logout: 'text-gray-600',
-      task_assigned: 'text-blue-600',
-      task_updated: 'text-purple-600',
-      comment: 'text-orange-600',
-      coins: 'text-yellow-600',
-      time_log: 'text-indigo-600',
-      task_progress: 'text-pink-600',
+      login: 'text-green-500',
+      logout: 'text-muted-foreground',
+      task_assigned: 'text-blue-500',
+      task_updated: 'text-purple-500',
+      comment: 'text-orange-500',
+      coins: 'text-yellow-500',
+      time_log: 'text-indigo-500',
+      task_progress: 'text-pink-500',
     };
     
-    return colorMap[type] || 'text-gray-600';
+    return colorMap[type] || 'text-muted-foreground';
   };
 
   const formatTimestamp = (timestamp: Date) => {
