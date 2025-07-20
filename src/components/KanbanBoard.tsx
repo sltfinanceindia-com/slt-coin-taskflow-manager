@@ -212,13 +212,24 @@ export function KanbanBoard({
 
   const getColumnColor = (columnId: string) => {
     const colors = {
-      assigned: 'border-blue-200 bg-blue-50',
-      in_progress: 'border-yellow-200 bg-yellow-50',
-      completed: 'border-purple-200 bg-purple-50',
-      verified: 'border-green-200 bg-green-50',
-      rejected: 'border-red-200 bg-red-50',
+      assigned: 'border-blue-300 bg-gradient-to-br from-blue-50/80 to-blue-100/40 shadow-blue-100/50',
+      in_progress: 'border-yellow-300 bg-gradient-to-br from-yellow-50/80 to-yellow-100/40 shadow-yellow-100/50',
+      completed: 'border-purple-300 bg-gradient-to-br from-purple-50/80 to-purple-100/40 shadow-purple-100/50',
+      verified: 'border-green-300 bg-gradient-to-br from-green-50/80 to-green-100/40 shadow-green-100/50',
+      rejected: 'border-red-300 bg-gradient-to-br from-red-50/80 to-red-100/40 shadow-red-100/50',
     };
-    return colors[columnId as keyof typeof colors] || 'border-gray-200 bg-gray-50';
+    return colors[columnId as keyof typeof colors] || 'border-gray-300 bg-gradient-to-br from-gray-50/80 to-gray-100/40';
+  };
+
+  const getColumnHeaderColor = (columnId: string) => {
+    const colors = {
+      assigned: 'text-blue-700 bg-gradient-to-r from-blue-100 to-blue-200',
+      in_progress: 'text-yellow-700 bg-gradient-to-r from-yellow-100 to-yellow-200',
+      completed: 'text-purple-700 bg-gradient-to-r from-purple-100 to-purple-200',
+      verified: 'text-green-700 bg-gradient-to-r from-green-100 to-green-200',
+      rejected: 'text-red-700 bg-gradient-to-r from-red-100 to-red-200',
+    };
+    return colors[columnId as keyof typeof colors] || 'text-gray-700 bg-gradient-to-r from-gray-100 to-gray-200';
   };
 
   const getTaskCountForColumn = (status: Task['status']) => {
@@ -228,41 +239,38 @@ export function KanbanBoard({
   return (
     <div className="space-y-6">
       {/* Header with controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-6 bg-gradient-to-r from-white to-gray-50 rounded-xl border border-gray-200 shadow-sm">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold">Task Kanban Board</h2>
-          <p className="text-muted-foreground text-sm">Drag and drop tasks to update their status</p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gradient-primary mb-2">Task Kanban Board</h2>
+          <p className="text-muted-foreground">Drag and drop tasks to update their status seamlessly</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-3">
           <Button
             variant="outline"
             size="sm"
             onClick={() => setShowFilters(!showFilters)}
-            className="text-xs sm:text-sm"
+            className="bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-150 border-blue-200 text-blue-700 shadow-sm hover:shadow-md transition-all duration-200"
           >
-            <Filter className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Filters</span>
-            <span className="sm:hidden">Filter</span>
+            <Filter className="h-4 w-4 mr-2" />
+            Filters
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setShowAnalytics(!showAnalytics)}
-            className="text-xs sm:text-sm"
+            className="bg-gradient-to-r from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-150 border-purple-200 text-purple-700 shadow-sm hover:shadow-md transition-all duration-200"
           >
-            <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Analytics</span>
-            <span className="sm:hidden">Chart</span>
+            <BarChart3 className="h-4 w-4 mr-2" />
+            Analytics
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={generateOptimizationSuggestions}
-            className="text-xs sm:text-sm"
+            className="bg-gradient-to-r from-green-50 to-green-100 hover:from-green-100 hover:to-green-150 border-green-200 text-green-700 shadow-sm hover:shadow-md transition-all duration-200"
           >
-            <Zap className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Optimize</span>
-            <span className="sm:hidden">Opt</span>
+            <Zap className="h-4 w-4 mr-2" />
+            Optimize
           </Button>
         </div>
       </div>
@@ -293,21 +301,26 @@ export function KanbanBoard({
 
       {/* Analytics panel */}
       {showAnalytics && (
-        <KanbanAnalytics tasks={filteredTasks} />
+        <div className="animate-fade-in">
+          <KanbanAnalytics tasks={filteredTasks} />
+        </div>
       )}
 
-      {/* Kanban Board */}
+      {/* Enhanced Kanban Board */}
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-3 lg:gap-4 min-h-[400px] sm:min-h-[500px] lg:min-h-[600px]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6">
           {columns.map((column) => (
-            <div key={column.id} className="space-y-2 sm:space-y-3 min-w-0">
-              <div className="flex items-center justify-between gap-2">
-                <h3 className="font-semibold text-xs sm:text-sm uppercase tracking-wide truncate">
-                  {column.title}
-                </h3>
-                <Badge variant="secondary" className="text-xs shrink-0">
-                  {getTaskCountForColumn(column.status)}
-                </Badge>
+            <div key={column.id} className="space-y-4 min-w-0">
+              {/* Enhanced Column Header */}
+              <div className={`p-4 rounded-xl shadow-sm border ${getColumnHeaderColor(column.id)}`}>
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="font-bold text-sm uppercase tracking-wider truncate">
+                    {column.title}
+                  </h3>
+                  <Badge variant="secondary" className="bg-white/80 text-xs font-semibold px-2 py-1 shadow-sm">
+                    {getTaskCountForColumn(column.status)}
+                  </Badge>
+                </div>
               </div>
               
               <Droppable droppableId={column.id}>
@@ -316,12 +329,12 @@ export function KanbanBoard({
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                     className={`
-                      min-h-[300px] sm:min-h-[400px] lg:min-h-[500px] p-2 sm:p-3 rounded-lg border-2 border-dashed transition-colors
+                      min-h-[400px] sm:min-h-[500px] lg:min-h-[600px] p-4 rounded-xl border-2 border-dashed transition-all duration-300 shadow-lg
                       ${getColumnColor(column.id)}
-                      ${snapshot.isDraggingOver ? 'border-primary bg-primary/10' : ''}
+                      ${snapshot.isDraggingOver ? 'border-primary bg-primary/5 shadow-xl scale-105' : ''}
                     `}
                   >
-                    <div className="space-y-2 sm:space-y-3">
+                    <div className="space-y-4">
                       {filteredTasks
                         .filter(task => task.status === column.status)
                         .map((task, index) => (
@@ -337,9 +350,15 @@ export function KanbanBoard({
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
                                 className={`
-                                  transition-transform
-                                  ${snapshot.isDragging ? 'rotate-2 scale-105' : ''}
+                                  transition-all duration-300
+                                  ${snapshot.isDragging ? 'rotate-3 scale-105 shadow-2xl z-50' : 'hover:scale-102'}
                                 `}
+                                style={{
+                                  ...provided.draggableProps.style,
+                                  transform: snapshot.isDragging 
+                                    ? `${provided.draggableProps.style?.transform} rotate(3deg)` 
+                                    : provided.draggableProps.style?.transform,
+                                }}
                               >
                                 <TaskCard
                                   task={task}

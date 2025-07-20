@@ -1,16 +1,17 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Coins, Clock, User, Calendar, AlertCircle, CheckCircle, XCircle, Edit, Eye, ChevronDown, ChevronRight } from 'lucide-react';
+import { Coins, Clock, User, Calendar, Edit } from 'lucide-react';
 import { Task } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
-import { useState } from 'react';
 import { format } from 'date-fns';
 import { TaskComments } from '@/components/TaskComments';
 import { TaskEditDialog } from '@/components/TaskEditDialog';
 import { TaskDetailDialog } from '@/components/TaskDetailDialog';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { TaskDescription } from '@/components/TaskDescription';
+import { TaskActions } from '@/components/TaskActions';
+import { TaskStatusIndicator } from '@/components/TaskStatusIndicator';
 
 interface TaskCardProps {
   task: Task;
@@ -23,77 +24,56 @@ interface TaskCardProps {
 
 export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isUpdating, onAdminOverride }: TaskCardProps) {
   const { profile } = useAuth();
-  const [submissionNotes, setSubmissionNotes] = useState('');
-  const [adminFeedback, setAdminFeedback] = useState('');
-  const [showSubmissionForm, setShowSubmissionForm] = useState(false);
-  const [showVerificationForm, setShowVerificationForm] = useState(false);
-  const [showDescription, setShowDescription] = useState(false);
 
   const isAssignedToMe = task.assigned_to === profile?.id;
-  const isCreatedByMe = task.created_by === profile?.id;
   const isAdmin = profile?.role === 'admin';
 
   const getStatusColor = (status: Task['status']) => {
     switch (status) {
-      case 'assigned': return 'bg-blue-100 text-blue-800';
-      case 'in_progress': return 'bg-yellow-100 text-yellow-800';
-      case 'completed': return 'bg-purple-100 text-purple-800';
-      case 'verified': return 'bg-green-100 text-green-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'assigned': return 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300';
+      case 'in_progress': return 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border-yellow-300';
+      case 'completed': return 'bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 border-purple-300';
+      case 'verified': return 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300';
+      case 'rejected': return 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300';
+      default: return 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border-gray-300';
     }
   };
 
   const getPriorityColor = (priority: Task['priority']) => {
     switch (priority) {
-      case 'urgent': return 'bg-red-100 text-red-800';
-      case 'high': return 'bg-orange-100 text-orange-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'low': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'urgent': return 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300';
+      case 'high': return 'bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 border-orange-300';
+      case 'medium': return 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border-yellow-300';
+      case 'low': return 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300';
+      default: return 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border-gray-300';
     }
-  };
-
-  const handleStartTask = () => {
-    onUpdateStatus(task.id, 'in_progress');
-  };
-
-  const handleCompleteTask = () => {
-    if (submissionNotes.trim()) {
-      onUpdateStatus(task.id, 'completed', submissionNotes);
-      setSubmissionNotes('');
-      setShowSubmissionForm(false);
-    }
-  };
-
-  const handleVerifyTask = (approve: boolean) => {
-    onVerifyTask(task.id, approve, adminFeedback, task.slt_coin_value);
-    setAdminFeedback('');
-    setShowVerificationForm(false);
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow animate-fade-in">
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="space-y-2">
-            <CardTitle className="text-lg">{task.title}</CardTitle>
-            <div className="flex items-center gap-2">
-              <Badge className={getStatusColor(task.status)}>
+    <Card className="hover:shadow-xl transition-all duration-300 animate-fade-in transform hover:-translate-y-1 bg-gradient-to-br from-white to-gray-50/50 border border-gray-200/60 hover:border-primary/30">
+      <CardHeader className="pb-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-3 flex-1 min-w-0">
+            <CardTitle className="text-lg font-semibold text-foreground leading-tight">
+              {task.title}
+            </CardTitle>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge className={`${getStatusColor(task.status)} shadow-sm border font-medium px-3 py-1 text-xs`}>
                 {task.status.replace('_', ' ').toUpperCase()}
               </Badge>
-              <Badge className={getPriorityColor(task.priority)}>
+              <Badge className={`${getPriorityColor(task.priority)} shadow-sm border font-medium px-3 py-1 text-xs`}>
                 {task.priority.toUpperCase()}
               </Badge>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center space-x-2 text-coin-gold">
-              <Coins className="h-5 w-5" />
-              <span className="font-bold">{task.slt_coin_value}</span>
+          
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <div className="flex items-center space-x-2 bg-gradient-to-r from-yellow-100 to-amber-100 px-3 py-2 rounded-lg border border-yellow-200 shadow-sm">
+              <Coins className="h-5 w-5 text-yellow-600" />
+              <span className="font-bold text-yellow-800 text-sm">{task.slt_coin_value}</span>
             </div>
             {isAdmin && (
-              <div className="flex gap-2">
+              <div className="flex gap-1">
                 <TaskDetailDialog task={task} />
                 {onUpdateTask && (
                   <TaskEditDialog 
@@ -107,200 +87,69 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
           </div>
         </div>
         
-        {/* Collapsible Task Description */}
-        <Collapsible open={showDescription} onOpenChange={setShowDescription}>
-          <CollapsibleTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="w-full justify-between hover:bg-muted/50 transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                <Eye className="h-4 w-4" />
-                View Details
-              </span>
-              {showDescription ? (
-                <ChevronDown className="h-4 w-4" />
-              ) : (
-                <ChevronRight className="h-4 w-4" />
-              )}
-            </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="mt-2">
-            <div className="bg-muted/30 p-3 rounded-md border-l-4 border-primary">
-              <p className="text-sm text-muted-foreground font-medium mb-1">Description:</p>
-              <p className="text-sm leading-relaxed">{task.description}</p>
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
+        {/* Task Description */}
+        <div className="mt-4">
+          <TaskDescription description={task.description} />
+        </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         {/* Task Details */}
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="flex items-center space-x-2">
-            <User className="h-4 w-4 text-muted-foreground" />
-            <span>Assigned to: {task.assigned_profile?.full_name}</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-gradient-to-br from-muted/30 to-muted/50 rounded-lg border border-border/50">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-primary/10 rounded-full">
+              <User className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground font-medium">Assigned to</p>
+              <p className="text-sm font-semibold text-foreground">{task.assigned_profile?.full_name}</p>
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span>Due: {format(new Date(task.end_date), 'MMM dd, yyyy')}</span>
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-orange-100 rounded-full">
+              <Calendar className="h-4 w-4 text-orange-600" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground font-medium">Due Date</p>
+              <p className="text-sm font-semibold text-foreground">{format(new Date(task.end_date), 'MMM dd, yyyy')}</p>
+            </div>
           </div>
         </div>
 
         {/* Submission Notes */}
         {task.submission_notes && (
-          <div className="bg-muted p-3 rounded-md">
-            <p className="text-sm font-medium mb-1">Submission Notes:</p>
-            <p className="text-sm">{task.submission_notes}</p>
-          </div>
+          <Card className="bg-gradient-to-br from-blue-50/50 to-indigo-50/50 border-l-4 border-l-blue-500">
+            <CardContent className="p-4">
+              <p className="text-sm font-semibold mb-2 text-blue-800">Submission Notes:</p>
+              <p className="text-sm leading-relaxed text-blue-700 whitespace-pre-wrap">{task.submission_notes}</p>
+            </CardContent>
+          </Card>
         )}
 
         {/* Admin Feedback */}
         {task.admin_feedback && (
-          <div className="bg-muted p-3 rounded-md">
-            <p className="text-sm font-medium mb-1">Admin Feedback:</p>
-            <p className="text-sm">{task.admin_feedback}</p>
-          </div>
+          <Card className="bg-gradient-to-br from-orange-50/50 to-amber-50/50 border-l-4 border-l-orange-500">
+            <CardContent className="p-4">
+              <p className="text-sm font-semibold mb-2 text-orange-800">Admin Feedback:</p>
+              <p className="text-sm leading-relaxed text-orange-700 whitespace-pre-wrap">{task.admin_feedback}</p>
+            </CardContent>
+          </Card>
         )}
 
-        {/* Intern Actions */}
-        {isAssignedToMe && task.status === 'assigned' && (
-          <Button onClick={handleStartTask} className="w-full">
-            <Clock className="h-4 w-4 mr-2" />
-            Start Task
-          </Button>
-        )}
-
-        {isAssignedToMe && task.status === 'in_progress' && (
-          <div className="space-y-3">
-            {!showSubmissionForm ? (
-              <Button 
-                onClick={() => setShowSubmissionForm(true)} 
-                className="w-full"
-                variant="secondary"
-              >
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Mark as Completed
-              </Button>
-            ) : (
-              <div className="space-y-3">
-                <Textarea
-                  placeholder="Add submission notes (required)..."
-                  value={submissionNotes}
-                  onChange={(e) => setSubmissionNotes(e.target.value)}
-                  rows={3}
-                />
-                <div className="flex gap-2">
-                  <Button 
-                    onClick={handleCompleteTask}
-                    disabled={!submissionNotes.trim()}
-                    className="flex-1"
-                  >
-                    Submit Task
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => {
-                      setShowSubmissionForm(false);
-                      setSubmissionNotes('');
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Admin Actions */}
-        {isAdmin && task.status === 'completed' && (
-          <div className="space-y-3">
-            {!showVerificationForm ? (
-              <div className="flex gap-2">
-                <Button 
-                  onClick={() => setShowVerificationForm(true)}
-                  className="flex-1"
-                  variant="secondary"
-                >
-                  <AlertCircle className="h-4 w-4 mr-2" />
-                  Review Task
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <Textarea
-                  placeholder="Add feedback (optional)..."
-                  value={adminFeedback}
-                  onChange={(e) => setAdminFeedback(e.target.value)}
-                  rows={2}
-                />
-                <div className="flex gap-2">
-                  <Button 
-                    onClick={() => handleVerifyTask(true)}
-                    className="flex-1"
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Approve & Award Coins
-                  </Button>
-                  <Button 
-                    variant="destructive"
-                    onClick={() => handleVerifyTask(false)}
-                    className="flex-1"
-                  >
-                    <XCircle className="h-4 w-4 mr-2" />
-                    Reject
-                  </Button>
-                </div>
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setShowVerificationForm(false);
-                    setAdminFeedback('');
-                  }}
-                  className="w-full"
-                >
-                  Cancel
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
+        {/* Task Actions */}
+        <TaskActions task={task} onUpdateStatus={onUpdateStatus} onVerifyTask={onVerifyTask} />
 
         {/* Status Messages */}
-        {task.status === 'completed' && isAssignedToMe && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
-            <p className="text-sm text-yellow-800">
-              ⏳ Task submitted and awaiting admin approval for SLT Coins
-            </p>
-          </div>
-        )}
-
-        {task.status === 'verified' && (
-          <div className="bg-green-50 border border-green-200 rounded-md p-3">
-            <p className="text-sm text-green-800">
-              ✅ Task approved! {task.slt_coin_value} SLT Coins awarded
-            </p>
-          </div>
-        )}
-
-        {task.status === 'rejected' && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-3">
-            <p className="text-sm text-red-800">
-              ❌ Task rejected. Please review feedback and resubmit if needed.
-            </p>
-          </div>
-        )}
+        <TaskStatusIndicator status={task.status} coinValue={task.slt_coin_value} />
 
         {/* Admin Override */}
         {isAdmin && onAdminOverride && (
-          <div className="border-t pt-3 mt-3">
+          <div className="pt-4 border-t border-border/50">
             <Button
               variant="outline"
               size="sm"
               onClick={() => onAdminOverride(task)}
-              className="w-full"
+              className="w-full bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 border-gray-300 hover:border-gray-400 transition-all duration-200"
             >
               <Edit className="h-3 w-3 mr-2" />
               Admin Override Status
@@ -308,8 +157,8 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
           </div>
         )}
 
-        {/* Task Comments */}
-        <div className="mt-4">
+        {/* Task Comments - More Prominent */}
+        <div className="pt-4 border-t border-border/50">
           <TaskComments taskId={task.id} />
         </div>
       </CardContent>
