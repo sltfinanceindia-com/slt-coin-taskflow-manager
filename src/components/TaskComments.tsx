@@ -1,10 +1,12 @@
+
 import { useState, useRef } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { MessageCircle, Send, Paperclip, FileText, Download, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { MessageCircle, Send, Paperclip, FileText, Download, X, ChevronDown, ChevronRight } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useTaskComments } from '@/hooks/useTaskComments';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
@@ -19,7 +21,7 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
   const { profile } = useAuth();
   const { comments, addComment, isAddingComment } = useTaskComments(taskId);
   const [newComment, setNewComment] = useState('');
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -113,108 +115,109 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
   };
 
   return (
-    <Card className="space-y-8 bg-gradient-to-br from-background via-muted/10 to-primary/5 border-2 border-primary/20 shadow-xl hover:shadow-2xl transition-all duration-500">
-      <CardHeader 
-        className="cursor-pointer hover:bg-primary/5 transition-colors duration-300 rounded-xl -m-1 p-6 group"
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-2xl font-black text-primary flex items-center gap-3 group-hover:scale-105 transition-transform duration-300">
-            <div className="p-2 bg-primary/10 rounded-full">
-              <MessageCircle className="h-6 w-6" />
-            </div>
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <CollapsibleTrigger asChild>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="w-full justify-between p-3 h-auto bg-gradient-to-r from-muted/30 to-muted/50 hover:from-muted/50 hover:to-muted/70 transition-all duration-300 rounded-lg border border-border/50 hover:border-border animate-fade-in"
+        >
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <MessageCircle className="h-4 w-4 text-primary" />
             Comments ({comments?.length || 0})
-          </CardTitle>
-          <Button variant="ghost" size="lg" className="hover:bg-primary/15 hover:scale-110 transition-all duration-300 rounded-full">
-            {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-          </Button>
-        </div>
-      </CardHeader>
-
-      {isExpanded && (
-        <CardContent className="space-y-8">
-          {/* Comment List - Ultra Prominent */}
-          <div className="space-y-6 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
-            {comments && comments.length > 0 ? (
-              comments.map((comment) => (
-                <Card key={comment.id} className="p-6 bg-gradient-to-br from-background via-background/95 to-muted/20 hover:shadow-lg transition-all duration-300 border-2 border-border/30 hover:border-primary/30 hover:scale-[1.02] transform">
-                  <div className="flex items-start space-x-4">
-                    <Avatar className="h-12 w-12 ring-4 ring-primary/20 hover:ring-primary/40 transition-all duration-300">
-                      <AvatarImage src={comment.user_profile?.avatar_url || ''} />
-                      <AvatarFallback className="bg-primary/20 text-primary font-black text-lg">
-                        {comment.user_profile?.full_name?.charAt(0) || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <span className="font-black text-foreground text-lg">
-                            {comment.user_profile?.full_name || 'Unknown User'}
-                          </span>
-                          <Badge variant="outline" className="text-sm font-bold px-3 py-1">
-                            User
-                          </Badge>
-                        </div>
-                        <span className="text-sm text-muted-foreground font-medium">
-                          {format(new Date(comment.created_at), 'MMM dd, HH:mm')}
-                        </span>
-                      </div>
-                      <p className="text-base text-foreground leading-relaxed whitespace-pre-wrap font-medium bg-muted/20 p-4 rounded-lg border border-border/30">
-                        {comment.content}
-                      </p>
-                      
-                      {/* Attachments - Enhanced */}
-                      {comment.attachments && comment.attachments.length > 0 && (
-                        <div className="flex flex-wrap gap-3 mt-4">
-                          {comment.attachments.map((attachment: any, index: number) => (
-                            <Badge
-                              key={index}
-                              variant="secondary"
-                              className="cursor-pointer hover:bg-primary/20 transition-all duration-300 hover:scale-110 p-3 text-sm font-bold"
-                              onClick={() => handleDownloadAttachment(attachment)}
-                            >
-                              <FileText className="h-4 w-4 mr-2" />
-                              {attachment.name}
-                              <Download className="h-4 w-4 ml-2" />
+          </div>
+          {isOpen ? (
+            <ChevronDown className="h-4 w-4 transition-transform duration-200" />
+          ) : (
+            <ChevronRight className="h-4 w-4 transition-transform duration-200" />
+          )}
+        </Button>
+      </CollapsibleTrigger>
+      
+      <CollapsibleContent className="mt-3 animate-accordion-down">
+        <Card className="bg-gradient-to-br from-blue-50/30 to-indigo-50/30 border-l-4 border-l-primary/30 shadow-sm">
+          <CardContent className="p-4 space-y-4">
+            {/* Comment List */}
+            <div className="space-y-3 max-h-80 overflow-y-auto">
+              {comments && comments.length > 0 ? (
+                comments.map((comment) => (
+                  <div key={comment.id} className="p-3 bg-white/80 backdrop-blur-sm rounded-lg border border-border/30 hover:shadow-sm transition-all duration-200">
+                    <div className="flex items-start space-x-3">
+                      <Avatar className="h-8 w-8 ring-2 ring-primary/10">
+                        <AvatarImage src={comment.user_profile?.avatar_url || ''} />
+                        <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
+                          {comment.user_profile?.full_name?.charAt(0) || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 space-y-2 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-foreground text-sm">
+                              {comment.user_profile?.full_name || 'Unknown User'}
+                            </span>
+                            <Badge variant="outline" className="text-xs px-2 py-0">
+                              User
                             </Badge>
-                          ))}
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            {format(new Date(comment.created_at), 'MMM dd, HH:mm')}
+                          </span>
                         </div>
-                      )}
+                        <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap bg-muted/20 p-2 rounded border border-border/20">
+                          {comment.content}
+                        </p>
+                        
+                        {/* Attachments */}
+                        {comment.attachments && comment.attachments.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {comment.attachments.map((attachment: any, index: number) => (
+                              <Badge
+                                key={index}
+                                variant="secondary"
+                                className="cursor-pointer hover:bg-primary/20 transition-all duration-200 hover:scale-105 text-xs"
+                                onClick={() => handleDownloadAttachment(attachment)}
+                              >
+                                <FileText className="h-3 w-3 mr-1" />
+                                {attachment.name}
+                                <Download className="h-3 w-3 ml-1" />
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </Card>
-              ))
-            ) : (
-              <div className="text-center py-12 text-muted-foreground">
-                <div className="p-6 bg-muted/20 rounded-2xl border-2 border-dashed border-muted-foreground/20">
-                  <MessageCircle className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-semibold">No comments yet. Be the first to comment!</p>
+                ))
+              ) : (
+                <div className="text-center py-6 text-muted-foreground">
+                  <div className="p-4 bg-muted/10 rounded-lg border border-dashed border-muted-foreground/20">
+                    <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No comments yet. Be the first to comment!</p>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
 
-          {/* Add Comment Form - Ultra Enhanced */}
-          <Card className="p-8 bg-gradient-to-br from-primary/5 via-background to-muted/10 border-2 border-primary/30 shadow-lg hover:shadow-xl transition-all duration-300">
-            <div className="space-y-6">
-              <div className="flex items-start space-x-4">
-                <Avatar className="h-14 w-14 ring-4 ring-primary/30">
+            {/* Add Comment Form */}
+            <div className="space-y-3 pt-3 border-t border-border/20">
+              <div className="flex items-start space-x-3">
+                <Avatar className="h-8 w-8 ring-2 ring-primary/20">
                   <AvatarImage src={profile?.avatar_url || ''} />
-                  <AvatarFallback className="bg-primary/20 text-primary font-black text-xl">
+                  <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
                     {profile?.full_name?.charAt(0) || 'U'}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex-1 space-y-4">
+                <div className="flex-1 space-y-3">
                   <Textarea
                     placeholder="Share your thoughts, updates, or questions..."
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
-                    className="min-h-[120px] resize-none border-2 border-primary/30 focus:border-primary focus:ring-primary/30 bg-background/80 backdrop-blur-sm text-base font-medium"
+                    className="min-h-[80px] resize-none border border-primary/20 focus:border-primary focus:ring-primary/20 bg-background/80 text-sm"
                   />
                   
-                  {/* File Upload - Enhanced */}
-                  <div className="flex items-center justify-between bg-muted/20 p-4 rounded-xl border border-border/30">
-                    <div className="flex items-center gap-3">
+                  {/* File Upload */}
+                  <div className="flex items-center justify-between bg-muted/20 p-2 rounded border border-border/20">
+                    <div className="flex items-center gap-2">
                       <input
                         type="file"
                         ref={fileInputRef}
@@ -226,16 +229,16 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
                       <Button
                         type="button"
                         variant="outline"
-                        size="lg"
+                        size="sm"
                         onClick={() => fileInputRef.current?.click()}
-                        className="hover:bg-primary/15 border-2 border-primary/30 hover:border-primary/50 font-bold transition-all duration-300 hover:scale-105"
+                        className="hover:bg-primary/10 border border-primary/20 hover:border-primary/30 text-xs"
                       >
-                        <Paperclip className="h-5 w-5 mr-2" />
-                        Attach Files
+                        <Paperclip className="h-3 w-3 mr-1" />
+                        Attach
                       </Button>
                       {selectedFiles.length > 0 && (
-                        <Badge variant="secondary" className="text-sm font-bold px-3 py-1">
-                          {selectedFiles.length} file(s) selected
+                        <Badge variant="secondary" className="text-xs">
+                          {selectedFiles.length} file(s)
                         </Badge>
                       )}
                     </div>
@@ -243,37 +246,37 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
                     <Button
                       onClick={handleSubmitComment}
                       disabled={(!newComment.trim() && selectedFiles.length === 0) || isAddingComment || isUploading}
-                      size="lg"
-                      className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-black px-8 py-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                      size="sm"
+                      className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground text-xs px-4 shadow-sm hover:shadow-md transition-all duration-200"
                     >
                       {(isAddingComment || isUploading) ? (
-                        <div className="flex items-center gap-3">
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        <div className="flex items-center gap-2">
+                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                           Posting...
                         </div>
                       ) : (
-                        <div className="flex items-center gap-3">
-                          <Send className="h-5 w-5" />
-                          Post Comment
+                        <div className="flex items-center gap-2">
+                          <Send className="h-3 w-3" />
+                          Post
                         </div>
                       )}
                     </Button>
                   </div>
                   
-                  {/* Selected Files Preview - Enhanced */}
+                  {/* Selected Files Preview */}
                   {selectedFiles.length > 0 && (
-                    <div className="flex flex-wrap gap-3 p-4 bg-muted/20 rounded-xl border-2 border-border/30">
+                    <div className="flex flex-wrap gap-2 p-2 bg-muted/10 rounded border border-border/20">
                       {selectedFiles.map((file, index) => (
-                        <div key={index} className="flex items-center gap-3 bg-background px-4 py-3 rounded-lg border-2 border-border/40 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105">
-                          <FileText className="h-5 w-5 text-primary" />
-                          <span className="text-sm font-bold">{file.name}</span>
+                        <div key={index} className="flex items-center gap-2 bg-background px-2 py-1 rounded border border-border/30 text-xs">
+                          <FileText className="h-3 w-3 text-primary" />
+                          <span className="font-medium truncate max-w-20">{file.name}</span>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleRemoveFile(index)}
-                            className="p-2 h-auto hover:bg-red-100 hover:text-red-600 rounded-full transition-all duration-300 hover:scale-110"
+                            className="p-1 h-auto hover:bg-red-100 hover:text-red-600 rounded-full"
                           >
-                            <X className="h-4 w-4" />
+                            <X className="h-3 w-3" />
                           </Button>
                         </div>
                       ))}
@@ -282,9 +285,9 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
                 </div>
               </div>
             </div>
-          </Card>
-        </CardContent>
-      )}
-    </Card>
+          </CardContent>
+        </Card>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }

@@ -49,79 +49,78 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-all duration-200 space-y-4">
+    <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-lg transition-all duration-300 space-y-4 w-full max-w-sm mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-gray-900 text-sm sm:text-base leading-tight mb-2 break-words">
+      <div className="space-y-3">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2 flex-1">
             {task.title}
           </h3>
-          <div className="flex flex-wrap gap-2">
-            <Badge className={`${getStatusColor(task.status)} text-xs font-medium px-2 py-1`}>
-              {task.status.replace('_', ' ')}
-            </Badge>
-            <Badge className={`${getPriorityColor(task.priority)} text-xs font-medium px-2 py-1`}>
-              {task.priority}
-            </Badge>
+          
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center bg-gradient-to-r from-amber-50 to-yellow-50 px-2 py-1 rounded-lg border border-amber-200">
+              <Coins className="h-3 w-3 text-amber-600 mr-1" />
+              <span className="font-bold text-amber-800 text-xs">{task.slt_coin_value}</span>
+            </div>
+            {isAdmin && (
+              <div className="flex gap-1">
+                <TaskDetailDialog task={task} />
+                {onUpdateTask && (
+                  <TaskEditDialog 
+                    task={task} 
+                    onUpdateTask={onUpdateTask} 
+                    isUpdating={isUpdating || false} 
+                  />
+                )}
+              </div>
+            )}
           </div>
         </div>
         
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <div className="flex items-center bg-amber-50 px-2 py-1 rounded-md border border-amber-200">
-            <Coins className="h-4 w-4 text-amber-600 mr-1" />
-            <span className="font-bold text-amber-800 text-sm">{task.slt_coin_value}</span>
-          </div>
-          {isAdmin && (
-            <div className="flex gap-1">
-              <TaskDetailDialog task={task} />
-              {onUpdateTask && (
-                <TaskEditDialog 
-                  task={task} 
-                  onUpdateTask={onUpdateTask} 
-                  isUpdating={isUpdating || false} 
-                />
-              )}
-            </div>
-          )}
+        <div className="flex flex-wrap gap-2">
+          <Badge className={`${getStatusColor(task.status)} text-xs font-medium px-2 py-1 rounded-md`}>
+            {task.status.replace('_', ' ')}
+          </Badge>
+          <Badge className={`${getPriorityColor(task.priority)} text-xs font-medium px-2 py-1 rounded-md`}>
+            {task.priority}
+          </Badge>
         </div>
       </div>
 
       {/* Description */}
-      <div className="space-y-2">
-        <TaskDescription description={task.description} />
-      </div>
+      <TaskDescription description={task.description} />
 
       {/* Task Details */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+      <div className="space-y-3 text-xs">
         <div className="flex items-center space-x-2">
-          <User className="h-4 w-4 text-gray-500 flex-shrink-0" />
-          <div className="min-w-0">
-            <p className="text-xs text-gray-500 uppercase tracking-wide">Assigned to</p>
-            <p className="font-medium text-gray-900 truncate">{task.assigned_profile?.full_name}</p>
+          <User className="h-3 w-3 text-gray-500 flex-shrink-0" />
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Assigned to</p>
+            <p className="font-semibold text-gray-900 truncate text-sm">{task.assigned_profile?.full_name}</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
-          <Calendar className="h-4 w-4 text-gray-500 flex-shrink-0" />
-          <div className="min-w-0">
-            <p className="text-xs text-gray-500 uppercase tracking-wide">Due Date</p>
-            <p className="font-medium text-gray-900">{format(new Date(task.end_date), 'MMM dd, yyyy')}</p>
+          <Calendar className="h-3 w-3 text-gray-500 flex-shrink-0" />
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Due Date</p>
+            <p className="font-semibold text-gray-900 text-sm">{format(new Date(task.end_date), 'MMM dd, yyyy')}</p>
           </div>
         </div>
       </div>
 
       {/* Submission Notes */}
       {task.submission_notes && (
-        <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-r-md">
-          <p className="text-sm font-medium text-blue-800 mb-1">Submission Notes:</p>
-          <p className="text-sm text-blue-700 whitespace-pre-wrap">{task.submission_notes}</p>
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 p-3 rounded-r-lg">
+          <p className="text-xs font-semibold text-blue-800 mb-1">Submission Notes:</p>
+          <p className="text-xs text-blue-700 whitespace-pre-wrap leading-relaxed">{task.submission_notes}</p>
         </div>
       )}
 
       {/* Admin Feedback */}
       {task.admin_feedback && (
-        <div className="bg-orange-50 border-l-4 border-orange-400 p-3 rounded-r-md">
-          <p className="text-sm font-medium text-orange-800 mb-1">Admin Feedback:</p>
-          <p className="text-sm text-orange-700 whitespace-pre-wrap">{task.admin_feedback}</p>
+        <div className="bg-gradient-to-r from-orange-50 to-red-50 border-l-4 border-orange-400 p-3 rounded-r-lg">
+          <p className="text-xs font-semibold text-orange-800 mb-1">Admin Feedback:</p>
+          <p className="text-xs text-orange-700 whitespace-pre-wrap leading-relaxed">{task.admin_feedback}</p>
         </div>
       )}
 
@@ -137,17 +136,15 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
           variant="outline"
           size="sm"
           onClick={() => onAdminOverride(task)}
-          className="w-full text-xs"
+          className="w-full text-xs bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 transition-all duration-200"
         >
           <Edit className="h-3 w-3 mr-2" />
           Admin Override Status
         </Button>
       )}
 
-      {/* Task Comments */}
-      <div className="border-t pt-4">
-        <TaskComments taskId={task.id} />
-      </div>
+      {/* Task Comments - Collapsible */}
+      <TaskComments taskId={task.id} />
     </div>
   );
 }
