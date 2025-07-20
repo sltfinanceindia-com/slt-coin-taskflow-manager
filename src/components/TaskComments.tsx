@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { MessageCircle, Send, Paperclip, FileText, Download, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { useTaskComments } from '@/hooks/useTaskComments';
 import { useAuth } from '@/hooks/useAuth';
