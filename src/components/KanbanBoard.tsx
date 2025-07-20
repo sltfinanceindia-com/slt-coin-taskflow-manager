@@ -212,24 +212,24 @@ export function KanbanBoard({
 
   const getColumnColor = (columnId: string) => {
     const colors = {
-      assigned: 'border-blue-300 bg-gradient-to-br from-blue-50/80 to-blue-100/40 shadow-blue-100/50',
-      in_progress: 'border-yellow-300 bg-gradient-to-br from-yellow-50/80 to-yellow-100/40 shadow-yellow-100/50',
-      completed: 'border-purple-300 bg-gradient-to-br from-purple-50/80 to-purple-100/40 shadow-purple-100/50',
-      verified: 'border-green-300 bg-gradient-to-br from-green-50/80 to-green-100/40 shadow-green-100/50',
-      rejected: 'border-red-300 bg-gradient-to-br from-red-50/80 to-red-100/40 shadow-red-100/50',
+      assigned: 'bg-blue-50 border-blue-200',
+      in_progress: 'bg-yellow-50 border-yellow-200',
+      completed: 'bg-purple-50 border-purple-200',
+      verified: 'bg-green-50 border-green-200',
+      rejected: 'bg-red-50 border-red-200',
     };
-    return colors[columnId as keyof typeof colors] || 'border-gray-300 bg-gradient-to-br from-gray-50/80 to-gray-100/40';
+    return colors[columnId as keyof typeof colors] || 'bg-gray-50 border-gray-200';
   };
 
   const getColumnHeaderColor = (columnId: string) => {
     const colors = {
-      assigned: 'text-blue-700 bg-gradient-to-r from-blue-100 to-blue-200',
-      in_progress: 'text-yellow-700 bg-gradient-to-r from-yellow-100 to-yellow-200',
-      completed: 'text-purple-700 bg-gradient-to-r from-purple-100 to-purple-200',
-      verified: 'text-green-700 bg-gradient-to-r from-green-100 to-green-200',
-      rejected: 'text-red-700 bg-gradient-to-r from-red-100 to-red-200',
+      assigned: 'text-blue-700 bg-blue-100',
+      in_progress: 'text-yellow-700 bg-yellow-100',
+      completed: 'text-purple-700 bg-purple-100',
+      verified: 'text-green-700 bg-green-100',
+      rejected: 'text-red-700 bg-red-100',
     };
-    return colors[columnId as keyof typeof colors] || 'text-gray-700 bg-gradient-to-r from-gray-100 to-gray-200';
+    return colors[columnId as keyof typeof colors] || 'text-gray-700 bg-gray-100';
   };
 
   const getTaskCountForColumn = (status: Task['status']) => {
@@ -237,39 +237,39 @@ export function KanbanBoard({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 p-4">
       {/* Header with controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-6 bg-gradient-to-r from-white to-gray-50 rounded-xl border border-gray-200 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-4 rounded-lg border border-gray-200">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gradient-primary mb-2">Task Kanban Board</h2>
-          <p className="text-muted-foreground">Drag and drop tasks to update their status seamlessly</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Task Kanban Board</h2>
+          <p className="text-sm text-gray-600">Drag and drop tasks to update their status</p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={() => setShowFilters(!showFilters)}
-            className="bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-150 border-blue-200 text-blue-700 shadow-sm hover:shadow-md transition-all duration-200"
+            className="text-xs"
           >
-            <Filter className="h-4 w-4 mr-2" />
+            <Filter className="h-4 w-4 mr-1" />
             Filters
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setShowAnalytics(!showAnalytics)}
-            className="bg-gradient-to-r from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-150 border-purple-200 text-purple-700 shadow-sm hover:shadow-md transition-all duration-200"
+            className="text-xs"
           >
-            <BarChart3 className="h-4 w-4 mr-2" />
+            <BarChart3 className="h-4 w-4 mr-1" />
             Analytics
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={generateOptimizationSuggestions}
-            className="bg-gradient-to-r from-green-50 to-green-100 hover:from-green-100 hover:to-green-150 border-green-200 text-green-700 shadow-sm hover:shadow-md transition-all duration-200"
+            className="text-xs"
           >
-            <Zap className="h-4 w-4 mr-2" />
+            <Zap className="h-4 w-4 mr-1" />
             Optimize
           </Button>
         </div>
@@ -277,21 +277,17 @@ export function KanbanBoard({
 
       {/* Optimization suggestions */}
       {optimizationSuggestions.length > 0 && (
-        <Card className="border-orange-200 bg-orange-50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-orange-800">
-              <TrendingUp className="h-4 w-4 inline mr-2" />
-              Optimization Suggestions
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <ul className="space-y-1 text-sm text-orange-700">
-              {optimizationSuggestions.map((suggestion, index) => (
-                <li key={index}>{suggestion}</li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <div className="flex items-center mb-2">
+            <TrendingUp className="h-4 w-4 text-orange-600 mr-2" />
+            <h3 className="text-sm font-medium text-orange-800">Optimization Suggestions</h3>
+          </div>
+          <ul className="space-y-1 text-sm text-orange-700">
+            {optimizationSuggestions.map((suggestion, index) => (
+              <li key={index}>{suggestion}</li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {/* Filters panel */}
@@ -306,18 +302,18 @@ export function KanbanBoard({
         </div>
       )}
 
-      {/* Enhanced Kanban Board */}
+      {/* Kanban Board */}
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           {columns.map((column) => (
-            <div key={column.id} className="space-y-4 min-w-0">
-              {/* Enhanced Column Header */}
-              <div className={`p-4 rounded-xl shadow-sm border ${getColumnHeaderColor(column.id)}`}>
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="font-bold text-sm uppercase tracking-wider truncate">
+            <div key={column.id} className="flex flex-col min-h-0">
+              {/* Column Header */}
+              <div className={`p-3 rounded-t-lg border-b ${getColumnHeaderColor(column.id)}`}>
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-sm uppercase tracking-wide">
                     {column.title}
                   </h3>
-                  <Badge variant="secondary" className="bg-white/80 text-xs font-semibold px-2 py-1 shadow-sm">
+                  <Badge variant="secondary" className="text-xs font-medium">
                     {getTaskCountForColumn(column.status)}
                   </Badge>
                 </div>
@@ -329,12 +325,12 @@ export function KanbanBoard({
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                     className={`
-                      min-h-[400px] sm:min-h-[500px] lg:min-h-[600px] p-4 rounded-xl border-2 border-dashed transition-all duration-300 shadow-lg
+                      flex-1 min-h-[400px] p-3 border-2 border-dashed rounded-b-lg transition-colors
                       ${getColumnColor(column.id)}
-                      ${snapshot.isDraggingOver ? 'border-primary bg-primary/5 shadow-xl scale-105' : ''}
+                      ${snapshot.isDraggingOver ? 'border-blue-400 bg-blue-50' : ''}
                     `}
                   >
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       {filteredTasks
                         .filter(task => task.status === column.status)
                         .map((task, index) => (
@@ -342,7 +338,6 @@ export function KanbanBoard({
                             key={task.id}
                             draggableId={task.id}
                             index={index}
-                            isDragDisabled={!canUserUpdateStatus(task, task.status)}
                           >
                             {(provided, snapshot) => (
                               <div
@@ -350,15 +345,9 @@ export function KanbanBoard({
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
                                 className={`
-                                  transition-all duration-300
-                                  ${snapshot.isDragging ? 'rotate-3 scale-105 shadow-2xl z-50' : 'hover:scale-102'}
+                                  transition-transform duration-200
+                                  ${snapshot.isDragging ? 'rotate-2 scale-105 shadow-lg' : ''}
                                 `}
-                                style={{
-                                  ...provided.draggableProps.style,
-                                  transform: snapshot.isDragging 
-                                    ? `${provided.draggableProps.style?.transform} rotate(3deg)` 
-                                    : provided.draggableProps.style?.transform,
-                                }}
                               >
                                 <TaskCard
                                   task={task}
