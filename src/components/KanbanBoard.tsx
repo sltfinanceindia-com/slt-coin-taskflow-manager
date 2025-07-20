@@ -110,7 +110,7 @@ export function KanbanBoard({
 
   useEffect(() => {
     generateOptimizationSuggestions();
-  }, [generateOptimizationSuggestions]);
+  }, [filteredTasks.length]);
 
   // Enhanced drag and drop with validation
   const onDragEnd = async (result: any) => {

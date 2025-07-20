@@ -52,18 +52,23 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
         }
       }
       
-      addComment({
+      await addComment({
         task_id: taskId,
-        content: newComment.trim(),
-        attachments,
+        content: newComment,
+        attachments: attachments.length > 0 ? attachments : undefined,
       });
       
       setNewComment('');
       setSelectedFiles([]);
-    } catch (error) {
       toast({
-        title: "Error uploading files",
-        description: error.message,
+        title: "Comment posted",
+        description: "Your comment has been added successfully.",
+      });
+    } catch (error) {
+      console.error('Error posting comment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to post comment. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -71,19 +76,17 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
     }
   };
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files) {
-      const newFiles = Array.from(files);
-      setSelectedFiles(prev => [...prev, ...newFiles]);
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setSelectedFiles(Array.from(e.target.files));
     }
   };
 
-  const removeFile = (index: number) => {
+  const handleRemoveFile = (index: number) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const downloadAttachment = async (attachment: any) => {
+  const handleDownloadAttachment = async (attachment: any) => {
     try {
       const { data, error } = await supabase.storage
         .from('task-attachments')
@@ -100,192 +103,185 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (error) {
+      console.error('Error downloading file:', error);
       toast({
-        title: "Error downloading file",
-        description: error.message,
+        title: "Error",
+        description: "Failed to download file.",
         variant: "destructive",
       });
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmitComment();
-    }
-  };
-
   return (
-    <Card className="w-full bg-gradient-to-br from-blue-50/30 to-indigo-50/30 border border-blue-200/60 shadow-sm">
-      <CardHeader className="pb-3">
+    <Card className="space-y-8 bg-gradient-to-br from-background via-muted/10 to-primary/5 border-2 border-primary/20 shadow-xl hover:shadow-2xl transition-all duration-500">
+      <CardHeader 
+        className="cursor-pointer hover:bg-primary/5 transition-colors duration-300 rounded-xl -m-1 p-6 group"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base flex items-center gap-3 text-blue-800">
-            <div className="p-2 bg-blue-100 rounded-full">
-              <MessageCircle className="h-4 w-4 text-blue-600" />
+          <CardTitle className="text-2xl font-black text-primary flex items-center gap-3 group-hover:scale-105 transition-transform duration-300">
+            <div className="p-2 bg-primary/10 rounded-full">
+              <MessageCircle className="h-6 w-6" />
             </div>
-            <div>
-              <span className="font-semibold">Comments</span>
-              <Badge variant="secondary" className="ml-2 bg-blue-100 text-blue-700 text-xs px-2 py-1">
-                {comments.length}
-              </Badge>
-            </div>
+            Comments ({comments?.length || 0})
           </CardTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="hover:bg-blue-100/50 text-blue-700 hover:text-blue-800 transition-all duration-200"
-          >
-            {isExpanded ? (
-              <>
-                <ChevronUp className="h-4 w-4 mr-1" />
-                Hide
-              </>
-            ) : (
-              <>
-                <ChevronDown className="h-4 w-4 mr-1" />
-                Show
-              </>
-            )}
+          <Button variant="ghost" size="lg" className="hover:bg-primary/15 hover:scale-110 transition-all duration-300 rounded-full">
+            {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
           </Button>
         </div>
       </CardHeader>
-      
+
       {isExpanded && (
-        <CardContent className="space-y-6 animate-accordion-down">
-          {/* Existing Comments */}
-          <div className="space-y-4 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
-            {comments.length === 0 ? (
-              <div className="text-center py-8">
-                <MessageCircle className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground font-medium">No comments yet</p>
-                <p className="text-xs text-muted-foreground">Be the first to share your thoughts!</p>
-              </div>
-            ) : (
+        <CardContent className="space-y-8">
+          {/* Comment List - Ultra Prominent */}
+          <div className="space-y-6 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
+            {comments && comments.length > 0 ? (
               comments.map((comment) => (
-                <Card key={comment.id} className="bg-white/70 border border-gray-200/60 shadow-sm hover:shadow-md transition-all duration-200 animate-fade-in">
-                  <CardContent className="p-4">
-                    <div className="flex gap-3">
-                      <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
-                        <AvatarImage src={comment.user_profile?.avatar_url} />
-                        <AvatarFallback className="bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-700 font-semibold">
-                          {comment.user_profile?.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-semibold text-foreground">
+                <Card key={comment.id} className="p-6 bg-gradient-to-br from-background via-background/95 to-muted/20 hover:shadow-lg transition-all duration-300 border-2 border-border/30 hover:border-primary/30 hover:scale-[1.02] transform">
+                  <div className="flex items-start space-x-4">
+                    <Avatar className="h-12 w-12 ring-4 ring-primary/20 hover:ring-primary/40 transition-all duration-300">
+                      <AvatarImage src={comment.user_profile?.avatar_url || ''} />
+                      <AvatarFallback className="bg-primary/20 text-primary font-black text-lg">
+                        {comment.user_profile?.full_name?.charAt(0) || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="font-black text-foreground text-lg">
                             {comment.user_profile?.full_name || 'Unknown User'}
                           </span>
-                          <Badge variant="outline" className="text-xs px-2 py-0.5 bg-gray-50">
-                            {format(new Date(comment.created_at), 'MMM dd, HH:mm')}
+                          <Badge variant="outline" className="text-sm font-bold px-3 py-1">
+                            User
                           </Badge>
                         </div>
-                        <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90 bg-gray-50/50 p-3 rounded-lg">
-                          {comment.content}
-                        </p>
-                        {comment.attachments && comment.attachments.length > 0 && (
-                          <div className="mt-3 space-y-2">
-                            <p className="text-xs font-medium text-muted-foreground">Attachments:</p>
-                            {comment.attachments.map((attachment: any, index: number) => (
-                              <div key={index} className="flex items-center gap-3 text-xs bg-blue-50/50 rounded-lg px-3 py-2 border border-blue-200/50">
-                                <FileText className="h-4 w-4 text-blue-600" />
-                                <span className="flex-1 truncate font-medium text-blue-800">{attachment.name}</span>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-6 w-6 p-0 hover:bg-blue-100"
-                                  onClick={() => downloadAttachment(attachment)}
-                                >
-                                  <Download className="h-3 w-3 text-blue-600" />
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                        <span className="text-sm text-muted-foreground font-medium">
+                          {format(new Date(comment.created_at), 'MMM dd, HH:mm')}
+                        </span>
                       </div>
+                      <p className="text-base text-foreground leading-relaxed whitespace-pre-wrap font-medium bg-muted/20 p-4 rounded-lg border border-border/30">
+                        {comment.content}
+                      </p>
+                      
+                      {/* Attachments - Enhanced */}
+                      {comment.attachments && comment.attachments.length > 0 && (
+                        <div className="flex flex-wrap gap-3 mt-4">
+                          {comment.attachments.map((attachment: any, index: number) => (
+                            <Badge
+                              key={index}
+                              variant="secondary"
+                              className="cursor-pointer hover:bg-primary/20 transition-all duration-300 hover:scale-110 p-3 text-sm font-bold"
+                              onClick={() => handleDownloadAttachment(attachment)}
+                            >
+                              <FileText className="h-4 w-4 mr-2" />
+                              {attachment.name}
+                              <Download className="h-4 w-4 ml-2" />
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </CardContent>
+                  </div>
                 </Card>
               ))
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                <div className="p-6 bg-muted/20 rounded-2xl border-2 border-dashed border-muted-foreground/20">
+                  <MessageCircle className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg font-semibold">No comments yet. Be the first to comment!</p>
+                </div>
+              </div>
             )}
           </div>
 
-          {/* Add New Comment */}
-          <Card className="border-2 border-dashed border-blue-200 bg-gradient-to-br from-white to-blue-50/30">
-            <CardContent className="p-4">
-              <div className="flex gap-3">
-                <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
-                  <AvatarImage src={profile?.avatar_url} />
-                  <AvatarFallback className="bg-gradient-to-br from-green-100 to-emerald-100 text-green-700 font-semibold">
-                    {profile?.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
+          {/* Add Comment Form - Ultra Enhanced */}
+          <Card className="p-8 bg-gradient-to-br from-primary/5 via-background to-muted/10 border-2 border-primary/30 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="space-y-6">
+              <div className="flex items-start space-x-4">
+                <Avatar className="h-14 w-14 ring-4 ring-primary/30">
+                  <AvatarImage src={profile?.avatar_url || ''} />
+                  <AvatarFallback className="bg-primary/20 text-primary font-black text-xl">
+                    {profile?.full_name?.charAt(0) || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-4">
                   <Textarea
-                    placeholder="Share your thoughts, ask questions, or provide updates..."
+                    placeholder="Share your thoughts, updates, or questions..."
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    className="min-h-[100px] resize-none focus:ring-2 focus:ring-blue-500 border-blue-200 bg-white/80 transition-all duration-200"
+                    className="min-h-[120px] resize-none border-2 border-primary/30 focus:border-primary focus:ring-primary/30 bg-background/80 backdrop-blur-sm text-base font-medium"
                   />
                   
-                  {/* File Attachments Preview */}
-                  {selectedFiles.length > 0 && (
-                    <div className="space-y-2">
-                      <p className="text-xs text-muted-foreground">Attachments:</p>
-                      {selectedFiles.map((file, index) => (
-                        <div key={index} className="flex items-center gap-2 text-sm bg-muted/50 rounded px-3 py-2">
-                          <FileText className="h-4 w-4" />
-                          <span className="flex-1 truncate">{file.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {Math.round(file.size / 1024)}KB
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                            onClick={() => removeFile(index)}
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                  {/* File Upload - Enhanced */}
+                  <div className="flex items-center justify-between bg-muted/20 p-4 rounded-xl border border-border/30">
+                    <div className="flex items-center gap-3">
                       <input
                         type="file"
                         ref={fileInputRef}
                         onChange={handleFileSelect}
                         multiple
                         className="hidden"
-                        accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.gif"
+                        accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif"
                       />
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="lg"
                         onClick={() => fileInputRef.current?.click()}
-                        className="bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 hover:text-gray-800 transition-all duration-200"
+                        className="hover:bg-primary/15 border-2 border-primary/30 hover:border-primary/50 font-bold transition-all duration-300 hover:scale-105"
                       >
-                        <Paperclip className="h-4 w-4 mr-2" />
-                        Attach File
+                        <Paperclip className="h-5 w-5 mr-2" />
+                        Attach Files
                       </Button>
+                      {selectedFiles.length > 0 && (
+                        <Badge variant="secondary" className="text-sm font-bold px-3 py-1">
+                          {selectedFiles.length} file(s) selected
+                        </Badge>
+                      )}
                     </div>
+                    
                     <Button
                       onClick={handleSubmitComment}
                       disabled={(!newComment.trim() && selectedFiles.length === 0) || isAddingComment || isUploading}
-                      className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5"
+                      size="lg"
+                      className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-black px-8 py-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                     >
-                      <Send className="h-4 w-4 mr-2" />
-                      {isUploading ? 'Uploading...' : isAddingComment ? 'Posting...' : 'Post Comment'}
+                      {(isAddingComment || isUploading) ? (
+                        <div className="flex items-center gap-3">
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                          Posting...
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-3">
+                          <Send className="h-5 w-5" />
+                          Post Comment
+                        </div>
+                      )}
                     </Button>
                   </div>
+                  
+                  {/* Selected Files Preview - Enhanced */}
+                  {selectedFiles.length > 0 && (
+                    <div className="flex flex-wrap gap-3 p-4 bg-muted/20 rounded-xl border-2 border-border/30">
+                      {selectedFiles.map((file, index) => (
+                        <div key={index} className="flex items-center gap-3 bg-background px-4 py-3 rounded-lg border-2 border-border/40 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105">
+                          <FileText className="h-5 w-5 text-primary" />
+                          <span className="text-sm font-bold">{file.name}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveFile(index)}
+                            className="p-2 h-auto hover:bg-red-100 hover:text-red-600 rounded-full transition-all duration-300 hover:scale-110"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
-            </CardContent>
+            </div>
           </Card>
         </CardContent>
       )}
