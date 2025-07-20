@@ -49,31 +49,31 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
   };
 
   return (
-    <div className="bg-card border rounded-lg p-4 shadow-sm hover:shadow-md transition-all duration-200 space-y-4">
-      {/* Header with Task Title */}
-      <div className="space-y-3">
-        <div className="flex items-start justify-between gap-3">
+    <div className="bg-card border rounded-lg p-2 sm:p-3 shadow-sm hover:shadow-md transition-all duration-200 space-y-2 sm:space-y-3">
+      {/* Header with Task Title - Always Visible */}
+      <div className="space-y-2">
+        <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-foreground text-base leading-tight line-clamp-2 mb-2">
+            <h3 className="font-semibold text-foreground text-xs sm:text-sm leading-tight line-clamp-2 mb-1">
               {task.title}
             </h3>
-            <div className="flex flex-wrap gap-2">
-              <Badge className={`${getStatusColor(task.status)} text-xs font-medium border`}>
+            <div className="flex flex-wrap gap-1">
+              <Badge className={`${getStatusColor(task.status)} text-xs font-medium border px-1 py-0`}>
                 {task.status.replace('_', ' ')}
               </Badge>
-              <Badge className={`${getPriorityColor(task.priority)} text-xs font-medium border`}>
+              <Badge className={`${getPriorityColor(task.priority)} text-xs font-medium border px-1 py-0`}>
                 {task.priority}
               </Badge>
             </div>
           </div>
           
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <div className="flex items-center bg-gradient-to-r from-primary/10 to-secondary/10 px-2 py-1 rounded-md border border-primary/20">
-              <Coins className="h-3 w-3 text-primary mr-1" />
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center bg-gradient-to-r from-primary/10 to-secondary/10 px-1 py-0.5 rounded border border-primary/20">
+              <Coins className="h-2 w-2 text-primary mr-0.5" />
               <span className="font-bold text-primary text-xs">{task.slt_coin_value}</span>
             </div>
             {isAdmin && (
-              <div className="flex gap-1">
+              <div className="flex gap-0.5">
                 <TaskDetailDialog task={task} />
                 {onUpdateTask && (
                   <TaskEditDialog 
@@ -89,19 +89,19 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
       </div>
 
       {/* Task Details */}
-      <div className="space-y-3 text-sm">
-        <div className="flex items-center gap-2">
-          <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+      <div className="space-y-2 text-xs">
+        <div className="flex items-center gap-1">
+          <User className="h-3 w-3 text-muted-foreground flex-shrink-0" />
           <div className="min-w-0 flex-1">
             <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Assigned to</p>
-            <p className="font-medium text-foreground truncate">{task.assigned_profile?.full_name}</p>
+            <p className="font-medium text-foreground truncate text-xs">{task.assigned_profile?.full_name}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+        <div className="flex items-center gap-1">
+          <Calendar className="h-3 w-3 text-muted-foreground flex-shrink-0" />
           <div className="min-w-0 flex-1">
             <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Due Date</p>
-            <p className="font-medium text-foreground">{format(new Date(task.end_date), 'MMM dd, yyyy')}</p>
+            <p className="font-medium text-foreground text-xs">{format(new Date(task.end_date), 'MMM dd, yyyy')}</p>
           </div>
         </div>
       </div>
@@ -111,7 +111,7 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
 
       {/* Submission Notes */}
       {task.submission_notes && (
-        <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-r-md">
+        <div className="bg-blue-50 border-l-4 border-blue-400 p-2 rounded-r-md">
           <p className="text-xs font-semibold text-blue-800 mb-1">Submission Notes:</p>
           <p className="text-xs text-blue-700 whitespace-pre-wrap leading-relaxed">{task.submission_notes}</p>
         </div>
@@ -119,7 +119,7 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
 
       {/* Admin Feedback */}
       {task.admin_feedback && (
-        <div className="bg-orange-50 border-l-4 border-orange-400 p-3 rounded-r-md">
+        <div className="bg-orange-50 border-l-4 border-orange-400 p-2 rounded-r-md">
           <p className="text-xs font-semibold text-orange-800 mb-1">Admin Feedback:</p>
           <p className="text-xs text-orange-700 whitespace-pre-wrap leading-relaxed">{task.admin_feedback}</p>
         </div>
@@ -137,7 +137,7 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
           variant="outline"
           size="sm"
           onClick={() => onAdminOverride(task)}
-          className="w-full gap-2 hover:bg-muted/50 transition-all duration-200"
+          className="w-full gap-1 hover:bg-muted/50 transition-all duration-200 text-xs h-7"
         >
           <Edit className="h-3 w-3" />
           Admin Override Status

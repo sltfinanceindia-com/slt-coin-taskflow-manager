@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TaskCard } from '@/components/TaskCard';
@@ -11,6 +10,7 @@ import { KanbanAnalytics } from '@/components/KanbanAnalytics';
 import { KanbanFilters } from '@/components/KanbanFilters';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface KanbanBoardProps {
   tasks: Task[];
@@ -212,24 +212,24 @@ export function KanbanBoard({
 
   const getColumnColor = (columnId: string) => {
     const colors = {
-      assigned: 'border-blue-200 bg-blue-50/30',
-      in_progress: 'border-yellow-200 bg-yellow-50/30',
-      completed: 'border-purple-200 bg-purple-50/30',
-      verified: 'border-green-200 bg-green-50/30',
-      rejected: 'border-red-200 bg-red-50/30',
+      assigned: 'border-blue-200 bg-blue-50/20',
+      in_progress: 'border-yellow-200 bg-yellow-50/20',
+      completed: 'border-purple-200 bg-purple-50/20',
+      verified: 'border-green-200 bg-green-50/20',
+      rejected: 'border-red-200 bg-red-50/20',
     };
-    return colors[columnId as keyof typeof colors] || 'border-border bg-muted/20';
+    return colors[columnId as keyof typeof colors] || 'border-border bg-muted/10';
   };
 
   const getColumnHeaderColor = (columnId: string) => {
     const colors = {
-      assigned: 'text-blue-700 bg-blue-100/80',
-      in_progress: 'text-yellow-700 bg-yellow-100/80',
-      completed: 'text-purple-700 bg-purple-100/80',
-      verified: 'text-green-700 bg-green-100/80',
-      rejected: 'text-red-700 bg-red-100/80',
+      assigned: 'text-blue-700 bg-blue-100/60',
+      in_progress: 'text-yellow-700 bg-yellow-100/60',
+      completed: 'text-purple-700 bg-purple-100/60',
+      verified: 'text-green-700 bg-green-100/60',
+      rejected: 'text-red-700 bg-red-100/60',
     };
-    return colors[columnId as keyof typeof colors] || 'text-foreground bg-muted';
+    return colors[columnId as keyof typeof colors] || 'text-foreground bg-muted/60';
   };
 
   const getTaskCountForColumn = (status: Task['status']) => {
@@ -237,146 +237,139 @@ export function KanbanBoard({
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 space-y-6">
-      {/* Header */}
-      <div className="bg-card rounded-lg border p-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Task Management Board</h1>
-            <p className="text-muted-foreground mt-1">Drag and drop tasks to update their status</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowFilters(!showFilters)}
-              className="gap-2"
-            >
-              <Filter className="h-4 w-4" />
-              Filters
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowAnalytics(!showAnalytics)}
-              className="gap-2"
-            >
-              <BarChart3 className="h-4 w-4" />
-              Analytics
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={generateOptimizationSuggestions}
-              className="gap-2"
-            >
-              <Zap className="h-4 w-4" />
-              Optimize
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Optimization suggestions */}
-      {optimizationSuggestions.length > 0 && (
-        <div className="bg-card border rounded-lg p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-3">
-            <TrendingUp className="h-4 w-4 text-primary" />
-            <h3 className="font-medium text-foreground">Optimization Suggestions</h3>
-          </div>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            {optimizationSuggestions.map((suggestion, index) => (
-              <li key={index} className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                {suggestion}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Filters panel */}
-      {showFilters && (
-        <div className="animate-fade-in">
-          <KanbanFilters filters={filters} onFiltersChange={setFilters} tasks={tasks} />
-        </div>
-      )}
-
-      {/* Analytics panel */}
-      {showAnalytics && (
-        <div className="animate-fade-in">
-          <KanbanAnalytics tasks={filteredTasks} />
-        </div>
-      )}
-
-      {/* Kanban Board */}
-      <DragDropContext onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 min-h-[600px]">
-          {columns.map((column) => (
-            <div key={column.id} className="flex flex-col">
-              {/* Column Header */}
-              <div className={`p-4 rounded-t-lg border-b ${getColumnHeaderColor(column.id)} shadow-sm`}>
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-sm uppercase tracking-wide">
-                    {column.title}
-                  </h3>
-                  <Badge variant="secondary" className="text-xs font-medium">
-                    {getTaskCountForColumn(column.status)}
-                  </Badge>
-                </div>
-              </div>
-              
-              <Droppable droppableId={column.id}>
-                {(provided, snapshot) => (
-                  <div
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                    className={`
-                      flex-1 min-h-[500px] p-3 border-2 border-dashed rounded-b-lg transition-all duration-200
-                      ${getColumnColor(column.id)}
-                      ${snapshot.isDraggingOver ? 'border-primary bg-primary/5 scale-[1.01]' : ''}
-                    `}
-                  >
-                    <div className="space-y-3">
-                      {filteredTasks
-                        .filter(task => task.status === column.status)
-                        .map((task, index) => (
-                          <Draggable
-                            key={task.id}
-                            draggableId={task.id}
-                            index={index}
-                          >
-                            {(provided, snapshot) => (
-                              <div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                className={`
-                                  transition-all duration-200 cursor-grab active:cursor-grabbing
-                                  ${snapshot.isDragging ? 'rotate-1 scale-105 shadow-lg z-50' : 'hover:shadow-md'}
-                                `}
-                              >
-                                <TaskCard
-                                  task={task}
-                                  onUpdateStatus={onUpdateStatus}
-                                  onVerifyTask={onVerifyTask}
-                                  onUpdateTask={onUpdateTask}
-                                  isUpdating={isUpdating}
-                                  onAdminOverride={handleAdminOverride}
-                                />
-                              </div>
-                            )}
-                          </Draggable>
-                        ))}
-                    </div>
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
+    <div className="min-h-screen bg-background">
+      <div className="p-2 sm:p-4 space-y-3 sm:space-y-4">
+        {/* Header */}
+        <div className="bg-card rounded-lg border p-3 sm:p-4 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h1 className="text-lg sm:text-xl font-bold text-foreground">Task Management Board</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Drag and drop tasks to update their status</p>
             </div>
-          ))}
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
+                className="gap-2 text-xs"
+              >
+                <Filter className="h-3 w-3" />
+                Filters
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAnalytics(!showAnalytics)}
+                className="gap-2 text-xs"
+              >
+                <BarChart3 className="h-3 w-3" />
+                Analytics
+              </Button>
+            </div>
+          </div>
         </div>
-      </DragDropContext>
+
+        {/* Optimization suggestions */}
+        {optimizationSuggestions.length > 0 && (
+          <div className="bg-card border rounded-lg p-3 shadow-sm">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-medium text-foreground">Optimization Suggestions</h3>
+            </div>
+            <ul className="space-y-1 text-xs text-muted-foreground">
+              {optimizationSuggestions.map((suggestion, index) => (
+                <li key={index} className="flex items-start gap-2">
+                  <span className="text-primary">•</span>
+                  {suggestion}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Filters panel */}
+        {showFilters && (
+          <div className="animate-fade-in">
+            <KanbanFilters filters={filters} onFiltersChange={setFilters} tasks={tasks} />
+          </div>
+        )}
+
+        {/* Analytics panel */}
+        {showAnalytics && (
+          <div className="animate-fade-in">
+            <KanbanAnalytics tasks={filteredTasks} />
+          </div>
+        )}
+
+        {/* Kanban Board */}
+        <DragDropContext onDragEnd={onDragEnd}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-3">
+            {columns.map((column) => (
+              <div key={column.id} className="flex flex-col min-h-0">
+                {/* Column Header */}
+                <div className={`p-2 sm:p-3 rounded-t-lg border-b ${getColumnHeaderColor(column.id)} shadow-sm`}>
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-xs sm:text-sm uppercase tracking-wide truncate">
+                      {column.title}
+                    </h3>
+                    <Badge variant="secondary" className="text-xs font-medium ml-2 flex-shrink-0">
+                      {getTaskCountForColumn(column.status)}
+                    </Badge>
+                  </div>
+                </div>
+                
+                <Droppable droppableId={column.id}>
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      className={`
+                        flex-1 min-h-[300px] sm:min-h-[400px] p-2 border-2 border-dashed rounded-b-lg transition-all duration-200
+                        ${getColumnColor(column.id)}
+                        ${snapshot.isDraggingOver ? 'border-primary bg-primary/5 scale-[1.01]' : ''}
+                      `}
+                    >
+                      <div className="space-y-2">
+                        {filteredTasks
+                          .filter(task => task.status === column.status)
+                          .map((task, index) => (
+                            <Draggable
+                              key={task.id}
+                              draggableId={task.id}
+                              index={index}
+                            >
+                              {(provided, snapshot) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  className={`
+                                    transition-all duration-200 cursor-grab active:cursor-grabbing
+                                    ${snapshot.isDragging ? 'rotate-1 scale-105 shadow-lg z-50' : 'hover:shadow-md'}
+                                  `}
+                                >
+                                  <TaskCard
+                                    task={task}
+                                    onUpdateStatus={onUpdateStatus}
+                                    onVerifyTask={onVerifyTask}
+                                    onUpdateTask={onUpdateTask}
+                                    isUpdating={isUpdating}
+                                    onAdminOverride={handleAdminOverride}
+                                  />
+                                </div>
+                              )}
+                            </Draggable>
+                          ))}
+                      </div>
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </div>
+            ))}
+          </div>
+        </DragDropContext>
+      </div>
     </div>
   );
 }
