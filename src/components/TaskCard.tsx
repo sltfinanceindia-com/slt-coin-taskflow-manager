@@ -1,7 +1,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Coins, Clock, User, Calendar, Edit } from 'lucide-react';
+import { Coins, User, Calendar, Edit, MessageSquare } from 'lucide-react';
 import { Task } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
@@ -29,38 +29,48 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
 
   const getStatusColor = (status: Task['status']) => {
     switch (status) {
-      case 'assigned': return 'bg-blue-100 text-blue-800 border-blue-300';
-      case 'in_progress': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'completed': return 'bg-purple-100 text-purple-800 border-purple-300';
-      case 'verified': return 'bg-green-100 text-green-800 border-green-300';
-      case 'rejected': return 'bg-red-100 text-red-800 border-red-300';
-      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+      case 'assigned': return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'in_progress': return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+      case 'completed': return 'bg-purple-50 text-purple-700 border-purple-200';
+      case 'verified': return 'bg-green-50 text-green-700 border-green-200';
+      case 'rejected': return 'bg-red-50 text-red-700 border-red-200';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
   const getPriorityColor = (priority: Task['priority']) => {
     switch (priority) {
-      case 'urgent': return 'bg-red-100 text-red-800 border-red-300';
-      case 'high': return 'bg-orange-100 text-orange-800 border-orange-300';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'low': return 'bg-green-100 text-green-800 border-green-300';
-      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+      case 'urgent': return 'bg-red-50 text-red-700 border-red-200';
+      case 'high': return 'bg-orange-50 text-orange-700 border-orange-200';
+      case 'medium': return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+      case 'low': return 'bg-green-50 text-green-700 border-green-200';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-lg transition-all duration-300 space-y-4 w-full max-w-sm mx-auto">
-      {/* Header */}
+    <div className="bg-card border rounded-lg p-4 shadow-sm hover:shadow-md transition-all duration-200 space-y-4">
+      {/* Header with Task Title */}
       <div className="space-y-3">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2 flex-1">
-            {task.title}
-          </h3>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-foreground text-base leading-tight line-clamp-2 mb-2">
+              {task.title}
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              <Badge className={`${getStatusColor(task.status)} text-xs font-medium border`}>
+                {task.status.replace('_', ' ')}
+              </Badge>
+              <Badge className={`${getPriorityColor(task.priority)} text-xs font-medium border`}>
+                {task.priority}
+              </Badge>
+            </div>
+          </div>
           
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <div className="flex items-center bg-gradient-to-r from-amber-50 to-yellow-50 px-2 py-1 rounded-lg border border-amber-200">
-              <Coins className="h-3 w-3 text-amber-600 mr-1" />
-              <span className="font-bold text-amber-800 text-xs">{task.slt_coin_value}</span>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center bg-gradient-to-r from-primary/10 to-secondary/10 px-2 py-1 rounded-md border border-primary/20">
+              <Coins className="h-3 w-3 text-primary mr-1" />
+              <span className="font-bold text-primary text-xs">{task.slt_coin_value}</span>
             </div>
             {isAdmin && (
               <div className="flex gap-1">
@@ -76,41 +86,32 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
             )}
           </div>
         </div>
-        
-        <div className="flex flex-wrap gap-2">
-          <Badge className={`${getStatusColor(task.status)} text-xs font-medium px-2 py-1 rounded-md`}>
-            {task.status.replace('_', ' ')}
-          </Badge>
-          <Badge className={`${getPriorityColor(task.priority)} text-xs font-medium px-2 py-1 rounded-md`}>
-            {task.priority}
-          </Badge>
+      </div>
+
+      {/* Task Details */}
+      <div className="space-y-3 text-sm">
+        <div className="flex items-center gap-2">
+          <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Assigned to</p>
+            <p className="font-medium text-foreground truncate">{task.assigned_profile?.full_name}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Due Date</p>
+            <p className="font-medium text-foreground">{format(new Date(task.end_date), 'MMM dd, yyyy')}</p>
+          </div>
         </div>
       </div>
 
       {/* Description */}
       <TaskDescription description={task.description} />
 
-      {/* Task Details */}
-      <div className="space-y-3 text-xs">
-        <div className="flex items-center space-x-2">
-          <User className="h-3 w-3 text-gray-500 flex-shrink-0" />
-          <div className="min-w-0 flex-1">
-            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Assigned to</p>
-            <p className="font-semibold text-gray-900 truncate text-sm">{task.assigned_profile?.full_name}</p>
-          </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Calendar className="h-3 w-3 text-gray-500 flex-shrink-0" />
-          <div className="min-w-0 flex-1">
-            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Due Date</p>
-            <p className="font-semibold text-gray-900 text-sm">{format(new Date(task.end_date), 'MMM dd, yyyy')}</p>
-          </div>
-        </div>
-      </div>
-
       {/* Submission Notes */}
       {task.submission_notes && (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 p-3 rounded-r-lg">
+        <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-r-md">
           <p className="text-xs font-semibold text-blue-800 mb-1">Submission Notes:</p>
           <p className="text-xs text-blue-700 whitespace-pre-wrap leading-relaxed">{task.submission_notes}</p>
         </div>
@@ -118,7 +119,7 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
 
       {/* Admin Feedback */}
       {task.admin_feedback && (
-        <div className="bg-gradient-to-r from-orange-50 to-red-50 border-l-4 border-orange-400 p-3 rounded-r-lg">
+        <div className="bg-orange-50 border-l-4 border-orange-400 p-3 rounded-r-md">
           <p className="text-xs font-semibold text-orange-800 mb-1">Admin Feedback:</p>
           <p className="text-xs text-orange-700 whitespace-pre-wrap leading-relaxed">{task.admin_feedback}</p>
         </div>
@@ -136,14 +137,14 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
           variant="outline"
           size="sm"
           onClick={() => onAdminOverride(task)}
-          className="w-full text-xs bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 transition-all duration-200"
+          className="w-full gap-2 hover:bg-muted/50 transition-all duration-200"
         >
-          <Edit className="h-3 w-3 mr-2" />
+          <Edit className="h-3 w-3" />
           Admin Override Status
         </Button>
       )}
 
-      {/* Task Comments - Collapsible */}
+      {/* Comments Section - Collapsible */}
       <TaskComments taskId={task.id} />
     </div>
   );
