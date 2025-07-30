@@ -88,148 +88,189 @@ export function EnhancedKanbanDashboard() {
   const isWipExceeded = performanceMetrics.wipCount > recommendedWipLimit;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Enhanced Kanban Dashboard
-          </h1>
-          <p className="text-muted-foreground">
-            Advanced task management with AI-powered analytics and optimization
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700">
+      <div className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl">
+        {/* Header - Responsive flex layout */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Enhanced Kanban Dashboard
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Advanced task management with AI-powered analytics and optimization
+            </p>
+          </div>
+          <Button 
+            onClick={loadKanbanMetrics} 
+            disabled={isLoading}
+            className="w-full sm:w-auto shrink-0"
+            size="sm"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Refresh Analytics</span>
+            <span className="sm:hidden">Refresh</span>
+          </Button>
         </div>
-        <Button onClick={loadKanbanMetrics} disabled={isLoading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-          Refresh Analytics
-        </Button>
-      </div>
 
-      {/* Performance Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="card-gradient">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Target className="h-5 w-5 text-green-500" />
-              <div>
-                <p className="text-sm font-medium">Completion Rate</p>
-                <p className="text-2xl font-bold">{performanceMetrics.completionRate.toFixed(1)}%</p>
-                <Progress value={performanceMetrics.completionRate} className="mt-2" />
+        {/* Performance Overview - Responsive grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+          <Card className="card-gradient border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-3 sm:p-4 lg:p-6">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 rounded-full bg-green-100 dark:bg-green-900/20">
+                  <Target className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 dark:text-green-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 truncate">
+                    Completion Rate
+                  </p>
+                  <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
+                    {performanceMetrics.completionRate.toFixed(1)}%
+                  </p>
+                  <Progress 
+                    value={performanceMetrics.completionRate} 
+                    className="mt-2 h-1.5 sm:h-2" 
+                  />
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card className="card-gradient">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Clock className="h-5 w-5 text-blue-500" />
-              <div>
-                <p className="text-sm font-medium">Avg Cycle Time</p>
-                <p className="text-2xl font-bold">{performanceMetrics.avgCycleTime.toFixed(1)}d</p>
-                <p className="text-xs text-muted-foreground">
-                  {performanceMetrics.avgCycleTime < 5 ? 'Excellent' : 
-                   performanceMetrics.avgCycleTime < 10 ? 'Good' : 'Needs Improvement'}
-                </p>
+          <Card className="card-gradient border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-3 sm:p-4 lg:p-6">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/20">
+                  <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 truncate">
+                    Avg Cycle Time
+                  </p>
+                  <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
+                    {performanceMetrics.avgCycleTime.toFixed(1)}d
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {performanceMetrics.avgCycleTime < 5 ? 'Excellent' : 
+                     performanceMetrics.avgCycleTime < 10 ? 'Good' : 'Needs Improvement'}
+                  </p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card className="card-gradient">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <TrendingUp className="h-5 w-5 text-purple-500" />
-              <div>
-                <p className="text-sm font-medium">WIP Limit</p>
-                <p className="text-2xl font-bold flex items-center">
-                  {performanceMetrics.wipCount}
-                  {isWipExceeded && (
-                    <AlertTriangle className="h-4 w-4 text-red-500 ml-1" />
-                  )}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Recommended: {recommendedWipLimit}
-                </p>
+          <Card className="card-gradient border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-3 sm:p-4 lg:p-6">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 rounded-full bg-purple-100 dark:bg-purple-900/20">
+                  <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 truncate">
+                    WIP Limit
+                  </p>
+                  <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white flex items-center">
+                    {performanceMetrics.wipCount}
+                    {isWipExceeded && (
+                      <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 text-red-500 ml-1 shrink-0" />
+                    )}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    Recommended: {recommendedWipLimit}
+                  </p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card className="card-gradient">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="h-5 w-5 text-orange-500" />
-              <div>
-                <p className="text-sm font-medium">Throughput</p>
-                <p className="text-2xl font-bold">{performanceMetrics.throughput}</p>
-                <p className="text-xs text-muted-foreground">Tasks/week</p>
+          <Card className="card-gradient border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-3 sm:p-4 lg:p-6">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 rounded-full bg-orange-100 dark:bg-orange-900/20">
+                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600 dark:text-orange-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 truncate">
+                    Throughput
+                  </p>
+                  <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
+                    {performanceMetrics.throughput}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Tasks/week</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* AI Insights */}
-      {insights.length > 0 && (
-        <Card className="border-blue-200 bg-blue-50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-blue-800 flex items-center">
-              <Zap className="h-4 w-4 mr-2" />
-              AI-Powered Insights
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="space-y-2">
-              {insights.map((insight, index) => (
-                <div key={index} className="p-3 bg-white rounded-md border border-blue-200">
-                  <div className="flex items-start space-x-2">
-                    <Badge variant="outline" className="text-xs">
-                      {(insight.confidence * 100).toFixed(0)}% confidence
-                    </Badge>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-blue-900">{insight.message}</p>
-                      {insight.action && (
-                        <p className="text-xs text-blue-700 mt-1">
-                          💡 {insight.action}
+        {/* AI Insights - Responsive design */}
+        {insights.length > 0 && (
+          <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 shadow-lg">
+            <CardHeader className="pb-3 sm:pb-4">
+              <CardTitle className="text-sm sm:text-base font-medium text-blue-800 dark:text-blue-200 flex items-center">
+                <Zap className="h-4 w-4 mr-2 shrink-0" />
+                AI-Powered Insights
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-3 sm:space-y-4">
+                {insights.map((insight, index) => (
+                  <div key={index} className="p-3 sm:p-4 bg-white dark:bg-slate-800 rounded-lg border border-blue-200 dark:border-blue-800 shadow-sm">
+                    <div className="flex flex-col sm:flex-row sm:items-start space-y-2 sm:space-y-0 sm:space-x-3">
+                      <Badge variant="outline" className="text-xs w-fit shrink-0">
+                        {(insight.confidence * 100).toFixed(0)}% confidence
+                      </Badge>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-blue-900 dark:text-blue-100 break-words">
+                          {insight.message}
                         </p>
-                      )}
+                        {insight.action && (
+                          <p className="text-xs text-blue-700 dark:text-blue-300 mt-1 break-words">
+                            💡 {insight.action}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Main Dashboard - Responsive tabs */}
+        <Tabs defaultValue="kanban" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-2 h-auto p-1">
+            <TabsTrigger value="kanban" className="flex items-center gap-2 py-2 px-3 text-xs sm:text-sm">
+              <ArrowUpDown className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
+              <span className="hidden sm:inline">Kanban Board</span>
+              <span className="sm:hidden">Board</span>
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-2 py-2 px-3 text-xs sm:text-sm">
+              <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
+              <span className="hidden sm:inline">Advanced Analytics</span>
+              <span className="sm:hidden">Analytics</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="kanban" className="space-y-4 mt-4">
+            <div className="overflow-x-auto">
+              <KanbanBoard
+                tasks={myTasks}
+                onUpdateStatus={updateTaskStatus}
+                onVerifyTask={verifyTask}
+                onUpdateTask={updateTask}
+                isUpdating={isUpdating}
+              />
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </TabsContent>
 
-      {/* Main Dashboard */}
-      <Tabs defaultValue="kanban" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="kanban" className="flex items-center gap-2">
-            <ArrowUpDown className="h-4 w-4" />
-            Kanban Board
-          </TabsTrigger>
-          <TabsTrigger value="analytics" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            Advanced Analytics
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="kanban" className="space-y-4">
-          <KanbanBoard
-            tasks={myTasks}
-            onUpdateStatus={updateTaskStatus}
-            onVerifyTask={verifyTask}
-            onUpdateTask={updateTask}
-            isUpdating={isUpdating}
-          />
-        </TabsContent>
-
-        <TabsContent value="analytics" className="space-y-4">
-          <KanbanAnalytics tasks={myTasks} />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="analytics" className="space-y-4 mt-4">
+            <div className="overflow-x-auto">
+              <KanbanAnalytics tasks={myTasks} />
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }
