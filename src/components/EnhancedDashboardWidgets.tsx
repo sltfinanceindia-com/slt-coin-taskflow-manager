@@ -18,7 +18,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTasks } from '@/hooks/useTasks';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
 import { useCoinTransactions } from '@/hooks/useCoinTransactions';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { SimpleLineChart } from '@/components/SimpleChart';
 
 export function EnhancedDashboardWidgets() {
   const { profile } = useAuth();
@@ -209,31 +209,12 @@ export function EnhancedDashboardWidgets() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-3 sm:p-6 pt-0">
-            <div className="h-[200px] sm:h-[250px] lg:h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={weeklyData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                  <XAxis 
-                    dataKey="day" 
-                    fontSize={12}
-                    tickMargin={5}
-                  />
-                  <YAxis 
-                    fontSize={12}
-                    tickMargin={5}
-                    width={30}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="hours" 
-                    stroke="hsl(var(--primary))" 
-                    strokeWidth={2}
-                    dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 3 }}
-                    activeDot={{ r: 4 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            <SimpleLineChart 
+              data={weeklyData}
+              dataKey="hours"
+              xAxisKey="day"
+              height={250}
+            />
           </CardContent>
         </Card>
 
@@ -246,38 +227,19 @@ export function EnhancedDashboardWidgets() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-3 sm:p-6 pt-0">
-            <div className="h-[200px] sm:h-[250px] lg:h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={taskStatusData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={40}
-                    outerRadius={80}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {taskStatusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="mt-3 sm:mt-4 space-y-1 sm:space-y-2">
-                {taskStatusData.map((entry, index) => (
-                  <div key={index} className="flex items-center justify-between text-xs sm:text-sm">
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <div 
-                        className="w-2 h-2 sm:w-3 sm:h-3 rounded-full shrink-0" 
-                        style={{ backgroundColor: entry.color }}
-                      />
-                      <span className="truncate">{entry.name}</span>
-                    </div>
-                    <span className="font-semibold shrink-0 ml-2">{entry.value}</span>
+            <div className="space-y-4">
+              {taskStatusData.map((entry, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-4 h-4 rounded-full" 
+                      style={{ backgroundColor: entry.color }}
+                    />
+                    <span className="font-medium">{entry.name}</span>
                   </div>
-                ))}
-              </div>
+                  <span className="font-bold text-lg">{entry.value}</span>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
