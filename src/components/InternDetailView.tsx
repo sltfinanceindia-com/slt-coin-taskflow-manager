@@ -24,15 +24,16 @@ export function InternDetailView({ internId, onClose }: InternDetailViewProps) {
   const { profile: internProfile, stats } = useProfile(internId);
   const { tasks } = useTasks();
   const { timeLogs } = useTimeLogs();
-  const { data: analyticsData, isLoading: analyticsLoading } = useInternAnalytics(internId);
+  const { data: analyticsData, isLoading: analyticsLoading } = useInternAnalytics(internProfile?.user_id || '');
   const [showCertificateGenerator, setShowCertificateGenerator] = useState(false);
 
   if (!currentProfile || currentProfile.role !== 'admin') {
     return null;
   }
 
-  const internTasks = tasks.filter(task => task.assigned_to === internId);
-  const internTimeLogs = timeLogs.filter(log => log.user_id === internId);
+  // Filter data using correct user_id from profile
+  const internTasks = tasks.filter(task => task.assigned_to === internProfile?.user_id);
+  const internTimeLogs = timeLogs.filter(log => log.user_id === internProfile?.user_id);
 
   return (
     <Dialog open onOpenChange={() => onClose()}>
