@@ -8,9 +8,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, Plus, Coins, Trash } from 'lucide-react';
+import { Users, Plus, Coins, Trash, Eye } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from '@/hooks/use-toast';
+import { InternDetailView } from '@/components/InternDetailView';
 
 interface Profile {
   id: string;
@@ -37,6 +38,7 @@ interface InternFormData {
 export function InternManagement() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [detailViewOpen, setDetailViewOpen] = useState(false);
   const [selectedIntern, setSelectedIntern] = useState<Profile | null>(null);
   const queryClient = useQueryClient();
   
@@ -254,17 +256,30 @@ export function InternManagement() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">{intern.full_name}</CardTitle>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedIntern(intern);
-                      setDeleteDialogOpen(true);
-                    }}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash className="h-4 w-4" />
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedIntern(intern);
+                        setDetailViewOpen(true);
+                      }}
+                      className="text-primary hover:text-primary"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedIntern(intern);
+                        setDeleteDialogOpen(true);
+                      }}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
                 <CardDescription>{intern.email}</CardDescription>
               </CardHeader>
@@ -340,6 +355,17 @@ export function InternManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Intern Detail View */}
+      {detailViewOpen && selectedIntern && (
+        <InternDetailView 
+          internId={selectedIntern.id}
+          onClose={() => {
+            setDetailViewOpen(false);
+            setSelectedIntern(null);
+          }}
+        />
+      )}
     </div>
   );
 }
