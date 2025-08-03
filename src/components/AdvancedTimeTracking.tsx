@@ -18,7 +18,7 @@ import {
   Keyboard
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { SimpleLineChart, SimpleBarChart } from '@/components/SimpleChart';
 
 interface SystemActivity {
   timestamp: string;
@@ -247,29 +247,13 @@ export function AdvancedTimeTracking({ userId }: AdvancedTimeTrackingProps) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={hourlyData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="hour" />
-                    <YAxis />
-                    <Line 
-                      type="monotone" 
-                      dataKey="activeTime" 
-                      stroke="#3b82f6" 
-                      strokeWidth={2}
-                      name="Active Time (min)"
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="productivity" 
-                      stroke="#10b981" 
-                      strokeWidth={2}
-                      name="Productivity %"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+              <SimpleLineChart 
+                data={hourlyData}
+                dataKey="activeTime"
+                xAxisKey="hour"
+                height={400}
+                color="#3b82f6"
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -320,16 +304,13 @@ export function AdvancedTimeTracking({ userId }: AdvancedTimeTrackingProps) {
               <CardTitle>Application Usage</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={appUsageData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="app" angle={-45} textAnchor="end" height={100} />
-                    <YAxis />
-                    <Bar dataKey="duration" fill="#8884d8" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              <SimpleBarChart 
+                data={appUsageData}
+                dataKey="duration"
+                xAxisKey="app"
+                height={400}
+                color="#8884d8"
+              />
             </CardContent>
           </Card>
         </TabsContent>

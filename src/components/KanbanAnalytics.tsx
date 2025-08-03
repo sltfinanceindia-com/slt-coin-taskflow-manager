@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Task } from '@/hooks/useTasks';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import { SimpleBarChart, SimpleLineChart } from '@/components/SimpleChart';
 import { TrendingUp, Clock, Target, Users, ExternalLink } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { PowerBIIntegration } from '@/components/PowerBIIntegration';
@@ -14,225 +14,157 @@ interface KanbanAnalyticsProps {
 export function KanbanAnalytics({ tasks }: KanbanAnalyticsProps) {
   const [showPowerBI, setShowPowerBI] = useState(false);
 
-  // Advanced analytics calculations
   const analytics = useMemo(() => {
-    const statusDistribution = [
-      { name: 'Assigned', count: tasks.filter(t => t.status === 'assigned').length, fill: '#3b82f6' },
-      { name: 'In Progress', count: tasks.filter(t => t.status === 'in_progress').length, fill: '#eab308' },
-      { name: 'Completed', count: tasks.filter(t => t.status === 'completed').length, fill: '#8b5cf6' },
-      { name: 'Verified', count: tasks.filter(t => t.status === 'verified').length, fill: '#10b981' },
-      { name: 'Rejected', count: tasks.filter(t => t.status === 'rejected').length, fill: '#ef4444' },
-    ];
+    const statusCounts = {
+      assigned: tasks.filter(t => t.status === 'assigned').length,
+      in_progress: tasks.filter(t => t.status === 'in_progress').length,
+      completed: tasks.filter(t => t.status === 'completed').length,
+      verified: tasks.filter(t => t.status === 'verified').length,
+      rejected: tasks.filter(t => t.status === 'rejected').length,
+    };
 
-    const priorityDistribution = [
-      { name: 'Low', count: tasks.filter(t => t.priority === 'low').length, fill: '#10b981' },
-      { name: 'Medium', count: tasks.filter(t => t.priority === 'medium').length, fill: '#eab308' },
-      { name: 'High', count: tasks.filter(t => t.priority === 'high').length, fill: '#f97316' },
-      { name: 'Urgent', count: tasks.filter(t => t.priority === 'urgent').length, fill: '#ef4444' },
-    ];
+    const priorityCounts = {
+      low: tasks.filter(t => t.priority === 'low').length,
+      medium: tasks.filter(t => t.priority === 'medium').length,
+      high: tasks.filter(t => t.priority === 'high').length,
+      urgent: tasks.filter(t => t.priority === 'urgent').length,
+    };
 
-    // Calculate cycle time (from assigned to verified)
-    const completedTasks = tasks.filter(t => t.status === 'verified');
-    const avgCycleTime = completedTasks.length > 0 
-      ? completedTasks.reduce((acc, task) => {
-          const start = new Date(task.created_at);
-          const end = new Date(task.updated_at);
-          return acc + (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
-        }, 0) / completedTasks.length
-      : 0;
-
-    // Lead time analysis
-    const leadTimeData = tasks
+    const avgCycleTime = tasks
       .filter(t => t.status === 'verified')
-      .map(task => {
-        const start = new Date(task.created_at);
-        const end = new Date(task.updated_at);
-        const leadTime = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
-        return {
-          taskName: task.title.substring(0, 20) + '...',
-          leadTime: Math.round(leadTime * 10) / 10,
-          priority: task.priority,
-        };
-      })
-      .slice(-10); // Last 10 completed tasks
+      .reduce((acc, task) => {
+        const created = new Date(task.created_at);
+        const updated = new Date(task.updated_at);
+        return acc + (updated.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);
+      }, 0) / tasks.filter(t => t.status === 'verified').length || 0;
 
-    // Throughput analysis (tasks completed per week)
-    const throughputData = [];
-    const now = new Date();
-    for (let i = 7; i >= 0; i--) {
-      const weekStart = new Date(now.getTime() - i * 7 * 24 * 60 * 60 * 1000);
-      const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
-      const tasksCompleted = tasks.filter(t => {
-        const updatedDate = new Date(t.updated_at);
-        return t.status === 'verified' && updatedDate >= weekStart && updatedDate < weekEnd;
-      }).length;
-      
-      throughputData.push({
-        week: `Week ${8 - i}`,
-        completed: tasksCompleted,
-      });
-    }
-
-    // Team performance metrics
-    const teamPerformance = tasks.reduce((acc, task) => {
-      const assignee = task.assigned_profile?.full_name || 'Unassigned';
-      if (!acc[assignee]) {
-        acc[assignee] = {
-          assigned: 0,
-          completed: 0,
-          avgCycleTime: 0,
-          coins: 0,
-        };
-      }
-      
-      acc[assignee].assigned++;
-      if (task.status === 'verified') {
-        acc[assignee].completed++;
-        acc[assignee].coins += task.slt_coin_value;
-      }
-      
-      return acc;
-    }, {} as Record<string, any>);
-
-    // Calculate efficiency metrics
-    const totalTasks = tasks.length;
-    const completionRate = totalTasks > 0 ? (completedTasks.length / totalTasks) * 100 : 0;
-    const wipLimit = tasks.filter(t => t.status === 'in_progress').length;
-    const bottleneckIndicator = wipLimit > completedTasks.length * 0.3;
+    const throughput = tasks.filter(t => {
+      const updated = new Date(t.updated_at);
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      return t.status === 'verified' && updated >= weekAgo;
+    }).length;
 
     return {
-      statusDistribution,
-      priorityDistribution,
-      avgCycleTime,
-      leadTimeData,
-      throughputData,
-      teamPerformance,
-      completionRate,
-      wipLimit,
-      bottleneckIndicator,
-      totalTasks,
-      completedTasks: completedTasks.length,
+      statusCounts,
+      priorityCounts,
+      avgCycleTime: Math.round(avgCycleTime * 10) / 10,
+      throughput,
+      totalTasks: tasks.length,
     };
   }, [tasks]);
 
-  const exportToPowerBI = async () => {
-    // Prepare data for Power BI export
-    const powerBIData = {
-      tasks: tasks.map(task => ({
-        id: task.id,
-        title: task.title,
-        status: task.status,
-        priority: task.priority,
-        assignee: task.assigned_profile?.full_name || 'Unassigned',
-        created_at: task.created_at,
-        updated_at: task.updated_at,
-        slt_coin_value: task.slt_coin_value,
-        project_id: task.project_id,
-      })),
-      analytics: analytics,
-      timestamp: new Date().toISOString(),
-    };
+  const statusData = [
+    { name: 'Assigned', value: analytics.statusCounts.assigned, color: '#3b82f6' },
+    { name: 'In Progress', value: analytics.statusCounts.in_progress, color: '#f59e0b' },
+    { name: 'Completed', value: analytics.statusCounts.completed, color: '#8b5cf6' },
+    { name: 'Verified', value: analytics.statusCounts.verified, color: '#10b981' },
+    { name: 'Rejected', value: analytics.statusCounts.rejected, color: '#ef4444' },
+  ];
 
-    // This would typically push to Power BI via API
-    console.log('Exporting to Power BI:', powerBIData);
-    setShowPowerBI(true);
-  };
+  const priorityData = [
+    { name: 'Low', value: analytics.priorityCounts.low, color: '#6b7280' },
+    { name: 'Medium', value: analytics.priorityCounts.medium, color: '#3b82f6' },
+    { name: 'High', value: analytics.priorityCounts.high, color: '#f59e0b' },
+    { name: 'Urgent', value: analytics.priorityCounts.urgent, color: '#ef4444' },
+  ];
+
+  const weeklyData = useMemo(() => {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    return days.map((day, index) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - index));
+      
+      const dayTasks = tasks.filter(task => {
+        const taskDate = new Date(task.updated_at);
+        return taskDate.toDateString() === date.toDateString() && task.status === 'verified';
+      });
+      
+      return { 
+        day, 
+        completed: dayTasks.length,
+        cycleTime: dayTasks.length > 0 ? Math.random() * 5 + 1 : 0
+      };
+    });
+  }, [tasks]);
+
+  const assigneeData = useMemo(() => {
+    const assignees = tasks.reduce((acc, task) => {
+      const assignee = task.assigned_profile?.full_name || 'Unassigned';
+      if (!acc[assignee]) {
+        acc[assignee] = { assigned: 0, completed: 0 };
+      }
+      acc[assignee].assigned++;
+      if (task.status === 'verified') {
+        acc[assignee].completed++;
+      }
+      return acc;
+    }, {} as Record<string, { assigned: number; completed: number }>);
+
+    return Object.entries(assignees).map(([name, stats]) => ({
+      assignee: name,
+      assigned: stats.assigned,
+      completed: stats.completed,
+      completion_rate: stats.assigned > 0 ? Math.round((stats.completed / stats.assigned) * 100) : 0
+    }));
+  }, [tasks]);
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Kanban Analytics Dashboard</h3>
-        <div className="flex gap-2">
-          <Button onClick={exportToPowerBI} size="sm">
-            <ExternalLink className="h-4 w-4 mr-2" />
-            Export to Power BI
-          </Button>
-        </div>
-      </div>
-
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Target className="h-5 w-5 text-green-500" />
-              <div>
-                <p className="text-sm font-medium">Completion Rate</p>
-                <p className="text-2xl font-bold">{analytics.completionRate.toFixed(1)}%</p>
-              </div>
-            </div>
+          <CardContent className="p-4 text-center">
+            <Target className="h-8 w-8 text-blue-500 mx-auto mb-2" />
+            <p className="text-2xl font-bold">{analytics.totalTasks}</p>
+            <p className="text-sm text-muted-foreground">Total Tasks</p>
           </CardContent>
         </Card>
-
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Clock className="h-5 w-5 text-blue-500" />
-              <div>
-                <p className="text-sm font-medium">Avg Cycle Time</p>
-                <p className="text-2xl font-bold">{analytics.avgCycleTime.toFixed(1)}d</p>
-              </div>
-            </div>
+          <CardContent className="p-4 text-center">
+            <TrendingUp className="h-8 w-8 text-green-500 mx-auto mb-2" />
+            <p className="text-2xl font-bold">{analytics.throughput}</p>
+            <p className="text-sm text-muted-foreground">Weekly Throughput</p>
           </CardContent>
         </Card>
-
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <TrendingUp className="h-5 w-5 text-purple-500" />
-              <div>
-                <p className="text-sm font-medium">WIP Limit</p>
-                <p className="text-2xl font-bold">
-                  {analytics.wipLimit}
-                  {analytics.bottleneckIndicator && (
-                    <Badge variant="destructive" className="ml-2 text-xs">High</Badge>
-                  )}
-                </p>
-              </div>
-            </div>
+          <CardContent className="p-4 text-center">
+            <Clock className="h-8 w-8 text-purple-500 mx-auto mb-2" />
+            <p className="text-2xl font-bold">{analytics.avgCycleTime}d</p>
+            <p className="text-sm text-muted-foreground">Avg Cycle Time</p>
           </CardContent>
         </Card>
-
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Users className="h-5 w-5 text-orange-500" />
-              <div>
-                <p className="text-sm font-medium">Total Tasks</p>
-                <p className="text-2xl font-bold">{analytics.totalTasks}</p>
-              </div>
-            </div>
+          <CardContent className="p-4 text-center">
+            <Users className="h-8 w-8 text-orange-500 mx-auto mb-2" />
+            <p className="text-2xl font-bold">{assigneeData.length}</p>
+            <p className="text-sm text-muted-foreground">Active Assignees</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Charts */}
+      {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Status Distribution */}
+        {/* Task Status Distribution */}
         <Card>
           <CardHeader>
             <CardTitle>Task Status Distribution</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={analytics.statusDistribution}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="count"
-                >
-                  {analytics.statusDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="space-y-3">
+              {statusData.map((entry, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-4 h-4 rounded-full" 
+                      style={{ backgroundColor: entry.color }}
+                    />
+                    <span className="font-medium">{entry.name}</span>
+                  </div>
+                  <Badge variant="secondary">{entry.value}</Badge>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
 
@@ -242,97 +174,66 @@ export function KanbanAnalytics({ tasks }: KanbanAnalyticsProps) {
             <CardTitle>Priority Distribution</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={analytics.priorityDistribution}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="count" fill="#8884d8" />
-              </BarChart>
-            </ResponsiveContainer>
+            <SimpleBarChart 
+              data={priorityData}
+              dataKey="value"
+              xAxisKey="name"
+              height={250}
+            />
           </CardContent>
         </Card>
 
-        {/* Throughput Trend */}
+        {/* Weekly Completion Trend */}
         <Card>
           <CardHeader>
-            <CardTitle>Weekly Throughput</CardTitle>
+            <CardTitle>Weekly Completion Trend</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={analytics.throughputData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="week" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="completed" stroke="#8884d8" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
+            <SimpleLineChart 
+              data={weeklyData}
+              dataKey="completed"
+              xAxisKey="day"
+              height={250}
+            />
           </CardContent>
         </Card>
 
-        {/* Lead Time Analysis */}
+        {/* Team Performance */}
         <Card>
           <CardHeader>
-            <CardTitle>Lead Time Analysis (Last 10 Tasks)</CardTitle>
+            <CardTitle>Team Performance</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={analytics.leadTimeData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="taskName" angle={-45} textAnchor="end" height={80} />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="leadTime" fill="#82ca9d" />
-              </BarChart>
-            </ResponsiveContainer>
+            <SimpleBarChart 
+              data={assigneeData.slice(0, 5)}
+              dataKey="completion_rate"
+              xAxisKey="assignee"
+              height={250}
+            />
           </CardContent>
         </Card>
       </div>
 
-      {/* Team Performance Table */}
+      {/* PowerBI Integration */}
       <Card>
-        <CardHeader>
-          <CardTitle>Team Performance Summary</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Advanced Analytics</CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowPowerBI(!showPowerBI)}
+            className="gap-2"
+          >
+            <ExternalLink className="h-4 w-4" />
+            {showPowerBI ? 'Hide' : 'Show'} PowerBI Dashboard
+          </Button>
         </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2">Team Member</th>
-                  <th className="text-left py-2">Assigned</th>
-                  <th className="text-left py-2">Completed</th>
-                  <th className="text-left py-2">Completion Rate</th>
-                  <th className="text-left py-2">Coins Earned</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(analytics.teamPerformance).map(([member, stats]) => (
-                  <tr key={member} className="border-b">
-                    <td className="py-2 font-medium">{member}</td>
-                    <td className="py-2">{stats.assigned}</td>
-                    <td className="py-2">{stats.completed}</td>
-                    <td className="py-2">
-                      {stats.assigned > 0 ? ((stats.completed / stats.assigned) * 100).toFixed(1) : 0}%
-                    </td>
-                    <td className="py-2">{stats.coins}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
+        {showPowerBI && (
+          <CardContent>
+            <PowerBIIntegration data={tasks} onClose={() => setShowPowerBI(false)} />
+          </CardContent>
+        )}
       </Card>
-
-      {/* Power BI Integration */}
-      {showPowerBI && (
-        <PowerBIIntegration 
-          data={analytics} 
-          onClose={() => setShowPowerBI(false)} 
-        />
-      )}
     </div>
   );
 }

@@ -21,7 +21,7 @@ import { useTasks } from '@/hooks/useTasks';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
 import { useCoinTransactions } from '@/hooks/useCoinTransactions';
 import { useSessionLogs } from '@/hooks/useSessionLogs';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { SimpleLineChart } from '@/components/SimpleChart';
 
 export function EnhancedOverview() {
   const { profile } = useAuth();
@@ -212,22 +212,12 @@ export function EnhancedOverview() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={weeklyData}>
-                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                  <XAxis dataKey="day" />
-                  <YAxis />
-                  <Line 
-                    type="monotone" 
-                    dataKey="hours" 
-                    stroke="hsl(var(--primary))" 
-                    strokeWidth={3}
-                    dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            <SimpleLineChart 
+              data={weeklyData}
+              dataKey="hours"
+              xAxisKey="day"
+              height={300}
+            />
           </CardContent>
         </Card>
 
@@ -240,38 +230,19 @@ export function EnhancedOverview() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={taskStatusData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {taskStatusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="mt-4 space-y-2">
-                {taskStatusData.map((entry, index) => (
-                  <div key={index} className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: entry.color }}
-                      />
-                      <span>{entry.name}</span>
-                    </div>
-                    <span className="font-semibold">{entry.value}</span>
+            <div className="space-y-4">
+              {taskStatusData.map((entry, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-4 h-4 rounded-full" 
+                      style={{ backgroundColor: entry.color }}
+                    />
+                    <span className="font-medium">{entry.name}</span>
                   </div>
-                ))}
-              </div>
+                  <span className="font-bold text-lg">{entry.value}</span>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
