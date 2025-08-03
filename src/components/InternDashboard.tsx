@@ -2,25 +2,47 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, Clock, Trophy, BookOpen } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar, Clock, Trophy, BookOpen, Eye } from 'lucide-react';
 import { TaskList } from '@/components/TaskList';
 import { ProfileSettings } from '@/components/ProfileSettings';
+import { InternDetailView } from '@/components/InternDetailView';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
+import { useTasks } from '@/hooks/useTasks';
 import { TrainingCenter } from '@/components/TrainingCenter';
 
 export function InternDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
+  const [showDetailView, setShowDetailView] = useState(false);
   const { profile } = useAuth();
+  const { stats } = useProfile();
+  const { tasks } = useTasks();
+
+  // Calculate user's tasks
+  const userTasks = tasks.filter(task => task.assigned_to === profile?.id);
+  const activeTasks = userTasks.filter(task => ['assigned', 'in_progress'].includes(task.status));
+  const completedTasks = userTasks.filter(task => task.status === 'verified');
 
   return (
     <div className="container mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">
-          Welcome back, {profile?.full_name || 'Intern'}!
-        </h1>
-        <p className="text-muted-foreground">
-          Track your progress and manage your tasks.
-        </p>
+      <div className="mb-8 flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            Welcome back, {profile?.full_name || 'Intern'}!
+          </h1>
+          <p className="text-muted-foreground">
+            Track your progress and manage your tasks.
+          </p>
+        </div>
+        <Button
+          onClick={() => setShowDetailView(true)}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          <Eye className="h-4 w-4" />
+          View Detailed Analytics
+        </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -52,7 +74,7 @@ export function InternDashboard() {
                 <Calendar className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">-</div>
+                <div className="text-2xl font-bold">{activeTasks.length}</div>
                 <p className="text-xs text-muted-foreground">
                   Currently assigned
                 </p>
@@ -65,7 +87,7 @@ export function InternDashboard() {
                 <Clock className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">-</div>
+                <div className="text-2xl font-bold">{stats?.weeklyHours || 0}</div>
                 <p className="text-xs text-muted-foreground">
                   This week
                 </p>
@@ -78,9 +100,9 @@ export function InternDashboard() {
                 <BookOpen className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">-</div>
+                <div className="text-2xl font-bold">{completedTasks.length}</div>
                 <p className="text-xs text-muted-foreground">
-                  Modules completed
+                  Tasks completed
                 </p>
               </CardContent>
             </Card>
@@ -108,6 +130,14 @@ export function InternDashboard() {
           <ProfileSettings />
         </TabsContent>
       </Tabs>
+
+      {/* Detailed Analytics View */}
+      {showDetailView && profile && (
+        <InternDetailView
+          internId={profile.id}
+          onClose={() => setShowDetailView(false)}
+        />
+      )}
     </div>
   );
 }

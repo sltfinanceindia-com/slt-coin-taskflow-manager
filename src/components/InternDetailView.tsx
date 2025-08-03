@@ -27,7 +27,10 @@ export function InternDetailView({ internId, onClose }: InternDetailViewProps) {
   const { data: analyticsData, isLoading: analyticsLoading } = useInternAnalytics(internId);
   const [showCertificateGenerator, setShowCertificateGenerator] = useState(false);
 
-  if (!currentProfile || currentProfile.role !== 'admin') {
+  // Allow access if user is admin OR if user is viewing their own profile
+  const canViewDetails = currentProfile?.role === 'admin' || currentProfile?.id === internId;
+  
+  if (!currentProfile || !canViewDetails) {
     return null;
   }
 
