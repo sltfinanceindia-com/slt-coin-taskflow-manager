@@ -4,13 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { User, Award, Clock, FileText, Eye } from 'lucide-react';
+import { User, Award, Clock, FileText, Eye, TrendingUp, MessageSquare } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useTasks } from '@/hooks/useTasks';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
+import { useInternAnalytics } from '@/hooks/useInternAnalytics';
 import { CertificateGenerator } from '@/components/CertificateGenerator';
 import { format } from 'date-fns';
+import { SimpleBarChart, SimpleLineChart } from '@/components/SimpleChart';
 
 interface InternDetailViewProps {
   internId: string;
@@ -22,6 +24,7 @@ export function InternDetailView({ internId, onClose }: InternDetailViewProps) {
   const { profile: internProfile, stats } = useProfile(internId);
   const { tasks } = useTasks();
   const { timeLogs } = useTimeLogs();
+  const { data: analyticsData, isLoading: analyticsLoading } = useInternAnalytics(internId);
   const [showCertificateGenerator, setShowCertificateGenerator] = useState(false);
 
   if (!currentProfile || currentProfile.role !== 'admin') {
@@ -42,8 +45,9 @@ export function InternDetailView({ internId, onClose }: InternDetailViewProps) {
         </DialogHeader>
 
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="tasks">Tasks</TabsTrigger>
             <TabsTrigger value="time">Time Logs</TabsTrigger>
             <TabsTrigger value="certificate">Certificate</TabsTrigger>
@@ -78,36 +82,125 @@ export function InternDetailView({ internId, onClose }: InternDetailViewProps) {
             </Card>
 
             {/* Performance Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <Card>
                 <CardContent className="p-4 text-center">
                   <Award className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold">{stats?.totalTasks || 0}</p>
+                  <p className="text-2xl font-bold">{analyticsData?.totalStats.totalTasks || 0}</p>
                   <p className="text-sm text-muted-foreground">Total Tasks</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4 text-center">
                   <Award className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold">{stats?.completedTasks || 0}</p>
+                  <p className="text-2xl font-bold">{analyticsData?.totalStats.completedTasks || 0}</p>
                   <p className="text-sm text-muted-foreground">Completed</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4 text-center">
-                  <Award className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold">{stats?.totalCoins || 0}</p>
-                  <p className="text-sm text-muted-foreground">SLT Coins</p>
+                  <Clock className="h-8 w-8 text-purple-500 mx-auto mb-2" />
+                  <p className="text-2xl font-bold">{analyticsData?.totalStats.totalHours || 0}h</p>
+                  <p className="text-sm text-muted-foreground">Total Hours</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4 text-center">
-                  <Clock className="h-8 w-8 text-purple-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold">{stats?.monthlyHours || 0}</p>
-                  <p className="text-sm text-muted-foreground">Monthly Hours</p>
+                  <MessageSquare className="h-8 w-8 text-orange-500 mx-auto mb-2" />
+                  <p className="text-2xl font-bold">{analyticsData?.totalStats.totalComments || 0}</p>
+                  <p className="text-sm text-muted-foreground">Comments</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <Award className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
+                  <p className="text-2xl font-bold">{analyticsData?.totalStats.totalCoins || 0}</p>
+                  <p className="text-sm text-muted-foreground">SLT Coins</p>
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-4">
+            {analyticsLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                <p className="text-sm text-muted-foreground mt-2">Loading analytics...</p>
+              </div>
+            ) : (
+              <>
+                {/* Weekly Performance Charts */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-sm">
+                        <TrendingUp className="h-4 w-4" />
+                        Weekly Task Completion
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <SimpleBarChart 
+                        data={analyticsData?.weeklyData.slice(-8) || []}
+                        dataKey="tasksCompleted"
+                        xAxisKey="week"
+                        height={200}
+                      />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-sm">
+                        <Clock className="h-4 w-4" />
+                        Weekly Hours Logged
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <SimpleLineChart 
+                        data={analyticsData?.weeklyData.slice(-8) || []}
+                        dataKey="totalHours"
+                        xAxisKey="week"
+                        height={200}
+                      />
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Weekly Data Table */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Weekly Performance Breakdown</CardTitle>
+                    <CardDescription>Detailed weekly performance metrics</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left p-2">Week</th>
+                            <th className="text-center p-2">Tasks</th>
+                            <th className="text-center p-2">Hours</th>
+                            <th className="text-center p-2">Comments</th>
+                            <th className="text-center p-2">Coins</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {analyticsData?.weeklyData.slice(-12).reverse().map((week, index) => (
+                            <tr key={index} className="border-b hover:bg-muted/50">
+                              <td className="p-2 font-medium">{week.week}</td>
+                              <td className="text-center p-2">{week.tasksCompleted}</td>
+                              <td className="text-center p-2">{week.totalHours}h</td>
+                              <td className="text-center p-2">{week.commentsAdded}</td>
+                              <td className="text-center p-2">{week.coinsEarned}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
           </TabsContent>
 
           <TabsContent value="tasks" className="space-y-4">
