@@ -347,7 +347,7 @@ export function InternDetailView({ internId, onClose }: InternDetailViewProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2 max-h-60 overflow-y-auto">
-                    {analyticsData?.detailedData.sessionLogs?.slice(0, 10).map((session: any) => (
+                    {analyticsData?.detailedData?.sessionLogs?.slice(0, 10).map((session: any) => (
                       <div key={session.id} className="flex items-center justify-between p-2 bg-muted/50 rounded">
                         <div>
                           <p className="text-sm font-medium">
@@ -374,7 +374,7 @@ export function InternDetailView({ internId, onClose }: InternDetailViewProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2 max-h-60 overflow-y-auto">
-                    {analyticsData?.detailedData.activityLogs?.slice(0, 10).map((activity: any) => (
+                    {analyticsData?.detailedData?.activityLogs?.slice(0, 10).map((activity: any) => (
                       <div key={activity.id} className="flex items-center justify-between p-2 bg-muted/50 rounded">
                         <div>
                           <p className="text-sm font-medium">Activity logged</p>
@@ -420,7 +420,7 @@ export function InternDetailView({ internId, onClose }: InternDetailViewProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    {analyticsData?.detailedData.trainingProgress?.map((progress: any, index: number) => (
+                    {analyticsData?.detailedData?.trainingProgress?.map((progress: any, index: number) => (
                       <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded">
                         <div>
                           <p className="text-sm font-medium">{progress.progress_type}</p>
@@ -441,7 +441,7 @@ export function InternDetailView({ internId, onClose }: InternDetailViewProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    {analyticsData?.detailedData.assessmentAttempts?.map((attempt: any) => (
+                    {analyticsData?.detailedData?.assessmentAttempts?.map((attempt: any) => (
                       <div key={attempt.id} className="flex items-center justify-between p-2 bg-muted/50 rounded">
                         <div>
                           <p className="text-sm font-medium">Assessment Attempt</p>
