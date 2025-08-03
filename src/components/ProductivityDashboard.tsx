@@ -17,7 +17,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useSessionLogs } from '@/hooks/useSessionLogs';
 import { useTasks } from '@/hooks/useTasks';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
+import { SimpleLineChart, SimpleBarChart } from '@/components/SimpleChart';
 import { format, subDays, eachDayOfInterval } from 'date-fns';
 
 interface ProductivityDashboardProps {
@@ -247,22 +247,13 @@ export function ProductivityDashboard({ userId }: ProductivityDashboardProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={weeklyData}>
-                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                  <XAxis dataKey="day" />
-                  <YAxis />
-                  <Line 
-                    type="monotone" 
-                    dataKey="productivity" 
-                    stroke="#10b981" 
-                    strokeWidth={3}
-                    dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            <SimpleLineChart 
+              data={weeklyData}
+              dataKey="productivity"
+              xAxisKey="day"
+              height={300}
+              color="#10b981"
+            />
           </CardContent>
         </Card>
 
@@ -275,38 +266,19 @@ export function ProductivityDashboard({ userId }: ProductivityDashboardProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={productivityDistribution}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {productivityDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="mt-4 space-y-2">
-                {productivityDistribution.map((entry, index) => (
-                  <div key={index} className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: entry.color }}
-                      />
-                      <span>{entry.name}</span>
-                    </div>
-                    <span className="font-semibold">{entry.value.toFixed(1)}h</span>
+            <div className="space-y-4">
+              {productivityDistribution.map((entry, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-4 h-4 rounded-full" 
+                      style={{ backgroundColor: entry.color }}
+                    />
+                    <span className="font-medium">{entry.name}</span>
                   </div>
-                ))}
-              </div>
+                  <span className="font-bold text-lg">{entry.value.toFixed(1)}h</span>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -321,17 +293,13 @@ export function ProductivityDashboard({ userId }: ProductivityDashboardProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weeklyData}>
-                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                <XAxis dataKey="day" />
-                <YAxis />
-                <Bar dataKey="focusTime" fill="#10b981" name="Focus Time" />
-                <Bar dataKey="activeTime" fill="#3b82f6" name="Active Time" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <SimpleBarChart 
+            data={weeklyData}
+            dataKey="focusTime"
+            xAxisKey="day"
+            height={300}
+            color="#10b981"
+          />
         </CardContent>
       </Card>
 
