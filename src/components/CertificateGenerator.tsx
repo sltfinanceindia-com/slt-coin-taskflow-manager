@@ -23,6 +23,8 @@ interface CertificateData {
   completedTasks: number;
   performance: string;
   customText?: string;
+  supervisor?: string;
+  skills?: string;
 }
 
 interface CertificateGeneratorProps {
@@ -34,18 +36,20 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
   const { profile } = useAuth();
   const certificateRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [template, setTemplate] = useState('elegant');
+  const [template, setTemplate] = useState('emerald');
   const [certificateData, setCertificateData] = useState<CertificateData>({
     internName: internData?.full_name || '',
     internId: internData?.employee_id || '',
     department: internData?.department || '',
     startDate: internData?.start_date || '',
     endDate: internData?.end_date || format(new Date(), 'yyyy-MM-dd'),
-    totalHours: 0,
+    totalHours: internData?.total_hours || 0,
     totalCoins: internData?.total_coins || 0,
-    completedTasks: 0,
+    completedTasks: internData?.completed_tasks || 0,
     performance: 'Excellent',
     customText: '',
+    supervisor: internData?.supervisor || '',
+    skills: internData?.skills || '',
   });
 
   const isAdmin = profile?.role === 'admin';
@@ -71,7 +75,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
   const loadFonts = async () => {
     try {
       const link = document.createElement('link');
-      link.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap';
+      link.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap';
       link.rel = 'stylesheet';
       document.head.appendChild(link);
 
@@ -130,32 +134,35 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
   };
 
   const templates = {
-    elegant: {
-      name: 'Elegant Professional',
-      bgGradient: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 30%, #0f3460 60%, #533a7b 100%)',
-      accentColor: '#d4af37',
+    emerald: {
+      name: 'Emerald Professional',
+      bgGradient: 'linear-gradient(135deg, #1f2937 0%, #374151 20%, #4b5563 40%, #065f46 60%, #047857 80%, #059669 100%)',
+      accentColor: '#10b981',
       primaryText: '#ffffff',
-      secondaryText: '#e8e8e8',
-      titleColor: '#d4af37',
-      borderColor: '#d4af37',
+      secondaryText: '#d1fae5',
+      titleColor: '#34d399',
+      borderColor: '#10b981',
+      lightAccent: '#6ee7b7',
     },
-    royal: {
-      name: 'Royal Blue',
-      bgGradient: 'linear-gradient(135deg, #0c1426 0%, #1e3a5f 30%, #2a5298 60%, #3b82c4 100%)',
-      accentColor: '#ffd700',
+    forest: {
+      name: 'Forest Executive',
+      bgGradient: 'linear-gradient(135deg, #111827 0%, #1f2937 25%, #374151 45%, #14532d 65%, #166534 80%, #15803d 100%)',
+      accentColor: '#22c55e',
       primaryText: '#ffffff',
-      secondaryText: '#e1e8f0',
-      titleColor: '#ffd700',
-      borderColor: '#ffd700',
+      secondaryText: '#dcfce7',
+      titleColor: '#4ade80',
+      borderColor: '#16a34a',
+      lightAccent: '#86efac',
     },
-    classic: {
-      name: 'Classic Navy',
-      bgGradient: 'linear-gradient(135deg, #1a202c 0%, #2d3748 30%, #4a5568 60%, #718096 100%)',
-      accentColor: '#e6b800',
-      primaryText: '#ffffff',
-      secondaryText: '#e2e8f0',
-      titleColor: '#e6b800',
-      borderColor: '#e6b800',
+    sage: {
+      name: 'Sage Elegant',
+      bgGradient: 'linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 45%, #052e16 65%, #14532d 80%, #166534 100%)',
+      accentColor: '#15803d',
+      primaryText: '#f8fafc',
+      secondaryText: '#dcfce7',
+      titleColor: '#22c55e',
+      borderColor: '#15803d',
+      lightAccent: '#86efac',
     },
   };
 
@@ -169,13 +176,13 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
           <Card className="border border-border shadow-sm">
             <CardHeader className="px-6 py-6 border-b border-border">
               <CardTitle className="flex items-center gap-3 text-xl font-semibold text-foreground">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-yellow-100 to-yellow-200 flex items-center justify-center">
-                  <Award className="h-4 w-4 text-yellow-600" />
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
+                  <Award className="h-4 w-4 text-green-600" />
                 </div>
-                Professional Certificate Generator
+                Advanced Certificate Generator
               </CardTitle>
               <CardDescription className="text-base text-muted-foreground mt-2">
-                Generate elegant completion certificates with professional design
+                Generate elegant completion certificates with sophisticated green theme design
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6 space-y-8">
@@ -199,7 +206,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
               </div>
 
               {/* Certificate Data Form */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="space-y-3">
                   <Label htmlFor="internName" className="text-sm font-medium text-foreground">
                     Intern Name *
@@ -234,6 +241,31 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                     onChange={(e) => setCertificateData(prev => ({ ...prev, department: e.target.value }))}
                     className="h-11"
                     placeholder="Enter department name"
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label htmlFor="supervisor" className="text-sm font-medium text-foreground">
+                    Supervisor
+                  </Label>
+                  <Input
+                    id="supervisor"
+                    value={certificateData.supervisor}
+                    onChange={(e) => setCertificateData(prev => ({ ...prev, supervisor: e.target.value }))}
+                    className="h-11"
+                    placeholder="Enter supervisor name"
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label htmlFor="totalHours" className="text-sm font-medium text-foreground">
+                    Total Hours
+                  </Label>
+                  <Input
+                    id="totalHours"
+                    type="number"
+                    value={certificateData.totalHours}
+                    onChange={(e) => setCertificateData(prev => ({ ...prev, totalHours: parseInt(e.target.value) || 0 }))}
+                    className="h-11"
+                    placeholder="Enter total hours"
                   />
                 </div>
                 <div className="space-y-3">
@@ -279,27 +311,55 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                     className="h-11"
                   />
                 </div>
+                <div className="space-y-3">
+                  <Label htmlFor="completedTasks" className="text-sm font-medium text-foreground">
+                    Completed Tasks
+                  </Label>
+                  <Input
+                    id="completedTasks"
+                    type="number"
+                    value={certificateData.completedTasks}
+                    onChange={(e) => setCertificateData(prev => ({ ...prev, completedTasks: parseInt(e.target.value) || 0 }))}
+                    className="h-11"
+                    placeholder="Number of tasks completed"
+                  />
+                </div>
               </div>
 
-              <div className="space-y-3">
-                <Label htmlFor="customText" className="text-sm font-medium text-foreground">
-                  Custom Recognition Message (Optional)
-                </Label>
-                <Textarea
-                  id="customText"
-                  placeholder="Add a special recognition message or achievement note..."
-                  value={certificateData.customText}
-                  onChange={(e) => setCertificateData(prev => ({ ...prev, customText: e.target.value }))}
-                  rows={4}
-                  className="resize-none"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <Label htmlFor="skills" className="text-sm font-medium text-foreground">
+                    Key Skills Acquired
+                  </Label>
+                  <Textarea
+                    id="skills"
+                    placeholder="e.g., Financial Analysis, Data Management, Client Relations..."
+                    value={certificateData.skills}
+                    onChange={(e) => setCertificateData(prev => ({ ...prev, skills: e.target.value }))}
+                    rows={3}
+                    className="resize-none"
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label htmlFor="customText" className="text-sm font-medium text-foreground">
+                    Recognition Message (Optional)
+                  </Label>
+                  <Textarea
+                    id="customText"
+                    placeholder="Add a special recognition message or achievement note..."
+                    value={certificateData.customText}
+                    onChange={(e) => setCertificateData(prev => ({ ...prev, customText: e.target.value }))}
+                    rows={3}
+                    className="resize-none"
+                  />
+                </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-border">
                 <Button 
                   onClick={generatePDF} 
                   disabled={isGenerating || !certificateData.internName}
-                  className="h-11 px-6 font-medium bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600"
+                  className="h-11 px-6 font-medium bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
                 >
                   <Download className="h-4 w-4 mr-2" />
                   {isGenerating ? 'Generating PDF...' : 'Download Certificate'}
@@ -317,8 +377,8 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
           <Card className="border border-border shadow-sm">
             <CardHeader className="px-6 py-6 border-b border-border">
               <CardTitle className="flex items-center gap-3 text-xl font-semibold text-foreground">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-yellow-100 to-yellow-200 flex items-center justify-center">
-                  <FileText className="h-4 w-4 text-yellow-600" />
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
+                  <FileText className="h-4 w-4 text-green-600" />
                 </div>
                 Certificate Preview
               </CardTitle>
@@ -327,229 +387,241 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
               <div className="overflow-auto bg-slate-50 p-6 rounded-lg border border-border">
                 <div
                   ref={certificateRef}
-                  className="w-[800px] h-[600px] mx-auto relative shadow-2xl rounded-lg overflow-hidden"
+                  className="w-[800px] h-[600px] mx-auto relative shadow-2xl rounded-xl overflow-hidden"
                   style={{ 
                     background: currentTemplate.bgGradient,
-                    fontFamily: "'Cinzel', 'Playfair Display', Georgia, serif",
+                    fontFamily: "'Inter', 'Cinzel', Georgia, serif",
                     WebkitFontSmoothing: 'antialiased',
                     MozOsxFontSmoothing: 'grayscale'
                   }}
                 >
-                  {/* Decorative Border Frame - Inspired by the reference */}
-                  <div className="absolute inset-0 p-6">
+                  {/* Advanced Decorative Border System */}
+                  <div className="absolute inset-0 p-4">
                     <div 
-                      className="w-full h-full border-4 rounded-lg relative"
+                      className="w-full h-full border-2 rounded-xl relative overflow-hidden"
                       style={{ 
                         borderColor: currentTemplate.borderColor,
                         borderStyle: 'solid'
                       }}
                     >
-                      {/* Corner decorative elements */}
-                      <div className="absolute -top-2 -left-2 w-12 h-12">
+                      {/* Geometric corner patterns */}
+                      <div className="absolute top-0 left-0 w-20 h-20">
                         <div 
-                          className="w-full h-full border-t-4 border-l-4 rounded-tl-lg"
-                          style={{ borderColor: currentTemplate.borderColor }}
+                          className="absolute inset-0 border-r-2 border-b-2 rounded-br-3xl"
+                          style={{ borderColor: currentTemplate.lightAccent, opacity: 0.6 }}
                         ></div>
                         <div 
-                          className="absolute top-1 left-1 w-8 h-8 border-t-2 border-l-2 rounded-tl-lg"
-                          style={{ borderColor: currentTemplate.borderColor, opacity: 0.6 }}
-                        ></div>
-                      </div>
-                      <div className="absolute -top-2 -right-2 w-12 h-12">
-                        <div 
-                          className="w-full h-full border-t-4 border-r-4 rounded-tr-lg"
-                          style={{ borderColor: currentTemplate.borderColor }}
-                        ></div>
-                        <div 
-                          className="absolute top-1 right-1 w-8 h-8 border-t-2 border-r-2 rounded-tr-lg"
-                          style={{ borderColor: currentTemplate.borderColor, opacity: 0.6 }}
+                          className="absolute top-2 left-2 w-12 h-12 border-r border-b rounded-br-2xl"
+                          style={{ borderColor: currentTemplate.accentColor, opacity: 0.4 }}
                         ></div>
                       </div>
-                      <div className="absolute -bottom-2 -left-2 w-12 h-12">
+                      <div className="absolute top-0 right-0 w-20 h-20">
                         <div 
-                          className="w-full h-full border-b-4 border-l-4 rounded-bl-lg"
-                          style={{ borderColor: currentTemplate.borderColor }}
+                          className="absolute inset-0 border-l-2 border-b-2 rounded-bl-3xl"
+                          style={{ borderColor: currentTemplate.lightAccent, opacity: 0.6 }}
                         ></div>
                         <div 
-                          className="absolute bottom-1 left-1 w-8 h-8 border-b-2 border-l-2 rounded-bl-lg"
-                          style={{ borderColor: currentTemplate.borderColor, opacity: 0.6 }}
+                          className="absolute top-2 right-2 w-12 h-12 border-l border-b rounded-bl-2xl"
+                          style={{ borderColor: currentTemplate.accentColor, opacity: 0.4 }}
                         ></div>
                       </div>
-                      <div className="absolute -bottom-2 -right-2 w-12 h-12">
+                      <div className="absolute bottom-0 left-0 w-20 h-20">
                         <div 
-                          className="w-full h-full border-b-4 border-r-4 rounded-br-lg"
-                          style={{ borderColor: currentTemplate.borderColor }}
+                          className="absolute inset-0 border-r-2 border-t-2 rounded-tr-3xl"
+                          style={{ borderColor: currentTemplate.lightAccent, opacity: 0.6 }}
                         ></div>
                         <div 
-                          className="absolute bottom-1 right-1 w-8 h-8 border-b-2 border-r-2 rounded-br-lg"
-                          style={{ borderColor: currentTemplate.borderColor, opacity: 0.6 }}
+                          className="absolute bottom-2 left-2 w-12 h-12 border-r border-t rounded-tr-2xl"
+                          style={{ borderColor: currentTemplate.accentColor, opacity: 0.4 }}
+                        ></div>
+                      </div>
+                      <div className="absolute bottom-0 right-0 w-20 h-20">
+                        <div 
+                          className="absolute inset-0 border-l-2 border-t-2 rounded-tl-3xl"
+                          style={{ borderColor: currentTemplate.lightAccent, opacity: 0.6 }}
+                        ></div>
+                        <div 
+                          className="absolute bottom-2 right-2 w-12 h-12 border-l border-t rounded-tl-2xl"
+                          style={{ borderColor: currentTemplate.accentColor, opacity: 0.4 }}
                         ></div>
                       </div>
 
-                      {/* Ornate corner flourishes */}
-                      <div className="absolute top-4 left-4 w-16 h-16">
+                      {/* Elegant side decorations */}
+                      <div className="absolute top-1/2 left-2 w-4 h-32 -translate-y-1/2">
                         <div 
-                          className="w-full h-full opacity-30"
-                          style={{
-                            background: `radial-gradient(circle, ${currentTemplate.borderColor}80, transparent 60%)`,
-                            clipPath: 'polygon(0 0, 100% 0, 0 100%)'
-                          }}
+                          className="w-full h-full rounded-full opacity-20"
+                          style={{ background: `linear-gradient(to bottom, transparent, ${currentTemplate.accentColor}, transparent)` }}
                         ></div>
                       </div>
-                      <div className="absolute top-4 right-4 w-16 h-16">
+                      <div className="absolute top-1/2 right-2 w-4 h-32 -translate-y-1/2">
                         <div 
-                          className="w-full h-full opacity-30"
-                          style={{
-                            background: `radial-gradient(circle, ${currentTemplate.borderColor}80, transparent 60%)`,
-                            clipPath: 'polygon(100% 0, 100% 100%, 0 0)'
-                          }}
-                        ></div>
-                      </div>
-                      <div className="absolute bottom-4 left-4 w-16 h-16">
-                        <div 
-                          className="w-full h-full opacity-30"
-                          style={{
-                            background: `radial-gradient(circle, ${currentTemplate.borderColor}80, transparent 60%)`,
-                            clipPath: 'polygon(0 0, 100% 100%, 0 100%)'
-                          }}
-                        ></div>
-                      </div>
-                      <div className="absolute bottom-4 right-4 w-16 h-16">
-                        <div 
-                          className="w-full h-full opacity-30"
-                          style={{
-                            background: `radial-gradient(circle, ${currentTemplate.borderColor}80, transparent 60%)`,
-                            clipPath: 'polygon(100% 0, 100% 100%, 0 100%)'
-                          }}
+                          className="w-full h-full rounded-full opacity-20"
+                          style={{ background: `linear-gradient(to bottom, transparent, ${currentTemplate.accentColor}, transparent)` }}
                         ></div>
                       </div>
                     </div>
                   </div>
 
                   {/* Certificate Content */}
-                  <div className="absolute inset-0 flex flex-col justify-between p-16">
+                  <div className="absolute inset-0 flex flex-col p-12">
                     
-                    {/* Header Section */}
-                    <div className="text-center pt-6">
+                    {/* Header Section - Reduced size */}
+                    <div className="text-center mb-6">
                       <h1 
-                        className="text-4xl font-bold mb-4 tracking-widest"
+                        className="text-3xl font-bold mb-2 tracking-widest"
                         style={{ 
-                          fontFamily: "'Cinzel', 'Playfair Display', Georgia, serif",
+                          fontFamily: "'Cinzel', Georgia, serif",
                           color: currentTemplate.titleColor,
                           fontWeight: 'bold',
-                          letterSpacing: '4px',
+                          letterSpacing: '3px',
                           textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                          lineHeight: '1.2'
+                          fontSize: '32px'
                         }}
                       >
-                        CERTIFICATE OF ACHIEVEMENT
+                        CERTIFICATE OF EXCELLENCE
                       </h1>
                       
-                      {/* Decorative divider */}
-                      <div className="flex items-center justify-center gap-4 mb-4">
+                      {/* Modern divider */}
+                      <div className="flex items-center justify-center gap-3 mb-3">
                         <div 
-                          className="w-20 h-px"
+                          className="w-16 h-px"
                           style={{ backgroundColor: currentTemplate.borderColor, opacity: 0.8 }}
                         ></div>
                         <div 
-                          className="w-3 h-3 rounded-full border-2"
-                          style={{ borderColor: currentTemplate.borderColor }}
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: currentTemplate.accentColor }}
                         ></div>
                         <div 
-                          className="w-20 h-px"
+                          className="w-6 h-px"
+                          style={{ backgroundColor: currentTemplate.lightAccent }}
+                        ></div>
+                        <div 
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: currentTemplate.accentColor }}
+                        ></div>
+                        <div 
+                          className="w-16 h-px"
                           style={{ backgroundColor: currentTemplate.borderColor, opacity: 0.8 }}
                         ></div>
                       </div>
 
                       <p 
-                        className="text-base tracking-wider mb-6"
+                        className="text-xs tracking-wider"
                         style={{ 
-                          fontFamily: "'Cinzel', Georgia, serif",
+                          fontFamily: "'Inter', sans-serif",
                           color: currentTemplate.secondaryText,
-                          letterSpacing: '3px',
-                          fontSize: '14px'
+                          letterSpacing: '2px',
+                          fontSize: '11px',
+                          fontWeight: '500'
                         }}
                       >
-                        THIS CERTIFICATE IS PROUDLY PRESENTED TO
+                        INTERNSHIP PROGRAM COMPLETION
                       </p>
                     </div>
 
-                    {/* Main Content */}
-                    <div className="flex-1 flex flex-col justify-center text-center">
-                      {/* Name Section */}
-                      <div className="mb-8">
-                        <h2 
-                          className="text-5xl font-bold mb-4"
+                    {/* Main Content - Optimized spacing */}
+                    <div className="flex-1 flex flex-col justify-center">
+                      {/* Presentation text */}
+                      <div className="text-center mb-4">
+                        <p 
+                          className="text-sm mb-3"
                           style={{ 
-                            fontFamily: "'Playfair Display', Georgia, serif",
-                            color: currentTemplate.primaryText,
-                            fontWeight: 'bold',
-                            letterSpacing: '2px',
-                            textShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                            fontFamily: "'Inter', sans-serif",
+                            color: currentTemplate.secondaryText,
+                            letterSpacing: '1px',
+                            fontSize: '13px',
+                            fontWeight: '400'
                           }}
                         >
-                          {certificateData.internName || 'Name Surname'}
-                        </h2>
+                          This certificate is proudly presented to
+                        </p>
+                      </div>
+
+                      {/* Name Section - Optimized */}
+                      <div className="mb-6">
                         <div 
-                          className="w-48 h-1 mx-auto rounded-full"
+                          className="bg-black bg-opacity-20 rounded-lg p-4 mx-auto max-w-md backdrop-blur-sm"
+                          style={{
+                            border: `1px solid ${currentTemplate.borderColor}60`
+                          }}
+                        >
+                          <h2 
+                            className="text-3xl font-bold text-center"
+                            style={{ 
+                              fontFamily: "'Playfair Display', Georgia, serif",
+                              color: currentTemplate.primaryText,
+                              fontWeight: 'bold',
+                              letterSpacing: '1px',
+                              textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                              fontSize: '36px'
+                            }}
+                          >
+                            {certificateData.internName || 'Name Surname'}
+                          </h2>
+                        </div>
+                        <div 
+                          className="w-32 h-0.5 mx-auto mt-3 rounded-full"
                           style={{ 
-                            background: `linear-gradient(90deg, transparent, ${currentTemplate.borderColor}, transparent)`
+                            background: `linear-gradient(90deg, transparent, ${currentTemplate.lightAccent}, transparent)`
                           }}
                         ></div>
                       </div>
 
-                      {/* Achievement Text */}
-                      <div className="space-y-4 mb-8">
+                      {/* Achievement Text - Reduced size */}
+                      <div className="text-center mb-6">
                         <p 
-                          className="text-lg"
+                          className="text-sm mb-2"
                           style={{ 
-                            fontFamily: "'Cinzel', Georgia, serif",
+                            fontFamily: "'Inter', sans-serif",
                             color: currentTemplate.secondaryText,
-                            letterSpacing: '1px',
-                            lineHeight: '1.6'
+                            letterSpacing: '0.5px',
+                            fontSize: '13px'
                           }}
                         >
-                          For successfully completing the internship program at
+                          for the successful completion of internship program at
                         </p>
                         
                         <h3 
-                          className="text-3xl font-bold"
+                          className="text-2xl font-bold mb-4"
                           style={{ 
                             fontFamily: "'Cinzel', Georgia, serif",
                             color: currentTemplate.titleColor,
                             fontWeight: 'bold',
-                            letterSpacing: '2px',
-                            textShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                            letterSpacing: '1px',
+                            textShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                            fontSize: '24px'
                           }}
                         >
                           SLT Finance India
                         </h3>
                       </div>
 
-                      {/* Details Section */}
+                      {/* Enhanced Details Grid - Compact */}
                       <div 
-                        className="bg-black bg-opacity-20 rounded-lg p-6 mx-8 backdrop-blur-sm"
+                        className="bg-black bg-opacity-25 rounded-xl p-4 mx-6 backdrop-blur-sm"
                         style={{
                           border: `1px solid ${currentTemplate.borderColor}40`
                         }}
                       >
-                        <div className="grid grid-cols-2 gap-8">
+                        <div className="grid grid-cols-3 gap-4 mb-4">
                           <div className="text-center">
                             <p 
-                              className="text-xs font-semibold uppercase tracking-widest mb-2"
+                              className="text-xs font-medium uppercase tracking-wider mb-1"
                               style={{ 
                                 fontFamily: "'Inter', sans-serif",
                                 color: currentTemplate.secondaryText,
-                                opacity: 0.9
+                                opacity: 0.9,
+                                fontSize: '9px'
                               }}
                             >
                               DEPARTMENT
                             </p>
                             <p 
-                              className="text-lg font-bold"
+                              className="text-sm font-bold"
                               style={{ 
-                                fontFamily: "'Cinzel', Georgia, serif",
-                                color: currentTemplate.primaryText
+                                fontFamily: "'Inter', sans-serif",
+                                color: currentTemplate.primaryText,
+                                fontSize: '12px'
                               }}
                             >
                               {certificateData.department || '[Department]'}
@@ -557,20 +629,22 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                           </div>
                           <div className="text-center">
                             <p 
-                              className="text-xs font-semibold uppercase tracking-widest mb-2"
+                              className="text-xs font-medium uppercase tracking-wider mb-1"
                               style={{ 
                                 fontFamily: "'Inter', sans-serif",
                                 color: currentTemplate.secondaryText,
-                                opacity: 0.9
+                                opacity: 0.9,
+                                fontSize: '9px'
                               }}
                             >
-                              EMPLOYEE ID
+                              ID NUMBER
                             </p>
                             <p 
-                              className="text-lg font-bold"
+                              className="text-sm font-bold"
                               style={{ 
-                                fontFamily: "'Cinzel', Georgia, serif",
-                                color: currentTemplate.primaryText
+                                fontFamily: "'Inter', sans-serif",
+                                color: currentTemplate.primaryText,
+                                fontSize: '12px'
                               }}
                             >
                               {certificateData.internId || '[ID]'}
@@ -578,20 +652,22 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                           </div>
                           <div className="text-center">
                             <p 
-                              className="text-xs font-semibold uppercase tracking-widest mb-2"
+                              className="text-xs font-medium uppercase tracking-wider mb-1"
                               style={{ 
                                 fontFamily: "'Inter', sans-serif",
                                 color: currentTemplate.secondaryText,
-                                opacity: 0.9
+                                opacity: 0.9,
+                                fontSize: '9px'
                               }}
                             >
-                              PROGRAM DURATION
+                              DURATION
                             </p>
                             <p 
-                              className="text-lg font-bold"
+                              className="text-sm font-bold"
                               style={{ 
-                                fontFamily: "'Cinzel', Georgia, serif",
-                                color: currentTemplate.primaryText
+                                fontFamily: "'Inter', sans-serif",
+                                color: currentTemplate.primaryText,
+                                fontSize: '12px'
                               }}
                             >
                               {certificateData.startDate && certificateData.endDate 
@@ -600,121 +676,217 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                               }
                             </p>
                           </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-4 mb-4">
                           <div className="text-center">
                             <p 
-                              className="text-xs font-semibold uppercase tracking-widest mb-2"
+                              className="text-xs font-medium uppercase tracking-wider mb-1"
                               style={{ 
                                 fontFamily: "'Inter', sans-serif",
                                 color: currentTemplate.secondaryText,
-                                opacity: 0.9
+                                opacity: 0.9,
+                                fontSize: '9px'
+                              }}
+                            >
+                              TOTAL HOURS
+                            </p>
+                            <p 
+                              className="text-sm font-bold"
+                              style={{ 
+                                fontFamily: "'Inter', sans-serif",
+                                color: currentTemplate.accentColor,
+                                fontSize: '12px'
+                              }}
+                            >
+                              {certificateData.totalHours || '0'} hrs
+                            </p>
+                          </div>
+                          <div className="text-center">
+                            <p 
+                              className="text-xs font-medium uppercase tracking-wider mb-1"
+                              style={{ 
+                                fontFamily: "'Inter', sans-serif",
+                                color: currentTemplate.secondaryText,
+                                opacity: 0.9,
+                                fontSize: '9px'
                               }}
                             >
                               PERFORMANCE
                             </p>
                             <p 
-                              className="text-lg font-bold"
+                              className="text-sm font-bold"
                               style={{ 
-                                fontFamily: "'Cinzel', Georgia, serif",
-                                color: currentTemplate.titleColor
+                                fontFamily: "'Inter', sans-serif",
+                                color: currentTemplate.titleColor,
+                                fontSize: '12px'
                               }}
                             >
                               {certificateData.performance}
                             </p>
                           </div>
+                          <div className="text-center">
+                            <p 
+                              className="text-xs font-medium uppercase tracking-wider mb-1"
+                              style={{ 
+                                fontFamily: "'Inter', sans-serif",
+                                color: currentTemplate.secondaryText,
+                                opacity: 0.9,
+                                fontSize: '9px'
+                              }}
+                            >
+                              TASKS COMPLETED
+                            </p>
+                            <p 
+                              className="text-sm font-bold"
+                              style={{ 
+                                fontFamily: "'Inter', sans-serif",
+                                color: currentTemplate.accentColor,
+                                fontSize: '12px'
+                              }}
+                            >
+                              {certificateData.completedTasks || '0'}
+                            </p>
+                          </div>
                         </div>
-                        
-                        {certificateData.customText && (
+
+                        {/* Skills and Custom Text */}
+                        {(certificateData.skills || certificateData.customText) && (
                           <div 
-                            className="mt-6 pt-4"
+                            className="pt-3"
                             style={{ 
                               borderTop: `1px solid ${currentTemplate.borderColor}40`
                             }}
                           >
-                            <p 
-                              className="text-sm italic text-center"
-                              style={{ 
-                                fontFamily: "'Playfair Display', Georgia, serif",
-                                color: currentTemplate.secondaryText,
-                                fontStyle: 'italic',
-                                lineHeight: '1.6'
-                              }}
-                            >
-                              "{certificateData.customText}"
-                            </p>
+                            {certificateData.skills && (
+                              <div className="mb-2">
+                                <p 
+                                  className="text-xs font-medium mb-1"
+                                  style={{ 
+                                    fontFamily: "'Inter', sans-serif",
+                                    color: currentTemplate.secondaryText,
+                                    fontSize: '9px'
+                                  }}
+                                >
+                                  KEY SKILLS ACQUIRED:
+                                </p>
+                                <p 
+                                  className="text-xs text-center"
+                                  style={{ 
+                                    fontFamily: "'Inter', sans-serif",
+                                    color: currentTemplate.primaryText,
+                                    fontSize: '10px',
+                                    lineHeight: '1.4'
+                                  }}
+                                >
+                                  {certificateData.skills}
+                                </p>
+                              </div>
+                            )}
+                            {certificateData.customText && (
+                              <p 
+                                className="text-xs italic text-center"
+                                style={{ 
+                                  fontFamily: "'Playfair Display', Georgia, serif",
+                                  color: currentTemplate.secondaryText,
+                                  fontStyle: 'italic',
+                                  fontSize: '10px',
+                                  lineHeight: '1.4'
+                                }}
+                              >
+                                "{certificateData.customText}"
+                              </p>
+                            )}
                           </div>
                         )}
                       </div>
                     </div>
 
-                    {/* Footer Section */}
-                    <div className="flex justify-between items-end pb-4">
+                    {/* Footer Section - Compact */}
+                    <div className="flex justify-between items-end mt-6">
                       <div className="text-center">
                         <div 
-                          className="w-40 h-px mb-3"
+                          className="w-32 h-px mb-2"
                           style={{ backgroundColor: currentTemplate.borderColor, opacity: 0.7 }}
                         ></div>
                         <p 
-                          className="text-xs font-semibold uppercase tracking-widest mb-1"
+                          className="text-xs font-medium uppercase tracking-wider mb-1"
                           style={{ 
                             fontFamily: "'Inter', sans-serif",
                             color: currentTemplate.secondaryText,
-                            fontSize: '10px'
+                            fontSize: '8px'
                           }}
                         >
                           DATE
                         </p>
                         <p 
-                          className="text-sm font-bold"
+                          className="text-xs font-bold"
                           style={{ 
-                            fontFamily: "'Cinzel', Georgia, serif",
-                            color: currentTemplate.primaryText
+                            fontFamily: "'Inter', sans-serif",
+                            color: currentTemplate.primaryText,
+                            fontSize: '10px'
                           }}
                         >
-                          {format(new Date(), 'MMMM dd, yyyy')}
+                          {format(new Date(), 'MMM dd, yyyy')}
                         </p>
                       </div>
                       
                       <div className="text-center">
                         <div 
-                          className="w-40 h-px mb-3"
+                          className="w-32 h-px mb-2"
                           style={{ backgroundColor: currentTemplate.borderColor, opacity: 0.7 }}
                         ></div>
                         <p 
-                          className="text-xs font-semibold uppercase tracking-widest mb-1"
+                          className="text-xs font-medium uppercase tracking-wider mb-1"
                           style={{ 
                             fontFamily: "'Inter', sans-serif",
                             color: currentTemplate.secondaryText,
+                            fontSize: '8px'
+                          }}
+                        >
+                          SUPERVISOR
+                        </p>
+                        <p 
+                          className="text-xs font-bold"
+                          style={{ 
+                            fontFamily: "'Inter', sans-serif",
+                            color: currentTemplate.primaryText,
                             fontSize: '10px'
                           }}
                         >
-                          AUTHORIZED SIGNATURE
-                        </p>
-                        <p 
-                          className="text-sm font-bold"
-                          style={{ 
-                            fontFamily: "'Cinzel', Georgia, serif",
-                            color: currentTemplate.primaryText
-                          }}
-                        >
-                          HR Department
+                          {certificateData.supervisor || 'HR Department'}
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Elegant watermark */}
+                  {/* Subtle geometric watermark */}
                   <div 
                     className="absolute inset-0 flex items-center justify-center pointer-events-none"
                     style={{ 
-                      fontSize: '120px',
+                      fontSize: '100px',
                       color: currentTemplate.borderColor,
-                      opacity: 0.08,
+                      opacity: 0.06,
                       fontWeight: 'bold',
                       transform: 'rotate(-45deg)',
                       fontFamily: "'Cinzel', Georgia, serif"
                     }}
                   >
                     SLT
+                  </div>
+
+                  {/* Additional geometric elements */}
+                  <div className="absolute top-4 left-1/2 w-24 h-1 -translate-x-1/2 opacity-30">
+                    <div 
+                      className="w-full h-full rounded-full"
+                      style={{ background: `linear-gradient(90deg, transparent, ${currentTemplate.accentColor}, transparent)` }}
+                    ></div>
+                  </div>
+                  <div className="absolute bottom-4 left-1/2 w-24 h-1 -translate-x-1/2 opacity-30">
+                    <div 
+                      className="w-full h-full rounded-full"
+                      style={{ background: `linear-gradient(90deg, transparent, ${currentTemplate.accentColor}, transparent)` }}
+                    ></div>
                   </div>
                 </div>
               </div>
