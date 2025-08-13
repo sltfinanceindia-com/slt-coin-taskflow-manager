@@ -69,19 +69,56 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
     );
   }
 
+  // Font loading utility
+  const loadFonts = async () => {
+    try {
+      // Load Google Fonts if not already loaded
+      const link = document.createElement('link');
+      link.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap';
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
+
+      // Wait for fonts to load
+      await new Promise(resolve => {
+        if (document.fonts) {
+          document.fonts.ready.then(resolve);
+        } else {
+          setTimeout(resolve, 2000); // Fallback timeout
+        }
+      });
+    } catch (error) {
+      console.warn('Font loading failed, using fallback fonts');
+    }
+  };
+
   const generatePDF = async () => {
     if (!certificateRef.current) return;
 
     setIsGenerating(true);
     try {
+      // Ensure fonts are loaded
+      await loadFonts();
+      
+      // Add a small delay to ensure rendering is complete
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       const canvas = await html2canvas(certificateRef.current, {
-        scale: 2,
+        scale: 3, // Increased scale for better quality
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
+        letterRendering: true,
+        logging: false,
+        onclone: (clonedDoc) => {
+          // Force font styles on cloned document
+          const clonedElement = clonedDoc.querySelector('[data-certificate]');
+          if (clonedElement) {
+            clonedElement.style.fontFamily = 'Georgia, Times, serif';
+          }
+        }
       });
 
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF('landscape', 'mm', 'a4');
       
       const imgWidth = 297; // A4 landscape width
@@ -95,9 +132,10 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
         description: "Certificate has been downloaded successfully.",
       });
     } catch (error) {
+      console.error('PDF Generation Error:', error);
       toast({
         title: "Error Generating Certificate",
-        description: "Failed to generate certificate PDF.",
+        description: "Failed to generate certificate PDF. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -110,25 +148,25 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
       name: 'Formal',
       bgColor: 'bg-gradient-to-br from-blue-50 to-blue-100',
       borderColor: 'border-blue-200',
-      accentColor: 'text-blue-700',
-      primaryText: 'text-slate-800',
-      secondaryText: 'text-slate-600',
+      accentColor: 'text-blue-900',
+      primaryText: 'text-gray-900',
+      secondaryText: 'text-gray-700',
     },
     creative: {
       name: 'Creative',
       bgColor: 'bg-gradient-to-br from-purple-50 to-pink-100',
       borderColor: 'border-purple-200',
-      accentColor: 'text-purple-700',
-      primaryText: 'text-slate-800',
-      secondaryText: 'text-slate-600',
+      accentColor: 'text-purple-900',
+      primaryText: 'text-gray-900',
+      secondaryText: 'text-gray-700',
     },
     minimalist: {
       name: 'Minimalist',
       bgColor: 'bg-white',
       borderColor: 'border-gray-300',
-      accentColor: 'text-gray-800',
-      primaryText: 'text-slate-900',
-      secondaryText: 'text-slate-600',
+      accentColor: 'text-gray-900',
+      primaryText: 'text-black',
+      secondaryText: 'text-gray-800',
     },
   };
 
@@ -275,7 +313,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                   className="h-11 px-6 font-medium"
                 >
                   <Download className="h-4 w-4 mr-2" />
-                  {isGenerating ? 'Generating...' : 'Download Certificate'}
+                  {isGenerating ? 'Generating PDF...' : 'Download Certificate'}
                 </Button>
                 {onClose && (
                   <Button variant="outline" onClick={onClose} className="h-11 px-6 font-medium">
@@ -300,18 +338,30 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
               <div className="overflow-auto bg-slate-50 p-6 rounded-lg border border-border">
                 <div
                   ref={certificateRef}
+                  data-certificate="true"
                   className={`w-[800px] h-[600px] mx-auto p-12 ${currentTemplate.bgColor} ${currentTemplate.borderColor} border-8 relative shadow-lg`}
-                  style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}
+                  style={{ 
+                    fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                    WebkitFontSmoothing: 'antialiased',
+                    MozOsxFontSmoothing: 'grayscale'
+                  }}
                 >
                   {/* Decorative Corner Elements */}
-                  <div className="absolute top-4 left-4 w-12 h-12 border-l-4 border-t-4 border-current opacity-20"></div>
-                  <div className="absolute top-4 right-4 w-12 h-12 border-r-4 border-t-4 border-current opacity-20"></div>
-                  <div className="absolute bottom-4 left-4 w-12 h-12 border-l-4 border-b-4 border-current opacity-20"></div>
-                  <div className="absolute bottom-4 right-4 w-12 h-12 border-r-4 border-b-4 border-current opacity-20"></div>
+                  <div className={`absolute top-4 left-4 w-12 h-12 border-l-4 border-t-4 ${currentTemplate.accentColor.replace('text-', 'border-')} opacity-30`}></div>
+                  <div className={`absolute top-4 right-4 w-12 h-12 border-r-4 border-t-4 ${currentTemplate.accentColor.replace('text-', 'border-')} opacity-30`}></div>
+                  <div className={`absolute bottom-4 left-4 w-12 h-12 border-l-4 border-b-4 ${currentTemplate.accentColor.replace('text-', 'border-')} opacity-30`}></div>
+                  <div className={`absolute bottom-4 right-4 w-12 h-12 border-r-4 border-b-4 ${currentTemplate.accentColor.replace('text-', 'border-')} opacity-30`}></div>
 
                   {/* Header */}
                   <div className="text-center mb-8">
-                    <h1 className={`text-4xl font-bold ${currentTemplate.accentColor} mb-3 tracking-wide`} style={{ fontFamily: "'Playfair Display', serif" }}>
+                    <h1 
+                      className={`text-4xl font-bold ${currentTemplate.accentColor} mb-3 tracking-wide`}
+                      style={{ 
+                        fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                        fontWeight: 'bold',
+                        color: template === 'formal' ? '#1e3a8a' : template === 'creative' ? '#581c87' : '#111827'
+                      }}
+                    >
                       Certificate of Completion
                     </h1>
                     <div className={`w-32 h-1 ${currentTemplate.accentColor.replace('text-', 'bg-')} mx-auto opacity-60 rounded-full`}></div>
@@ -320,44 +370,119 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
 
                   {/* Content */}
                   <div className="text-center space-y-6">
-                    <p className={`text-lg ${currentTemplate.secondaryText} font-medium tracking-wide`} style={{ fontFamily: "'Inter', sans-serif" }}>
+                    <p 
+                      className={`text-lg font-medium tracking-wide`}
+                      style={{ 
+                        fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                        color: '#374151',
+                        fontWeight: '500'
+                      }}
+                    >
                       This is to certify that
                     </p>
                     
-                    <h2 className={`text-3xl font-bold ${currentTemplate.primaryText} border-b-3 border-current pb-3 inline-block tracking-wide`} style={{ fontFamily: "'Playfair Display', serif" }}>
+                    <h2 
+                      className={`text-3xl font-bold border-b-3 border-current pb-3 inline-block tracking-wide`}
+                      style={{ 
+                        fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                        fontWeight: 'bold',
+                        color: '#111827',
+                        borderBottomWidth: '3px',
+                        borderBottomColor: '#111827'
+                      }}
+                    >
                       {certificateData.internName || '[Intern Name]'}
                     </h2>
                     
-                    <p className={`text-lg ${currentTemplate.secondaryText} font-medium leading-relaxed`} style={{ fontFamily: "'Inter', sans-serif" }}>
+                    <p 
+                      className={`text-lg font-medium leading-relaxed`}
+                      style={{ 
+                        fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                        color: '#374151',
+                        fontWeight: '500'
+                      }}
+                    >
                       has successfully completed the internship program at
                     </p>
                     
-                    <h3 className={`text-2xl font-bold ${currentTemplate.accentColor} tracking-wide`} style={{ fontFamily: "'Playfair Display', serif" }}>
+                    <h3 
+                      className={`text-2xl font-bold tracking-wide`}
+                      style={{ 
+                        fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                        fontWeight: 'bold',
+                        color: template === 'formal' ? '#1e3a8a' : template === 'creative' ? '#581c87' : '#111827'
+                      }}
+                    >
                       SLT Finance India
                     </h3>
                     
                     <div className="grid grid-cols-2 gap-8 my-8 text-sm px-8">
                       <div className="text-left">
-                        <p className={`${currentTemplate.secondaryText} font-medium uppercase tracking-wider text-xs mb-1`} style={{ fontFamily: "'Inter', sans-serif" }}>
+                        <p 
+                          className="font-medium uppercase tracking-wider text-xs mb-1"
+                          style={{ 
+                            fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                            color: '#6b7280',
+                            fontSize: '11px',
+                            fontWeight: '600'
+                          }}
+                        >
                           Department:
                         </p>
-                        <p className={`font-semibold text-base ${currentTemplate.primaryText}`} style={{ fontFamily: "'Inter', sans-serif" }}>
+                        <p 
+                          className="font-semibold text-base"
+                          style={{ 
+                            fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                            color: '#111827',
+                            fontWeight: 'bold'
+                          }}
+                        >
                           {certificateData.department || '[Department]'}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className={`${currentTemplate.secondaryText} font-medium uppercase tracking-wider text-xs mb-1`} style={{ fontFamily: "'Inter', sans-serif" }}>
+                        <p 
+                          className="font-medium uppercase tracking-wider text-xs mb-1"
+                          style={{ 
+                            fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                            color: '#6b7280',
+                            fontSize: '11px',
+                            fontWeight: '600'
+                          }}
+                        >
                           Employee ID:
                         </p>
-                        <p className={`font-semibold text-base ${currentTemplate.primaryText}`} style={{ fontFamily: "'Inter', sans-serif" }}>
+                        <p 
+                          className="font-semibold text-base"
+                          style={{ 
+                            fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                            color: '#111827',
+                            fontWeight: 'bold'
+                          }}
+                        >
                           {certificateData.internId || '[ID]'}
                         </p>
                       </div>
                       <div className="text-left">
-                        <p className={`${currentTemplate.secondaryText} font-medium uppercase tracking-wider text-xs mb-1`} style={{ fontFamily: "'Inter', sans-serif" }}>
+                        <p 
+                          className="font-medium uppercase tracking-wider text-xs mb-1"
+                          style={{ 
+                            fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                            color: '#6b7280',
+                            fontSize: '11px',
+                            fontWeight: '600'
+                          }}
+                        >
                           Program Duration:
                         </p>
-                        <p className={`font-semibold text-base ${currentTemplate.primaryText}`} style={{ fontFamily: "'Inter', sans-serif" }}>
+                        <p 
+                          className="font-semibold text-base"
+                          style={{ 
+                            fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                            color: '#111827',
+                            fontWeight: 'bold'
+                          }}
+                        >
                           {certificateData.startDate && certificateData.endDate 
                             ? `${format(new Date(certificateData.startDate), 'MMM dd, yyyy')} - ${format(new Date(certificateData.endDate), 'MMM dd, yyyy')}`
                             : '[Duration]'
@@ -365,18 +490,41 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className={`${currentTemplate.secondaryText} font-medium uppercase tracking-wider text-xs mb-1`} style={{ fontFamily: "'Inter', sans-serif" }}>
+                        <p 
+                          className="font-medium uppercase tracking-wider text-xs mb-1"
+                          style={{ 
+                            fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                            color: '#6b7280',
+                            fontSize: '11px',
+                            fontWeight: '600'
+                          }}
+                        >
                           Performance Rating:
                         </p>
-                        <p className={`font-semibold text-base ${currentTemplate.accentColor}`} style={{ fontFamily: "'Inter', sans-serif" }}>
+                        <p 
+                          className="font-semibold text-base"
+                          style={{ 
+                            fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                            fontWeight: 'bold',
+                            color: template === 'formal' ? '#1e3a8a' : template === 'creative' ? '#581c87' : '#111827'
+                          }}
+                        >
                           {certificateData.performance}
                         </p>
                       </div>
                     </div>
                     
                     {certificateData.customText && (
-                      <div className="border-t border-current border-opacity-20 pt-6 mx-8">
-                        <p className={`text-sm ${currentTemplate.secondaryText} italic leading-relaxed font-medium`} style={{ fontFamily: "'Inter', sans-serif" }}>
+                      <div className="border-t border-gray-300 pt-6 mx-8">
+                        <p 
+                          className="text-sm italic leading-relaxed font-medium"
+                          style={{ 
+                            fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                            color: '#374151',
+                            fontStyle: 'italic',
+                            fontWeight: '500'
+                          }}
+                        >
                           {certificateData.customText}
                         </p>
                       </div>
@@ -387,20 +535,50 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                   <div className="absolute bottom-12 left-12 right-12">
                     <div className="flex justify-between items-end">
                       <div className="text-center">
-                        <div className={`w-32 border-b-2 ${currentTemplate.primaryText} border-opacity-40 mb-3`}></div>
-                        <p className={`text-xs ${currentTemplate.secondaryText} font-medium uppercase tracking-wider mb-1`} style={{ fontFamily: "'Inter', sans-serif" }}>
+                        <div className="w-32 border-b-2 border-gray-800 mb-3"></div>
+                        <p 
+                          className="text-xs font-medium uppercase tracking-wider mb-1"
+                          style={{ 
+                            fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                            color: '#6b7280',
+                            fontSize: '11px',
+                            fontWeight: '600'
+                          }}
+                        >
                           Issue Date
                         </p>
-                        <p className={`text-sm font-semibold ${currentTemplate.primaryText}`} style={{ fontFamily: "'Inter', sans-serif" }}>
+                        <p 
+                          className="text-sm font-semibold"
+                          style={{ 
+                            fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                            color: '#111827',
+                            fontWeight: 'bold'
+                          }}
+                        >
                           {format(new Date(), 'MMMM dd, yyyy')}
                         </p>
                       </div>
                       <div className="text-center">
-                        <div className={`w-32 border-b-2 ${currentTemplate.primaryText} border-opacity-40 mb-3`}></div>
-                        <p className={`text-xs ${currentTemplate.secondaryText} font-medium uppercase tracking-wider mb-1`} style={{ fontFamily: "'Inter', sans-serif" }}>
+                        <div className="w-32 border-b-2 border-gray-800 mb-3"></div>
+                        <p 
+                          className="text-xs font-medium uppercase tracking-wider mb-1"
+                          style={{ 
+                            fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                            color: '#6b7280',
+                            fontSize: '11px',
+                            fontWeight: '600'
+                          }}
+                        >
                           Authorized Signature
                         </p>
-                        <p className={`text-sm font-semibold ${currentTemplate.primaryText}`} style={{ fontFamily: "'Inter', sans-serif" }}>
+                        <p 
+                          className="text-sm font-semibold"
+                          style={{ 
+                            fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                            color: '#111827',
+                            fontWeight: 'bold'
+                          }}
+                        >
                           HR Department
                         </p>
                       </div>
@@ -408,8 +586,15 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                   </div>
 
                   {/* Watermark */}
-                  <div className={`absolute inset-0 flex items-center justify-center pointer-events-none`}>
-                    <div className={`text-6xl ${currentTemplate.accentColor} opacity-5 font-bold transform rotate-12`} style={{ fontFamily: "'Playfair Display', serif" }}>
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div 
+                      className="text-6xl opacity-5 font-bold transform rotate-12"
+                      style={{ 
+                        fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                        color: template === 'formal' ? '#1e3a8a' : template === 'creative' ? '#581c87' : '#111827',
+                        fontWeight: 'bold'
+                      }}
+                    >
                       SLT FINANCE
                     </div>
                   </div>
