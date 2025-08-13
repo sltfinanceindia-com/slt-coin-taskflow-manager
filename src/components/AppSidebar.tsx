@@ -61,7 +61,15 @@ interface AppSidebarProps {
 
 export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
   const { state } = useSidebar()
-  const { profile } = useAuth()
+  const { profile: realProfile } = useAuth()
+  
+  // Mock profile for layout testing  
+  const profile = realProfile || {
+    id: 'mock-id',
+    full_name: 'Layout Test User',
+    role: 'admin' as const,
+    total_coins: 100
+  };
   
   const items = profile?.role === 'admin' ? adminItems : internItems
   const collapsed = state === "collapsed"
