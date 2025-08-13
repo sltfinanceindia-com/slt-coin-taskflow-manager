@@ -34,7 +34,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
   const { profile } = useAuth();
   const certificateRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [template, setTemplate] = useState('formal');
+  const [template, setTemplate] = useState('elegant');
   const [certificateData, setCertificateData] = useState<CertificateData>({
     internName: internData?.full_name || '',
     internId: internData?.employee_id || '',
@@ -71,7 +71,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
   const loadFonts = async () => {
     try {
       const link = document.createElement('link');
-      link.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap';
+      link.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap';
       link.rel = 'stylesheet';
       document.head.appendChild(link);
 
@@ -130,29 +130,32 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
   };
 
   const templates = {
-    formal: {
-      name: 'Professional Gray-Green',
-      bgGradient: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 25%, #a8b5a5 50%, #7d8471 75%, #5e6b5a 100%)',
-      accentColor: '#2d5016',
-      primaryText: '#1a1a1a',
-      secondaryText: '#4a5568',
-      titleColor: '#2d5016',
+    elegant: {
+      name: 'Elegant Professional',
+      bgGradient: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 30%, #0f3460 60%, #533a7b 100%)',
+      accentColor: '#d4af37',
+      primaryText: '#ffffff',
+      secondaryText: '#e8e8e8',
+      titleColor: '#d4af37',
+      borderColor: '#d4af37',
     },
-    creative: {
-      name: 'Modern Gray-Green',
-      bgGradient: 'linear-gradient(45deg, #e8f4f8 0%, #d4e7dd 30%, #a8c8a8 60%, #6b8e6b 85%, #4a6741 100%)',
-      accentColor: '#1a4d2e',
-      primaryText: '#2d3748',
-      secondaryText: '#4a5568',
-      titleColor: '#1a4d2e',
+    royal: {
+      name: 'Royal Blue',
+      bgGradient: 'linear-gradient(135deg, #0c1426 0%, #1e3a5f 30%, #2a5298 60%, #3b82c4 100%)',
+      accentColor: '#ffd700',
+      primaryText: '#ffffff',
+      secondaryText: '#e1e8f0',
+      titleColor: '#ffd700',
+      borderColor: '#ffd700',
     },
-    minimalist: {
-      name: 'Elegant Gray-Green',
-      bgGradient: 'linear-gradient(180deg, #f8f9fa 0%, #e9ecef 20%, #c5d3c5 40%, #9db09d 70%, #6c7b6c 100%)',
-      accentColor: '#2c5530',
-      primaryText: '#212529',
-      secondaryText: '#495057',
-      titleColor: '#2c5530',
+    classic: {
+      name: 'Classic Navy',
+      bgGradient: 'linear-gradient(135deg, #1a202c 0%, #2d3748 30%, #4a5568 60%, #718096 100%)',
+      accentColor: '#e6b800',
+      primaryText: '#ffffff',
+      secondaryText: '#e2e8f0',
+      titleColor: '#e6b800',
+      borderColor: '#e6b800',
     },
   };
 
@@ -166,13 +169,13 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
           <Card className="border border-border shadow-sm">
             <CardHeader className="px-6 py-6 border-b border-border">
               <CardTitle className="flex items-center gap-3 text-xl font-semibold text-foreground">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-gray-100 to-green-100 flex items-center justify-center">
-                  <Award className="h-4 w-4 text-green-600" />
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-yellow-100 to-yellow-200 flex items-center justify-center">
+                  <Award className="h-4 w-4 text-yellow-600" />
                 </div>
-                Advanced Certificate Generator
+                Professional Certificate Generator
               </CardTitle>
               <CardDescription className="text-base text-muted-foreground mt-2">
-                Generate professional completion certificates with beautiful gradient designs
+                Generate elegant completion certificates with professional design
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6 space-y-8">
@@ -278,30 +281,25 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                 </div>
               </div>
 
-              {/* Custom Text Section */}
               <div className="space-y-3">
                 <Label htmlFor="customText" className="text-sm font-medium text-foreground">
-                  Custom Message (Optional)
+                  Custom Recognition Message (Optional)
                 </Label>
                 <Textarea
                   id="customText"
-                  placeholder="Add a personal message, additional achievements, or special recognitions..."
+                  placeholder="Add a special recognition message or achievement note..."
                   value={certificateData.customText}
                   onChange={(e) => setCertificateData(prev => ({ ...prev, customText: e.target.value }))}
                   rows={4}
                   className="resize-none"
                 />
-                <p className="text-xs text-muted-foreground">
-                  This message will appear on the certificate as additional recognition.
-                </p>
               </div>
 
-              {/* Action Buttons */}
               <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-border">
                 <Button 
                   onClick={generatePDF} 
                   disabled={isGenerating || !certificateData.internName}
-                  className="h-11 px-6 font-medium bg-gradient-to-r from-gray-600 to-green-600 hover:from-gray-700 hover:to-green-700"
+                  className="h-11 px-6 font-medium bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600"
                 >
                   <Download className="h-4 w-4 mr-2" />
                   {isGenerating ? 'Generating PDF...' : 'Download Certificate'}
@@ -319,8 +317,8 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
           <Card className="border border-border shadow-sm">
             <CardHeader className="px-6 py-6 border-b border-border">
               <CardTitle className="flex items-center gap-3 text-xl font-semibold text-foreground">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-gray-100 to-green-100 flex items-center justify-center">
-                  <FileText className="h-4 w-4 text-green-600" />
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-yellow-100 to-yellow-200 flex items-center justify-center">
+                  <FileText className="h-4 w-4 text-yellow-600" />
                 </div>
                 Certificate Preview
               </CardTitle>
@@ -329,361 +327,362 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
               <div className="overflow-auto bg-slate-50 p-6 rounded-lg border border-border">
                 <div
                   ref={certificateRef}
-                  className="w-[800px] h-[600px] mx-auto relative shadow-2xl rounded-xl overflow-hidden"
+                  className="w-[800px] h-[600px] mx-auto relative shadow-2xl rounded-lg overflow-hidden"
                   style={{ 
                     background: currentTemplate.bgGradient,
-                    fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                    fontFamily: "'Cinzel', 'Playfair Display', Georgia, serif",
                     WebkitFontSmoothing: 'antialiased',
                     MozOsxFontSmoothing: 'grayscale'
                   }}
                 >
-                  {/* Elegant Border Frame with Gradient */}
-                  <div 
-                    className="absolute inset-4 rounded-lg border-2"
-                    style={{ 
-                      borderImage: `linear-gradient(45deg, ${currentTemplate.accentColor}40, ${currentTemplate.accentColor}80, ${currentTemplate.accentColor}40) 1`,
-                      borderStyle: 'solid'
-                    }}
-                  ></div>
-                  
-                  {/* Inner decorative border */}
-                  <div 
-                    className="absolute inset-8 rounded-lg border"
-                    style={{ 
-                      borderColor: currentTemplate.accentColor,
-                      opacity: 0.3
-                    }}
-                  ></div>
-
-                  {/* Decorative corner elements with gradients */}
-                  <div className="absolute top-6 left-6 w-16 h-16 opacity-20">
+                  {/* Decorative Border Frame - Inspired by the reference */}
+                  <div className="absolute inset-0 p-6">
                     <div 
-                      className="w-full h-full rounded-full"
-                      style={{
-                        background: `radial-gradient(circle, ${currentTemplate.accentColor}60, transparent 70%)`
+                      className="w-full h-full border-4 rounded-lg relative"
+                      style={{ 
+                        borderColor: currentTemplate.borderColor,
+                        borderStyle: 'solid'
                       }}
-                    ></div>
-                  </div>
-                  <div className="absolute top-6 right-6 w-16 h-16 opacity-20">
-                    <div 
-                      className="w-full h-full rounded-full"
-                      style={{
-                        background: `radial-gradient(circle, ${currentTemplate.accentColor}60, transparent 70%)`
-                      }}
-                    ></div>
-                  </div>
-                  <div className="absolute bottom-6 left-6 w-16 h-16 opacity-20">
-                    <div 
-                      className="w-full h-full rounded-full"
-                      style={{
-                        background: `radial-gradient(circle, ${currentTemplate.accentColor}60, transparent 70%)`
-                      }}
-                    ></div>
-                  </div>
-                  <div className="absolute bottom-6 right-6 w-16 h-16 opacity-20">
-                    <div 
-                      className="w-full h-full rounded-full"
-                      style={{
-                        background: `radial-gradient(circle, ${currentTemplate.accentColor}60, transparent 70%)`
-                      }}
-                    ></div>
-                  </div>
-
-                  {/* Certificate Content Container */}
-                  <div className="absolute inset-0 flex flex-col justify-between p-12">
-                    
-                    {/* Header Section - Enhanced with gradient text */}
-                    <div className="flex-shrink-0 text-center pt-6">
-                      <h1 
-                        className="text-4xl font-bold mb-4 tracking-wide"
-                        style={{ 
-                          fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                          background: `linear-gradient(45deg, ${currentTemplate.titleColor}, ${currentTemplate.accentColor})`,
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
-                          backgroundClip: 'text',
-                          fontWeight: 'bold',
-                          letterSpacing: '3px',
-                          lineHeight: '1.2',
-                          textShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                        }}
-                      >
-                        CERTIFICATE OF COMPLETION
-                      </h1>
-                      
-                      {/* Enhanced decorative lines with gradients */}
-                      <div className="flex justify-center items-center gap-4 mb-2">
+                    >
+                      {/* Corner decorative elements */}
+                      <div className="absolute -top-2 -left-2 w-12 h-12">
                         <div 
-                          className="w-16 h-1 rounded-full"
-                          style={{ 
-                            background: `linear-gradient(90deg, transparent, ${currentTemplate.accentColor}, transparent)`
+                          className="w-full h-full border-t-4 border-l-4 rounded-tl-lg"
+                          style={{ borderColor: currentTemplate.borderColor }}
+                        ></div>
+                        <div 
+                          className="absolute top-1 left-1 w-8 h-8 border-t-2 border-l-2 rounded-tl-lg"
+                          style={{ borderColor: currentTemplate.borderColor, opacity: 0.6 }}
+                        ></div>
+                      </div>
+                      <div className="absolute -top-2 -right-2 w-12 h-12">
+                        <div 
+                          className="w-full h-full border-t-4 border-r-4 rounded-tr-lg"
+                          style={{ borderColor: currentTemplate.borderColor }}
+                        ></div>
+                        <div 
+                          className="absolute top-1 right-1 w-8 h-8 border-t-2 border-r-2 rounded-tr-lg"
+                          style={{ borderColor: currentTemplate.borderColor, opacity: 0.6 }}
+                        ></div>
+                      </div>
+                      <div className="absolute -bottom-2 -left-2 w-12 h-12">
+                        <div 
+                          className="w-full h-full border-b-4 border-l-4 rounded-bl-lg"
+                          style={{ borderColor: currentTemplate.borderColor }}
+                        ></div>
+                        <div 
+                          className="absolute bottom-1 left-1 w-8 h-8 border-b-2 border-l-2 rounded-bl-lg"
+                          style={{ borderColor: currentTemplate.borderColor, opacity: 0.6 }}
+                        ></div>
+                      </div>
+                      <div className="absolute -bottom-2 -right-2 w-12 h-12">
+                        <div 
+                          className="w-full h-full border-b-4 border-r-4 rounded-br-lg"
+                          style={{ borderColor: currentTemplate.borderColor }}
+                        ></div>
+                        <div 
+                          className="absolute bottom-1 right-1 w-8 h-8 border-b-2 border-r-2 rounded-br-lg"
+                          style={{ borderColor: currentTemplate.borderColor, opacity: 0.6 }}
+                        ></div>
+                      </div>
+
+                      {/* Ornate corner flourishes */}
+                      <div className="absolute top-4 left-4 w-16 h-16">
+                        <div 
+                          className="w-full h-full opacity-30"
+                          style={{
+                            background: `radial-gradient(circle, ${currentTemplate.borderColor}80, transparent 60%)`,
+                            clipPath: 'polygon(0 0, 100% 0, 0 100%)'
                           }}
                         ></div>
+                      </div>
+                      <div className="absolute top-4 right-4 w-16 h-16">
                         <div 
-                          className="w-8 h-2 rounded-full"
-                          style={{ backgroundColor: currentTemplate.accentColor, opacity: 0.8 }}
+                          className="w-full h-full opacity-30"
+                          style={{
+                            background: `radial-gradient(circle, ${currentTemplate.borderColor}80, transparent 60%)`,
+                            clipPath: 'polygon(100% 0, 100% 100%, 0 0)'
+                          }}
                         ></div>
+                      </div>
+                      <div className="absolute bottom-4 left-4 w-16 h-16">
                         <div 
-                          className="w-16 h-1 rounded-full"
-                          style={{ 
-                            background: `linear-gradient(90deg, transparent, ${currentTemplate.accentColor}, transparent)`
+                          className="w-full h-full opacity-30"
+                          style={{
+                            background: `radial-gradient(circle, ${currentTemplate.borderColor}80, transparent 60%)`,
+                            clipPath: 'polygon(0 0, 100% 100%, 0 100%)'
+                          }}
+                        ></div>
+                      </div>
+                      <div className="absolute bottom-4 right-4 w-16 h-16">
+                        <div 
+                          className="w-full h-full opacity-30"
+                          style={{
+                            background: `radial-gradient(circle, ${currentTemplate.borderColor}80, transparent 60%)`,
+                            clipPath: 'polygon(100% 0, 100% 100%, 0 100%)'
                           }}
                         ></div>
                       </div>
                     </div>
+                  </div>
 
-                    {/* Main Content - Enhanced styling */}
+                  {/* Certificate Content */}
+                  <div className="absolute inset-0 flex flex-col justify-between p-16">
+                    
+                    {/* Header Section */}
+                    <div className="text-center pt-6">
+                      <h1 
+                        className="text-4xl font-bold mb-4 tracking-widest"
+                        style={{ 
+                          fontFamily: "'Cinzel', 'Playfair Display', Georgia, serif",
+                          color: currentTemplate.titleColor,
+                          fontWeight: 'bold',
+                          letterSpacing: '4px',
+                          textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                          lineHeight: '1.2'
+                        }}
+                      >
+                        CERTIFICATE OF ACHIEVEMENT
+                      </h1>
+                      
+                      {/* Decorative divider */}
+                      <div className="flex items-center justify-center gap-4 mb-4">
+                        <div 
+                          className="w-20 h-px"
+                          style={{ backgroundColor: currentTemplate.borderColor, opacity: 0.8 }}
+                        ></div>
+                        <div 
+                          className="w-3 h-3 rounded-full border-2"
+                          style={{ borderColor: currentTemplate.borderColor }}
+                        ></div>
+                        <div 
+                          className="w-20 h-px"
+                          style={{ backgroundColor: currentTemplate.borderColor, opacity: 0.8 }}
+                        ></div>
+                      </div>
+
+                      <p 
+                        className="text-base tracking-wider mb-6"
+                        style={{ 
+                          fontFamily: "'Cinzel', Georgia, serif",
+                          color: currentTemplate.secondaryText,
+                          letterSpacing: '3px',
+                          fontSize: '14px'
+                        }}
+                      >
+                        THIS CERTIFICATE IS PROUDLY PRESENTED TO
+                      </p>
+                    </div>
+
+                    {/* Main Content */}
                     <div className="flex-1 flex flex-col justify-center text-center">
-                      <div className="space-y-8">
-                        <p 
-                          className="text-lg font-medium"
+                      {/* Name Section */}
+                      <div className="mb-8">
+                        <h2 
+                          className="text-5xl font-bold mb-4"
                           style={{ 
-                            fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                            color: currentTemplate.secondaryText,
-                            fontSize: '18px',
-                            letterSpacing: '1px'
+                            fontFamily: "'Playfair Display', Georgia, serif",
+                            color: currentTemplate.primaryText,
+                            fontWeight: 'bold',
+                            letterSpacing: '2px',
+                            textShadow: '0 2px 8px rgba(0,0,0,0.3)'
                           }}
                         >
-                          This is to certify that
-                        </p>
-                        
-                        {/* Name section with enhanced styling */}
-                        <div className="my-10">
-                          <div 
-                            className="inline-block px-8 py-4 rounded-lg"
-                            style={{
-                              background: `linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.6))`,
-                              backdropFilter: 'blur(10px)',
-                              boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
-                            }}
-                          >
-                            <h2 
-                              className="text-4xl font-bold"
-                              style={{ 
-                                fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                                color: currentTemplate.primaryText,
-                                fontWeight: 'bold',
-                                letterSpacing: '2px',
-                                textShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                              }}
-                            >
-                              {certificateData.internName || 'Gopi Komirisetti'}
-                            </h2>
-                            <div 
-                              className="w-32 h-1 mx-auto mt-3 rounded-full"
-                              style={{ 
-                                background: `linear-gradient(90deg, ${currentTemplate.accentColor}, ${currentTemplate.titleColor})`
-                              }}
-                            ></div>
-                          </div>
-                        </div>
-                        
-                        <p 
-                          className="text-lg font-medium"
+                          {certificateData.internName || 'Name Surname'}
+                        </h2>
+                        <div 
+                          className="w-48 h-1 mx-auto rounded-full"
                           style={{ 
-                            fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                            background: `linear-gradient(90deg, transparent, ${currentTemplate.borderColor}, transparent)`
+                          }}
+                        ></div>
+                      </div>
+
+                      {/* Achievement Text */}
+                      <div className="space-y-4 mb-8">
+                        <p 
+                          className="text-lg"
+                          style={{ 
+                            fontFamily: "'Cinzel', Georgia, serif",
                             color: currentTemplate.secondaryText,
-                            fontSize: '18px',
-                            letterSpacing: '1px'
+                            letterSpacing: '1px',
+                            lineHeight: '1.6'
                           }}
                         >
-                          has successfully completed the internship program at
+                          For successfully completing the internship program at
                         </p>
                         
                         <h3 
-                          className="text-3xl font-bold mb-8"
+                          className="text-3xl font-bold"
                           style={{ 
-                            fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                            background: `linear-gradient(45deg, ${currentTemplate.titleColor}, ${currentTemplate.accentColor})`,
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            backgroundClip: 'text',
+                            fontFamily: "'Cinzel', Georgia, serif",
+                            color: currentTemplate.titleColor,
                             fontWeight: 'bold',
                             letterSpacing: '2px',
-                            textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                            textShadow: '0 2px 4px rgba(0,0,0,0.2)'
                           }}
                         >
                           SLT Finance India
                         </h3>
+                      </div>
 
-                        {/* Information Grid - Enhanced with gradient background */}
-                        <div 
-                          className="rounded-xl p-6 mx-auto max-w-lg"
-                          style={{
-                            background: `linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7))`,
-                            backdropFilter: 'blur(15px)',
-                            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-                            border: `1px solid ${currentTemplate.accentColor}20`
-                          }}
-                        >
-                          <div className="grid grid-cols-2 gap-6">
-                            <div className="text-center">
-                              <p 
-                                className="text-xs font-semibold uppercase tracking-widest mb-2"
-                                style={{ 
-                                  fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                                  color: currentTemplate.secondaryText,
-                                  fontSize: '11px',
-                                  opacity: 0.8
-                                }}
-                              >
-                                DEPARTMENT
-                              </p>
-                              <p 
-                                className="text-base font-bold"
-                                style={{ 
-                                  fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                                  color: currentTemplate.primaryText,
-                                  fontWeight: 'bold'
-                                }}
-                              >
-                                {certificateData.department || '[Department]'}
-                              </p>
-                            </div>
-                            <div className="text-center">
-                              <p 
-                                className="text-xs font-semibold uppercase tracking-widest mb-2"
-                                style={{ 
-                                  fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                                  color: currentTemplate.secondaryText,
-                                  fontSize: '11px',
-                                  opacity: 0.8
-                                }}
-                              >
-                                EMPLOYEE ID
-                              </p>
-                              <p 
-                                className="text-base font-bold"
-                                style={{ 
-                                  fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                                  color: currentTemplate.primaryText,
-                                  fontWeight: 'bold'
-                                }}
-                              >
-                                {certificateData.internId || '[ID]'}
-                              </p>
-                            </div>
-                            <div className="text-center">
-                              <p 
-                                className="text-xs font-semibold uppercase tracking-widest mb-2"
-                                style={{ 
-                                  fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                                  color: currentTemplate.secondaryText,
-                                  fontSize: '11px',
-                                  opacity: 0.8
-                                }}
-                              >
-                                DURATION
-                              </p>
-                              <p 
-                                className="text-base font-bold"
-                                style={{ 
-                                  fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                                  color: currentTemplate.primaryText,
-                                  fontWeight: 'bold'
-                                }}
-                              >
-                                {certificateData.startDate && certificateData.endDate 
-                                  ? `${format(new Date(certificateData.startDate), 'MMM yyyy')} - ${format(new Date(certificateData.endDate), 'MMM yyyy')}`
-                                  : '[Duration]'
-                                }
-                              </p>
-                            </div>
-                            <div className="text-center">
-                              <p 
-                                className="text-xs font-semibold uppercase tracking-widest mb-2"
-                                style={{ 
-                                  fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                                  color: currentTemplate.secondaryText,
-                                  fontSize: '11px',
-                                  opacity: 0.8
-                                }}
-                              >
-                                PERFORMANCE
-                              </p>
-                              <p 
-                                className="text-base font-bold"
-                                style={{ 
-                                  fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                                  color: currentTemplate.accentColor,
-                                  fontWeight: 'bold'
-                                }}
-                              >
-                                {certificateData.performance}
-                              </p>
-                            </div>
-                          </div>
-                          
-                          {/* Custom text section with enhanced styling */}
-                          {certificateData.customText && (
-                            <div 
-                              className="mt-6 pt-4"
+                      {/* Details Section */}
+                      <div 
+                        className="bg-black bg-opacity-20 rounded-lg p-6 mx-8 backdrop-blur-sm"
+                        style={{
+                          border: `1px solid ${currentTemplate.borderColor}40`
+                        }}
+                      >
+                        <div className="grid grid-cols-2 gap-8">
+                          <div className="text-center">
+                            <p 
+                              className="text-xs font-semibold uppercase tracking-widest mb-2"
                               style={{ 
-                                borderTop: `1px solid ${currentTemplate.accentColor}40`
+                                fontFamily: "'Inter', sans-serif",
+                                color: currentTemplate.secondaryText,
+                                opacity: 0.9
                               }}
                             >
-                              <p 
-                                className="text-sm italic text-center"
-                                style={{ 
-                                  fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                                  color: currentTemplate.secondaryText,
-                                  fontStyle: 'italic',
-                                  lineHeight: '1.6',
-                                  fontSize: '14px'
-                                }}
-                              >
-                                "{certificateData.customText}"
-                              </p>
-                            </div>
-                          )}
+                              DEPARTMENT
+                            </p>
+                            <p 
+                              className="text-lg font-bold"
+                              style={{ 
+                                fontFamily: "'Cinzel', Georgia, serif",
+                                color: currentTemplate.primaryText
+                              }}
+                            >
+                              {certificateData.department || '[Department]'}
+                            </p>
+                          </div>
+                          <div className="text-center">
+                            <p 
+                              className="text-xs font-semibold uppercase tracking-widest mb-2"
+                              style={{ 
+                                fontFamily: "'Inter', sans-serif",
+                                color: currentTemplate.secondaryText,
+                                opacity: 0.9
+                              }}
+                            >
+                              EMPLOYEE ID
+                            </p>
+                            <p 
+                              className="text-lg font-bold"
+                              style={{ 
+                                fontFamily: "'Cinzel', Georgia, serif",
+                                color: currentTemplate.primaryText
+                              }}
+                            >
+                              {certificateData.internId || '[ID]'}
+                            </p>
+                          </div>
+                          <div className="text-center">
+                            <p 
+                              className="text-xs font-semibold uppercase tracking-widest mb-2"
+                              style={{ 
+                                fontFamily: "'Inter', sans-serif",
+                                color: currentTemplate.secondaryText,
+                                opacity: 0.9
+                              }}
+                            >
+                              PROGRAM DURATION
+                            </p>
+                            <p 
+                              className="text-lg font-bold"
+                              style={{ 
+                                fontFamily: "'Cinzel', Georgia, serif",
+                                color: currentTemplate.primaryText
+                              }}
+                            >
+                              {certificateData.startDate && certificateData.endDate 
+                                ? `${format(new Date(certificateData.startDate), 'MMM yyyy')} - ${format(new Date(certificateData.endDate), 'MMM yyyy')}`
+                                : '[Duration]'
+                              }
+                            </p>
+                          </div>
+                          <div className="text-center">
+                            <p 
+                              className="text-xs font-semibold uppercase tracking-widest mb-2"
+                              style={{ 
+                                fontFamily: "'Inter', sans-serif",
+                                color: currentTemplate.secondaryText,
+                                opacity: 0.9
+                              }}
+                            >
+                              PERFORMANCE
+                            </p>
+                            <p 
+                              className="text-lg font-bold"
+                              style={{ 
+                                fontFamily: "'Cinzel', Georgia, serif",
+                                color: currentTemplate.titleColor
+                              }}
+                            >
+                              {certificateData.performance}
+                            </p>
+                          </div>
                         </div>
+                        
+                        {certificateData.customText && (
+                          <div 
+                            className="mt-6 pt-4"
+                            style={{ 
+                              borderTop: `1px solid ${currentTemplate.borderColor}40`
+                            }}
+                          >
+                            <p 
+                              className="text-sm italic text-center"
+                              style={{ 
+                                fontFamily: "'Playfair Display', Georgia, serif",
+                                color: currentTemplate.secondaryText,
+                                fontStyle: 'italic',
+                                lineHeight: '1.6'
+                              }}
+                            >
+                              "{certificateData.customText}"
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
 
-                    {/* Footer Section - Enhanced with gradient elements */}
-                    <div className="flex-shrink-0 flex justify-between items-end pb-6">
-                      <div className="text-center flex-1">
+                    {/* Footer Section */}
+                    <div className="flex justify-between items-end pb-4">
+                      <div className="text-center">
                         <div 
-                          className="w-36 h-0.5 mb-3 mx-auto rounded-full"
-                          style={{ 
-                            background: `linear-gradient(90deg, transparent, ${currentTemplate.primaryText}, transparent)`,
-                            opacity: 0.6
-                          }}
+                          className="w-40 h-px mb-3"
+                          style={{ backgroundColor: currentTemplate.borderColor, opacity: 0.7 }}
                         ></div>
                         <p 
                           className="text-xs font-semibold uppercase tracking-widest mb-1"
                           style={{ 
-                            fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                            fontFamily: "'Inter', sans-serif",
                             color: currentTemplate.secondaryText,
                             fontSize: '10px'
                           }}
                         >
-                          ISSUE DATE
+                          DATE
                         </p>
                         <p 
                           className="text-sm font-bold"
                           style={{ 
-                            fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                            color: currentTemplate.primaryText,
-                            fontWeight: 'bold'
+                            fontFamily: "'Cinzel', Georgia, serif",
+                            color: currentTemplate.primaryText
                           }}
                         >
                           {format(new Date(), 'MMMM dd, yyyy')}
                         </p>
                       </div>
                       
-                      <div className="text-center flex-1">
+                      <div className="text-center">
                         <div 
-                          className="w-36 h-0.5 mb-3 mx-auto rounded-full"
-                          style={{ 
-                            background: `linear-gradient(90deg, transparent, ${currentTemplate.primaryText}, transparent)`,
-                            opacity: 0.6
-                          }}
+                          className="w-40 h-px mb-3"
+                          style={{ backgroundColor: currentTemplate.borderColor, opacity: 0.7 }}
                         ></div>
                         <p 
                           className="text-xs font-semibold uppercase tracking-widest mb-1"
                           style={{ 
-                            fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                            fontFamily: "'Inter', sans-serif",
                             color: currentTemplate.secondaryText,
                             fontSize: '10px'
                           }}
@@ -693,9 +692,8 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                         <p 
                           className="text-sm font-bold"
                           style={{ 
-                            fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                            color: currentTemplate.primaryText,
-                            fontWeight: 'bold'
+                            fontFamily: "'Cinzel', Georgia, serif",
+                            color: currentTemplate.primaryText
                           }}
                         >
                           HR Department
@@ -704,18 +702,16 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                     </div>
                   </div>
 
-                  {/* Enhanced subtle watermark with gradient */}
+                  {/* Elegant watermark */}
                   <div 
                     className="absolute inset-0 flex items-center justify-center pointer-events-none"
                     style={{ 
-                      fontSize: '140px',
-                      background: `linear-gradient(45deg, ${currentTemplate.accentColor}05, ${currentTemplate.accentColor}03)`,
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text',
+                      fontSize: '120px',
+                      color: currentTemplate.borderColor,
+                      opacity: 0.08,
                       fontWeight: 'bold',
                       transform: 'rotate(-45deg)',
-                      fontFamily: "Georgia, 'Times New Roman', Times, serif"
+                      fontFamily: "'Cinzel', Georgia, serif"
                     }}
                   >
                     SLT
