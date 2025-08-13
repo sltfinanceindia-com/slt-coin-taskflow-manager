@@ -56,11 +56,11 @@ export default function ModernDashboard() {
       case 'tasks':
         if (profile?.role === 'admin') {
           return (
-            <div className="space-y-6 sm:space-y-8">
-              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 sm:gap-6">
-                <div className="space-y-1">
-                  <h2 className="text-xl sm:text-2xl font-bold leading-tight">Task Management</h2>
-                  <p className="text-muted-foreground text-sm sm:text-base">Create and manage tasks for your team</p>
+            <div className="space-y-4 sm:space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-bold">Task Management</h2>
+                  <p className="text-muted-foreground text-sm">Create and manage tasks for your team</p>
                 </div>
                 <div className="flex-shrink-0">
                   <CreateTaskDialog onCreateTask={createTask} isCreating={isCreating} />
@@ -77,10 +77,10 @@ export default function ModernDashboard() {
           );
         } else {
           return (
-            <div className="space-y-6 sm:space-y-8">
-              <div className="space-y-1">
-                <h2 className="text-xl sm:text-2xl font-bold leading-tight">My Tasks</h2>
-                <p className="text-muted-foreground text-sm sm:text-base">View and manage your assigned tasks</p>
+            <div className="space-y-4 sm:space-y-6">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold">My Tasks</h2>
+                <p className="text-muted-foreground text-sm">View and manage your assigned tasks</p>
               </div>
               <KanbanBoard
                 tasks={myTasks}
@@ -103,11 +103,11 @@ export default function ModernDashboard() {
       
       case 'time':
         return (
-          <div className="space-y-6 sm:space-y-8">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 sm:gap-6">
-              <div className="space-y-1">
-                <h3 className="text-xl sm:text-2xl font-bold leading-tight">Time Logs</h3>
-                <p className="text-muted-foreground text-sm sm:text-base">Track your working hours across tasks</p>
+          <div className="space-y-4 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h3 className="text-xl sm:text-2xl font-bold">Time Logs</h3>
+                <p className="text-muted-foreground text-sm">Track your working hours across tasks</p>
               </div>
               {profile?.role === 'intern' && (
                 <div className="flex-shrink-0">
@@ -117,19 +117,19 @@ export default function ModernDashboard() {
             </div>
             
             <Card className="card-gradient">
-              <CardHeader className="space-y-2">
-                <CardTitle className="text-lg sm:text-xl">Recent Time Entries</CardTitle>
-                <CardDescription className="text-sm">Your latest time logs and activity</CardDescription>
+              <CardHeader>
+                <CardTitle>Recent Time Entries</CardTitle>
+                <CardDescription>Your latest time logs and activity</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent>
                 {timeLogs.length > 0 ? (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {timeLogs
                       .filter(log => profile?.role === 'admin' || log.user_id === profile?.id)
                       .slice(0, 10)
                       .map((log) => (
-                        <div key={log.id} className="flex items-center justify-between p-4 border rounded-lg hover-scale transition-all">
-                          <div className="space-y-1">
+                        <div key={log.id} className="flex items-center justify-between p-4 border rounded-lg hover-scale">
+                          <div>
                             <h4 className="font-medium">{log.task?.title}</h4>
                             <p className="text-sm text-muted-foreground">
                               {log.description || 'No description'}
@@ -195,12 +195,12 @@ export default function ModernDashboard() {
           <AppHeader />
           
           <main className="flex-1 overflow-auto">
-            <div className="w-full max-w-none px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
-              <div className="mb-6 sm:mb-8 lg:mb-10">
-                <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold mb-3 bg-gradient-primary bg-clip-text text-transparent leading-tight">
+            <div className="w-full max-w-none px-2 sm:px-4 lg:px-6 xl:px-8 py-2 sm:py-4 lg:py-6">
+              <div className="mb-4 sm:mb-6 lg:mb-8">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
                   Welcome back, {profile?.full_name}!
                 </h1>
-                <p className="text-muted-foreground text-sm sm:text-base lg:text-lg leading-relaxed">
+                <p className="text-muted-foreground text-xs sm:text-sm lg:text-base">
                   {profile?.role === 'admin' 
                     ? 'Manage tasks, track progress, and assign SLT Coins to your team.'
                     : 'View your assigned tasks, log your hours, and earn SLT Coins.'

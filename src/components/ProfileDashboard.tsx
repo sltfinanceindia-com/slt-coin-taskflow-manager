@@ -7,16 +7,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { AvatarUpload } from '@/components/AvatarUpload';
-import { InternDetailView } from '@/components/InternDetailView';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
-import { Coins, Clock, Target, User, Calendar, Award, Eye } from 'lucide-react';
+import { Coins, Clock, Target, User, Calendar, Award } from 'lucide-react';
 
 export function ProfileDashboard() {
   const { profile: currentProfile } = useAuth();
   const { profile, stats, updateProfile, isUpdating } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
-  const [showDetailView, setShowDetailView] = useState(false);
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || '',
     email: profile?.email || '',
@@ -64,25 +62,14 @@ export function ProfileDashboard() {
                 <p className="text-xs text-muted-foreground hidden sm:block">Personal Information & Settings</p>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowDetailView(true)}
-                className="flex items-center gap-2"
-              >
-                <Eye className="h-4 w-4" />
-                Analytics
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => window.history.back()}
-                className="text-xs sm:text-sm"
-              >
-                ← Back to Dashboard
-              </Button>
-            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => window.history.back()}
+              className="text-xs sm:text-sm"
+            >
+              ← Back to Dashboard
+            </Button>
           </div>
         </div>
       </header>
@@ -344,14 +331,6 @@ export function ProfileDashboard() {
             </Card>
           </TabsContent>
         </Tabs>
-
-        {/* Detailed Analytics View */}
-        {showDetailView && profile && (
-          <InternDetailView
-            internId={profile.id}
-            onClose={() => setShowDetailView(false)}
-          />
-        )}
       </main>
     </div>
   );
