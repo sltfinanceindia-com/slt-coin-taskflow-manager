@@ -5,8 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Download, Award, FileText, Share2 } from 'lucide-react';
+import { Download, Award, FileText } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
@@ -332,39 +331,48 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                     MozOsxFontSmoothing: 'grayscale'
                   }}
                 >
-                  {/* Elegant Border Frame */}
-                  <div className="absolute inset-4 border-2 rounded-lg" style={{ borderColor: currentTemplate.accentColor, opacity: 0.15 }}></div>
-                  <div className="absolute inset-6 border rounded-lg" style={{ borderColor: currentTemplate.accentColor, opacity: 0.1 }}></div>
+                  {/* Decorative Border Frame */}
+                  <div 
+                    className="absolute inset-6 border-2 rounded-lg"
+                    style={{ borderColor: currentTemplate.accentColor, opacity: 0.2 }}
+                  ></div>
+                  <div 
+                    className="absolute inset-8 border rounded-lg"
+                    style={{ borderColor: currentTemplate.accentColor, opacity: 0.15 }}
+                  ></div>
 
-                  {/* Certificate Content */}
-                  <div className="relative z-10 h-full flex flex-col justify-center p-16">
+                  {/* Certificate Content Container */}
+                  <div className="absolute inset-0 flex flex-col justify-between p-12">
                     
-                    {/* Header Section */}
-                    <div className="text-center mb-12">
-                      <div className="mb-6">
-                        <h1 
-                          className="text-4xl font-bold mb-2"
-                          style={{ 
-                            fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                            color: currentTemplate.accentColor,
-                            fontWeight: 'bold',
-                            letterSpacing: '2px'
-                          }}
-                        >
-                          CERTIFICATE OF COMPLETION
-                        </h1>
-                        <div 
-                          className="w-24 h-1 mx-auto rounded-full"
-                          style={{ backgroundColor: currentTemplate.accentColor, opacity: 0.7 }}
-                        ></div>
-                      </div>
+                    {/* Header Section - Perfectly Centered */}
+                    <div className="flex-shrink-0 text-center pt-8">
+                      <h1 
+                        className="text-4xl font-bold mb-3 tracking-wide"
+                        style={{ 
+                          fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                          color: currentTemplate.accentColor,
+                          fontWeight: 'bold',
+                          letterSpacing: '3px',
+                          lineHeight: '1.2'
+                        }}
+                      >
+                        CERTIFICATE OF COMPLETION
+                      </h1>
+                      <div 
+                        className="w-32 h-1 mx-auto rounded-full mb-2"
+                        style={{ backgroundColor: currentTemplate.accentColor, opacity: 0.6 }}
+                      ></div>
+                      <div 
+                        className="w-16 h-0.5 mx-auto rounded-full"
+                        style={{ backgroundColor: currentTemplate.accentColor, opacity: 0.4 }}
+                      ></div>
                     </div>
 
-                    {/* Main Content */}
-                    <div className="text-center space-y-8 flex-1 flex flex-col justify-center">
-                      <div>
+                    {/* Main Content - Perfectly Centered Vertically */}
+                    <div className="flex-1 flex flex-col justify-center text-center">
+                      <div className="space-y-6">
                         <p 
-                          className="text-lg mb-4"
+                          className="text-lg"
                           style={{ 
                             fontFamily: "Georgia, 'Times New Roman', Times, serif",
                             color: currentTemplate.secondaryText,
@@ -375,23 +383,24 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                           This is to certify that
                         </p>
                         
-                        <h2 
-                          className="text-4xl font-bold mb-6"
-                          style={{ 
-                            fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                            color: currentTemplate.primaryText,
-                            fontWeight: 'bold',
-                            borderBottom: `3px solid ${currentTemplate.accentColor}`,
-                            display: 'inline-block',
-                            paddingBottom: '8px',
-                            minWidth: '300px'
-                          }}
-                        >
-                          {certificateData.internName || '[Intern Name]'}
-                        </h2>
+                        <div className="my-8">
+                          <h2 
+                            className="text-4xl font-bold inline-block px-8 py-4"
+                            style={{ 
+                              fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                              color: currentTemplate.primaryText,
+                              fontWeight: 'bold',
+                              borderBottom: `3px solid ${currentTemplate.accentColor}`,
+                              minWidth: '400px',
+                              letterSpacing: '1px'
+                            }}
+                          >
+                            {certificateData.internName || 'Gopi Komirisetti'}
+                          </h2>
+                        </div>
                         
                         <p 
-                          className="text-lg mb-4"
+                          className="text-lg"
                           style={{ 
                             fontFamily: "Georgia, 'Times New Roman', Times, serif",
                             color: currentTemplate.secondaryText,
@@ -403,182 +412,184 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                         </p>
                         
                         <h3 
-                          className="text-3xl font-bold mb-8"
+                          className="text-3xl font-bold"
                           style={{ 
                             fontFamily: "Georgia, 'Times New Roman', Times, serif",
                             color: currentTemplate.accentColor,
                             fontWeight: 'bold',
-                            letterSpacing: '1px'
+                            letterSpacing: '2px',
+                            marginTop: '24px',
+                            marginBottom: '32px'
                           }}
                         >
                           SLT Finance India
                         </h3>
-                      </div>
 
-                      {/* Details Section */}
-                      <div className="bg-white bg-opacity-40 rounded-lg p-6 mx-8">
-                        <div className="grid grid-cols-2 gap-6">
-                          <div className="text-center">
-                            <p 
-                              className="text-sm font-semibold uppercase tracking-wider mb-2"
-                              style={{ 
-                                fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                                color: currentTemplate.secondaryText,
-                                fontSize: '12px',
-                                opacity: 0.8
-                              }}
-                            >
-                              Department
-                            </p>
-                            <p 
-                              className="text-lg font-bold"
-                              style={{ 
-                                fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                                color: currentTemplate.primaryText,
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              {certificateData.department || '[Department]'}
-                            </p>
+                        {/* Information Grid - Perfectly Aligned */}
+                        <div className="bg-white bg-opacity-50 rounded-lg p-6 mx-auto max-w-lg">
+                          <div className="grid grid-cols-2 gap-6">
+                            <div className="text-center">
+                              <p 
+                                className="text-xs font-semibold uppercase tracking-widest mb-2"
+                                style={{ 
+                                  fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                                  color: currentTemplate.secondaryText,
+                                  fontSize: '11px',
+                                  opacity: 0.8
+                                }}
+                              >
+                                DEPARTMENT
+                              </p>
+                              <p 
+                                className="text-base font-bold"
+                                style={{ 
+                                  fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                                  color: currentTemplate.primaryText,
+                                  fontWeight: 'bold'
+                                }}
+                              >
+                                {certificateData.department || '[Department]'}
+                              </p>
+                            </div>
+                            <div className="text-center">
+                              <p 
+                                className="text-xs font-semibold uppercase tracking-widest mb-2"
+                                style={{ 
+                                  fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                                  color: currentTemplate.secondaryText,
+                                  fontSize: '11px',
+                                  opacity: 0.8
+                                }}
+                              >
+                                EMPLOYEE ID
+                              </p>
+                              <p 
+                                className="text-base font-bold"
+                                style={{ 
+                                  fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                                  color: currentTemplate.primaryText,
+                                  fontWeight: 'bold'
+                                }}
+                              >
+                                {certificateData.internId || '[ID]'}
+                              </p>
+                            </div>
+                            <div className="text-center">
+                              <p 
+                                className="text-xs font-semibold uppercase tracking-widest mb-2"
+                                style={{ 
+                                  fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                                  color: currentTemplate.secondaryText,
+                                  fontSize: '11px',
+                                  opacity: 0.8
+                                }}
+                              >
+                                PROGRAM DURATION
+                              </p>
+                              <p 
+                                className="text-base font-bold"
+                                style={{ 
+                                  fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                                  color: currentTemplate.primaryText,
+                                  fontWeight: 'bold'
+                                }}
+                              >
+                                {certificateData.startDate && certificateData.endDate 
+                                  ? `${format(new Date(certificateData.startDate), 'MMM yyyy')} - ${format(new Date(certificateData.endDate), 'MMM yyyy')}`
+                                  : '[Duration]'
+                                }
+                              </p>
+                            </div>
+                            <div className="text-center">
+                              <p 
+                                className="text-xs font-semibold uppercase tracking-widest mb-2"
+                                style={{ 
+                                  fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                                  color: currentTemplate.secondaryText,
+                                  fontSize: '11px',
+                                  opacity: 0.8
+                                }}
+                              >
+                                PERFORMANCE RATING
+                              </p>
+                              <p 
+                                className="text-base font-bold"
+                                style={{ 
+                                  fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                                  color: currentTemplate.accentColor,
+                                  fontWeight: 'bold'
+                                }}
+                              >
+                                {certificateData.performance}
+                              </p>
+                            </div>
                           </div>
-                          <div className="text-center">
-                            <p 
-                              className="text-sm font-semibold uppercase tracking-wider mb-2"
-                              style={{ 
-                                fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                                color: currentTemplate.secondaryText,
-                                fontSize: '12px',
-                                opacity: 0.8
-                              }}
-                            >
-                              Employee ID
-                            </p>
-                            <p 
-                              className="text-lg font-bold"
-                              style={{ 
-                                fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                                color: currentTemplate.primaryText,
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              {certificateData.internId || '[ID]'}
-                            </p>
-                          </div>
-                          <div className="text-center">
-                            <p 
-                              className="text-sm font-semibold uppercase tracking-wider mb-2"
-                              style={{ 
-                                fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                                color: currentTemplate.secondaryText,
-                                fontSize: '12px',
-                                opacity: 0.8
-                              }}
-                            >
-                              Duration
-                            </p>
-                            <p 
-                              className="text-lg font-bold"
-                              style={{ 
-                                fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                                color: currentTemplate.primaryText,
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              {certificateData.startDate && certificateData.endDate 
-                                ? `${format(new Date(certificateData.startDate), 'MMM yyyy')} - ${format(new Date(certificateData.endDate), 'MMM yyyy')}`
-                                : '[Duration]'
-                              }
-                            </p>
-                          </div>
-                          <div className="text-center">
-                            <p 
-                              className="text-sm font-semibold uppercase tracking-wider mb-2"
-                              style={{ 
-                                fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                                color: currentTemplate.secondaryText,
-                                fontSize: '12px',
-                                opacity: 0.8
-                              }}
-                            >
-                              Performance
-                            </p>
-                            <p 
-                              className="text-lg font-bold"
-                              style={{ 
-                                fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                                color: currentTemplate.accentColor,
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              {certificateData.performance}
-                            </p>
-                          </div>
+                          
+                          {certificateData.customText && (
+                            <div className="mt-6 pt-4" style={{ borderTop: `1px solid ${currentTemplate.secondaryText}40` }}>
+                              <p 
+                                className="text-sm italic text-center"
+                                style={{ 
+                                  fontFamily: "Georgia, 'Times New Roman', Times, serif",
+                                  color: currentTemplate.secondaryText,
+                                  fontStyle: 'italic',
+                                  lineHeight: '1.6'
+                                }}
+                              >
+                                {certificateData.customText}
+                              </p>
+                            </div>
+                          )}
                         </div>
-
-                        {certificateData.customText && (
-                          <div className="mt-6 pt-4 border-t border-gray-300 border-opacity-40">
-                            <p 
-                              className="text-sm italic text-center"
-                              style={{ 
-                                fontFamily: "Georgia, 'Times New Roman', Times, serif",
-                                color: currentTemplate.secondaryText,
-                                fontStyle: 'italic',
-                                lineHeight: '1.6'
-                              }}
-                            >
-                              {certificateData.customText}
-                            </p>
-                          </div>
-                        )}
                       </div>
                     </div>
 
-                    {/* Footer Section */}
-                    <div className="flex justify-between items-end pt-8 mt-8">
-                      <div className="text-center">
+                    {/* Footer Section - Perfectly Aligned Bottom */}
+                    <div className="flex-shrink-0 flex justify-between items-end pb-8">
+                      <div className="text-center flex-1">
                         <div 
-                          className="w-40 h-0.5 mb-3 mx-auto"
-                          style={{ backgroundColor: currentTemplate.primaryText, opacity: 0.6 }}
+                          className="w-36 h-px mb-3 mx-auto"
+                          style={{ backgroundColor: currentTemplate.primaryText, opacity: 0.5 }}
                         ></div>
                         <p 
-                          className="text-sm font-semibold uppercase tracking-wider mb-1"
+                          className="text-xs font-semibold uppercase tracking-widest mb-1"
                           style={{ 
                             fontFamily: "Georgia, 'Times New Roman', Times, serif",
                             color: currentTemplate.secondaryText,
-                            fontSize: '11px'
+                            fontSize: '10px'
                           }}
                         >
-                          Issue Date
+                          ISSUE DATE
                         </p>
                         <p 
-                          className="text-base font-bold"
+                          className="text-sm font-bold"
                           style={{ 
                             fontFamily: "Georgia, 'Times New Roman', Times, serif",
                             color: currentTemplate.primaryText,
                             fontWeight: 'bold'
                           }}
                         >
-                          {format(new Date(), 'MMMM dd, yyyy')}
+                          August 14, 2025
                         </p>
                       </div>
                       
-                      <div className="text-center">
+                      <div className="text-center flex-1">
                         <div 
-                          className="w-40 h-0.5 mb-3 mx-auto"
-                          style={{ backgroundColor: currentTemplate.primaryText, opacity: 0.6 }}
+                          className="w-36 h-px mb-3 mx-auto"
+                          style={{ backgroundColor: currentTemplate.primaryText, opacity: 0.5 }}
                         ></div>
                         <p 
-                          className="text-sm font-semibold uppercase tracking-wider mb-1"
+                          className="text-xs font-semibold uppercase tracking-widest mb-1"
                           style={{ 
                             fontFamily: "Georgia, 'Times New Roman', Times, serif",
                             color: currentTemplate.secondaryText,
-                            fontSize: '11px'
+                            fontSize: '10px'
                           }}
                         >
-                          Authorized Signature
+                          AUTHORIZED SIGNATURE
                         </p>
                         <p 
-                          className="text-base font-bold"
+                          className="text-sm font-bold"
                           style={{ 
                             fontFamily: "Georgia, 'Times New Roman', Times, serif",
                             color: currentTemplate.primaryText,
@@ -591,13 +602,13 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                     </div>
                   </div>
 
-                  {/* Subtle Watermark */}
+                  {/* Subtle Background Watermark */}
                   <div 
                     className="absolute inset-0 flex items-center justify-center pointer-events-none"
                     style={{ 
-                      fontSize: '120px',
+                      fontSize: '150px',
                       color: currentTemplate.accentColor,
-                      opacity: 0.03,
+                      opacity: 0.02,
                       fontWeight: 'bold',
                       transform: 'rotate(-45deg)',
                       fontFamily: "Georgia, 'Times New Roman', Times, serif"
