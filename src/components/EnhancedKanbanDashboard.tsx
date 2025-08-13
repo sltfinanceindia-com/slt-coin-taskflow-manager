@@ -45,22 +45,18 @@ export function EnhancedKanbanDashboard() {
       // Load Kanban metrics from database function
       const { data: metricsData, error } = await supabase
         .rpc('calculate_kanban_metrics');
-
       if (error) {
         console.error('Error loading kanban metrics:', error);
       } else {
         setKanbanMetrics(metricsData);
       }
-
       // Load AI insights
       const { data: insightsData } = await supabase.functions.invoke('generate-kanban-insights', {
         body: { user_id: profile?.id, tasks: myTasks }
       });
-
       if (insightsData?.insights) {
         setInsights(insightsData.insights);
       }
-
     } catch (error) {
       console.error('Error loading kanban data:', error);
     } finally {
@@ -88,145 +84,311 @@ export function EnhancedKanbanDashboard() {
   const isWipExceeded = performanceMetrics.wipCount > recommendedWipLimit;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Enhanced Custom Styles */}
+      <style jsx>{`
+        .workfront-gradient {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .workfront-card {
+          background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .workfront-card:hover {
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+          transform: translateY(-2px);
+        }
+        .workfront-card-dark {
+          background: linear-gradient(145deg, #1e293b 0%, #334155 100%);
+          border: 1px solid #475569;
+        }
+        .workfront-header {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          padding: 2rem;
+          border-radius: 12px;
+          margin-bottom: 2rem;
+          box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        .workfront-metric-icon {
+          background: linear-gradient(135deg, #667eea 20%, #764ba2 80%);
+          color: white;
+          padding: 12px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        .workfront-progress-bar {
+          height: 8px;
+          background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+          border-radius: 4px;
+        }
+        .workfront-badge {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border: none;
+          font-weight: 600;
+          padding: 4px 12px;
+          border-radius: 20px;
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .workfront-insight-card {
+          background: linear-gradient(145deg, #f8fafc 0%, #ffffff 100%);
+          border: 1px solid #e2e8f0;
+          border-left: 4px solid #667eea;
+          border-radius: 8px;
+          padding: 1.5rem;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+          transition: all 0.2s ease;
+        }
+        .workfront-insight-card:hover {
+          border-left-color: #764ba2;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .workfront-tab {
+          background: transparent;
+          border: 2px solid #e2e8f0;
+          color: #64748b;
+          font-weight: 600;
+          transition: all 0.3s ease;
+          border-radius: 8px;
+          padding: 12px 24px;
+        }
+        .workfront-tab:hover {
+          border-color: #667eea;
+          color: #667eea;
+          background: rgba(102, 126, 234, 0.05);
+        }
+        .workfront-tab[data-state="active"] {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border-color: #667eea;
+          color: white;
+          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        .workfront-button {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border: none;
+          color: white;
+          font-weight: 600;
+          padding: 12px 24px;
+          border-radius: 8px;
+          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+          transition: all 0.3s ease;
+        }
+        .workfront-button:hover {
+          box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+          transform: translateY(-2px);
+        }
+        .workfront-button:disabled {
+          opacity: 0.6;
+          transform: none;
+          box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+        }
+      `}</style>
+
       <div className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl">
-        {/* Header - Responsive flex layout */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Enhanced Kanban Dashboard
-            </h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              Advanced task management with AI-powered analytics and optimization
-            </p>
+        {/* Enhanced Header with Workfront styling */}
+        <div className="workfront-header">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="space-y-2">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
+                Enhanced Kanban Dashboard
+              </h1>
+              <p className="text-sm sm:text-base opacity-90 font-medium">
+                Advanced task management with AI-powered analytics and optimization
+              </p>
+              <div className="flex items-center space-x-4 text-sm opacity-80">
+                <span>Total Tasks: {performanceMetrics.totalTasks}</span>
+                <span>•</span>
+                <span>Completed: {performanceMetrics.completedTasks}</span>
+                <span>•</span>
+                <span>In Progress: {performanceMetrics.inProgressTasks}</span>
+              </div>
+            </div>
+            <Button 
+              onClick={loadKanbanMetrics} 
+              disabled={isLoading}
+              className="workfront-button w-full sm:w-auto shrink-0"
+              size="lg"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Refresh Analytics</span>
+              <span className="sm:hidden">Refresh</span>
+            </Button>
           </div>
-          <Button 
-            onClick={loadKanbanMetrics} 
-            disabled={isLoading}
-            className="w-full sm:w-auto shrink-0"
-            size="sm"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Refresh Analytics</span>
-            <span className="sm:hidden">Refresh</span>
-          </Button>
         </div>
 
-        {/* Performance Overview - Responsive grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-          <Card className="card-gradient border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-3 sm:p-4 lg:p-6">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 rounded-full bg-green-100 dark:bg-green-900/20">
-                  <Target className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 dark:text-green-400" />
+        {/* Enhanced Performance Overview with Workfront styling */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="workfront-card dark:workfront-card-dark border-0 overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="workfront-metric-icon">
+                  <Target className="h-6 w-6" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 truncate">
+                <Badge className="workfront-badge">
+                  Primary
+                </Badge>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">
                     Completion Rate
                   </p>
-                  <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
                     {performanceMetrics.completionRate.toFixed(1)}%
                   </p>
-                  <Progress 
-                    value={performanceMetrics.completionRate} 
-                    className="mt-2 h-1.5 sm:h-2" 
-                  />
                 </div>
+                <div className="relative">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div 
+                      className="workfront-progress-bar rounded-full transition-all duration-500 ease-out"
+                      style={{ width: `${performanceMetrics.completionRate}%` }}
+                    ></div>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                  {performanceMetrics.completionRate >= 80 ? '🎯 Excellent Progress' : 
+                   performanceMetrics.completionRate >= 60 ? '📈 Good Progress' : '⚡ Needs Focus'}
+                </p>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="card-gradient border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-3 sm:p-4 lg:p-6">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/20">
-                  <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
+          <Card className="workfront-card dark:workfront-card-dark border-0 overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="workfront-metric-icon">
+                  <Clock className="h-6 w-6" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 truncate">
+                <Badge className="workfront-badge">
+                  Time
+                </Badge>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">
                     Avg Cycle Time
                   </p>
-                  <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
                     {performanceMetrics.avgCycleTime.toFixed(1)}d
                   </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {performanceMetrics.avgCycleTime < 5 ? 'Excellent' : 
-                     performanceMetrics.avgCycleTime < 10 ? 'Good' : 'Needs Improvement'}
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className={`w-2 h-2 rounded-full ${
+                    performanceMetrics.avgCycleTime < 5 ? 'bg-green-500' : 
+                    performanceMetrics.avgCycleTime < 10 ? 'bg-yellow-500' : 'bg-red-500'
+                  }`}></div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                    {performanceMetrics.avgCycleTime < 5 ? '🚀 Excellent Speed' : 
+                     performanceMetrics.avgCycleTime < 10 ? '⚡ Good Pace' : '🔄 Needs Improvement'}
                   </p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="card-gradient border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-3 sm:p-4 lg:p-6">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 rounded-full bg-purple-100 dark:bg-purple-900/20">
-                  <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
+          <Card className="workfront-card dark:workfront-card-dark border-0 overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="workfront-metric-icon">
+                  <TrendingUp className="h-6 w-6" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 truncate">
+                <Badge className={`${isWipExceeded ? 'bg-red-500' : 'workfront-badge'}`}>
+                  {isWipExceeded ? 'Alert' : 'Normal'}
+                </Badge>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">
                     WIP Limit
                   </p>
-                  <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white flex items-center">
-                    {performanceMetrics.wipCount}
+                  <div className="flex items-center space-x-2 mt-1">
+                    <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                      {performanceMetrics.wipCount}
+                    </p>
                     {isWipExceeded && (
-                      <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 text-red-500 ml-1 shrink-0" />
+                      <AlertTriangle className="h-5 w-5 text-red-500 animate-pulse" />
                     )}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    Recommended: {recommendedWipLimit}
+                  </div>
+                </div>
+                <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-2">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                    Recommended: <span className="font-bold text-gray-900 dark:text-white">{recommendedWipLimit}</span>
                   </p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="card-gradient border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-3 sm:p-4 lg:p-6">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 rounded-full bg-orange-100 dark:bg-orange-900/20">
-                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600 dark:text-orange-400" />
+          <Card className="workfront-card dark:workfront-card-dark border-0 overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="workfront-metric-icon">
+                  <CheckCircle className="h-6 w-6" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 truncate">
+                <Badge className="workfront-badge">
+                  Output
+                </Badge>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">
                     Throughput
                   </p>
-                  <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
                     {performanceMetrics.throughput}
                   </p>
-                  <p className="text-xs text-muted-foreground">Tasks/week</p>
+                </div>
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 rounded-lg p-2">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                    Tasks per week
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* AI Insights - Responsive design */}
+        {/* Enhanced AI Insights with Workfront styling */}
         {insights.length > 0 && (
-          <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 shadow-lg">
-            <CardHeader className="pb-3 sm:pb-4">
-              <CardTitle className="text-sm sm:text-base font-medium text-blue-800 dark:text-blue-200 flex items-center">
-                <Zap className="h-4 w-4 mr-2 shrink-0" />
-                AI-Powered Insights
+          <Card className="border-0 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/50 dark:via-indigo-950/50 dark:to-purple-950/50 shadow-xl">
+            <CardHeader className="pb-4 border-b border-blue-200 dark:border-blue-800">
+              <CardTitle className="text-lg font-bold text-gray-900 dark:text-white flex items-center">
+                <div className="workfront-metric-icon mr-3">
+                  <Zap className="h-5 w-5" />
+                </div>
+                AI-Powered Insights & Recommendations
               </CardTitle>
+              <CardDescription className="text-gray-600 dark:text-gray-300 font-medium">
+                Smart analytics to optimize your workflow performance
+              </CardDescription>
             </CardHeader>
-            <CardContent className="pt-0">
-              <div className="space-y-3 sm:space-y-4">
+            <CardContent className="pt-6">
+              <div className="space-y-4">
                 {insights.map((insight, index) => (
-                  <div key={index} className="p-3 sm:p-4 bg-white dark:bg-slate-800 rounded-lg border border-blue-200 dark:border-blue-800 shadow-sm">
-                    <div className="flex flex-col sm:flex-row sm:items-start space-y-2 sm:space-y-0 sm:space-x-3">
-                      <Badge variant="outline" className="text-xs w-fit shrink-0">
+                  <div key={index} className="workfront-insight-card">
+                    <div className="flex flex-col sm:flex-row sm:items-start space-y-3 sm:space-y-0 sm:space-x-4">
+                      <Badge className="workfront-badge w-fit shrink-0">
                         {(insight.confidence * 100).toFixed(0)}% confidence
                       </Badge>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-blue-900 dark:text-blue-100 break-words">
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white leading-relaxed">
                           {insight.message}
                         </p>
                         {insight.action && (
-                          <p className="text-xs text-blue-700 dark:text-blue-300 mt-1 break-words">
-                            💡 {insight.action}
-                          </p>
+                          <div className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 rounded-lg p-3">
+                            <p className="text-xs font-medium text-gray-800 dark:text-gray-200 flex items-start">
+                              <span className="text-base mr-2">💡</span>
+                              <span>{insight.action}</span>
+                            </p>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -237,39 +399,41 @@ export function EnhancedKanbanDashboard() {
           </Card>
         )}
 
-        {/* Main Dashboard - Responsive tabs */}
-        <Tabs defaultValue="kanban" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 h-auto p-1">
-            <TabsTrigger value="kanban" className="flex items-center gap-2 py-2 px-3 text-xs sm:text-sm">
-              <ArrowUpDown className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-              <span className="hidden sm:inline">Kanban Board</span>
-              <span className="sm:hidden">Board</span>
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2 py-2 px-3 text-xs sm:text-sm">
-              <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-              <span className="hidden sm:inline">Advanced Analytics</span>
-              <span className="sm:hidden">Analytics</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="kanban" className="space-y-4 mt-4">
-            <div className="overflow-x-auto">
-              <KanbanBoard
-                tasks={myTasks}
-                onUpdateStatus={updateTaskStatus}
-                onVerifyTask={verifyTask}
-                onUpdateTask={updateTask}
-                isUpdating={isUpdating}
-              />
+        {/* Enhanced Main Dashboard with Workfront styling */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <Tabs defaultValue="kanban" className="space-y-0">
+            <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 px-6 py-4">
+              <TabsList className="grid w-full max-w-md grid-cols-2 h-auto p-1 bg-transparent gap-2">
+                <TabsTrigger value="kanban" className="workfront-tab flex items-center gap-2 py-3 px-6">
+                  <ArrowUpDown className="h-4 w-4 shrink-0" />
+                  <span className="font-semibold">Kanban Board</span>
+                </TabsTrigger>
+                <TabsTrigger value="analytics" className="workfront-tab flex items-center gap-2 py-3 px-6">
+                  <BarChart3 className="h-4 w-4 shrink-0" />
+                  <span className="font-semibold">Advanced Analytics</span>
+                </TabsTrigger>
+              </TabsList>
             </div>
-          </TabsContent>
-
-          <TabsContent value="analytics" className="space-y-4 mt-4">
-            <div className="overflow-x-auto">
-              <KanbanAnalytics tasks={myTasks} />
-            </div>
-          </TabsContent>
-        </Tabs>
+            
+            <TabsContent value="kanban" className="space-y-0 mt-0 p-6">
+              <div className="overflow-x-auto">
+                <KanbanBoard
+                  tasks={myTasks}
+                  onUpdateStatus={updateTaskStatus}
+                  onVerifyTask={verifyTask}
+                  onUpdateTask={updateTask}
+                  isUpdating={isUpdating}
+                />
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="analytics" className="space-y-0 mt-0 p-6">
+              <div className="overflow-x-auto">
+                <KanbanAnalytics tasks={myTasks} />
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </div>
   );
