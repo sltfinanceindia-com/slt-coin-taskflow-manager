@@ -522,60 +522,147 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                         CERTIFICATE OF EXCELLENCE
                       </h1>
                       
-                      {/* Modern divider - smaller */}
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <div 
-                          className="w-12 h-px"
-                          style={{ backgroundColor: currentTemplate.borderColor, opacity: 0.8 }}
-                        ></div>
-                        <div 
-                          className="w-1.5 h-1.5 rounded-full"
-                          style={{ backgroundColor: currentTemplate.accentColor }}
-                        ></div>
-                        <div 
-                          className="w-4 h-px"
-                          style={{ backgroundColor: currentTemplate.lightAccent }}
-                        ></div>
-                        <div 
-                          className="w-1.5 h-1.5 rounded-full"
-                          style={{ backgroundColor: currentTemplate.accentColor }}
-                        ></div>
-                        <div 
-                          className="w-12 h-px"
-                          style={{ backgroundColor: currentTemplate.borderColor, opacity: 0.8 }}
-                        ></div>
-                      </div>
+                      {/* Enhanced Modern Divider with Gradient Effects */}
+<div className="flex items-center justify-center gap-3 mb-4" style={{ opacity: 0.9 }}>
+  <div 
+    className="h-0.5 rounded-full"
+    style={{ 
+      width: '16px',
+      background: `linear-gradient(90deg, transparent, ${currentTemplate.borderColor})`,
+      opacity: 0.8
+    }}
+  ></div>
+  <div 
+    className="rounded-full shadow-sm"
+    style={{ 
+      width: '6px', 
+      height: '6px',
+      backgroundColor: currentTemplate.accentColor,
+      boxShadow: `0 0 8px ${currentTemplate.accentColor}40`
+    }}
+  ></div>
+  <div 
+    className="h-0.5 rounded-full"
+    style={{ 
+      width: '10px',
+      backgroundColor: currentTemplate.lightAccent,
+      opacity: 0.9
+    }}
+  ></div>
+  <div 
+    className="rounded-full border"
+    style={{ 
+      width: '4px', 
+      height: '4px',
+      backgroundColor: 'transparent',
+      borderColor: currentTemplate.accentColor,
+      borderWidth: '1px'
+    }}
+  ></div>
+  <div 
+    className="h-0.5 rounded-full"
+    style={{ 
+      width: '10px',
+      backgroundColor: currentTemplate.lightAccent,
+      opacity: 0.9
+    }}
+  ></div>
+  <div 
+    className="rounded-full shadow-sm"
+    style={{ 
+      width: '6px', 
+      height: '6px',
+      backgroundColor: currentTemplate.accentColor,
+      boxShadow: `0 0 8px ${currentTemplate.accentColor}40`
+    }}
+  ></div>
+  <div 
+    className="h-0.5 rounded-full"
+    style={{ 
+      width: '16px',
+      background: `linear-gradient(90deg, ${currentTemplate.borderColor}, transparent)`,
+      opacity: 0.8
+    }}
+  ></div>
+</div>
 
-                      <p 
-                        className="tracking-wider"
-                        style={{ 
-                          fontFamily: "'Inter', sans-serif",
-                          color: currentTemplate.secondaryText,
-                          letterSpacing: '1.5px',
-                          fontSize: '10px',
-                          fontWeight: '500'
-                        }}
-                      >
-                        INTERNSHIP PROGRAM COMPLETION
-                      </p>
-                    </div>
+{/* Enhanced Subtitle with Better Typography */}
+<div className="text-center mb-6">
+  <p 
+    className="tracking-wider relative inline-block"
+    style={{ 
+      fontFamily: "'Inter', sans-serif",
+      color: currentTemplate.secondaryText,
+      letterSpacing: '2.5px',
+      fontSize: '11px',
+      fontWeight: '600',
+      textTransform: 'uppercase',
+      textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+      position: 'relative',
+      paddingBottom: '8px'
+    }}
+  >
+    INTERNSHIP PROGRAM COMPLETION
+    <span 
+      className="absolute bottom-0 left-1/2 transform -translate-x-1/2"
+      style={{
+        width: '80%',
+        height: '1px',
+        background: `linear-gradient(90deg, transparent, ${currentTemplate.lightAccent}60, transparent)`,
+        opacity: 0.7
+      }}
+    ></span>
+  </p>
+</div>
 
-                    {/* Main Content */}
-                    <div className="flex-1 flex flex-col justify-center">
-                      {/* Presentation text */}
-                      <div className="text-center mb-3">
-                        <p 
-                          style={{ 
-                            fontFamily: "'Inter', sans-serif",
-                            color: currentTemplate.secondaryText,
-                            letterSpacing: '0.5px',
-                            fontSize: '12px',
-                            fontWeight: '400'
-                          }}
-                        >
-                          This certificate is proudly presented to
-                        </p>
-                      </div>
+{/* Enhanced Main Content Section */}
+<div className="flex-1 flex flex-col justify-center">
+  {/* Enhanced Presentation Text with Elegant Styling */}
+  <div className="text-center mb-4 relative">
+    <div 
+      className="inline-block px-6 py-2 rounded-lg backdrop-blur-sm"
+      style={{
+        background: `linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))`,
+        border: `1px solid ${currentTemplate.borderColor}20`,
+        boxShadow: '0 4px 16px rgba(0,0,0,0.1)'
+      }}
+    >
+      <p 
+        style={{ 
+          fontFamily: "'Inter', sans-serif",
+          color: currentTemplate.secondaryText,
+          letterSpacing: '1px',
+          fontSize: '13px',
+          fontWeight: '400',
+          lineHeight: '1.5',
+          fontStyle: 'italic',
+          textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+          margin: '0'
+        }}
+      >
+        This certificate is proudly presented to
+      </p>
+    </div>
+    
+    {/* Decorative corner elements */}
+    <div 
+      className="absolute -top-1 -left-1 w-3 h-3 border-l-2 border-t-2 rounded-tl-lg opacity-30"
+      style={{ borderColor: currentTemplate.accentColor }}
+    ></div>
+    <div 
+      className="absolute -top-1 -right-1 w-3 h-3 border-r-2 border-t-2 rounded-tr-lg opacity-30"
+      style={{ borderColor: currentTemplate.accentColor }}
+    ></div>
+    <div 
+      className="absolute -bottom-1 -left-1 w-3 h-3 border-l-2 border-b-2 rounded-bl-lg opacity-30"
+      style={{ borderColor: currentTemplate.accentColor }}
+    ></div>
+    <div 
+      className="absolute -bottom-1 -right-1 w-3 h-3 border-r-2 border-b-2 rounded-br-lg opacity-30"
+      style={{ borderColor: currentTemplate.accentColor }}
+    ></div>
+  </div>
+
 
                       {/* Name Section */}
                       <div className="mb-4">
