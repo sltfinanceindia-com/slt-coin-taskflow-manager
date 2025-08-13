@@ -97,24 +97,32 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
     setIsGenerating(true);
     try {
       await loadFonts();
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
       const canvas = await html2canvas(certificateRef.current, {
-        scale: 3,
+        scale: 2,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         letterRendering: true,
         logging: false,
+        height: certificateRef.current.offsetHeight,
+        width: certificateRef.current.offsetWidth,
       });
 
       const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF('landscape', 'mm', 'a4');
       
-      const imgWidth = 297;
+      const pdfWidth = 297;
+      const pdfHeight = 210;
+      const imgWidth = pdfWidth - 10; // Add margins
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      // Center the image on the page
+      const x = (pdfWidth - imgWidth) / 2;
+      const y = Math.max((pdfHeight - imgHeight) / 2, 5);
+      
+      pdf.addImage(imgData, 'PNG', x, y, imgWidth, Math.min(imgHeight, pdfHeight - 10));
       pdf.save(`certificate-${certificateData.internName.replace(/\s+/g, '-').toLowerCase()}.pdf`);
       
       toast({
@@ -387,7 +395,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
               <div className="overflow-auto bg-slate-50 p-6 rounded-lg border border-border">
                 <div
                   ref={certificateRef}
-                  className="w-[800px] h-[600px] mx-auto relative shadow-2xl rounded-xl overflow-hidden"
+                  className="w-[800px] h-[580px] mx-auto relative shadow-2xl rounded-xl overflow-hidden"
                   style={{ 
                     background: currentTemplate.bgGradient,
                     fontFamily: "'Inter', 'Cinzel', Georgia, serif",
@@ -462,11 +470,11 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                     </div>
                   </div>
 
-                  {/* Certificate Content */}
-                  <div className="absolute inset-0 flex flex-col p-12">
+                  {/* Certificate Content - Fixed Layout */}
+                  <div className="absolute inset-0 flex flex-col justify-between p-10">
                     
-                    {/* Header Section - Reduced size */}
-                    <div className="text-center mb-6">
+                    {/* Header Section - Fixed positioning */}
+                    <div className="text-center flex-shrink-0" style={{ minHeight: '80px' }}>
                       <h1 
                         className="text-3xl font-bold mb-2 tracking-widest"
                         style={{ 
@@ -475,7 +483,8 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                           fontWeight: 'bold',
                           letterSpacing: '3px',
                           textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                          fontSize: '32px'
+                          fontSize: '30px',
+                          lineHeight: '1.2'
                         }}
                       >
                         CERTIFICATE OF EXCELLENCE
@@ -519,12 +528,12 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                       </p>
                     </div>
 
-                    {/* Main Content - Optimized spacing */}
-                    <div className="flex-1 flex flex-col justify-center">
+                    {/* Main Content - Fixed center positioning */}
+                    <div className="flex-1 flex flex-col justify-center" style={{ minHeight: '320px' }}>
                       {/* Presentation text */}
-                      <div className="text-center mb-4">
+                      <div className="text-center mb-3">
                         <p 
-                          className="text-sm mb-3"
+                          className="text-sm"
                           style={{ 
                             fontFamily: "'Inter', sans-serif",
                             color: currentTemplate.secondaryText,
@@ -537,38 +546,41 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                         </p>
                       </div>
 
-                      {/* Name Section - Optimized */}
-                      <div className="mb-6">
+                      {/* Name Section - Fixed positioning */}
+                      <div className="mb-4">
                         <div 
-                          className="bg-black bg-opacity-20 rounded-lg p-4 mx-auto max-w-md backdrop-blur-sm"
+                          className="bg-black bg-opacity-20 rounded-lg p-3 mx-auto max-w-md backdrop-blur-sm"
                           style={{
                             border: `1px solid ${currentTemplate.borderColor}60`
                           }}
                         >
                           <h2 
-                            className="text-3xl font-bold text-center"
+                            className="text-center"
                             style={{ 
                               fontFamily: "'Playfair Display', Georgia, serif",
                               color: currentTemplate.primaryText,
                               fontWeight: 'bold',
                               letterSpacing: '1px',
                               textShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                              fontSize: '36px'
+                              fontSize: '34px',
+                              lineHeight: '1.2',
+                              margin: '0',
+                              padding: '8px 0'
                             }}
                           >
                             {certificateData.internName || 'Name Surname'}
                           </h2>
                         </div>
                         <div 
-                          className="w-32 h-0.5 mx-auto mt-3 rounded-full"
+                          className="w-32 h-0.5 mx-auto mt-2 rounded-full"
                           style={{ 
                             background: `linear-gradient(90deg, transparent, ${currentTemplate.lightAccent}, transparent)`
                           }}
                         ></div>
                       </div>
 
-                      {/* Achievement Text - Reduced size */}
-                      <div className="text-center mb-6">
+                      {/* Achievement Text */}
+                      <div className="text-center mb-4">
                         <p 
                           className="text-sm mb-2"
                           style={{ 
@@ -582,14 +594,14 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                         </p>
                         
                         <h3 
-                          className="text-2xl font-bold mb-4"
+                          className="text-2xl font-bold mb-3"
                           style={{ 
                             fontFamily: "'Cinzel', Georgia, serif",
                             color: currentTemplate.titleColor,
                             fontWeight: 'bold',
                             letterSpacing: '1px',
                             textShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                            fontSize: '24px'
+                            fontSize: '22px'
                           }}
                         >
                           SLT Finance India
@@ -598,12 +610,12 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
 
                       {/* Enhanced Details Grid - Compact */}
                       <div 
-                        className="bg-black bg-opacity-25 rounded-xl p-4 mx-6 backdrop-blur-sm"
+                        className="bg-black bg-opacity-25 rounded-xl p-4 mx-4 backdrop-blur-sm"
                         style={{
                           border: `1px solid ${currentTemplate.borderColor}40`
                         }}
                       >
-                        <div className="grid grid-cols-3 gap-4 mb-4">
+                        <div className="grid grid-cols-3 gap-4 mb-3">
                           <div className="text-center">
                             <p 
                               className="text-xs font-medium uppercase tracking-wider mb-1"
@@ -621,7 +633,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                               style={{ 
                                 fontFamily: "'Inter', sans-serif",
                                 color: currentTemplate.primaryText,
-                                fontSize: '12px'
+                                fontSize: '11px'
                               }}
                             >
                               {certificateData.department || '[Department]'}
@@ -644,7 +656,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                               style={{ 
                                 fontFamily: "'Inter', sans-serif",
                                 color: currentTemplate.primaryText,
-                                fontSize: '12px'
+                                fontSize: '11px'
                               }}
                             >
                               {certificateData.internId || '[ID]'}
@@ -667,7 +679,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                               style={{ 
                                 fontFamily: "'Inter', sans-serif",
                                 color: currentTemplate.primaryText,
-                                fontSize: '12px'
+                                fontSize: '11px'
                               }}
                             >
                               {certificateData.startDate && certificateData.endDate 
@@ -678,7 +690,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-3 gap-4 mb-4">
+                        <div className="grid grid-cols-3 gap-4 mb-3">
                           <div className="text-center">
                             <p 
                               className="text-xs font-medium uppercase tracking-wider mb-1"
@@ -696,7 +708,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                               style={{ 
                                 fontFamily: "'Inter', sans-serif",
                                 color: currentTemplate.accentColor,
-                                fontSize: '12px'
+                                fontSize: '11px'
                               }}
                             >
                               {certificateData.totalHours || '0'} hrs
@@ -719,7 +731,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                               style={{ 
                                 fontFamily: "'Inter', sans-serif",
                                 color: currentTemplate.titleColor,
-                                fontSize: '12px'
+                                fontSize: '11px'
                               }}
                             >
                               {certificateData.performance}
@@ -742,7 +754,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                               style={{ 
                                 fontFamily: "'Inter', sans-serif",
                                 color: currentTemplate.accentColor,
-                                fontSize: '12px'
+                                fontSize: '11px'
                               }}
                             >
                               {certificateData.completedTasks || '0'}
@@ -753,7 +765,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                         {/* Skills and Custom Text */}
                         {(certificateData.skills || certificateData.customText) && (
                           <div 
-                            className="pt-3"
+                            className="pt-2"
                             style={{ 
                               borderTop: `1px solid ${currentTemplate.borderColor}40`
                             }}
@@ -765,7 +777,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                                   style={{ 
                                     fontFamily: "'Inter', sans-serif",
                                     color: currentTemplate.secondaryText,
-                                    fontSize: '9px'
+                                    fontSize: '8px'
                                   }}
                                 >
                                   KEY SKILLS ACQUIRED:
@@ -775,8 +787,8 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                                   style={{ 
                                     fontFamily: "'Inter', sans-serif",
                                     color: currentTemplate.primaryText,
-                                    fontSize: '10px',
-                                    lineHeight: '1.4'
+                                    fontSize: '9px',
+                                    lineHeight: '1.3'
                                   }}
                                 >
                                   {certificateData.skills}
@@ -790,8 +802,8 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                                   fontFamily: "'Playfair Display', Georgia, serif",
                                   color: currentTemplate.secondaryText,
                                   fontStyle: 'italic',
-                                  fontSize: '10px',
-                                  lineHeight: '1.4'
+                                  fontSize: '9px',
+                                  lineHeight: '1.3'
                                 }}
                               >
                                 "{certificateData.customText}"
@@ -802,8 +814,8 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                       </div>
                     </div>
 
-                    {/* Footer Section - Compact */}
-                    <div className="flex justify-between items-end mt-6">
+                    {/* Footer Section - Fixed bottom positioning */}
+                    <div className="flex justify-between items-end flex-shrink-0" style={{ minHeight: '50px', marginTop: '16px' }}>
                       <div className="text-center">
                         <div 
                           className="w-32 h-px mb-2"
