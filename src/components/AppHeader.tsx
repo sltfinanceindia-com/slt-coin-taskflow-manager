@@ -55,23 +55,23 @@ export function AppHeader() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 max-w-screen-2xl items-center">
-        <div className="mr-4 flex">
+      <div className="container flex h-14 max-w-screen-2xl items-center px-4 sm:px-6">
+        <div className="mr-3 sm:mr-4 flex">
           <SidebarTrigger className="-ml-1" />
         </div>
         
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+        <div className="flex flex-1 items-center justify-between space-x-3 md:justify-end">
           <div className="w-full flex-1 md:w-auto md:flex-none">
             {/* Search or other controls can go here */}
           </div>
           
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1 sm:space-x-2">
             {/* Theme Toggle */}
             <Button
               variant="ghost"
               size="sm"
               onClick={toggleTheme}
-              className="h-8 w-8 px-0"
+              className="h-8 w-8 px-0 shrink-0"
             >
               <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
               <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -79,12 +79,12 @@ export function AppHeader() {
             </Button>
 
             {/* Notifications */}
-            <Button variant="ghost" size="sm" className="h-8 w-8 px-0 relative">
+            <Button variant="ghost" size="sm" className="h-8 w-8 px-0 relative shrink-0">
               <Bell className="h-4 w-4" />
               {pendingCoins > 0 && (
                 <Badge 
                   variant="destructive" 
-                  className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs flex items-center justify-center"
+                  className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs flex items-center justify-center min-w-[20px]"
                 >
                   {pendingCoins > 9 ? '9+' : pendingCoins}
                 </Badge>
@@ -94,14 +94,14 @@ export function AppHeader() {
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 px-2">
+                <Button variant="ghost" className="h-8 px-2 shrink-0">
                   <div className="flex items-center space-x-2">
-                    <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
+                    <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                       <span className="text-xs font-medium text-primary">
                         {profile?.full_name?.charAt(0).toUpperCase()}
                       </span>
                     </div>
-                    <span className="hidden md:inline-block text-sm">
+                    <span className="hidden md:inline-block text-sm truncate max-w-32">
                       {profile?.full_name}
                     </span>
                   </div>
