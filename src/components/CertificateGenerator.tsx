@@ -388,15 +388,15 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                 </div>
                 <div className="space-y-3">
                   <Label htmlFor="supervisor" className="text-sm font-medium text-foreground">
-                    Supervisor *
+                    Supervisor Name *
                   </Label>
                   <Input
                     id="supervisor"
                     required
-                    value={certificateData.supervisor}
+                    value={certificateData.supervisor || ''}
                     onChange={(e) => setCertificateData((prev) => ({ ...prev, supervisor: e.target.value }))}
                     className="h-11"
-                    placeholder="Enter supervisor name"
+                    placeholder="Enter supervisor's full name"
                   />
                 </div>
                 <div className="space-y-3">
@@ -508,7 +508,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                   onClick={generatePDF}
                   disabled={
                     isGenerating ||
-                    !certificateData.internName ||
+                    !certificateData.internName?.trim() ||
                     !certificateData.endDate ||
                     !certificateData.supervisor?.trim()
                   }
@@ -1043,16 +1043,17 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                       </div>
                     </div>
 
-                    {/* Footer Section - FIXED ALIGNMENT */}
-                    <div className="flex items-end justify-between mt-4" style={{ gap: '24px' }}>
-                      <div className="text-center" style={{ width: '40%' }}>
+                    {/* Footer Section - CORRECTED ALIGNMENT */}
+                    <div className="flex items-end justify-between flex-shrink-0 mt-6">
+                      {/* Date block */}
+                      <div className="flex flex-col items-center" style={{ width: '45%' }}>
                         <div
-                          className="mb-2"
                           style={{
-                            width: '100%',
+                            width: '120px',
                             height: '1px',
                             backgroundColor: currentTemplate.borderColor,
                             opacity: 0.7,
+                            marginBottom: '8px',
                           }}
                         />
                         <p
@@ -1063,7 +1064,8 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                             fontWeight: 600,
                             textTransform: 'uppercase',
                             letterSpacing: '1px',
-                            marginBottom: '2px',
+                            marginBottom: '4px',
+                            textAlign: 'center',
                           }}
                         >
                           Date
@@ -1074,6 +1076,8 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                             color: currentTemplate.primaryText,
                             fontSize: '9px',
                             fontWeight: 'bold',
+                            textAlign: 'center',
+                            minHeight: '14px',
                           }}
                         >
                           {certificateData.endDate
@@ -1082,14 +1086,15 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                         </p>
                       </div>
 
-                      <div className="text-center" style={{ width: '40%' }}>
+                      {/* Supervisor block */}
+                      <div className="flex flex-col items-center" style={{ width: '45%' }}>
                         <div
-                          className="mb-2"
                           style={{
-                            width: '100%',
+                            width: '120px',
                             height: '1px',
                             backgroundColor: currentTemplate.borderColor,
                             opacity: 0.7,
+                            marginBottom: '8px',
                           }}
                         />
                         <p
@@ -1100,12 +1105,13 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                             fontWeight: 600,
                             textTransform: 'uppercase',
                             letterSpacing: '1px',
-                            marginBottom: '2px',
+                            marginBottom: '4px',
+                            textAlign: 'center',
                           }}
                         >
                           Supervisor
                         </p>
-                        <div className="flex items-center justify-center gap-1">
+                        <div className="flex items-center justify-center gap-1" style={{ minHeight: '14px' }}>
                           <BadgeCheck size={10} color={currentTemplate.accentColor} />
                           <p
                             style={{
@@ -1113,16 +1119,15 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                               color: currentTemplate.primaryText,
                               fontSize: '9px',
                               fontWeight: 'bold',
-                              maxWidth: '220px',
+                              textAlign: 'center',
+                              maxWidth: '180px',
                               whiteSpace: 'nowrap',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
                             }}
-                            title={certificateData.supervisor}
+                            title={certificateData.supervisor || 'HR Department'}
                           >
-                            {certificateData.supervisor?.trim()?.length
-                              ? certificateData.supervisor
-                              : 'HR Department'}
+                            {certificateData.supervisor?.trim() || 'HR Department'}
                           </p>
                         </div>
                       </div>
