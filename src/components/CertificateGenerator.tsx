@@ -394,7 +394,10 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                     id="supervisor"
                     required
                     value={certificateData.supervisor || ''}
-                    onChange={(e) => setCertificateData((prev) => ({ ...prev, supervisor: e.target.value }))}
+                    onChange={(e) => {
+                      console.log('Supervisor changed to:', e.target.value);
+                      setCertificateData((prev) => ({ ...prev, supervisor: e.target.value }));
+                    }}
                     className="h-11"
                     placeholder="Enter supervisor's full name"
                   />
@@ -1043,92 +1046,111 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                       </div>
                     </div>
 
-                    {/* Footer Section - CORRECTED ALIGNMENT */}
-                    <div className="flex items-end justify-between flex-shrink-0 mt-6">
-                      {/* Date block */}
-                      <div className="flex flex-col items-center" style={{ width: '45%' }}>
+                    {/* Footer Section - SIMPLIFIED & GUARANTEED VISIBLE */}
+                    <div 
+                      className="flex items-end justify-between flex-shrink-0" 
+                      style={{ 
+                        marginTop: '16px',
+                        paddingTop: '8px',
+                        gap: '32px'
+                      }}
+                    >
+                      {/* Date Section */}
+                      <div style={{ width: '40%', textAlign: 'center' }}>
+                        {/* Signature Line */}
                         <div
                           style={{
-                            width: '120px',
+                            width: '100px',
                             height: '1px',
                             backgroundColor: currentTemplate.borderColor,
-                            opacity: 0.7,
-                            marginBottom: '8px',
+                            margin: '0 auto 8px auto',
+                            opacity: 0.8,
                           }}
                         />
-                        <p
+                        
+                        {/* Date Label */}
+                        <div
                           style={{
                             fontFamily: "'Inter', sans-serif",
                             color: currentTemplate.secondaryText,
-                            fontSize: '7px',
+                            fontSize: '8px',
                             fontWeight: 600,
                             textTransform: 'uppercase',
                             letterSpacing: '1px',
                             marginBottom: '4px',
-                            textAlign: 'center',
                           }}
                         >
-                          Date
-                        </p>
-                        <p
+                          DATE
+                        </div>
+                        
+                        {/* Date Value */}
+                        <div
                           style={{
                             fontFamily: "'Inter', sans-serif",
                             color: currentTemplate.primaryText,
-                            fontSize: '9px',
+                            fontSize: '10px',
                             fontWeight: 'bold',
-                            textAlign: 'center',
-                            minHeight: '14px',
+                            backgroundColor: 'rgba(0,0,0,0.1)',
+                            padding: '2px 8px',
+                            borderRadius: '4px',
+                            display: 'inline-block',
                           }}
                         >
-                          {certificateData.endDate
+                          {certificateData.endDate 
                             ? format(new Date(certificateData.endDate), 'MMM dd, yyyy')
-                            : format(new Date(), 'MMM dd, yyyy')}
-                        </p>
+                            : format(new Date(), 'MMM dd, yyyy')
+                          }
+                        </div>
                       </div>
 
-                      {/* Supervisor block */}
-                      <div className="flex flex-col items-center" style={{ width: '45%' }}>
+                      {/* Supervisor Section */}
+                      <div style={{ width: '40%', textAlign: 'center' }}>
+                        {/* Signature Line */}
                         <div
                           style={{
-                            width: '120px',
+                            width: '100px',
                             height: '1px',
                             backgroundColor: currentTemplate.borderColor,
-                            opacity: 0.7,
-                            marginBottom: '8px',
+                            margin: '0 auto 8px auto',
+                            opacity: 0.8,
                           }}
                         />
-                        <p
+                        
+                        {/* Supervisor Label */}
+                        <div
                           style={{
                             fontFamily: "'Inter', sans-serif",
                             color: currentTemplate.secondaryText,
-                            fontSize: '7px',
+                            fontSize: '8px',
                             fontWeight: 600,
                             textTransform: 'uppercase',
                             letterSpacing: '1px',
                             marginBottom: '4px',
-                            textAlign: 'center',
                           }}
                         >
-                          Supervisor
-                        </p>
-                        <div className="flex items-center justify-center gap-1" style={{ minHeight: '14px' }}>
+                          SUPERVISOR
+                        </div>
+                        
+                        {/* Supervisor Value with Icon */}
+                        <div
+                          style={{
+                            fontFamily: "'Inter', sans-serif",
+                            color: currentTemplate.primaryText,
+                            fontSize: '10px',
+                            fontWeight: 'bold',
+                            backgroundColor: 'rgba(0,0,0,0.1)',
+                            padding: '2px 8px',
+                            borderRadius: '4px',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                          }}
+                        >
                           <BadgeCheck size={10} color={currentTemplate.accentColor} />
-                          <p
-                            style={{
-                              fontFamily: "'Inter', sans-serif",
-                              color: currentTemplate.primaryText,
-                              fontSize: '9px',
-                              fontWeight: 'bold',
-                              textAlign: 'center',
-                              maxWidth: '180px',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}
-                            title={certificateData.supervisor || 'HR Department'}
-                          >
-                            {certificateData.supervisor?.trim() || 'HR Department'}
-                          </p>
+                          {(certificateData.supervisor && certificateData.supervisor.trim()) 
+                            ? certificateData.supervisor 
+                            : 'HR Department'
+                          }
                         </div>
                       </div>
                     </div>
