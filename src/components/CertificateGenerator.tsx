@@ -93,8 +93,8 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
   };
 
   // Fixed canvas size for preview and capture
-  const CERT_W = 780; // px
-  const CERT_H = 550; // px
+  const CERT_W = 780;
+  const CERT_H = 550;
 
   const generatePDF = async () => {
     if (!certificateRef.current) return;
@@ -126,14 +126,11 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
         ignoreElements: (el) => el.tagName === 'SCRIPT',
       });
 
-      // A4 landscape in mm
       const pdfWidth = 297;
       const pdfHeight = 210;
-
       const canvasAspectRatio = canvas.width / canvas.height;
-      const pdfAspectRatio = pdfWidth / pdfHeight;
 
-      let finalWidth = pdfWidth - 16; // 8mm margins
+      let finalWidth = pdfWidth - 16;
       let finalHeight = finalWidth / canvasAspectRatio;
       if (finalHeight > pdfHeight - 16) {
         finalHeight = pdfHeight - 16;
@@ -201,7 +198,6 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
 
   const currentTemplate = templates[template];
 
-  // Finance icon chip
   const FinanceChip = ({
     Icon,
     label,
@@ -255,7 +251,6 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
     </div>
   );
 
-  // Header finance strip
   const HeaderFinanceRow = () => (
     <div className="flex items-center justify-center gap-8 mb-4" style={{ opacity: 0.95 }}>
       <div
@@ -336,7 +331,6 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6 space-y-8">
-              {/* Template Selection */}
               <div className="space-y-3">
                 <Label htmlFor="template" className="text-sm font-medium text-foreground">
                   Certificate Template
@@ -355,7 +349,6 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                 </Select>
               </div>
 
-              {/* Certificate Data Form */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="space-y-3">
                   <Label htmlFor="internName" className="text-sm font-medium text-foreground">
@@ -567,7 +560,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                         borderStyle: 'solid',
                       }}
                     >
-                      {/* Corners */}
+                      {/* Corner decorations */}
                       <div className="absolute top-0 left-0 w-16 h-16">
                         <div
                           className="absolute inset-0 border-r-2 border-b-2 rounded-br-2xl"
@@ -644,7 +637,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                     </div>
                   </div>
 
-                  {/* Content */}
+                  {/* Certificate Content */}
                   <div className="absolute inset-0 flex flex-col justify-between p-8">
                     {/* Header */}
                     <div className="text-center flex-shrink-0">
@@ -758,9 +751,9 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                       </div>
                     </div>
 
-                    {/* Main */}
+                    {/* Main Content */}
                     <div className="flex-1 flex flex-col justify-center">
-                      {/* Presented */}
+                      {/* Presented to */}
                       <div className="text-center mb-4 relative">
                         <div
                           className="inline-block px-6 py-2 rounded-lg"
@@ -838,7 +831,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                         />
                       </div>
 
-                      {/* Achievement */}
+                      {/* Achievement Text */}
                       <div className="text-center mb-4">
                         <p
                           className="mb-2"
@@ -855,7 +848,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                         <h3
                           className="font-bold mb-3"
                           style={{
-                            fontFamily: "'Cinzel', Georgia, serif',
+                            fontFamily: "'Cinzel', Georgia, serif",
                             color: currentTemplate.titleColor,
                             fontWeight: 'bold',
                             letterSpacing: '1px',
@@ -867,7 +860,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                         </h3>
                       </div>
 
-                      {/* Details Grid */}
+                      {/* Enhanced Details Grid */}
                       <div
                         className="rounded-lg p-3 mx-4"
                         style={{
@@ -1050,9 +1043,8 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                       </div>
                     </div>
 
-                    {/* Footer Section (Aligned, robust) */}
+                    {/* Footer Section - FIXED ALIGNMENT */}
                     <div className="flex items-end justify-between mt-4" style={{ gap: '24px' }}>
-                      {/* Date block */}
                       <div className="text-center" style={{ width: '40%' }}>
                         <div
                           className="mb-2"
@@ -1090,7 +1082,6 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                         </p>
                       </div>
 
-                      {/* Supervisor block */}
                       <div className="text-center" style={{ width: '40%' }}>
                         <div
                           className="mb-2"
@@ -1157,13 +1148,17 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                   <div className="absolute top-3 left-1/2 w-20 h-0.5 -translate-x-1/2" style={{ opacity: 0.25 }}>
                     <div
                       className="w-full h-full rounded-full"
-                      style={{ background: `linear-gradient(90deg, transparent, ${currentTemplate.accentColor}, transparent)` }}
+                      style={{
+                        background: `linear-gradient(90deg, transparent, ${currentTemplate.accentColor}, transparent)`,
+                      }}
                     />
                   </div>
                   <div className="absolute bottom-3 left-1/2 w-20 h-0.5 -translate-x-1/2" style={{ opacity: 0.25 }}>
                     <div
                       className="w-full h-full rounded-full"
-                      style={{ background: `linear-gradient(90deg, transparent, ${currentTemplate.accentColor}, transparent)` }}
+                      style={{
+                        background: `linear-gradient(90deg, transparent, ${currentTemplate.accentColor}, transparent)`,
+                      }}
                     />
                   </div>
                 </div>
