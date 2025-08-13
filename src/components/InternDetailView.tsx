@@ -24,16 +24,18 @@ export function InternDetailView({ internId, onClose }: InternDetailViewProps) {
   const { profile: internProfile, stats } = useProfile(internId);
   const { tasks } = useTasks();
   const { timeLogs } = useTimeLogs();
-  const { data: analyticsData, isLoading: analyticsLoading } = useInternAnalytics(internProfile?.user_id || '');
+  const { data: analyticsData, isLoading: analyticsLoading } = useInternAnalytics(internId);
   const [showCertificateGenerator, setShowCertificateGenerator] = useState(false);
 
-  if (!currentProfile || currentProfile.role !== 'admin') {
+  // Allow access if user is admin OR if user is viewing their own profile
+  const canViewDetails = currentProfile?.role === 'admin' || currentProfile?.id === internId;
+  
+  if (!currentProfile || !canViewDetails) {
     return null;
   }
 
-  // Filter data using correct user_id from profile
-  const internTasks = tasks.filter(task => task.assigned_to === internProfile?.user_id);
-  const internTimeLogs = timeLogs.filter(log => log.user_id === internProfile?.user_id);
+  const internTasks = tasks.filter(task => task.assigned_to === internId);
+  const internTimeLogs = timeLogs.filter(log => log.user_id === internId);
 
   return (
     <Dialog open onOpenChange={() => onClose()}>
@@ -46,13 +48,11 @@ export function InternDetailView({ internId, onClose }: InternDetailViewProps) {
         </DialogHeader>
 
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="tasks">Tasks</TabsTrigger>
             <TabsTrigger value="time">Time Logs</TabsTrigger>
-            <TabsTrigger value="activity">Activity</TabsTrigger>
-            <TabsTrigger value="training">Training</TabsTrigger>
             <TabsTrigger value="certificate">Certificate</TabsTrigger>
           </TabsList>
 
@@ -84,8 +84,8 @@ export function InternDetailView({ internId, onClose }: InternDetailViewProps) {
               </CardContent>
             </Card>
 
-            {/* Performance Stats - Enhanced Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {/* Performance Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <Card>
                 <CardContent className="p-4 text-center">
                   <Award className="h-8 w-8 text-green-500 mx-auto mb-2" />
@@ -119,76 +119,6 @@ export function InternDetailView({ internId, onClose }: InternDetailViewProps) {
                   <Award className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
                   <p className="text-2xl font-bold">{analyticsData?.totalStats.totalCoins || 0}</p>
                   <p className="text-sm text-muted-foreground">SLT Coins</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <Clock className="h-8 w-8 text-cyan-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold">{analyticsData?.totalStats.totalSessions || 0}</p>
-                  <p className="text-sm text-muted-foreground">Sessions</p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Additional Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm">Account Information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Account Created:</span>
-                    <span className="text-sm">{analyticsData?.totalStats.accountCreatedDate ? format(new Date(analyticsData.totalStats.accountCreatedDate), 'MMM dd, yyyy') : 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Last Login:</span>
-                    <span className="text-sm">{analyticsData?.totalStats.lastLoginDate ? format(new Date(analyticsData.totalStats.lastLoginDate), 'MMM dd, yyyy') : 'Never'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Admin Notes:</span>
-                    <span className="text-sm font-medium">{analyticsData?.totalStats.adminNotes || 0}</span>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm">Session Statistics</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Total Session Hours:</span>
-                    <span className="text-sm font-medium">{Math.round((analyticsData?.totalStats.totalSessionHours || 0) * 10) / 10}h</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Avg Session Duration:</span>
-                    <span className="text-sm font-medium">{analyticsData?.totalStats.averageSessionDuration || 0} min</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Activity Logs:</span>
-                    <span className="text-sm font-medium">{analyticsData?.totalStats.activityLogs || 0}</span>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm">Training & Assessments</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Training Progress:</span>
-                    <span className="text-sm font-medium">{analyticsData?.totalStats.trainingProgress || 0}%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Assessments Passed:</span>
-                    <span className="text-sm font-medium text-green-600">{analyticsData?.totalStats.assessmentsPassed || 0}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Assessments Failed:</span>
-                    <span className="text-sm font-medium text-red-600">{analyticsData?.totalStats.assessmentsFailed || 0}</span>
-                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -335,138 +265,6 @@ export function InternDetailView({ internId, onClose }: InternDetailViewProps) {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          <TabsContent value="activity" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Session Logs */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recent Sessions</CardTitle>
-                  <CardDescription>Login and logout activity</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 max-h-60 overflow-y-auto">
-                    {analyticsData?.detailedData?.sessionLogs?.slice(0, 10).map((session: any) => (
-                      <div key={session.id} className="flex items-center justify-between p-2 bg-muted/50 rounded">
-                        <div>
-                          <p className="text-sm font-medium">
-                            {format(new Date(session.login_time), 'MMM dd, yyyy HH:mm')}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {session.logout_time ? `Duration: ${session.session_duration_minutes} min` : 'Active session'}
-                          </p>
-                        </div>
-                        <Badge variant={session.logout_time ? "outline" : "default"}>
-                          {session.logout_time ? "Completed" : "Active"}
-                        </Badge>
-                      </div>
-                    )) || <p className="text-muted-foreground">No session data available</p>}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Activity Logs */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Activity Timeline</CardTitle>
-                  <CardDescription>Recent user activities</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 max-h-60 overflow-y-auto">
-                    {analyticsData?.detailedData?.activityLogs?.slice(0, 10).map((activity: any) => (
-                      <div key={activity.id} className="flex items-center justify-between p-2 bg-muted/50 rounded">
-                        <div>
-                          <p className="text-sm font-medium">Activity logged</p>
-                          <p className="text-xs text-muted-foreground">
-                            {format(new Date(activity.timestamp), 'MMM dd, yyyy HH:mm')}
-                          </p>
-                        </div>
-                      </div>
-                    )) || <p className="text-muted-foreground">No activity data available</p>}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Email Notifications */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Communication Statistics</CardTitle>
-                <CardDescription>Email notifications and admin interactions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="text-center p-4 bg-muted/50 rounded">
-                    <p className="text-2xl font-bold">{analyticsData?.totalStats.emailsSent || 0}</p>
-                    <p className="text-sm text-muted-foreground">Email Notifications Sent</p>
-                  </div>
-                  <div className="text-center p-4 bg-muted/50 rounded">
-                    <p className="text-2xl font-bold">{analyticsData?.totalStats.adminNotes || 0}</p>
-                    <p className="text-sm text-muted-foreground">Admin Notes</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="training" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Training Progress */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Training Progress</CardTitle>
-                  <CardDescription>Course completion status</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {analyticsData?.detailedData?.trainingProgress?.map((progress: any, index: number) => (
-                      <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded">
-                        <div>
-                          <p className="text-sm font-medium">{progress.progress_type}</p>
-                          <p className="text-xs text-muted-foreground">Progress Value: {progress.progress_value}%</p>
-                        </div>
-                        <Badge variant="outline">{progress.progress_value}%</Badge>
-                      </div>
-                    )) || <p className="text-muted-foreground">No training progress data</p>}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Assessment Results */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Assessment Results</CardTitle>
-                  <CardDescription>Test scores and completion status</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {analyticsData?.detailedData?.assessmentAttempts?.map((attempt: any) => (
-                      <div key={attempt.id} className="flex items-center justify-between p-2 bg-muted/50 rounded">
-                        <div>
-                          <p className="text-sm font-medium">Assessment Attempt</p>
-                          <p className="text-xs text-muted-foreground">Status: {attempt.status}</p>
-                        </div>
-                        <Badge variant={attempt.is_passed ? "default" : "destructive"}>
-                          {attempt.is_passed ? "Passed" : "Failed"}
-                        </Badge>
-                      </div>
-                    )) || <p className="text-muted-foreground">No assessment attempts</p>}
-                  </div>
-                  
-                  <div className="mt-4 grid grid-cols-2 gap-4">
-                    <div className="text-center p-3 bg-green-50 rounded">
-                      <p className="text-lg font-bold text-green-600">{analyticsData?.totalStats.assessmentsPassed || 0}</p>
-                      <p className="text-xs text-green-600">Passed</p>
-                    </div>
-                    <div className="text-center p-3 bg-red-50 rounded">
-                      <p className="text-lg font-bold text-red-600">{analyticsData?.totalStats.assessmentsFailed || 0}</p>
-                      <p className="text-xs text-red-600">Failed</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
           </TabsContent>
 
           <TabsContent value="certificate">
