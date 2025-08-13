@@ -96,44 +96,75 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
 
     setIsGenerating(true);
     try {
+      // Ensure fonts are loaded
       await loadFonts();
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Wait for rendering to complete
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Scroll the certificate into view to ensure proper rendering
+      certificateRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      
+      // Wait for scroll to complete
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       const canvas = await html2canvas(certificateRef.current, {
-        scale: 2,
+        scale: 2, // Reduced scale for better performance and size control
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         letterRendering: true,
         logging: false,
-        height: certificateRef.current.offsetHeight,
         width: certificateRef.current.offsetWidth,
+        height: certificateRef.current.offsetHeight,
+        windowWidth: certificateRef.current.offsetWidth,
+        windowHeight: certificateRef.current.offsetHeight,
+        ignoreElements: (element) => {
+          return element.tagName === 'SCRIPT';
+        }
       });
 
-      const imgData = canvas.toDataURL('image/png', 1.0);
-      const pdf = new jsPDF('landscape', 'mm', 'a4');
-      
+      // A4 landscape dimensions in mm
       const pdfWidth = 297;
       const pdfHeight = 210;
-      const imgWidth = pdfWidth - 10; // Add margins
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      // Calculate optimal sizing to fit the PDF page
+      const canvasAspectRatio = canvas.width / canvas.height;
+      const pdfAspectRatio = pdfWidth / pdfHeight;
+      
+      let finalWidth = pdfWidth - 16; // 8mm margins on each side
+      let finalHeight = finalWidth / canvasAspectRatio;
+      
+      if (finalHeight > pdfHeight - 16) { // If height exceeds page with margins
+        finalHeight = pdfHeight - 16;
+        finalWidth = finalHeight * canvasAspectRatio;
+      }
       
       // Center the image on the page
-      const x = (pdfWidth - imgWidth) / 2;
-      const y = Math.max((pdfHeight - imgHeight) / 2, 5);
+      const x = (pdfWidth - finalWidth) / 2;
+      const y = (pdfHeight - finalHeight) / 2;
+
+      // Create PDF with proper dimensions
+      const pdf = new jsPDF('landscape', 'mm', 'a4');
       
-      pdf.addImage(imgData, 'PNG', x, y, imgWidth, Math.min(imgHeight, pdfHeight - 10));
+      // Convert canvas to image data
+      const imgData = canvas.toDataURL('image/png', 1.0);
+      
+      // Add image to PDF with calculated dimensions
+      pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
+      
+      // Save the PDF
       pdf.save(`certificate-${certificateData.internName.replace(/\s+/g, '-').toLowerCase()}.pdf`);
       
       toast({
-        title: "Certificate Generated",
-        description: "Certificate has been downloaded successfully.",
+        title: "Certificate Generated Successfully",
+        description: "Your certificate has been downloaded.",
       });
     } catch (error) {
       console.error('PDF Generation Error:', error);
       toast({
-        title: "Error Generating Certificate",
-        description: "Failed to generate certificate PDF. Please try again.",
+        title: "PDF Generation Failed",
+        description: "There was an error generating the PDF. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -395,73 +426,74 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
               <div className="overflow-auto bg-slate-50 p-6 rounded-lg border border-border">
                 <div
                   ref={certificateRef}
-                  className="w-[800px] h-[580px] mx-auto relative shadow-2xl rounded-xl overflow-hidden"
+                  className="w-[780px] h-[550px] mx-auto relative shadow-2xl rounded-lg overflow-hidden"
                   style={{ 
                     background: currentTemplate.bgGradient,
                     fontFamily: "'Inter', 'Cinzel', Georgia, serif",
                     WebkitFontSmoothing: 'antialiased',
-                    MozOsxFontSmoothing: 'grayscale'
+                    MozOsxFontSmoothing: 'grayscale',
+                    aspectRatio: '780/550'
                   }}
                 >
                   {/* Advanced Decorative Border System */}
-                  <div className="absolute inset-0 p-4">
+                  <div className="absolute inset-0 p-3">
                     <div 
-                      className="w-full h-full border-2 rounded-xl relative overflow-hidden"
+                      className="w-full h-full border-2 rounded-lg relative overflow-hidden"
                       style={{ 
                         borderColor: currentTemplate.borderColor,
                         borderStyle: 'solid'
                       }}
                     >
                       {/* Geometric corner patterns */}
-                      <div className="absolute top-0 left-0 w-20 h-20">
+                      <div className="absolute top-0 left-0 w-16 h-16">
                         <div 
-                          className="absolute inset-0 border-r-2 border-b-2 rounded-br-3xl"
+                          className="absolute inset-0 border-r-2 border-b-2 rounded-br-2xl"
                           style={{ borderColor: currentTemplate.lightAccent, opacity: 0.6 }}
                         ></div>
                         <div 
-                          className="absolute top-2 left-2 w-12 h-12 border-r border-b rounded-br-2xl"
+                          className="absolute top-1 left-1 w-10 h-10 border-r border-b rounded-br-xl"
                           style={{ borderColor: currentTemplate.accentColor, opacity: 0.4 }}
                         ></div>
                       </div>
-                      <div className="absolute top-0 right-0 w-20 h-20">
+                      <div className="absolute top-0 right-0 w-16 h-16">
                         <div 
-                          className="absolute inset-0 border-l-2 border-b-2 rounded-bl-3xl"
+                          className="absolute inset-0 border-l-2 border-b-2 rounded-bl-2xl"
                           style={{ borderColor: currentTemplate.lightAccent, opacity: 0.6 }}
                         ></div>
                         <div 
-                          className="absolute top-2 right-2 w-12 h-12 border-l border-b rounded-bl-2xl"
+                          className="absolute top-1 right-1 w-10 h-10 border-l border-b rounded-bl-xl"
                           style={{ borderColor: currentTemplate.accentColor, opacity: 0.4 }}
                         ></div>
                       </div>
-                      <div className="absolute bottom-0 left-0 w-20 h-20">
+                      <div className="absolute bottom-0 left-0 w-16 h-16">
                         <div 
-                          className="absolute inset-0 border-r-2 border-t-2 rounded-tr-3xl"
+                          className="absolute inset-0 border-r-2 border-t-2 rounded-tr-2xl"
                           style={{ borderColor: currentTemplate.lightAccent, opacity: 0.6 }}
                         ></div>
                         <div 
-                          className="absolute bottom-2 left-2 w-12 h-12 border-r border-t rounded-tr-2xl"
+                          className="absolute bottom-1 left-1 w-10 h-10 border-r border-t rounded-tr-xl"
                           style={{ borderColor: currentTemplate.accentColor, opacity: 0.4 }}
                         ></div>
                       </div>
-                      <div className="absolute bottom-0 right-0 w-20 h-20">
+                      <div className="absolute bottom-0 right-0 w-16 h-16">
                         <div 
-                          className="absolute inset-0 border-l-2 border-t-2 rounded-tl-3xl"
+                          className="absolute inset-0 border-l-2 border-t-2 rounded-tl-2xl"
                           style={{ borderColor: currentTemplate.lightAccent, opacity: 0.6 }}
                         ></div>
                         <div 
-                          className="absolute bottom-2 right-2 w-12 h-12 border-l border-t rounded-tl-2xl"
+                          className="absolute bottom-1 right-1 w-10 h-10 border-l border-t rounded-tl-xl"
                           style={{ borderColor: currentTemplate.accentColor, opacity: 0.4 }}
                         ></div>
                       </div>
 
                       {/* Elegant side decorations */}
-                      <div className="absolute top-1/2 left-2 w-4 h-32 -translate-y-1/2">
+                      <div className="absolute top-1/2 left-1 w-3 h-24 -translate-y-1/2">
                         <div 
                           className="w-full h-full rounded-full opacity-20"
                           style={{ background: `linear-gradient(to bottom, transparent, ${currentTemplate.accentColor}, transparent)` }}
                         ></div>
                       </div>
-                      <div className="absolute top-1/2 right-2 w-4 h-32 -translate-y-1/2">
+                      <div className="absolute top-1/2 right-1 w-3 h-24 -translate-y-1/2">
                         <div 
                           className="w-full h-full rounded-full opacity-20"
                           style={{ background: `linear-gradient(to bottom, transparent, ${currentTemplate.accentColor}, transparent)` }}
@@ -470,57 +502,57 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                     </div>
                   </div>
 
-                  {/* Certificate Content - Fixed Layout */}
-                  <div className="absolute inset-0 flex flex-col justify-between p-10">
+                  {/* Certificate Content */}
+                  <div className="absolute inset-0 flex flex-col justify-between p-8">
                     
-                    {/* Header Section - Fixed positioning */}
-                    <div className="text-center flex-shrink-0" style={{ minHeight: '80px' }}>
+                    {/* Header Section - Reduced sizes */}
+                    <div className="text-center flex-shrink-0">
                       <h1 
-                        className="text-3xl font-bold mb-2 tracking-widest"
+                        className="font-bold mb-1 tracking-widest"
                         style={{ 
                           fontFamily: "'Cinzel', Georgia, serif",
                           color: currentTemplate.titleColor,
                           fontWeight: 'bold',
-                          letterSpacing: '3px',
+                          letterSpacing: '2px',
                           textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                          fontSize: '30px',
-                          lineHeight: '1.2'
+                          fontSize: '24px',
+                          lineHeight: '1.1'
                         }}
                       >
                         CERTIFICATE OF EXCELLENCE
                       </h1>
                       
-                      {/* Modern divider */}
-                      <div className="flex items-center justify-center gap-3 mb-3">
+                      {/* Modern divider - smaller */}
+                      <div className="flex items-center justify-center gap-2 mb-2">
                         <div 
-                          className="w-16 h-px"
+                          className="w-12 h-px"
                           style={{ backgroundColor: currentTemplate.borderColor, opacity: 0.8 }}
                         ></div>
                         <div 
-                          className="w-2 h-2 rounded-full"
+                          className="w-1.5 h-1.5 rounded-full"
                           style={{ backgroundColor: currentTemplate.accentColor }}
                         ></div>
                         <div 
-                          className="w-6 h-px"
+                          className="w-4 h-px"
                           style={{ backgroundColor: currentTemplate.lightAccent }}
                         ></div>
                         <div 
-                          className="w-2 h-2 rounded-full"
+                          className="w-1.5 h-1.5 rounded-full"
                           style={{ backgroundColor: currentTemplate.accentColor }}
                         ></div>
                         <div 
-                          className="w-16 h-px"
+                          className="w-12 h-px"
                           style={{ backgroundColor: currentTemplate.borderColor, opacity: 0.8 }}
                         ></div>
                       </div>
 
                       <p 
-                        className="text-xs tracking-wider"
+                        className="tracking-wider"
                         style={{ 
                           fontFamily: "'Inter', sans-serif",
                           color: currentTemplate.secondaryText,
-                          letterSpacing: '2px',
-                          fontSize: '11px',
+                          letterSpacing: '1.5px',
+                          fontSize: '10px',
                           fontWeight: '500'
                         }}
                       >
@@ -528,17 +560,16 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                       </p>
                     </div>
 
-                    {/* Main Content - Fixed center positioning */}
-                    <div className="flex-1 flex flex-col justify-center" style={{ minHeight: '320px' }}>
+                    {/* Main Content */}
+                    <div className="flex-1 flex flex-col justify-center">
                       {/* Presentation text */}
                       <div className="text-center mb-3">
                         <p 
-                          className="text-sm"
                           style={{ 
                             fontFamily: "'Inter', sans-serif",
                             color: currentTemplate.secondaryText,
-                            letterSpacing: '1px',
-                            fontSize: '13px',
+                            letterSpacing: '0.5px',
+                            fontSize: '12px',
                             fontWeight: '400'
                           }}
                         >
@@ -546,10 +577,10 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                         </p>
                       </div>
 
-                      {/* Name Section - Fixed positioning */}
+                      {/* Name Section */}
                       <div className="mb-4">
                         <div 
-                          className="bg-black bg-opacity-20 rounded-lg p-3 mx-auto max-w-md backdrop-blur-sm"
+                          className="bg-black bg-opacity-20 rounded-lg p-3 mx-auto max-w-sm backdrop-blur-sm"
                           style={{
                             border: `1px solid ${currentTemplate.borderColor}60`
                           }}
@@ -562,17 +593,17 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                               fontWeight: 'bold',
                               letterSpacing: '1px',
                               textShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                              fontSize: '34px',
+                              fontSize: '30px',
                               lineHeight: '1.2',
                               margin: '0',
-                              padding: '8px 0'
+                              padding: '6px 0'
                             }}
                           >
                             {certificateData.internName || 'Name Surname'}
                           </h2>
                         </div>
                         <div 
-                          className="w-32 h-0.5 mx-auto mt-2 rounded-full"
+                          className="w-24 h-0.5 mx-auto mt-2 rounded-full"
                           style={{ 
                             background: `linear-gradient(90deg, transparent, ${currentTemplate.lightAccent}, transparent)`
                           }}
@@ -582,58 +613,61 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                       {/* Achievement Text */}
                       <div className="text-center mb-4">
                         <p 
-                          className="text-sm mb-2"
+                          className="mb-2"
                           style={{ 
                             fontFamily: "'Inter', sans-serif",
                             color: currentTemplate.secondaryText,
                             letterSpacing: '0.5px',
-                            fontSize: '13px'
+                            fontSize: '12px'
                           }}
                         >
                           for the successful completion of internship program at
                         </p>
                         
                         <h3 
-                          className="text-2xl font-bold mb-3"
+                          className="font-bold mb-3"
                           style={{ 
                             fontFamily: "'Cinzel', Georgia, serif",
                             color: currentTemplate.titleColor,
                             fontWeight: 'bold',
                             letterSpacing: '1px',
                             textShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                            fontSize: '22px'
+                            fontSize: '20px'
                           }}
                         >
                           SLT Finance India
                         </h3>
                       </div>
 
-                      {/* Enhanced Details Grid - Compact */}
+                      {/* Enhanced Details Grid */}
                       <div 
-                        className="bg-black bg-opacity-25 rounded-xl p-4 mx-4 backdrop-blur-sm"
+                        className="bg-black bg-opacity-25 rounded-lg p-3 mx-4 backdrop-blur-sm"
                         style={{
                           border: `1px solid ${currentTemplate.borderColor}40`
                         }}
                       >
-                        <div className="grid grid-cols-3 gap-4 mb-3">
+                        <div className="grid grid-cols-3 gap-3 mb-3">
                           <div className="text-center">
                             <p 
-                              className="text-xs font-medium uppercase tracking-wider mb-1"
                               style={{ 
                                 fontFamily: "'Inter', sans-serif",
                                 color: currentTemplate.secondaryText,
                                 opacity: 0.9,
-                                fontSize: '9px'
+                                fontSize: '8px',
+                                fontWeight: '600',
+                                textTransform: 'uppercase',
+                                letterSpacing: '1px',
+                                marginBottom: '4px'
                               }}
                             >
                               DEPARTMENT
                             </p>
                             <p 
-                              className="text-sm font-bold"
                               style={{ 
                                 fontFamily: "'Inter', sans-serif",
                                 color: currentTemplate.primaryText,
-                                fontSize: '11px'
+                                fontSize: '10px',
+                                fontWeight: 'bold'
                               }}
                             >
                               {certificateData.department || '[Department]'}
@@ -641,22 +675,25 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                           </div>
                           <div className="text-center">
                             <p 
-                              className="text-xs font-medium uppercase tracking-wider mb-1"
                               style={{ 
                                 fontFamily: "'Inter', sans-serif",
                                 color: currentTemplate.secondaryText,
                                 opacity: 0.9,
-                                fontSize: '9px'
+                                fontSize: '8px',
+                                fontWeight: '600',
+                                textTransform: 'uppercase',
+                                letterSpacing: '1px',
+                                marginBottom: '4px'
                               }}
                             >
                               ID NUMBER
                             </p>
                             <p 
-                              className="text-sm font-bold"
                               style={{ 
                                 fontFamily: "'Inter', sans-serif",
                                 color: currentTemplate.primaryText,
-                                fontSize: '11px'
+                                fontSize: '10px',
+                                fontWeight: 'bold'
                               }}
                             >
                               {certificateData.internId || '[ID]'}
@@ -664,22 +701,25 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                           </div>
                           <div className="text-center">
                             <p 
-                              className="text-xs font-medium uppercase tracking-wider mb-1"
                               style={{ 
                                 fontFamily: "'Inter', sans-serif",
                                 color: currentTemplate.secondaryText,
                                 opacity: 0.9,
-                                fontSize: '9px'
+                                fontSize: '8px',
+                                fontWeight: '600',
+                                textTransform: 'uppercase',
+                                letterSpacing: '1px',
+                                marginBottom: '4px'
                               }}
                             >
                               DURATION
                             </p>
                             <p 
-                              className="text-sm font-bold"
                               style={{ 
                                 fontFamily: "'Inter', sans-serif",
                                 color: currentTemplate.primaryText,
-                                fontSize: '11px'
+                                fontSize: '10px',
+                                fontWeight: 'bold'
                               }}
                             >
                               {certificateData.startDate && certificateData.endDate 
@@ -690,25 +730,28 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-3 gap-4 mb-3">
+                        <div className="grid grid-cols-3 gap-3 mb-2">
                           <div className="text-center">
                             <p 
-                              className="text-xs font-medium uppercase tracking-wider mb-1"
                               style={{ 
                                 fontFamily: "'Inter', sans-serif",
                                 color: currentTemplate.secondaryText,
                                 opacity: 0.9,
-                                fontSize: '9px'
+                                fontSize: '8px',
+                                fontWeight: '600',
+                                textTransform: 'uppercase',
+                                letterSpacing: '1px',
+                                marginBottom: '4px'
                               }}
                             >
                               TOTAL HOURS
                             </p>
                             <p 
-                              className="text-sm font-bold"
                               style={{ 
                                 fontFamily: "'Inter', sans-serif",
                                 color: currentTemplate.accentColor,
-                                fontSize: '11px'
+                                fontSize: '10px',
+                                fontWeight: 'bold'
                               }}
                             >
                               {certificateData.totalHours || '0'} hrs
@@ -716,22 +759,25 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                           </div>
                           <div className="text-center">
                             <p 
-                              className="text-xs font-medium uppercase tracking-wider mb-1"
                               style={{ 
                                 fontFamily: "'Inter', sans-serif",
                                 color: currentTemplate.secondaryText,
                                 opacity: 0.9,
-                                fontSize: '9px'
+                                fontSize: '8px',
+                                fontWeight: '600',
+                                textTransform: 'uppercase',
+                                letterSpacing: '1px',
+                                marginBottom: '4px'
                               }}
                             >
                               PERFORMANCE
                             </p>
                             <p 
-                              className="text-sm font-bold"
                               style={{ 
                                 fontFamily: "'Inter', sans-serif",
                                 color: currentTemplate.titleColor,
-                                fontSize: '11px'
+                                fontSize: '10px',
+                                fontWeight: 'bold'
                               }}
                             >
                               {certificateData.performance}
@@ -739,22 +785,25 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                           </div>
                           <div className="text-center">
                             <p 
-                              className="text-xs font-medium uppercase tracking-wider mb-1"
                               style={{ 
                                 fontFamily: "'Inter', sans-serif",
                                 color: currentTemplate.secondaryText,
                                 opacity: 0.9,
-                                fontSize: '9px'
+                                fontSize: '8px',
+                                fontWeight: '600',
+                                textTransform: 'uppercase',
+                                letterSpacing: '1px',
+                                marginBottom: '4px'
                               }}
                             >
                               TASKS COMPLETED
                             </p>
                             <p 
-                              className="text-sm font-bold"
                               style={{ 
                                 fontFamily: "'Inter', sans-serif",
                                 color: currentTemplate.accentColor,
-                                fontSize: '11px'
+                                fontSize: '10px',
+                                fontWeight: 'bold'
                               }}
                             >
                               {certificateData.completedTasks || '0'}
@@ -771,23 +820,25 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                             }}
                           >
                             {certificateData.skills && (
-                              <div className="mb-2">
+                              <div className="mb-1">
                                 <p 
-                                  className="text-xs font-medium mb-1"
                                   style={{ 
                                     fontFamily: "'Inter', sans-serif",
                                     color: currentTemplate.secondaryText,
-                                    fontSize: '8px'
+                                    fontSize: '7px',
+                                    fontWeight: '600',
+                                    textTransform: 'uppercase',
+                                    marginBottom: '2px'
                                   }}
                                 >
                                   KEY SKILLS ACQUIRED:
                                 </p>
                                 <p 
-                                  className="text-xs text-center"
+                                  className="text-center"
                                   style={{ 
                                     fontFamily: "'Inter', sans-serif",
                                     color: currentTemplate.primaryText,
-                                    fontSize: '9px',
+                                    fontSize: '8px',
                                     lineHeight: '1.3'
                                   }}
                                 >
@@ -797,12 +848,12 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                             )}
                             {certificateData.customText && (
                               <p 
-                                className="text-xs italic text-center"
+                                className="text-center italic"
                                 style={{ 
                                   fontFamily: "'Playfair Display', Georgia, serif",
                                   color: currentTemplate.secondaryText,
                                   fontStyle: 'italic',
-                                  fontSize: '9px',
+                                  fontSize: '8px',
                                   lineHeight: '1.3'
                                 }}
                               >
@@ -814,29 +865,32 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                       </div>
                     </div>
 
-                    {/* Footer Section - Fixed bottom positioning */}
-                    <div className="flex justify-between items-end flex-shrink-0" style={{ minHeight: '50px', marginTop: '16px' }}>
+                    {/* Footer Section */}
+                    <div className="flex justify-between items-end flex-shrink-0 mt-4">
                       <div className="text-center">
                         <div 
-                          className="w-32 h-px mb-2"
+                          className="w-28 h-px mb-2"
                           style={{ backgroundColor: currentTemplate.borderColor, opacity: 0.7 }}
                         ></div>
                         <p 
-                          className="text-xs font-medium uppercase tracking-wider mb-1"
                           style={{ 
                             fontFamily: "'Inter', sans-serif",
                             color: currentTemplate.secondaryText,
-                            fontSize: '8px'
+                            fontSize: '7px',
+                            fontWeight: '600',
+                            textTransform: 'uppercase',
+                            letterSpacing: '1px',
+                            marginBottom: '2px'
                           }}
                         >
                           DATE
                         </p>
                         <p 
-                          className="text-xs font-bold"
                           style={{ 
                             fontFamily: "'Inter', sans-serif",
                             color: currentTemplate.primaryText,
-                            fontSize: '10px'
+                            fontSize: '9px',
+                            fontWeight: 'bold'
                           }}
                         >
                           {format(new Date(), 'MMM dd, yyyy')}
@@ -845,25 +899,28 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                       
                       <div className="text-center">
                         <div 
-                          className="w-32 h-px mb-2"
+                          className="w-28 h-px mb-2"
                           style={{ backgroundColor: currentTemplate.borderColor, opacity: 0.7 }}
                         ></div>
                         <p 
-                          className="text-xs font-medium uppercase tracking-wider mb-1"
                           style={{ 
                             fontFamily: "'Inter', sans-serif",
                             color: currentTemplate.secondaryText,
-                            fontSize: '8px'
+                            fontSize: '7px',
+                            fontWeight: '600',
+                            textTransform: 'uppercase',
+                            letterSpacing: '1px',
+                            marginBottom: '2px'
                           }}
                         >
                           SUPERVISOR
                         </p>
                         <p 
-                          className="text-xs font-bold"
                           style={{ 
                             fontFamily: "'Inter', sans-serif",
                             color: currentTemplate.primaryText,
-                            fontSize: '10px'
+                            fontSize: '9px',
+                            fontWeight: 'bold'
                           }}
                         >
                           {certificateData.supervisor || 'HR Department'}
@@ -876,9 +933,9 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                   <div 
                     className="absolute inset-0 flex items-center justify-center pointer-events-none"
                     style={{ 
-                      fontSize: '100px',
+                      fontSize: '80px',
                       color: currentTemplate.borderColor,
-                      opacity: 0.06,
+                      opacity: 0.04,
                       fontWeight: 'bold',
                       transform: 'rotate(-45deg)',
                       fontFamily: "'Cinzel', Georgia, serif"
@@ -887,14 +944,14 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                     SLT
                   </div>
 
-                  {/* Additional geometric elements */}
-                  <div className="absolute top-4 left-1/2 w-24 h-1 -translate-x-1/2 opacity-30">
+                  {/* Top and bottom accent lines */}
+                  <div className="absolute top-3 left-1/2 w-20 h-0.5 -translate-x-1/2 opacity-25">
                     <div 
                       className="w-full h-full rounded-full"
                       style={{ background: `linear-gradient(90deg, transparent, ${currentTemplate.accentColor}, transparent)` }}
                     ></div>
                   </div>
-                  <div className="absolute bottom-4 left-1/2 w-24 h-1 -translate-x-1/2 opacity-30">
+                  <div className="absolute bottom-3 left-1/2 w-20 h-0.5 -translate-x-1/2 opacity-25">
                     <div 
                       className="w-full h-full rounded-full"
                       style={{ background: `linear-gradient(90deg, transparent, ${currentTemplate.accentColor}, transparent)` }}
