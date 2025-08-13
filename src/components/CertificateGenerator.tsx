@@ -79,11 +79,11 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
       link.rel = 'stylesheet';
       document.head.appendChild(link);
 
-      await new Promise(resolve => {
+      await new Promise<void>(resolve => {
         if (document.fonts) {
-          document.fonts.ready.then(resolve);
+          document.fonts.ready.then(() => resolve());
         } else {
-          setTimeout(resolve, 2000);
+          setTimeout(() => resolve(), 2000);
         }
       });
     } catch (error) {
@@ -100,13 +100,13 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
       await loadFonts();
       
       // Wait for rendering to complete
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise<void>(resolve => setTimeout(() => resolve(), 2000));
 
       // Scroll the certificate into view to ensure proper rendering
       certificateRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
       
       // Wait for scroll to complete
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise<void>(resolve => setTimeout(() => resolve(), 500));
 
       const canvas = await html2canvas(certificateRef.current, {
         scale: 2, // Reduced scale for better performance and size control
@@ -523,526 +523,526 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                       </h1>
                       
                       {/* Enhanced Modern Divider with Gradient Effects */}
-<div className="flex items-center justify-center gap-3 mb-4" style={{ opacity: 0.9 }}>
-  <div 
-    className="h-0.5 rounded-full"
-    style={{ 
-      width: '16px',
-      background: `linear-gradient(90deg, transparent, ${currentTemplate.borderColor})`,
-      opacity: 0.8
-    }}
-  ></div>
-  <div 
-    className="rounded-full shadow-sm"
-    style={{ 
-      width: '6px', 
-      height: '6px',
-      backgroundColor: currentTemplate.accentColor,
-      boxShadow: `0 0 8px ${currentTemplate.accentColor}40`
-    }}
-  ></div>
-  <div 
-    className="h-0.5 rounded-full"
-    style={{ 
-      width: '10px',
-      backgroundColor: currentTemplate.lightAccent,
-      opacity: 0.9
-    }}
-  ></div>
-  <div 
-    className="rounded-full border"
-    style={{ 
-      width: '4px', 
-      height: '4px',
-      backgroundColor: 'transparent',
-      borderColor: currentTemplate.accentColor,
-      borderWidth: '1px'
-    }}
-  ></div>
-  <div 
-    className="h-0.5 rounded-full"
-    style={{ 
-      width: '10px',
-      backgroundColor: currentTemplate.lightAccent,
-      opacity: 0.9
-    }}
-  ></div>
-  <div 
-    className="rounded-full shadow-sm"
-    style={{ 
-      width: '6px', 
-      height: '6px',
-      backgroundColor: currentTemplate.accentColor,
-      boxShadow: `0 0 8px ${currentTemplate.accentColor}40`
-    }}
-  ></div>
-  <div 
-    className="h-0.5 rounded-full"
-    style={{ 
-      width: '16px',
-      background: `linear-gradient(90deg, ${currentTemplate.borderColor}, transparent)`,
-      opacity: 0.8
-    }}
-  ></div>
-</div>
-
-{/* Enhanced Subtitle with Better Typography */}
-<div className="text-center mb-6">
-  <p 
-    className="tracking-wider relative inline-block"
-    style={{ 
-      fontFamily: "'Inter', sans-serif",
-      color: currentTemplate.secondaryText,
-      letterSpacing: '2.5px',
-      fontSize: '11px',
-      fontWeight: '600',
-      textTransform: 'uppercase',
-      textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-      position: 'relative',
-      paddingBottom: '8px'
-    }}
-  >
-    INTERNSHIP PROGRAM COMPLETION
-    <span 
-      className="absolute bottom-0 left-1/2 transform -translate-x-1/2"
-      style={{
-        width: '80%',
-        height: '1px',
-        background: `linear-gradient(90deg, transparent, ${currentTemplate.lightAccent}60, transparent)`,
-        opacity: 0.7
-      }}
-    ></span>
-  </p>
-</div>
-
-{/* Enhanced Main Content Section */}
-<div className="flex-1 flex flex-col justify-center">
-  {/* Enhanced Presentation Text with Elegant Styling */}
-  <div className="text-center mb-4 relative">
-    <div 
-      className="inline-block px-6 py-2 rounded-lg backdrop-blur-sm"
-      style={{
-        background: `linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))`,
-        border: `1px solid ${currentTemplate.borderColor}20`,
-        boxShadow: '0 4px 16px rgba(0,0,0,0.1)'
-      }}
-    >
-      <p 
-        style={{ 
-          fontFamily: "'Inter', sans-serif",
-          color: currentTemplate.secondaryText,
-          letterSpacing: '1px',
-          fontSize: '13px',
-          fontWeight: '400',
-          lineHeight: '1.5',
-          fontStyle: 'italic',
-          textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-          margin: '0'
-        }}
-      >
-        This certificate is proudly presented to
-      </p>
-    </div>
-    
-    {/* Decorative corner elements */}
-    <div 
-      className="absolute -top-1 -left-1 w-3 h-3 border-l-2 border-t-2 rounded-tl-lg opacity-30"
-      style={{ borderColor: currentTemplate.accentColor }}
-    ></div>
-    <div 
-      className="absolute -top-1 -right-1 w-3 h-3 border-r-2 border-t-2 rounded-tr-lg opacity-30"
-      style={{ borderColor: currentTemplate.accentColor }}
-    ></div>
-    <div 
-      className="absolute -bottom-1 -left-1 w-3 h-3 border-l-2 border-b-2 rounded-bl-lg opacity-30"
-      style={{ borderColor: currentTemplate.accentColor }}
-    ></div>
-    <div 
-      className="absolute -bottom-1 -right-1 w-3 h-3 border-r-2 border-b-2 rounded-br-lg opacity-30"
-      style={{ borderColor: currentTemplate.accentColor }}
-    ></div>
-  </div>
-
-
-                      {/* Name Section */}
-                      <div className="mb-4">
+                      <div className="flex items-center justify-center gap-3 mb-4" style={{ opacity: 0.9 }}>
                         <div 
-                          className="bg-black bg-opacity-20 rounded-lg p-3 mx-auto max-w-sm backdrop-blur-sm"
-                          style={{
-                            border: `1px solid ${currentTemplate.borderColor}60`
-                          }}
-                        >
-                          <h2 
-                            className="text-center"
-                            style={{ 
-                              fontFamily: "'Playfair Display', Georgia, serif",
-                              color: currentTemplate.primaryText,
-                              fontWeight: 'bold',
-                              letterSpacing: '1px',
-                              textShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                              fontSize: '30px',
-                              lineHeight: '1.2',
-                              margin: '0',
-                              padding: '6px 0'
-                            }}
-                          >
-                            {certificateData.internName || 'Name Surname'}
-                          </h2>
-                        </div>
-                        <div 
-                          className="w-24 h-0.5 mx-auto mt-2 rounded-full"
+                          className="h-0.5 rounded-full"
                           style={{ 
-                            background: `linear-gradient(90deg, transparent, ${currentTemplate.lightAccent}, transparent)`
+                            width: '16px',
+                            background: `linear-gradient(90deg, transparent, ${currentTemplate.borderColor})`,
+                            opacity: 0.8
+                          }}
+                        ></div>
+                        <div 
+                          className="rounded-full shadow-sm"
+                          style={{ 
+                            width: '6px', 
+                            height: '6px',
+                            backgroundColor: currentTemplate.accentColor,
+                            boxShadow: `0 0 8px ${currentTemplate.accentColor}40`
+                          }}
+                        ></div>
+                        <div 
+                          className="h-0.5 rounded-full"
+                          style={{ 
+                            width: '10px',
+                            backgroundColor: currentTemplate.lightAccent,
+                            opacity: 0.9
+                          }}
+                        ></div>
+                        <div 
+                          className="rounded-full border"
+                          style={{ 
+                            width: '4px', 
+                            height: '4px',
+                            backgroundColor: 'transparent',
+                            borderColor: currentTemplate.accentColor,
+                            borderWidth: '1px'
+                          }}
+                        ></div>
+                        <div 
+                          className="h-0.5 rounded-full"
+                          style={{ 
+                            width: '10px',
+                            backgroundColor: currentTemplate.lightAccent,
+                            opacity: 0.9
+                          }}
+                        ></div>
+                        <div 
+                          className="rounded-full shadow-sm"
+                          style={{ 
+                            width: '6px', 
+                            height: '6px',
+                            backgroundColor: currentTemplate.accentColor,
+                            boxShadow: `0 0 8px ${currentTemplate.accentColor}40`
+                          }}
+                        ></div>
+                        <div 
+                          className="h-0.5 rounded-full"
+                          style={{ 
+                            width: '16px',
+                            background: `linear-gradient(90deg, ${currentTemplate.borderColor}, transparent)`,
+                            opacity: 0.8
                           }}
                         ></div>
                       </div>
 
-                      {/* Achievement Text */}
-                      <div className="text-center mb-4">
+                      {/* Enhanced Subtitle with Better Typography */}
+                      <div className="text-center mb-6">
                         <p 
-                          className="mb-2"
+                          className="tracking-wider relative inline-block"
                           style={{ 
                             fontFamily: "'Inter', sans-serif",
                             color: currentTemplate.secondaryText,
-                            letterSpacing: '0.5px',
-                            fontSize: '12px'
+                            letterSpacing: '2.5px',
+                            fontSize: '11px',
+                            fontWeight: '600',
+                            textTransform: 'uppercase',
+                            textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                            position: 'relative',
+                            paddingBottom: '8px'
                           }}
                         >
-                          for the successful completion of internship program at
+                          INTERNSHIP PROGRAM COMPLETION
+                          <span 
+                            className="absolute bottom-0 left-1/2 transform -translate-x-1/2"
+                            style={{
+                              width: '80%',
+                              height: '1px',
+                              background: `linear-gradient(90deg, transparent, ${currentTemplate.lightAccent}60, transparent)`,
+                              opacity: 0.7
+                            }}
+                          ></span>
                         </p>
-                        
-                        <h3 
-                          className="font-bold mb-3"
-                          style={{ 
-                            fontFamily: "'Cinzel', Georgia, serif",
-                            color: currentTemplate.titleColor,
-                            fontWeight: 'bold',
-                            letterSpacing: '1px',
-                            textShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                            fontSize: '20px'
-                          }}
-                        >
-                          SLT Finance India
-                        </h3>
                       </div>
 
-                      {/* Enhanced Details Grid */}
-                      <div 
-                        className="bg-black bg-opacity-25 rounded-lg p-3 mx-4 backdrop-blur-sm"
-                        style={{
-                          border: `1px solid ${currentTemplate.borderColor}40`
-                        }}
-                      >
-                        <div className="grid grid-cols-3 gap-3 mb-3">
-                          <div className="text-center">
-                            <p 
-                              style={{ 
-                                fontFamily: "'Inter', sans-serif",
-                                color: currentTemplate.secondaryText,
-                                opacity: 0.9,
-                                fontSize: '8px',
-                                fontWeight: '600',
-                                textTransform: 'uppercase',
-                                letterSpacing: '1px',
-                                marginBottom: '4px'
-                              }}
-                            >
-                              DEPARTMENT
-                            </p>
-                            <p 
-                              style={{ 
-                                fontFamily: "'Inter', sans-serif",
-                                color: currentTemplate.primaryText,
-                                fontSize: '10px',
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              {certificateData.department || '[Department]'}
-                            </p>
-                          </div>
-                          <div className="text-center">
-                            <p 
-                              style={{ 
-                                fontFamily: "'Inter', sans-serif",
-                                color: currentTemplate.secondaryText,
-                                opacity: 0.9,
-                                fontSize: '8px',
-                                fontWeight: '600',
-                                textTransform: 'uppercase',
-                                letterSpacing: '1px',
-                                marginBottom: '4px'
-                              }}
-                            >
-                              ID NUMBER
-                            </p>
-                            <p 
-                              style={{ 
-                                fontFamily: "'Inter', sans-serif",
-                                color: currentTemplate.primaryText,
-                                fontSize: '10px',
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              {certificateData.internId || '[ID]'}
-                            </p>
-                          </div>
-                          <div className="text-center">
-                            <p 
-                              style={{ 
-                                fontFamily: "'Inter', sans-serif",
-                                color: currentTemplate.secondaryText,
-                                opacity: 0.9,
-                                fontSize: '8px',
-                                fontWeight: '600',
-                                textTransform: 'uppercase',
-                                letterSpacing: '1px',
-                                marginBottom: '4px'
-                              }}
-                            >
-                              DURATION
-                            </p>
-                            <p 
-                              style={{ 
-                                fontFamily: "'Inter', sans-serif",
-                                color: currentTemplate.primaryText,
-                                fontSize: '10px',
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              {certificateData.startDate && certificateData.endDate 
-                                ? `${format(new Date(certificateData.startDate), 'MMM yyyy')} - ${format(new Date(certificateData.endDate), 'MMM yyyy')}`
-                                : '[Duration]'
-                              }
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-3 mb-2">
-                          <div className="text-center">
-                            <p 
-                              style={{ 
-                                fontFamily: "'Inter', sans-serif",
-                                color: currentTemplate.secondaryText,
-                                opacity: 0.9,
-                                fontSize: '8px',
-                                fontWeight: '600',
-                                textTransform: 'uppercase',
-                                letterSpacing: '1px',
-                                marginBottom: '4px'
-                              }}
-                            >
-                              TOTAL HOURS
-                            </p>
-                            <p 
-                              style={{ 
-                                fontFamily: "'Inter', sans-serif",
-                                color: currentTemplate.accentColor,
-                                fontSize: '10px',
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              {certificateData.totalHours || '0'} hrs
-                            </p>
-                          </div>
-                          <div className="text-center">
-                            <p 
-                              style={{ 
-                                fontFamily: "'Inter', sans-serif",
-                                color: currentTemplate.secondaryText,
-                                opacity: 0.9,
-                                fontSize: '8px',
-                                fontWeight: '600',
-                                textTransform: 'uppercase',
-                                letterSpacing: '1px',
-                                marginBottom: '4px'
-                              }}
-                            >
-                              PERFORMANCE
-                            </p>
-                            <p 
-                              style={{ 
-                                fontFamily: "'Inter', sans-serif",
-                                color: currentTemplate.titleColor,
-                                fontSize: '10px',
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              {certificateData.performance}
-                            </p>
-                          </div>
-                          <div className="text-center">
-                            <p 
-                              style={{ 
-                                fontFamily: "'Inter', sans-serif",
-                                color: currentTemplate.secondaryText,
-                                opacity: 0.9,
-                                fontSize: '8px',
-                                fontWeight: '600',
-                                textTransform: 'uppercase',
-                                letterSpacing: '1px',
-                                marginBottom: '4px'
-                              }}
-                            >
-                              TASKS COMPLETED
-                            </p>
-                            <p 
-                              style={{ 
-                                fontFamily: "'Inter', sans-serif",
-                                color: currentTemplate.accentColor,
-                                fontSize: '10px',
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              {certificateData.completedTasks || '0'}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Skills and Custom Text */}
-                        {(certificateData.skills || certificateData.customText) && (
+                      {/* Enhanced Main Content Section */}
+                      <div className="flex-1 flex flex-col justify-center">
+                        {/* Enhanced Presentation Text with Elegant Styling */}
+                        <div className="text-center mb-4 relative">
                           <div 
-                            className="pt-2"
-                            style={{ 
-                              borderTop: `1px solid ${currentTemplate.borderColor}40`
+                            className="inline-block px-6 py-2 rounded-lg backdrop-blur-sm"
+                            style={{
+                              background: `linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))`,
+                              border: `1px solid ${currentTemplate.borderColor}20`,
+                              boxShadow: '0 4px 16px rgba(0,0,0,0.1)'
                             }}
                           >
-                            {certificateData.skills && (
-                              <div className="mb-1">
+                            <p 
+                              style={{ 
+                                fontFamily: "'Inter', sans-serif",
+                                color: currentTemplate.secondaryText,
+                                letterSpacing: '1px',
+                                fontSize: '13px',
+                                fontWeight: '400',
+                                lineHeight: '1.5',
+                                fontStyle: 'italic',
+                                textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                                margin: '0'
+                              }}
+                            >
+                              This certificate is proudly presented to
+                            </p>
+                          </div>
+                          
+                          {/* Decorative corner elements */}
+                          <div 
+                            className="absolute -top-1 -left-1 w-3 h-3 border-l-2 border-t-2 rounded-tl-lg opacity-30"
+                            style={{ borderColor: currentTemplate.accentColor }}
+                          ></div>
+                          <div 
+                            className="absolute -top-1 -right-1 w-3 h-3 border-r-2 border-t-2 rounded-tr-lg opacity-30"
+                            style={{ borderColor: currentTemplate.accentColor }}
+                          ></div>
+                          <div 
+                            className="absolute -bottom-1 -left-1 w-3 h-3 border-l-2 border-b-2 rounded-bl-lg opacity-30"
+                            style={{ borderColor: currentTemplate.accentColor }}
+                          ></div>
+                          <div 
+                            className="absolute -bottom-1 -right-1 w-3 h-3 border-r-2 border-b-2 rounded-br-lg opacity-30"
+                            style={{ borderColor: currentTemplate.accentColor }}
+                          ></div>
+                        </div>
+
+                        {/* Name Section */}
+                        <div className="mb-4">
+                          <div 
+                            className="bg-black bg-opacity-20 rounded-lg p-3 mx-auto max-w-sm backdrop-blur-sm"
+                            style={{
+                              border: `1px solid ${currentTemplate.borderColor}60`
+                            }}
+                          >
+                            <h2 
+                              className="text-center"
+                              style={{ 
+                                fontFamily: "'Playfair Display', Georgia, serif",
+                                color: currentTemplate.primaryText,
+                                fontWeight: 'bold',
+                                letterSpacing: '1px',
+                                textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                                fontSize: '30px',
+                                lineHeight: '1.2',
+                                margin: '0',
+                                padding: '6px 0'
+                              }}
+                            >
+                              {certificateData.internName || 'Name Surname'}
+                            </h2>
+                          </div>
+                          <div 
+                            className="w-24 h-0.5 mx-auto mt-2 rounded-full"
+                            style={{ 
+                              background: `linear-gradient(90deg, transparent, ${currentTemplate.lightAccent}, transparent)`
+                            }}
+                          ></div>
+                        </div>
+
+                        {/* Achievement Text */}
+                        <div className="text-center mb-4">
+                          <p 
+                            className="mb-2"
+                            style={{ 
+                              fontFamily: "'Inter', sans-serif",
+                              color: currentTemplate.secondaryText,
+                              letterSpacing: '0.5px',
+                              fontSize: '12px'
+                            }}
+                          >
+                            for the successful completion of internship program at
+                          </p>
+                          
+                          <h3 
+                            className="font-bold mb-3"
+                            style={{ 
+                              fontFamily: "'Cinzel', Georgia, serif",
+                              color: currentTemplate.titleColor,
+                              fontWeight: 'bold',
+                              letterSpacing: '1px',
+                              textShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                              fontSize: '20px'
+                            }}
+                          >
+                            SLT Finance India
+                          </h3>
+                        </div>
+
+                        {/* Enhanced Details Grid */}
+                        <div 
+                          className="bg-black bg-opacity-25 rounded-lg p-3 mx-4 backdrop-blur-sm"
+                          style={{
+                            border: `1px solid ${currentTemplate.borderColor}40`
+                          }}
+                        >
+                          <div className="grid grid-cols-3 gap-3 mb-3">
+                            <div className="text-center">
+                              <p 
+                                style={{ 
+                                  fontFamily: "'Inter', sans-serif",
+                                  color: currentTemplate.secondaryText,
+                                  opacity: 0.9,
+                                  fontSize: '8px',
+                                  fontWeight: '600',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '1px',
+                                  marginBottom: '4px'
+                                }}
+                              >
+                                DEPARTMENT
+                              </p>
+                              <p 
+                                style={{ 
+                                  fontFamily: "'Inter', sans-serif",
+                                  color: currentTemplate.primaryText,
+                                  fontSize: '10px',
+                                  fontWeight: 'bold'
+                                }}
+                              >
+                                {certificateData.department || '[Department]'}
+                              </p>
+                            </div>
+                            <div className="text-center">
+                              <p 
+                                style={{ 
+                                  fontFamily: "'Inter', sans-serif",
+                                  color: currentTemplate.secondaryText,
+                                  opacity: 0.9,
+                                  fontSize: '8px',
+                                  fontWeight: '600',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '1px',
+                                  marginBottom: '4px'
+                                }}
+                              >
+                                ID NUMBER
+                              </p>
+                              <p 
+                                style={{ 
+                                  fontFamily: "'Inter', sans-serif",
+                                  color: currentTemplate.primaryText,
+                                  fontSize: '10px',
+                                  fontWeight: 'bold'
+                                }}
+                              >
+                                {certificateData.internId || '[ID]'}
+                              </p>
+                            </div>
+                            <div className="text-center">
+                              <p 
+                                style={{ 
+                                  fontFamily: "'Inter', sans-serif",
+                                  color: currentTemplate.secondaryText,
+                                  opacity: 0.9,
+                                  fontSize: '8px',
+                                  fontWeight: '600',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '1px',
+                                  marginBottom: '4px'
+                                }}
+                              >
+                                DURATION
+                              </p>
+                              <p 
+                                style={{ 
+                                  fontFamily: "'Inter', sans-serif",
+                                  color: currentTemplate.primaryText,
+                                  fontSize: '10px',
+                                  fontWeight: 'bold'
+                                }}
+                              >
+                                {certificateData.startDate && certificateData.endDate 
+                                  ? `${format(new Date(certificateData.startDate), 'MMM yyyy')} - ${format(new Date(certificateData.endDate), 'MMM yyyy')}`
+                                  : '[Duration]'
+                                }
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-3 mb-2">
+                            <div className="text-center">
+                              <p 
+                                style={{ 
+                                  fontFamily: "'Inter', sans-serif",
+                                  color: currentTemplate.secondaryText,
+                                  opacity: 0.9,
+                                  fontSize: '8px',
+                                  fontWeight: '600',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '1px',
+                                  marginBottom: '4px'
+                                }}
+                              >
+                                TOTAL HOURS
+                              </p>
+                              <p 
+                                style={{ 
+                                  fontFamily: "'Inter', sans-serif",
+                                  color: currentTemplate.accentColor,
+                                  fontSize: '10px',
+                                  fontWeight: 'bold'
+                                }}
+                              >
+                                {certificateData.totalHours || '0'} hrs
+                              </p>
+                            </div>
+                            <div className="text-center">
+                              <p 
+                                style={{ 
+                                  fontFamily: "'Inter', sans-serif",
+                                  color: currentTemplate.secondaryText,
+                                  opacity: 0.9,
+                                  fontSize: '8px',
+                                  fontWeight: '600',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '1px',
+                                  marginBottom: '4px'
+                                }}
+                              >
+                                PERFORMANCE
+                              </p>
+                              <p 
+                                style={{ 
+                                  fontFamily: "'Inter', sans-serif",
+                                  color: currentTemplate.titleColor,
+                                  fontSize: '10px',
+                                  fontWeight: 'bold'
+                                }}
+                              >
+                                {certificateData.performance}
+                              </p>
+                            </div>
+                            <div className="text-center">
+                              <p 
+                                style={{ 
+                                  fontFamily: "'Inter', sans-serif",
+                                  color: currentTemplate.secondaryText,
+                                  opacity: 0.9,
+                                  fontSize: '8px',
+                                  fontWeight: '600',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '1px',
+                                  marginBottom: '4px'
+                                }}
+                              >
+                                TASKS COMPLETED
+                              </p>
+                              <p 
+                                style={{ 
+                                  fontFamily: "'Inter', sans-serif",
+                                  color: currentTemplate.accentColor,
+                                  fontSize: '10px',
+                                  fontWeight: 'bold'
+                                }}
+                              >
+                                {certificateData.completedTasks || '0'}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Skills and Custom Text */}
+                          {(certificateData.skills || certificateData.customText) && (
+                            <div 
+                              className="pt-2"
+                              style={{ 
+                                borderTop: `1px solid ${currentTemplate.borderColor}40`
+                              }}
+                            >
+                              {certificateData.skills && (
+                                <div className="mb-1">
+                                  <p 
+                                    style={{ 
+                                      fontFamily: "'Inter', sans-serif",
+                                      color: currentTemplate.secondaryText,
+                                      fontSize: '7px',
+                                      fontWeight: '600',
+                                      textTransform: 'uppercase',
+                                      marginBottom: '2px'
+                                    }}
+                                  >
+                                    KEY SKILLS ACQUIRED:
+                                  </p>
+                                  <p 
+                                    className="text-center"
+                                    style={{ 
+                                      fontFamily: "'Inter', sans-serif",
+                                      color: currentTemplate.primaryText,
+                                      fontSize: '8px',
+                                      lineHeight: '1.3'
+                                    }}
+                                  >
+                                    {certificateData.skills}
+                                  </p>
+                                </div>
+                              )}
+                              {certificateData.customText && (
                                 <p 
+                                  className="text-center italic"
                                   style={{ 
-                                    fontFamily: "'Inter', sans-serif",
+                                    fontFamily: "'Playfair Display', Georgia, serif",
                                     color: currentTemplate.secondaryText,
-                                    fontSize: '7px',
-                                    fontWeight: '600',
-                                    textTransform: 'uppercase',
-                                    marginBottom: '2px'
-                                  }}
-                                >
-                                  KEY SKILLS ACQUIRED:
-                                </p>
-                                <p 
-                                  className="text-center"
-                                  style={{ 
-                                    fontFamily: "'Inter', sans-serif",
-                                    color: currentTemplate.primaryText,
+                                    fontStyle: 'italic',
                                     fontSize: '8px',
                                     lineHeight: '1.3'
                                   }}
                                 >
-                                  {certificateData.skills}
+                                  "{certificateData.customText}"
                                 </p>
-                              </div>
-                            )}
-                            {certificateData.customText && (
-                              <p 
-                                className="text-center italic"
-                                style={{ 
-                                  fontFamily: "'Playfair Display', Georgia, serif",
-                                  color: currentTemplate.secondaryText,
-                                  fontStyle: 'italic',
-                                  fontSize: '8px',
-                                  lineHeight: '1.3'
-                                }}
-                              >
-                                "{certificateData.customText}"
-                              </p>
-                            )}
-                          </div>
-                        )}
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Footer Section */}
+                      <div className="flex justify-between items-end flex-shrink-0 mt-4">
+                        <div className="text-center">
+                          <div 
+                            className="w-28 h-px mb-2"
+                            style={{ backgroundColor: currentTemplate.borderColor, opacity: 0.7 }}
+                          ></div>
+                          <p 
+                            style={{ 
+                              fontFamily: "'Inter', sans-serif",
+                              color: currentTemplate.secondaryText,
+                              fontSize: '7px',
+                              fontWeight: '600',
+                              textTransform: 'uppercase',
+                              letterSpacing: '1px',
+                              marginBottom: '2px'
+                            }}
+                          >
+                            DATE
+                          </p>
+                          <p 
+                            style={{ 
+                              fontFamily: "'Inter', sans-serif",
+                              color: currentTemplate.primaryText,
+                              fontSize: '9px',
+                              fontWeight: 'bold'
+                            }}
+                          >
+                            {format(new Date(), 'MMM dd, yyyy')}
+                          </p>
+                        </div>
+                        
+                        <div className="text-center">
+                          <div 
+                            className="w-28 h-px mb-2"
+                            style={{ backgroundColor: currentTemplate.borderColor, opacity: 0.7 }}
+                          ></div>
+                          <p 
+                            style={{ 
+                              fontFamily: "'Inter', sans-serif",
+                              color: currentTemplate.secondaryText,
+                              fontSize: '7px',
+                              fontWeight: '600',
+                              textTransform: 'uppercase',
+                              letterSpacing: '1px',
+                              marginBottom: '2px'
+                            }}
+                          >
+                            SUPERVISOR
+                          </p>
+                          <p 
+                            style={{ 
+                              fontFamily: "'Inter', sans-serif",
+                              color: currentTemplate.primaryText,
+                              fontSize: '9px',
+                              fontWeight: 'bold'
+                            }}
+                          >
+                            {certificateData.supervisor || 'HR Department'}
+                          </p>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Footer Section */}
-                    <div className="flex justify-between items-end flex-shrink-0 mt-4">
-                      <div className="text-center">
-                        <div 
-                          className="w-28 h-px mb-2"
-                          style={{ backgroundColor: currentTemplate.borderColor, opacity: 0.7 }}
-                        ></div>
-                        <p 
-                          style={{ 
-                            fontFamily: "'Inter', sans-serif",
-                            color: currentTemplate.secondaryText,
-                            fontSize: '7px',
-                            fontWeight: '600',
-                            textTransform: 'uppercase',
-                            letterSpacing: '1px',
-                            marginBottom: '2px'
-                          }}
-                        >
-                          DATE
-                        </p>
-                        <p 
-                          style={{ 
-                            fontFamily: "'Inter', sans-serif",
-                            color: currentTemplate.primaryText,
-                            fontSize: '9px',
-                            fontWeight: 'bold'
-                          }}
-                        >
-                          {format(new Date(), 'MMM dd, yyyy')}
-                        </p>
-                      </div>
-                      
-                      <div className="text-center">
-                        <div 
-                          className="w-28 h-px mb-2"
-                          style={{ backgroundColor: currentTemplate.borderColor, opacity: 0.7 }}
-                        ></div>
-                        <p 
-                          style={{ 
-                            fontFamily: "'Inter', sans-serif",
-                            color: currentTemplate.secondaryText,
-                            fontSize: '7px',
-                            fontWeight: '600',
-                            textTransform: 'uppercase',
-                            letterSpacing: '1px',
-                            marginBottom: '2px'
-                          }}
-                        >
-                          SUPERVISOR
-                        </p>
-                        <p 
-                          style={{ 
-                            fontFamily: "'Inter', sans-serif",
-                            color: currentTemplate.primaryText,
-                            fontSize: '9px',
-                            fontWeight: 'bold'
-                          }}
-                        >
-                          {certificateData.supervisor || 'HR Department'}
-                        </p>
-                      </div>
+                    {/* Subtle geometric watermark */}
+                    <div 
+                      className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                      style={{ 
+                        fontSize: '80px',
+                        color: currentTemplate.borderColor,
+                        opacity: 0.04,
+                        fontWeight: 'bold',
+                        transform: 'rotate(-45deg)',
+                        fontFamily: "'Cinzel', Georgia, serif"
+                      }}
+                    >
+                      SLT
                     </div>
-                  </div>
 
-                  {/* Subtle geometric watermark */}
-                  <div 
-                    className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                    style={{ 
-                      fontSize: '80px',
-                      color: currentTemplate.borderColor,
-                      opacity: 0.04,
-                      fontWeight: 'bold',
-                      transform: 'rotate(-45deg)',
-                      fontFamily: "'Cinzel', Georgia, serif"
-                    }}
-                  >
-                    SLT
-                  </div>
-
-                  {/* Top and bottom accent lines */}
-                  <div className="absolute top-3 left-1/2 w-20 h-0.5 -translate-x-1/2 opacity-25">
-                    <div 
-                      className="w-full h-full rounded-full"
-                      style={{ background: `linear-gradient(90deg, transparent, ${currentTemplate.accentColor}, transparent)` }}
-                    ></div>
-                  </div>
-                  <div className="absolute bottom-3 left-1/2 w-20 h-0.5 -translate-x-1/2 opacity-25">
-                    <div 
-                      className="w-full h-full rounded-full"
-                      style={{ background: `linear-gradient(90deg, transparent, ${currentTemplate.accentColor}, transparent)` }}
-                    ></div>
+                    {/* Top and bottom accent lines */}
+                    <div className="absolute top-3 left-1/2 w-20 h-0.5 -translate-x-1/2 opacity-25">
+                      <div 
+                        className="w-full h-full rounded-full"
+                        style={{ background: `linear-gradient(90deg, transparent, ${currentTemplate.accentColor}, transparent)` }}
+                      ></div>
+                    </div>
+                    <div className="absolute bottom-3 left-1/2 w-20 h-0.5 -translate-x-1/2 opacity-25">
+                      <div 
+                        className="w-full h-full rounded-full"
+                        style={{ background: `linear-gradient(90deg, transparent, ${currentTemplate.accentColor}, transparent)` }}
+                      ></div>
+                    </div>
                   </div>
                 </div>
               </div>
