@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { useAuthEmailNotifications } from "@/hooks/useAuthEmailNotifications";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import Index from "./pages/Index";
+import ModernDashboard from "./pages/ModernDashboard";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Training from "./pages/Training";
@@ -25,7 +25,7 @@ function AppContent() {
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<ModernDashboard />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/training" element={<Training />} />
           <Route path="/assessment/:id" element={<Assessment />} />
