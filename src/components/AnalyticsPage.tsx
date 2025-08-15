@@ -61,11 +61,11 @@ export function AnalyticsPage() {
 
   // Task status distribution
   const taskStatusData = [
-    { status: 'Assigned', count: tasks.filter(t => t.status === 'assigned').length, color: 'bg-blue-500' },
-    { status: 'In Progress', count: tasks.filter(t => t.status === 'in_progress').length, color: 'bg-yellow-500' },
-    { status: 'Completed', count: tasks.filter(t => t.status === 'completed').length, color: 'bg-purple-500' },
-    { status: 'Verified', count: tasks.filter(t => t.status === 'verified').length, color: 'bg-green-500' },
-    { status: 'Rejected', count: tasks.filter(t => t.status === 'rejected').length, color: 'bg-red-500' },
+    { status: 'Assigned', count: tasks.filter(t => t.status === 'assigned').length, color: 'bg-info' },
+    { status: 'In Progress', count: tasks.filter(t => t.status === 'in_progress').length, color: 'bg-warning' },
+    { status: 'Completed', count: tasks.filter(t => t.status === 'completed').length, color: 'bg-secondary' },
+    { status: 'Verified', count: tasks.filter(t => t.status === 'verified').length, color: 'bg-success' },
+    { status: 'Rejected', count: tasks.filter(t => t.status === 'rejected').length, color: 'bg-destructive' },
   ];
 
   const exportData = () => {
@@ -296,12 +296,12 @@ export function AnalyticsPage() {
                       <TableCell className="font-medium">{task.title}</TableCell>
                       <TableCell>{task.assigned_profile?.full_name}</TableCell>
                       <TableCell>
-                        <Badge className={
-                          task.status === 'verified' ? 'bg-green-100 text-green-800' :
-                          task.status === 'completed' ? 'bg-purple-100 text-purple-800' :
-                          task.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
-                          task.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                          'bg-blue-100 text-blue-800'
+                        <Badge variant={
+                          task.status === 'verified' ? 'default' :
+                          task.status === 'completed' ? 'secondary' :
+                          task.status === 'in_progress' ? 'outline' :
+                          task.status === 'rejected' ? 'destructive' :
+                          'outline'
                         }>
                           {task.status.replace('_', ' ')}
                         </Badge>
@@ -351,10 +351,10 @@ export function AnalyticsPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge className={
-                          transaction.status === 'approved' ? 'bg-green-100 text-green-800' :
-                          transaction.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                          'bg-yellow-100 text-yellow-800'
+                        <Badge variant={
+                          transaction.status === 'approved' ? 'default' :
+                          transaction.status === 'rejected' ? 'destructive' :
+                          'outline'
                         }>
                           {transaction.status}
                         </Badge>
