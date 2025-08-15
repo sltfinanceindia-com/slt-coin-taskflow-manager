@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -1170,48 +1170,52 @@ export type Database = {
     }
     Functions: {
       calculate_kanban_metrics: {
-        Args: { start_date?: string; end_date?: string }
+        Args: { end_date?: string; start_date?: string }
         Returns: {
+          category: string
+          metric_date: string
           metric_name: string
           metric_value: number
-          metric_date: string
-          category: string
         }[]
       }
       can_update_profile: {
-        Args: { profile_id: string; new_role: string }
+        Args: { new_role: string; profile_id: string }
         Returns: boolean
       }
       check_and_log_daily_email: {
-        Args: { p_user_id: string; p_email_type: string }
+        Args: { p_email_type: string; p_user_id: string }
         Returns: boolean
       }
       extract_video_duration: {
         Args: { video_url: string }
         Returns: number
       }
+      get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_user_productivity_metrics: {
-        Args: { p_user_id: string; p_start_date?: string; p_end_date?: string }
+        Args: { p_end_date?: string; p_start_date?: string; p_user_id: string }
         Returns: {
-          total_hours: number
           active_hours: number
+          avg_task_duration: number
           idle_hours: number
           productivity_score: number
           task_completion_rate: number
-          avg_task_duration: number
+          total_hours: number
         }[]
       }
       increment_user_coins: {
-        Args: { user_profile_id: string; coin_amount: number }
+        Args: { coin_amount: number; user_profile_id: string }
         Returns: undefined
       }
       track_user_activity: {
         Args: {
-          p_user_id: string
           p_activity_type: string
-          p_task_id?: string
           p_duration_minutes?: number
           p_metadata?: Json
+          p_task_id?: string
+          p_user_id: string
         }
         Returns: string
       }
