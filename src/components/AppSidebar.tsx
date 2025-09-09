@@ -12,7 +12,8 @@ import {
   User,
   Settings,
   Activity,
-  Monitor
+  Monitor,
+  MessageSquare
 } from "lucide-react"
 
 import {
@@ -37,6 +38,7 @@ const adminItems = [
   { title: "Projects", url: "projects", icon: FolderOpen },
   { title: "Time Logs", url: "time", icon: Clock },
   { title: "Training", url: "training", icon: BookOpen },
+  { title: "Communication", url: "communication", icon: MessageSquare },
   { title: "Coins", url: "coins", icon: Coins },
   { title: "Interns", url: "interns", icon: Users },
   { title: "Productivity", url: "productivity", icon: Activity },
@@ -50,6 +52,7 @@ const internItems = [
   { title: "Projects", url: "projects", icon: FolderOpen },
   { title: "Training", url: "training", icon: BookOpen },
   { title: "Time Logs", url: "time", icon: Clock },
+  { title: "Communication", url: "communication", icon: MessageSquare },
   { title: "My Coins", url: "my-coins", icon: Coins },
   { title: "Analytics", url: "analytics", icon: BarChart3 },
 ]

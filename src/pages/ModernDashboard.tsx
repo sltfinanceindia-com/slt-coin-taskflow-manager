@@ -21,6 +21,7 @@ import { NotificationCenter } from '@/components/NotificationCenter';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AppHeader } from '@/components/AppHeader';
 import { SidebarProvider } from '@/components/ui/sidebar';
+import { TeamCommunication } from '@/components/TeamCommunication';
 import { Coins, Clock, CheckCircle, Plus } from 'lucide-react';
 
 export default function ModernDashboard() {
@@ -180,6 +181,9 @@ export default function ModernDashboard() {
       
       case 'time-tracking':
         return profile?.role === 'admin' ? <AdvancedTimeTracking userId={profile.id} /> : null;
+      
+      case 'communication':
+        return <TeamCommunication />;
       
       default:
         return <EnhancedDashboardWidgets />;
