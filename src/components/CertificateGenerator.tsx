@@ -252,78 +252,126 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
           <div className="overflow-auto bg-gray-100 p-4 rounded-lg">
             <div
               ref={certificateRef}
-              className={`w-[800px] h-[600px] mx-auto p-12 ${currentTemplate.bgColor} ${currentTemplate.borderColor} border-8 relative`}
+              className={`w-[900px] h-[700px] mx-auto p-12 ${currentTemplate.bgColor} ${currentTemplate.borderColor} border-8 relative shadow-2xl`}
               style={{ fontFamily: 'serif' }}
             >
-              {/* Header */}
+              {/* Decorative corner elements */}
+              <div className="absolute top-6 left-6 w-16 h-16 border-l-4 border-t-4 border-current opacity-20"></div>
+              <div className="absolute top-6 right-6 w-16 h-16 border-r-4 border-t-4 border-current opacity-20"></div>
+              <div className="absolute bottom-6 left-6 w-16 h-16 border-l-4 border-b-4 border-current opacity-20"></div>
+              <div className="absolute bottom-6 right-6 w-16 h-16 border-r-4 border-b-4 border-current opacity-20"></div>
+
+              {/* Header with Logo */}
               <div className="text-center mb-8">
-                <h1 className={`text-4xl font-bold ${currentTemplate.accentColor} mb-2`}>
-                  Certificate of Completion
-                </h1>
-                <div className="w-32 h-1 bg-current mx-auto opacity-30"></div>
+                <div className="flex items-center justify-center mb-4">
+                  <img 
+                    src="/lovable-uploads/45c61710-9ed7-4d4a-8c88-e68c20e3aa13.png" 
+                    alt="SLT Finance Logo" 
+                    className="h-16 w-auto mr-4"
+                  />
+                  <div>
+                    <h1 className={`text-4xl font-bold ${currentTemplate.accentColor} mb-1`}>
+                      Certificate of Excellence
+                    </h1>
+                    <p className="text-sm text-gray-500 font-medium">INTERNSHIP COMPLETION</p>
+                  </div>
+                </div>
+                <div className="w-48 h-1 bg-gradient-to-r from-transparent via-current to-transparent mx-auto opacity-30"></div>
               </div>
 
               {/* Content */}
               <div className="text-center space-y-6">
-                <p className="text-lg text-gray-600">This is to certify that</p>
+                <p className="text-lg text-gray-600 font-medium">This is to certify that</p>
                 
-                <h2 className="text-3xl font-bold text-gray-800 border-b-2 border-gray-300 pb-2 inline-block">
-                  {certificateData.internName || '[Intern Name]'}
-                </h2>
+                <div className="relative">
+                  <h2 className="text-4xl font-bold text-gray-800 mb-2">
+                    {certificateData.internName || '[Intern Name]'}
+                  </h2>
+                  <div className="w-80 h-0.5 bg-gradient-to-r from-transparent via-gray-400 to-transparent mx-auto"></div>
+                </div>
 
-                <p className="text-lg text-gray-600">
+                <p className="text-lg text-gray-600 font-medium">
                   has successfully completed the internship program at
                 </p>
 
-                <h3 className={`text-2xl font-bold ${currentTemplate.accentColor}`}>
-                  SLT Finance India
-                </h3>
+                <div className="flex items-center justify-center gap-3 mb-6">
+                  <h3 className={`text-3xl font-bold ${currentTemplate.accentColor}`}>
+                    SLT Finance India
+                  </h3>
+                </div>
 
-                <div className="grid grid-cols-2 gap-8 my-8 text-sm">
-                  <div>
-                    <p className="text-gray-600">Department:</p>
-                    <p className="font-semibold">{certificateData.department || '[Department]'}</p>
+                {/* Enhanced Details Grid */}
+                <div className="bg-white/50 rounded-lg p-6 my-8 shadow-inner">
+                  <div className="grid grid-cols-2 gap-6 text-sm">
+                    <div className="text-left">
+                      <p className="text-gray-500 font-medium mb-1">Department:</p>
+                      <p className="font-bold text-gray-800">{certificateData.department || '[Department]'}</p>
+                    </div>
+                    <div className="text-left">
+                      <p className="text-gray-500 font-medium mb-1">Employee ID:</p>
+                      <p className="font-bold text-gray-800">{certificateData.internId || '[ID]'}</p>
+                    </div>
+                    <div className="text-left">
+                      <p className="text-gray-500 font-medium mb-1">Duration:</p>
+                      <p className="font-bold text-gray-800">
+                        {certificateData.startDate && certificateData.endDate 
+                          ? `${format(new Date(certificateData.startDate), 'MMM dd, yyyy')} - ${format(new Date(certificateData.endDate), 'MMM dd, yyyy')}`
+                          : '[Duration]'
+                        }
+                      </p>
+                    </div>
+                    <div className="text-left">
+                      <p className="text-gray-500 font-medium mb-1">Performance Rating:</p>
+                      <Badge className="font-bold">{certificateData.performance}</Badge>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-gray-600">Employee ID:</p>
-                    <p className="font-semibold">{certificateData.internId || '[ID]'}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Duration:</p>
-                    <p className="font-semibold">
-                      {certificateData.startDate && certificateData.endDate 
-                        ? `${format(new Date(certificateData.startDate), 'MMM dd, yyyy')} - ${format(new Date(certificateData.endDate), 'MMM dd, yyyy')}`
-                        : '[Duration]'
-                      }
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Performance:</p>
-                    <p className="font-semibold">{certificateData.performance}</p>
+                  
+                  {/* Additional metrics */}
+                  <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t border-gray-200">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-blue-600">{certificateData.totalCoins}</p>
+                      <p className="text-xs text-gray-500">SLT Coins Earned</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-green-600">{certificateData.totalHours}</p>
+                      <p className="text-xs text-gray-500">Hours Completed</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-purple-600">{certificateData.completedTasks}</p>
+                      <p className="text-xs text-gray-500">Tasks Completed</p>
+                    </div>
                   </div>
                 </div>
 
                 {certificateData.customText && (
-                  <p className="text-sm text-gray-600 italic border-t pt-4">
-                    {certificateData.customText}
-                  </p>
+                  <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 text-left">
+                    <p className="text-sm text-gray-700 italic">
+                      {certificateData.customText}
+                    </p>
+                  </div>
                 )}
               </div>
 
-              {/* Footer */}
+              {/* Enhanced Footer */}
               <div className="absolute bottom-12 left-12 right-12">
                 <div className="flex justify-between items-end">
                   <div className="text-center">
-                    <div className="w-32 border-b border-gray-400 mb-2"></div>
-                    <p className="text-sm text-gray-600">Date</p>
-                    <p className="text-sm font-semibold">
+                    <div className="w-32 border-b-2 border-gray-400 mb-2"></div>
+                    <p className="text-sm text-gray-600 font-medium">Issue Date</p>
+                    <p className="text-sm font-bold">
                       {format(new Date(), 'MMM dd, yyyy')}
                     </p>
                   </div>
                   <div className="text-center">
-                    <div className="w-32 border-b border-gray-400 mb-2"></div>
-                    <p className="text-sm text-gray-600">Authorized Signature</p>
-                    <p className="text-sm font-semibold">HR Department</p>
+                    <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mb-2 mx-auto">
+                      <span className="text-xs text-gray-500">SEAL</span>
+                    </div>
+                    <p className="text-xs text-gray-500">Official Seal</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-32 border-b-2 border-gray-400 mb-2"></div>
+                    <p className="text-sm text-gray-600 font-medium">Authorized By</p>
+                    <p className="text-sm font-bold">HR Department</p>
                   </div>
                 </div>
               </div>
