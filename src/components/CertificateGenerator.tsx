@@ -255,6 +255,13 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
               className={`w-[900px] h-[700px] mx-auto p-12 ${currentTemplate.bgColor} ${currentTemplate.borderColor} border-8 relative shadow-2xl`}
               style={{ fontFamily: 'serif' }}
             >
+              {/* Watermark */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="text-gray-200 text-8xl font-bold transform rotate-45 opacity-10 select-none">
+                  SLT FINANCE INDIA
+                </div>
+              </div>
+
               {/* Decorative corner elements */}
               <div className="absolute top-6 left-6 w-16 h-16 border-l-4 border-t-4 border-current opacity-20"></div>
               <div className="absolute top-6 right-6 w-16 h-16 border-r-4 border-t-4 border-current opacity-20"></div>
@@ -351,29 +358,34 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
               </div>
 
               {/* Enhanced Footer */}
-              <div className="absolute bottom-16 left-12 right-12">
-                <div className="flex justify-between items-end">
+              <div className="absolute bottom-12 left-12 right-12">
+                <div className="grid grid-cols-3 gap-8 items-end">
                   <div className="text-center">
-                    <div className="w-40 border-b-2 border-gray-500 mb-3"></div>
-                    <p className="text-base text-gray-700 font-semibold">Issue Date</p>
-                    <p className="text-base font-bold text-gray-800">
-                      {format(new Date(), 'MMM dd, yyyy')}
-                    </p>
+                    <div className="w-40 border-b-2 border-gray-600 mb-3 mx-auto"></div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-700 font-semibold">Issue Date</p>
+                      <p className="text-sm font-bold text-gray-800">
+                        {format(new Date(), 'MMM dd, yyyy')}
+                      </p>
+                    </div>
                   </div>
+                  
                   <div className="text-center">
-                    <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mb-3 mx-auto border-2 border-blue-300">
+                    <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mb-3 mx-auto border-2 border-blue-400 shadow-lg">
                       <div className="text-center">
-                        <Award className="h-8 w-8 text-blue-600 mx-auto mb-1" />
+                        <Award className="h-6 w-6 text-blue-600 mx-auto mb-1" />
                         <span className="text-xs text-blue-700 font-bold">VERIFIED</span>
                       </div>
                     </div>
-                    <p className="text-sm text-gray-600 font-medium">Official Certificate</p>
                   </div>
+                  
                   <div className="text-center">
-                    <div className="w-40 border-b-2 border-gray-500 mb-3"></div>
-                    <p className="text-base text-gray-700 font-semibold">Authorized Signature</p>
-                    <p className="text-base font-bold text-gray-800">HR Manager</p>
-                    <p className="text-sm text-gray-600">SLT Finance India</p>
+                    <div className="w-40 border-b-2 border-gray-600 mb-3 mx-auto"></div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-700 font-semibold">Authorized Signature</p>
+                      <p className="text-sm font-bold text-gray-800">HR Manager</p>
+                      <p className="text-xs text-gray-600">SLT Finance India</p>
+                    </div>
                   </div>
                 </div>
               </div>
