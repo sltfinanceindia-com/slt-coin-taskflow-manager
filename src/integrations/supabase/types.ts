@@ -444,8 +444,10 @@ export type Database = {
           created_by: string
           description: string | null
           id: string
+          is_direct_message: boolean | null
           member_count: number | null
           name: string
+          participant_ids: string[] | null
           type: string
           updated_at: string
         }
@@ -454,8 +456,10 @@ export type Database = {
           created_by: string
           description?: string | null
           id?: string
+          is_direct_message?: boolean | null
           member_count?: number | null
           name: string
+          participant_ids?: string[] | null
           type?: string
           updated_at?: string
         }
@@ -464,8 +468,10 @@ export type Database = {
           created_by?: string
           description?: string | null
           id?: string
+          is_direct_message?: boolean | null
           member_count?: number | null
           name?: string
+          participant_ids?: string[] | null
           type?: string
           updated_at?: string
         }
@@ -676,6 +682,8 @@ export type Database = {
           message_type: string
           receiver_id: string | null
           sender_id: string
+          sender_name: string | null
+          sender_role: string | null
         }
         Insert: {
           attachments?: Json | null
@@ -687,6 +695,8 @@ export type Database = {
           message_type?: string
           receiver_id?: string | null
           sender_id: string
+          sender_name?: string | null
+          sender_role?: string | null
         }
         Update: {
           attachments?: Json | null
@@ -698,6 +708,8 @@ export type Database = {
           message_type?: string
           receiver_id?: string | null
           sender_id?: string
+          sender_name?: string | null
+          sender_role?: string | null
         }
         Relationships: [
           {
