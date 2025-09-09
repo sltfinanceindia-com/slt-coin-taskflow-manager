@@ -30,8 +30,6 @@ import {
   Trash2
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { format, isToday, isYesterday } from 'date-fns';
 
@@ -74,7 +72,6 @@ interface CallSession {
 
 export function TeamCommunication() {
   const { profile } = useAuth();
-  const queryClient = useQueryClient();
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -85,7 +82,7 @@ export function TeamCommunication() {
   const [isMuted, setIsMuted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Mock data for demonstration - in production this would come from the database
+  // Mock data for demonstration - will be replaced with database calls when types are updated
   const [channels] = useState<Channel[]>([
     {
       id: '1',
@@ -134,19 +131,12 @@ export function TeamCommunication() {
     },
   ]);
 
-  // Fetch team members
-  const { data: teamMembers = [] } = useQuery({
-    queryKey: ['team-members'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, full_name, avatar_url, role')
-        .order('full_name');
-
-      if (error) throw error;
-      return data;
-    },
-  });
+  // Mock team members data
+  const teamMembers = [
+    { id: '1', full_name: 'John Doe', avatar_url: null, role: 'admin' },
+    { id: '2', full_name: 'Jane Smith', avatar_url: null, role: 'intern' },
+    { id: '3', full_name: 'Mike Johnson', avatar_url: null, role: 'intern' },
+  ];
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
