@@ -223,43 +223,39 @@ export function AdvancedTeamCommunication() {
 
   const fetchChannels = async () => {
     try {
-      // Create default channels for demo
-      const defaultChannels: Channel[] = [
-        {
-          id: 'general',
-          name: 'General',
-          description: 'General team discussions',
-          type: 'public',
-          created_by: profile?.user_id || '',
-          created_at: new Date().toISOString(),
-          member_count: teamMembers.length + 1,
-          unread_count: 2
-        },
-        {
-          id: 'announcements',
-          name: 'Announcements',
-          description: 'Important announcements',
-          type: 'public',
-          created_by: profile?.user_id || '',
-          created_at: new Date().toISOString(),
-          member_count: teamMembers.length + 1,
-          unread_count: 0
-        },
-        {
-          id: 'task-updates',
-          name: 'Task Updates',
-          description: 'Task status updates',
-          type: 'public',
-          created_by: profile?.user_id || '',
-          created_at: new Date().toISOString(),
-          member_count: teamMembers.length + 1,
-          unread_count: 1
-        }
-      ];
+      const { data: channelsData, error } = await supabase
+        .from('communication_channels')
+        .select(`
+          id,
+          name,
+          description,
+          type,
+          created_by,
+          created_at,
+          member_count
+        `)
+        .order('created_at', { ascending: true });
 
-      setChannels(defaultChannels);
+      if (error) throw error;
+
+      const channelsWithUnread = channelsData?.map(channel => ({
+        ...channel,
+        unread_count: Math.floor(Math.random() * 3) // Demo unread count
+      })) || [];
+
+      setChannels(channelsWithUnread);
+      
+      // Auto-select first channel if none selected
+      if (!selectedChannel && channelsWithUnread.length > 0) {
+        setSelectedChannel(channelsWithUnread[0].id);
+      }
     } catch (error) {
       console.error('Error fetching channels:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load channels',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -282,47 +278,43 @@ export function AdvancedTeamCommunication() {
 
   const fetchMessages = async (channelId: string) => {
     try {
-      // Create demo messages
-      const demoMessages: Message[] = [
-        {
-          id: '1',
-          content: 'Welcome to the team communication! 🎉',
-          sender_id: 'admin',
-          channel_id: channelId,
-          sender_name: 'Admin',
-          sender_role: 'admin',
-          message_type: 'text',
-          created_at: new Date(Date.now() - 60000).toISOString(),
-          is_read: true,
-          sender_profile: {
-            id: 'admin',
-            full_name: 'Admin',
-            avatar_url: '',
-            role: 'admin'
-          }
-        },
-        {
-          id: '2',
-          content: 'This is a Microsoft Teams-like communication system for our team.',
-          sender_id: 'admin',
-          channel_id: channelId,
-          sender_name: 'Admin',
-          sender_role: 'admin',
-          message_type: 'text',
-          created_at: new Date(Date.now() - 30000).toISOString(),
-          is_read: true,
-          sender_profile: {
-            id: 'admin',
-            full_name: 'Admin',
-            avatar_url: '',
-            role: 'admin'
-          }
-        }
-      ];
+      const { data: messagesData, error } = await supabase
+        .from('messages')
+        .select(`
+          id,
+          content,
+          sender_id,
+          channel_id,
+          message_type,
+          created_at,
+          is_read,
+          sender_name,
+          sender_role,
+          attachments
+        `)
+        .eq('channel_id', channelId)
+        .order('created_at', { ascending: true });
 
-      setMessages(demoMessages);
+      if (error) throw error;
+
+      const formattedMessages = messagesData?.map(msg => ({
+        ...msg,
+        sender_profile: {
+          id: msg.sender_id,
+          full_name: msg.sender_name || 'Unknown User',
+          avatar_url: '',
+          role: msg.sender_role || 'intern'
+        }
+      })) || [];
+
+      setMessages(formattedMessages);
     } catch (error) {
       console.error('Error fetching messages:', error);
+      toast({
+        title: 'Error', 
+        description: 'Failed to load messages',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -330,27 +322,23 @@ export function AdvancedTeamCommunication() {
     if (!newMessage.trim() || !selectedChannel || !profile?.id) return;
     
     try {
-      // Create new message for demo
-      const newMsg: Message = {
-        id: Date.now().toString(),
-        content: newMessage,
-        sender_id: profile.id,
-        channel_id: selectedChannel,
-        sender_name: profile.full_name,
-        sender_role: profile.role,
-        message_type: 'text',
-        created_at: new Date().toISOString(),
-        is_read: false,
-        sender_profile: {
-          id: profile.id,
-          full_name: profile.full_name,
-          avatar_url: profile.avatar_url,
-          role: profile.role
-        },
-        reply_to: replyingTo?.id || null,
-      };
+      const { data, error } = await supabase
+        .from('messages')
+        .insert([
+          {
+            content: newMessage,
+            sender_id: profile.id,
+            channel_id: selectedChannel,
+            sender_name: profile.full_name,
+            sender_role: profile.role,
+            message_type: 'text'
+          }
+        ])
+        .select()
+        .single();
 
-      setMessages(prev => [...prev, newMsg]);
+      if (error) throw error;
+
       setNewMessage('');
       setReplyingTo(null);
 
