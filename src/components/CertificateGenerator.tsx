@@ -276,103 +276,135 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Certificate Preview
+            Professional Certificate Preview
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-auto bg-gray-100 p-4 rounded-lg">
+          <div className="overflow-auto bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-lg">
             <div
               ref={certificateRef}
-              className="w-[1200px] h-[850px] mx-auto bg-white relative shadow-2xl border-2 border-gray-300"
-              style={{ fontFamily: 'serif' }}
+              className="w-[1200px] h-[850px] mx-auto bg-white relative shadow-2xl"
+              style={{ 
+                fontFamily: 'Times New Roman, serif',
+                border: '8px solid',
+                borderImage: 'linear-gradient(45deg, #1e40af, #3b82f6, #60a5fa) 1'
+              }}
             >
-              {/* Header Section */}
-              <div className="flex items-center justify-between p-8 border-b-2 border-blue-600">
-                {/* Logo and Company Name */}
-                <div className="flex items-center space-x-4">
+              {/* Decorative Border Pattern */}
+              <div className="absolute inset-2 border-2 border-blue-200 rounded-sm">
+                <div className="absolute inset-1 border border-blue-100 rounded-sm"></div>
+              </div>
+
+              {/* Header Section with Logo and Title */}
+              <div className="relative z-10 p-8 text-center border-b-4 border-blue-600">
+                <div className="flex items-center justify-center mb-4">
                   <img 
                     src="/lovable-uploads/eff44302-96f7-4db7-8e46-3633f8bb8a1e.png" 
                     alt="SLT Finance India Logo" 
-                    className="h-12 w-auto"
+                    className="h-16 w-auto mr-4"
                   />
                   <div className="text-left">
-                    <div className="text-lg font-bold text-blue-600">SLT Finance</div>
+                    <h1 className="text-2xl font-bold text-blue-600 tracking-wider">SLT FINANCE INDIA</h1>
+                    <p className="text-sm text-gray-600 tracking-widest">BUILDING FUTURE IN FINANCE & TECHNOLOGY</p>
                   </div>
                 </div>
                 
-                {/* Certificate Title */}
-                <div className="text-right">
-                  <h1 className="text-3xl font-bold text-blue-600 tracking-wide">
+                <div className="mt-6">
+                  <h2 className="text-4xl font-bold text-blue-700 tracking-widest mb-2">
                     CERTIFICATE OF COMPLETION
-                  </h1>
-                  <p className="text-sm text-gray-600 font-medium tracking-widest mt-1">
+                  </h2>
+                  <div className="w-32 h-1 bg-gradient-to-r from-blue-400 to-blue-600 mx-auto mb-2"></div>
+                  <p className="text-lg text-gray-600 font-semibold tracking-wider">
                     INTERNSHIP PROGRAM
                   </p>
                 </div>
               </div>
 
-              {/* Main Content */}
-              <div className="px-16 py-12 text-center space-y-8">
-                <p className="text-lg text-gray-700">This is to certify that</p>
+              {/* Main Content Section */}
+              <div className="relative z-10 px-16 py-12 text-center">
+                <div className="mb-8">
+                  <p className="text-xl text-gray-700 font-medium">This is to certify that</p>
+                </div>
                 
-                {/* Intern Name - Large and Bold */}
-                <div className="py-4">
-                  <h2 className="text-5xl font-bold text-blue-600 tracking-wide uppercase">
-                    {certificateData.internName || 'INTERN NAME'}
-                  </h2>
+                {/* Intern Name with Elegant Styling */}
+                <div className="py-6 mb-8">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 py-4 px-8 rounded-lg border-l-4 border-blue-500">
+                    <h3 className="text-5xl font-bold text-blue-800 tracking-wide uppercase mb-2">
+                      {certificateData.internName || 'INTERN NAME'}
+                    </h3>
+                    <p className="text-lg text-blue-600 font-medium">
+                      Employee ID: {certificateData.internId || '101'}
+                    </p>
+                  </div>
                 </div>
 
-                <div className="space-y-6">
-                  <p className="text-lg text-gray-700">
+                <div className="space-y-6 mb-8">
+                  <p className="text-xl text-gray-700 font-medium">
                     has successfully completed the internship program at
                   </p>
 
-                  {/* Company Name - Blue Highlight */}
-                  <div className="bg-blue-600 text-white py-2 px-6 inline-block rounded">
-                    <h3 className="text-xl font-bold tracking-wide">
-                      SLT Finance India
-                    </h3>
+                  {/* Company Name with Highlight */}
+                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-8 inline-block rounded-lg shadow-lg">
+                    <h4 className="text-2xl font-bold tracking-wide">
+                      SLT FINANCE INDIA
+                    </h4>
                   </div>
 
-                  <p className="text-base text-gray-700">
-                    in the <strong>{certificateData.department || 'Testing'}</strong> Department
+                  <p className="text-lg text-gray-700 font-medium">
+                    in the <span className="font-bold text-blue-700">{certificateData.department || 'Testing'}</span> Department
                   </p>
 
-                  <p className="text-base text-gray-700">
-                    Employee ID: <strong>{certificateData.internId || '101'}</strong>
-                  </p>
+                  <div className="flex justify-center gap-8 text-sm text-gray-600">
+                    <div>
+                      <strong>Duration:</strong> {certificateData.startDate ? format(new Date(certificateData.startDate), 'MMM dd, yyyy') : 'Start Date'} - {certificateData.endDate ? format(new Date(certificateData.endDate), 'MMM dd, yyyy') : 'End Date'}
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Bottom Section */}
-              <div className="absolute bottom-20 left-16 right-16">
-                <div className="flex justify-between items-start">
+              {/* Performance & Signature Section */}
+              <div className="absolute bottom-24 left-8 right-8">
+                <div className="grid grid-cols-2 gap-8">
                   {/* Left: Performance Rating */}
-                  <div className="text-left">
-                    <p className="text-sm text-gray-600 font-medium mb-2">Performance Rating:</p>
-                    <div className="flex space-x-1 mb-3">
-                      {[1, 2, 3, 4].map((star) => (
-                        <span key={star} className="text-yellow-500 text-lg">⭐</span>
-                      ))}
-                      <span className="text-gray-300 text-lg">☆</span>
+                  <div className="text-left bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                    <h5 className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">Performance Assessment</h5>
+                    <div className="mb-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm font-medium text-gray-600">Rating:</span>
+                        <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                          {certificateData.performance}
+                        </Badge>
+                      </div>
+                      <div className="flex space-x-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <span key={star} className={star <= 4 ? "text-yellow-500 text-lg" : "text-gray-300 text-lg"}>
+                            ⭐
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-700 font-medium">
-                      SLT Coins Earned: <strong>{certificateData.totalCoins || '145'}</strong>
-                    </p>
+                    <div className="bg-blue-50 p-3 rounded border border-blue-200">
+                      <p className="text-sm font-bold text-blue-700">
+                        SLT Coins Earned: <span className="text-lg">{certificateData.totalCoins || '145'}</span>
+                      </p>
+                    </div>
                   </div>
                   
-                  {/* Right: Signature and Seal */}
-                  <div className="text-right">
-                    <p className="text-sm text-gray-600 font-medium mb-4">Authorized Signature</p>
-                    <div className="w-48 border-b-2 border-gray-800 mb-4"></div>
-                    <div className="flex items-center justify-end space-x-6">
-                      <div className="text-sm text-gray-700 text-center">
-                        <p className="font-bold text-base">{certificateData.signatureAuthority}</p>
-                        <p className="text-sm mt-1">{certificateData.authorityName}</p>
+                  {/* Right: Signature Section */}
+                  <div className="text-center bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <h5 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wide">Authorized Signature</h5>
+                    <div className="w-full border-b-3 border-gray-800 mb-4"></div>
+                    <div className="flex items-center justify-center gap-4">
+                      <div className="text-center">
+                        <p className="font-bold text-lg text-gray-800">{certificateData.authorityName}</p>
+                        <p className="text-sm text-gray-600 font-medium">{certificateData.signatureAuthority}</p>
+                        <p className="text-xs text-gray-500">SLT Finance India</p>
                       </div>
-                      <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center border-2 border-blue-600">
+                      <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center border-3 border-blue-600 shadow-lg">
                         <div className="text-center">
-                          <div className="text-xs text-blue-700 font-bold leading-tight">SLT<br />Finance</div>
+                          <div className="text-xs text-blue-700 font-bold leading-tight">
+                            SLT<br />FINANCE<br /><span className="text-[8px]">OFFICIAL</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -380,22 +412,33 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                 </div>
               </div>
 
-              {/* Footer */}
-              <div className="absolute bottom-0 left-0 right-0 bg-blue-600 text-white text-center py-3">
-                <p className="text-sm font-semibold tracking-wide">
-                  SLT Finance India – Building Future in Finance & Technology
-                </p>
+              {/* Certificate Footer */}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-blue-700 to-blue-800 text-white text-center py-4">
+                <div className="flex items-center justify-center gap-4">
+                  <div className="w-8 h-0.5 bg-white/50"></div>
+                  <p className="text-sm font-semibold tracking-wider">
+                    CERTIFICATE OF ACHIEVEMENT • {format(new Date(), 'yyyy')}
+                  </p>
+                  <div className="w-8 h-0.5 bg-white/50"></div>
+                </div>
               </div>
 
+              {/* Custom Message */}
               {certificateData.customText && (
-                <div className="absolute bottom-24 left-16 right-16">
-                  <div className="bg-blue-50 border-l-4 border-blue-400 p-3 text-left">
-                    <p className="text-xs text-gray-700 italic">
-                      {certificateData.customText}
+                <div className="absolute bottom-32 left-8 right-8">
+                  <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg shadow-sm">
+                    <p className="text-sm text-gray-700 italic font-medium text-center">
+                      "{certificateData.customText}"
                     </p>
                   </div>
                 </div>
               )}
+
+              {/* Decorative Elements */}
+              <div className="absolute top-4 left-4 w-12 h-12 border-l-4 border-t-4 border-blue-300 opacity-30"></div>
+              <div className="absolute top-4 right-4 w-12 h-12 border-r-4 border-t-4 border-blue-300 opacity-30"></div>
+              <div className="absolute bottom-4 left-4 w-12 h-12 border-l-4 border-b-4 border-blue-300 opacity-30"></div>
+              <div className="absolute bottom-4 right-4 w-12 h-12 border-r-4 border-b-4 border-blue-300 opacity-30"></div>
             </div>
           </div>
         </CardContent>

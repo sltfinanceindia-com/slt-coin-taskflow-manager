@@ -28,7 +28,7 @@ import { useTasks } from '@/hooks/useTasks';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
 import { ProductivityDashboard } from '@/components/ProductivityDashboard';
 import { AdvancedTimeTracking } from '@/components/AdvancedTimeTracking';
-import { TeamCommunication } from '@/components/TeamCommunication';
+import { AdvancedTeamCommunication } from '@/components/AdvancedTeamCommunication';
 import { AnalyticsPage } from '@/components/AnalyticsPage';
 import { format } from 'date-fns';
 
@@ -221,7 +221,7 @@ export function EnhancedDashboard({ userId }: EnhancedDashboardProps) {
         </TabsContent>
 
         <TabsContent value="communication" className="space-y-6">
-          <TeamCommunication />
+          <AdvancedTeamCommunication />
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6">
