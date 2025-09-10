@@ -24,6 +24,8 @@ interface CertificateData {
   completedTasks: number;
   performance: string;
   customText?: string;
+  signatureAuthority: string;
+  authorityName: string;
 }
 
 interface CertificateGeneratorProps {
@@ -47,6 +49,8 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
     completedTasks: 0,
     performance: 'Excellent',
     customText: '',
+    signatureAuthority: 'HR Manager',
+    authorityName: 'Rajesh Kumar',
   });
 
   const isAdmin = profile?.role === 'admin';
@@ -196,6 +200,33 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
               </Select>
             </div>
             <div className="space-y-2">
+              <Label htmlFor="signatureAuthority">Signature Authority</Label>
+              <Select 
+                value={certificateData.signatureAuthority} 
+                onValueChange={(value) => setCertificateData(prev => ({ ...prev, signatureAuthority: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="HR Manager">HR Manager</SelectItem>
+                  <SelectItem value="Representative">Representative</SelectItem>
+                  <SelectItem value="Director">Director</SelectItem>
+                  <SelectItem value="Team Lead">Team Lead</SelectItem>
+                  <SelectItem value="Project Manager">Project Manager</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="authorityName">Authority Name</Label>
+              <Input
+                id="authorityName"
+                value={certificateData.authorityName}
+                onChange={(e) => setCertificateData(prev => ({ ...prev, authorityName: e.target.value }))}
+                placeholder="Enter the name of the authority"
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="startDate">Start Date</Label>
               <Input
                 id="startDate"
@@ -252,121 +283,119 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
           <div className="overflow-auto bg-gray-100 p-4 rounded-lg">
             <div
               ref={certificateRef}
-              className="w-[1200px] h-[800px] mx-auto bg-white relative shadow-2xl"
+              className="w-[1200px] h-[850px] mx-auto bg-white relative shadow-2xl border-2 border-gray-300"
               style={{ fontFamily: 'serif' }}
             >
-              {/* Certificate Border */}
-              <div className="absolute inset-8 border-2 border-blue-600"></div>
-              
               {/* Header Section */}
-              <div className="relative z-10 px-12 pt-12">
-                {/* Logo and Title */}
-                <div className="flex items-start justify-between mb-8">
-                  <div className="flex items-center">
-                    <img 
-                      src="/lovable-uploads/eff44302-96f7-4db7-8e46-3633f8bb8a1e.png" 
-                      alt="SLT Finance India Logo" 
-                      className="h-16 w-auto mr-4"
-                    />
-                    <div className="text-left">
-                      <div className="text-xl font-bold text-blue-600">SLT Finance</div>
-                    </div>
+              <div className="flex items-center justify-between p-8 border-b-2 border-blue-600">
+                {/* Logo and Company Name */}
+                <div className="flex items-center space-x-4">
+                  <img 
+                    src="/lovable-uploads/eff44302-96f7-4db7-8e46-3633f8bb8a1e.png" 
+                    alt="SLT Finance India Logo" 
+                    className="h-12 w-auto"
+                  />
+                  <div className="text-left">
+                    <div className="text-lg font-bold text-blue-600">SLT Finance</div>
                   </div>
-                  <div className="text-right">
-                    <h1 className="text-4xl font-bold text-blue-700 tracking-wider leading-tight">
-                      CERTIFICATE OF<br />COMPLETION
-                    </h1>
-                    <p className="text-base text-gray-600 font-semibold tracking-widest mt-2">
-                      INTERNSHIP PROGRAM
-                    </p>
-                  </div>
+                </div>
+                
+                {/* Certificate Title */}
+                <div className="text-right">
+                  <h1 className="text-3xl font-bold text-blue-600 tracking-wide">
+                    CERTIFICATE OF COMPLETION
+                  </h1>
+                  <p className="text-sm text-gray-600 font-medium tracking-widest mt-1">
+                    INTERNSHIP PROGRAM
+                  </p>
                 </div>
               </div>
 
               {/* Main Content */}
-              <div className="relative z-10 px-12 text-center space-y-8 mt-12">
+              <div className="px-16 py-12 text-center space-y-8">
                 <p className="text-lg text-gray-700">This is to certify that</p>
                 
                 {/* Intern Name - Large and Bold */}
-                <div className="py-6">
-                  <h2 className="text-6xl font-bold text-blue-700 tracking-wide uppercase">
-                    {certificateData.internName || 'VYSHNAVI'}
+                <div className="py-4">
+                  <h2 className="text-5xl font-bold text-blue-600 tracking-wide uppercase">
+                    {certificateData.internName || 'INTERN NAME'}
                   </h2>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <p className="text-lg text-gray-700">
                     has successfully completed the internship program at
                   </p>
 
                   {/* Company Name - Blue Highlight */}
-                  <div className="bg-blue-600 text-white py-3 px-8 inline-block rounded">
-                    <h3 className="text-2xl font-bold tracking-wide">
+                  <div className="bg-blue-600 text-white py-2 px-6 inline-block rounded">
+                    <h3 className="text-xl font-bold tracking-wide">
                       SLT Finance India
                     </h3>
                   </div>
 
                   <p className="text-base text-gray-700">
-                    in the <strong>{certificateData.department || '[Department]'}</strong> Department
+                    in the <strong>{certificateData.department || 'Testing'}</strong> Department
                   </p>
 
                   <p className="text-base text-gray-700">
-                    Employee ID: <strong>{certificateData.internId || '[ID]'}</strong>
+                    Employee ID: <strong>{certificateData.internId || '101'}</strong>
                   </p>
                 </div>
               </div>
 
               {/* Bottom Section */}
-              <div className="absolute bottom-16 left-12 right-12 z-10">
-                <div className="border-t-2 border-blue-600 pt-6">
-                  <div className="flex justify-between items-end">
-                    {/* Left: Performance Rating */}
-                    <div className="text-left">
-                      <p className="text-sm text-gray-600 font-medium mb-2">Performance Rating:</p>
-                      <div className="flex space-x-1 mb-2">
-                        {[1, 2, 3, 4].map((star) => (
-                          <span key={star} className="text-yellow-500 text-xl">⭐</span>
-                        ))}
-                        <span className="text-gray-300 text-xl">☆</span>
-                      </div>
-                      <p className="text-sm text-gray-700">
-                        <strong>SLT Coins Earned: {certificateData.totalCoins || '120'}</strong>
-                      </p>
+              <div className="absolute bottom-20 left-16 right-16">
+                <div className="flex justify-between items-start">
+                  {/* Left: Performance Rating */}
+                  <div className="text-left">
+                    <p className="text-sm text-gray-600 font-medium mb-2">Performance Rating:</p>
+                    <div className="flex space-x-1 mb-3">
+                      {[1, 2, 3, 4].map((star) => (
+                        <span key={star} className="text-yellow-500 text-lg">⭐</span>
+                      ))}
+                      <span className="text-gray-300 text-lg">☆</span>
                     </div>
-                    
-                    {/* Right: Signature and Seal */}
-                    <div className="text-right">
-                      <p className="text-sm text-gray-600 font-medium mb-2">Authorized Signature</p>
-                      <div className="w-48 border-b-2 border-gray-800 mb-2"></div>
-                      <div className="flex items-center justify-end space-x-4">
-                        <div className="text-sm text-gray-700">
-                          <p className="font-bold">HR Manager</p>
-                        </div>
-                        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center border-2 border-blue-600">
-                          <div className="text-center">
-                            <div className="text-xs text-blue-700 font-bold leading-tight">SLT<br />Finance</div>
-                          </div>
+                    <p className="text-sm text-gray-700 font-medium">
+                      SLT Coins Earned: <strong>{certificateData.totalCoins || '145'}</strong>
+                    </p>
+                  </div>
+                  
+                  {/* Right: Signature and Seal */}
+                  <div className="text-right">
+                    <p className="text-sm text-gray-600 font-medium mb-4">Authorized Signature</p>
+                    <div className="w-48 border-b-2 border-gray-800 mb-4"></div>
+                    <div className="flex items-center justify-end space-x-6">
+                      <div className="text-sm text-gray-700 text-center">
+                        <p className="font-bold text-base">{certificateData.signatureAuthority}</p>
+                        <p className="text-sm mt-1">{certificateData.authorityName}</p>
+                      </div>
+                      <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center border-2 border-blue-600">
+                        <div className="text-center">
+                          <div className="text-xs text-blue-700 font-bold leading-tight">SLT<br />Finance</div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Footer */}
-                <div className="bg-blue-700 text-white text-center py-3 mt-8 -mx-12">
-                  <p className="text-base font-semibold tracking-wide">
-                    SLT Finance India – Building Future in Finance & Technology
-                  </p>
-                </div>
+              {/* Footer */}
+              <div className="absolute bottom-0 left-0 right-0 bg-blue-600 text-white text-center py-3">
+                <p className="text-sm font-semibold tracking-wide">
+                  SLT Finance India – Building Future in Finance & Technology
+                </p>
+              </div>
 
-                {certificateData.customText && (
-                  <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mt-4 text-left">
-                    <p className="text-sm text-gray-700 italic">
+              {certificateData.customText && (
+                <div className="absolute bottom-24 left-16 right-16">
+                  <div className="bg-blue-50 border-l-4 border-blue-400 p-3 text-left">
+                    <p className="text-xs text-gray-700 italic">
                       {certificateData.customText}
                     </p>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
