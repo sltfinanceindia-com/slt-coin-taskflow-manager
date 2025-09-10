@@ -318,7 +318,12 @@ export function EnhancedTeamsCommunication() {
 
       if (error) throw error;
 
-      setMessages(data || []);
+      const messagesWithReactions = (data || []).map(msg => ({
+        ...msg,
+        reactions: Array.isArray(msg.reactions) ? msg.reactions : []
+      }));
+
+      setMessages(messagesWithReactions as Message[]);
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
@@ -344,6 +349,7 @@ export function EnhancedTeamsCommunication() {
         sender_id: profile.id,
         channel_id: selectedChannel,
         message_type: 'text',
+        reply_to: replyingTo?.id || null,
       };
 
       const { error } = await supabase
@@ -395,15 +401,23 @@ export function EnhancedTeamsCommunication() {
         updatedReactions = [...reactions, { emoji, users: [profile!.id] }];
       }
 
-      // Note: reactions field needs to be added to the database schema
-      // For now, we'll just show the toast
-      toast({
-        title: "Reaction Added",
-        description: `Added ${emoji} reaction to message`,
-      });
+      await supabase
+        .from('messages')
+        .update({ reactions: updatedReactions })
+        .eq('id', messageId);
+
+      // Update local state immediately for better UX
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId ? { ...msg, reactions: updatedReactions } : msg
+      ));
 
     } catch (error) {
       console.error('Error updating reaction:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add reaction",
+        variant: "destructive",
+      });
     }
   };
 
@@ -897,14 +911,18 @@ function MessageBubble({ message, isOwn, onReact, onReply, onEdit }: MessageBubb
           )}
         </div>
         
-        {/* Reactions - temporarily disabled until schema is updated */}
-        {false && message.reactions && message.reactions.length > 0 && (
+        {/* Reactions */}
+        {message.reactions && message.reactions.length > 0 && (
           <div className="flex gap-1 mt-1">
             {message.reactions.map((reaction, index) => (
               <button
                 key={index}
                 onClick={() => onReact(reaction.emoji)}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted hover:bg-muted/80 text-xs"
+                className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors ${
+                  reaction.users.includes(message.sender_id || '') 
+                    ? 'bg-primary/20 text-primary border border-primary/30' 
+                    : 'bg-muted hover:bg-muted/80'
+                }`}
               >
                 <span>{reaction.emoji}</span>
                 <span>{reaction.users.length}</span>

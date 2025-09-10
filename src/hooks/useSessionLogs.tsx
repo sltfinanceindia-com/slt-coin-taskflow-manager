@@ -68,10 +68,14 @@ export function useSessionLogs() {
 
   const startSessionMutation = useMutation({
     mutationFn: async () => {
+      if (!profile?.id) {
+        throw new Error('User profile not found');
+      }
+      
       const { data, error } = await supabase
         .from('session_logs')
         .insert([{
-          user_id: profile?.id,
+          user_id: profile.id,
           login_time: new Date().toISOString(),
         }])
         .select()

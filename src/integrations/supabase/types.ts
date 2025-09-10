@@ -445,10 +445,13 @@ export type Database = {
           description: string | null
           id: string
           is_direct_message: boolean | null
+          is_favorite: boolean | null
+          is_muted: boolean | null
           member_count: number | null
           name: string
           participant_ids: string[] | null
           type: string
+          unread_count: number | null
           updated_at: string
         }
         Insert: {
@@ -457,10 +460,13 @@ export type Database = {
           description?: string | null
           id?: string
           is_direct_message?: boolean | null
+          is_favorite?: boolean | null
+          is_muted?: boolean | null
           member_count?: number | null
           name: string
           participant_ids?: string[] | null
           type?: string
+          unread_count?: number | null
           updated_at?: string
         }
         Update: {
@@ -469,10 +475,13 @@ export type Database = {
           description?: string | null
           id?: string
           is_direct_message?: boolean | null
+          is_favorite?: boolean | null
+          is_muted?: boolean | null
           member_count?: number | null
           name?: string
           participant_ids?: string[] | null
           type?: string
+          unread_count?: number | null
           updated_at?: string
         }
         Relationships: [
@@ -677,39 +686,57 @@ export type Database = {
           channel_id: string | null
           content: string
           created_at: string
+          edited_at: string | null
           id: string
+          is_pinned: boolean | null
           is_read: boolean | null
+          is_starred: boolean | null
           message_type: string
+          reactions: Json | null
           receiver_id: string | null
+          reply_to: string | null
           sender_id: string
           sender_name: string | null
           sender_role: string | null
+          thread_replies: number | null
         }
         Insert: {
           attachments?: Json | null
           channel_id?: string | null
           content: string
           created_at?: string
+          edited_at?: string | null
           id?: string
+          is_pinned?: boolean | null
           is_read?: boolean | null
+          is_starred?: boolean | null
           message_type?: string
+          reactions?: Json | null
           receiver_id?: string | null
+          reply_to?: string | null
           sender_id: string
           sender_name?: string | null
           sender_role?: string | null
+          thread_replies?: number | null
         }
         Update: {
           attachments?: Json | null
           channel_id?: string | null
           content?: string
           created_at?: string
+          edited_at?: string | null
           id?: string
+          is_pinned?: boolean | null
           is_read?: boolean | null
+          is_starred?: boolean | null
           message_type?: string
+          reactions?: Json | null
           receiver_id?: string | null
+          reply_to?: string | null
           sender_id?: string
           sender_name?: string | null
           sender_role?: string | null
+          thread_replies?: number | null
         }
         Relationships: [
           {
@@ -724,6 +751,13 @@ export type Database = {
             columns: ["receiver_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_reply_to_fkey"
+            columns: ["reply_to"]
+            isOneToOne: false
+            referencedRelation: "messages"
             referencedColumns: ["id"]
           },
           {
@@ -1310,6 +1344,47 @@ export type Database = {
             columns: ["section_id"]
             isOneToOne: false
             referencedRelation: "training_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_presence: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_online: boolean | null
+          last_seen: string | null
+          status: string | null
+          status_message: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_online?: boolean | null
+          last_seen?: string | null
+          status?: string | null
+          status_message?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_online?: boolean | null
+          last_seen?: string | null
+          status?: string | null
+          status_message?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_presence_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
