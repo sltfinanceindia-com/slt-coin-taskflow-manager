@@ -1350,30 +1350,39 @@ export type Database = {
       }
       user_presence: {
         Row: {
+          activity_status: string | null
           created_at: string | null
           id: string
           is_online: boolean | null
+          last_activity_at: string | null
           last_seen: string | null
+          manual_status: string | null
           status: string | null
           status_message: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          activity_status?: string | null
           created_at?: string | null
           id?: string
           is_online?: boolean | null
+          last_activity_at?: string | null
           last_seen?: string | null
+          manual_status?: string | null
           status?: string | null
           status_message?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          activity_status?: string | null
           created_at?: string | null
           id?: string
           is_online?: boolean | null
+          last_activity_at?: string | null
           last_seen?: string | null
+          manual_status?: string | null
           status?: string | null
           status_message?: string | null
           updated_at?: string | null
@@ -1411,6 +1420,10 @@ export type Database = {
         Args: { p_email_type: string; p_user_id: string }
         Returns: boolean
       }
+      create_direct_message_channel: {
+        Args: { user1_id: string; user2_id: string }
+        Returns: string
+      }
       extract_video_duration: {
         Args: { video_url: string }
         Returns: number
@@ -1443,6 +1456,15 @@ export type Database = {
           p_user_id: string
         }
         Returns: string
+      }
+      update_user_presence: {
+        Args: {
+          p_is_online?: boolean
+          p_manual_status?: string
+          p_status_message?: string
+          p_user_id: string
+        }
+        Returns: undefined
       }
     }
     Enums: {

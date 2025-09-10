@@ -119,13 +119,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       password,
     });
     
+    // Set user as online after successful sign in
+    if (!error && profile?.id) {
+      await supabase.rpc('update_user_presence', {
+        p_user_id: profile.id,
+        p_is_online: true
+      });
+    }
+    
     return { error };
   };
 
   const signOut = async () => {
     try {
-      // End current session before signing out
+      // Set user as offline before signing out
       if (profile?.id) {
+        await supabase.rpc('update_user_presence', {
+          p_user_id: profile.id,
+          p_is_online: false
+        });
+        
+        // End current session before signing out
         const { data: sessions } = await supabase
           .from('session_logs')
           .select('id')

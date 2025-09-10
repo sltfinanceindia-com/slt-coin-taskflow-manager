@@ -56,6 +56,7 @@ import { toast } from '@/hooks/use-toast';
 import { format, isToday, isYesterday } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import EmojiPicker from 'emoji-picker-react';
+import { usePresence } from '@/hooks/usePresence';
 
 interface Message {
   id: string;
@@ -109,6 +110,9 @@ interface Profile {
   last_seen?: string;
   status?: 'Available' | 'Busy' | 'Away' | 'Do not disturb' | 'Offline';
   status_message?: string;
+  activity_status?: 'online' | 'away' | 'offline';
+  manual_status?: string;
+  last_activity_at?: string;
 }
 
 interface CallState {
@@ -121,6 +125,7 @@ interface CallState {
 
 export function EnhancedTeamsCommunication() {
   const { profile } = useAuth();
+  const { presenceList, myPresence, setUserStatus, getUserPresence, getStatusBadgeColor, getStatusText } = usePresence();
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
   const [channels, setChannels] = useState<Channel[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -142,6 +147,9 @@ export function EnhancedTeamsCommunication() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showThreads, setShowThreads] = useState(false);
   const [selectedThread, setSelectedThread] = useState<string | null>(null);
+  const [selectedMember, setSelectedMember] = useState<Profile | null>(null);
+  const [directMessageChannels, setDirectMessageChannels] = useState<{[key: string]: string}>({});
+  const [showUserDetailsDialog, setShowUserDetailsDialog] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
