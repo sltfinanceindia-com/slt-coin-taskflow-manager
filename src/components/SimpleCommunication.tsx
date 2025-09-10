@@ -43,6 +43,7 @@ interface Channel {
   name: string;
   type: string;
   is_direct_message?: boolean;
+  participant_ids?: string[];
   created_at: string;
 }
 
@@ -183,6 +184,7 @@ export function SimpleCommunication() {
         sender_id: profile.id,
         channel_id: selectedChannel,
         message_type: 'text',
+        sender_name: profile.full_name,
       };
 
       const { error } = await supabase
@@ -213,8 +215,12 @@ export function SimpleCommunication() {
   );
 
   const getChannelDisplayName = (channel: Channel) => {
-    if (channel.is_direct_message && selectedMember) {
-      return selectedMember.full_name;
+    if (channel.is_direct_message) {
+      // For direct messages, find the other participant
+      const otherParticipant = teamMembers.find(member => 
+        channel.participant_ids?.includes(member.id) && member.id !== profile?.id
+      );
+      return otherParticipant?.full_name || 'Direct Message';
     }
     return channel.name;
   };
@@ -350,7 +356,10 @@ export function SimpleCommunication() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-lg">
-                    {channels.find(c => c.id === selectedChannel)?.name || 'Chat'}
+                    {(() => {
+                      const channel = channels.find(c => c.id === selectedChannel);
+                      return channel ? getChannelDisplayName(channel) : 'Chat';
+                    })()}
                   </CardTitle>
                   <p className="text-sm text-muted-foreground">
                     {messages.length} messages
