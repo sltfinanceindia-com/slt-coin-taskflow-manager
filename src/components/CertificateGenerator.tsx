@@ -426,32 +426,3 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
     </div>
   );
 }
-
-              {/* Certificate Footer */}
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-blue-700 to-blue-800 text-white text-center py-4">
-                <div className="flex items-center justify-center gap-4">
-                  <div className="w-8 h-0.5 bg-white/50"></div>
-                  <p className="text-sm font-semibold tracking-wider">
-                    CERTIFICATE OF ACHIEVEMENT • {format(new Date(), 'yyyy')}
-                  </p>
-                  <div className="w-8 h-0.5 bg-white/50"></div>
-                </div>
-              </div>
-
-              {/* Custom Message */}
-              {certificateData.customText && (
-                <div className="absolute bottom-32 left-8 right-8">
-                  <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg shadow-sm">
-                    <p className="text-sm text-gray-700 italic font-medium text-center">
-                      "{certificateData.customText}"
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
