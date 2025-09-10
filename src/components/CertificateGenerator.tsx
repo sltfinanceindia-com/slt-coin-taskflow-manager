@@ -283,7 +283,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
           <div className="overflow-auto bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-lg">
             <div
               ref={certificateRef}
-              className="w-[1200px] h-[850px] mx-auto bg-white relative shadow-2xl flex flex-col"
+              className="w-[1400px] h-[990px] mx-auto bg-white relative shadow-2xl flex flex-col"
               style={{ 
                 fontFamily: 'Times New Roman, serif',
                 border: '8px solid',
@@ -291,70 +291,73 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
               }}
             >
               {/* Decorative Border Pattern */}
-              <div className="absolute inset-2 border-2 border-blue-200 rounded-sm">
+              <div className="absolute inset-3 border-2 border-blue-200 rounded-sm">
                 <div className="absolute inset-1 border border-blue-100 rounded-sm"></div>
               </div>
 
               {/* Header Section with Logo and Title */}
-              <div className="relative z-10 px-8 py-6 text-center border-b-4 border-blue-600 flex-shrink-0">
-                <div className="flex items-center justify-center mb-4">
-                  <img 
-                    src="/lovable-uploads/eff44302-96f7-4db7-8e46-3633f8bb8a1e.png" 
-                    alt="SLT Finance India Logo" 
-                    className="h-12 w-auto mr-4"
-                  />
-                  <div className="text-left">
-                    <h1 className="text-xl font-bold text-blue-600 tracking-wider">SLT FINANCE INDIA</h1>
-                    <p className="text-xs text-gray-600 tracking-widest">BUILDING FUTURE IN FINANCE & TECHNOLOGY</p>
+              <div className="relative z-10 px-16 py-8 border-b-4 border-blue-600 flex-shrink-0">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <img 
+                      src="/lovable-uploads/eff44302-96f7-4db7-8e46-3633f8bb8a1e.png" 
+                      alt="SLT Finance India Logo" 
+                      className="h-16 w-auto"
+                    />
                   </div>
+                  <div className="text-center flex-grow">
+                    <h1 className="text-2xl font-bold text-blue-600 tracking-wider">SLT FINANCE INDIA</h1>
+                    <p className="text-sm text-gray-600 tracking-widest">BUILDING FUTURE IN FINANCE & TECHNOLOGY</p>
+                  </div>
+                  <div className="w-16"></div> {/* Spacer for balance */}
                 </div>
                 
-                <div className="mt-4">
-                  <h2 className="text-3xl font-bold text-blue-700 tracking-widest mb-2">
+                <div className="text-center">
+                  <h2 className="text-4xl font-bold text-blue-700 tracking-widest mb-3">
                     CERTIFICATE OF COMPLETION
                   </h2>
-                  <div className="w-32 h-1 bg-gradient-to-r from-blue-400 to-blue-600 mx-auto mb-2"></div>
-                  <p className="text-base text-gray-600 font-semibold tracking-wider">
+                  <div className="w-40 h-1 bg-gradient-to-r from-blue-400 to-blue-600 mx-auto mb-3"></div>
+                  <p className="text-lg text-gray-600 font-semibold tracking-wider">
                     INTERNSHIP PROGRAM
                   </p>
                 </div>
               </div>
 
               {/* Main Content Section - Flexible Height */}
-              <div className="relative z-10 px-12 py-8 text-center flex-grow flex flex-col justify-center">
+              <div className="relative z-10 px-20 py-12 text-center flex-grow flex flex-col justify-center">
                 <div className="mb-6">
                   <p className="text-lg text-gray-700 font-medium">This is to certify that</p>
                 </div>
                 
                 {/* Intern Name with Elegant Styling */}
-                <div className="py-4 mb-6">
-                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 py-3 px-6 rounded-lg border-l-4 border-blue-500 max-w-4xl mx-auto">
-                    <h3 className="text-4xl font-bold text-blue-800 tracking-wide uppercase mb-1">
+                <div className="py-6 mb-8">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 py-4 px-8 rounded-lg border-l-4 border-blue-500 max-w-5xl mx-auto">
+                    <h3 className="text-5xl font-bold text-blue-800 tracking-wide uppercase mb-2">
                       {certificateData.internName || 'NAKKATA NAVEEN'}
                     </h3>
-                    <p className="text-base text-blue-600 font-medium">
+                    <p className="text-lg text-blue-600 font-medium">
                       Employee ID: {certificateData.internId || '101'}
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-4 mb-6">
-                  <p className="text-lg text-gray-700 font-medium">
+                <div className="space-y-6 mb-8">
+                  <p className="text-xl text-gray-700 font-medium">
                     has successfully completed the internship program
                   </p>
 
-                  <p className="text-base text-gray-700 font-medium">
+                  <p className="text-lg text-gray-700 font-medium">
                     in the <span className="font-bold text-blue-700">{certificateData.department || 'Testing'}</span> Department
                   </p>
 
-                  <div className="text-sm text-gray-600 mt-4">
+                  <div className="text-base text-gray-600 mt-6">
                     <p><strong>Duration:</strong> Start Date: {certificateData.startDate ? format(new Date(certificateData.startDate), 'MMM dd, yyyy') : 'Sep 10, 2025'}</p>
                   </div>
                 </div>
               </div>
 
               {/* Bottom Section - Fixed Position */}
-              <div className="relative z-10 px-8 pb-20 flex-shrink-0">
+              <div className="relative z-10 px-16 pb-24 flex-shrink-0">
                 <div className="grid grid-cols-2 gap-6">
                   {/* Left: Performance Rating */}
                   <div className="text-left bg-yellow-50 p-3 rounded-lg border border-yellow-200">
