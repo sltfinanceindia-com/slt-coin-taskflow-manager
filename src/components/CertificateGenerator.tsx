@@ -350,8 +350,26 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                     in the <span className="font-bold text-blue-700">{certificateData.department || 'Testing'}</span> Department
                   </p>
 
+                  {/* Additional Content Section */}
+                  <div className="bg-blue-50 p-6 rounded-lg border border-blue-200 my-6 max-w-4xl mx-auto">
+                    <p className="text-base text-gray-700 mb-3 leading-relaxed">
+                      During this period, <span className="font-semibold text-blue-700">{certificateData.internName || 'NAKKATA NAVEEN'}</span> demonstrated 
+                      exceptional dedication and professionalism. They successfully completed all assigned projects, 
+                      contributed meaningfully to team initiatives, and showed remarkable growth in technical and 
+                      interpersonal skills.
+                    </p>
+                    <p className="text-base text-gray-700 mb-3 leading-relaxed">
+                      Their contributions to the {certificateData.department || 'Testing'} department included innovative 
+                      problem-solving, collaborative teamwork, and a commitment to excellence that aligns with 
+                      SLT Finance India's core values of integrity, innovation, and client-centric solutions.
+                    </p>
+                    <p className="text-base text-blue-700 font-medium">
+                      We acknowledge their valuable contribution and wish them continued success in their professional journey.
+                    </p>
+                  </div>
+
                   <div className="text-base text-gray-600 mt-6">
-                    <p><strong>Duration:</strong> Start Date: {certificateData.startDate ? format(new Date(certificateData.startDate), 'MMM dd, yyyy') : 'Sep 10, 2025'}</p>
+                    <p><strong>Duration:</strong> {certificateData.startDate ? format(new Date(certificateData.startDate), 'MMM dd, yyyy') : 'Sep 10, 2025'} - {certificateData.endDate ? format(new Date(certificateData.endDate), 'MMM dd, yyyy') : 'Dec 10, 2025'}</p>
                   </div>
                 </div>
               </div>
