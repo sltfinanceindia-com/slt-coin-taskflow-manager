@@ -2,12 +2,11 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, CheckSquare, Trophy, BookOpen, Award } from 'lucide-react';
+import { Users, CheckSquare, Trophy, BookOpen } from 'lucide-react';
 import { TaskManager } from '@/components/TaskManager';
 import { InternManager } from '@/components/InternManager';
 import { ProfileSettings } from '@/components/ProfileSettings';
 import { TrainingAdmin } from '@/components/TrainingAdmin';
-import { CertificateGenerator } from '@/components/CertificateGenerator';
 
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -24,12 +23,11 @@ export function AdminDashboard() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="interns">Interns</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="training">Training</TabsTrigger>
-          <TabsTrigger value="certificates">Certificates</TabsTrigger>
           <TabsTrigger value="profile">Profile</TabsTrigger>
         </TabsList>
 
@@ -108,10 +106,6 @@ export function AdminDashboard() {
 
         <TabsContent value="training">
           <TrainingAdmin />
-        </TabsContent>
-
-        <TabsContent value="certificates">
-          <CertificateGenerator />
         </TabsContent>
 
         <TabsContent value="profile">
