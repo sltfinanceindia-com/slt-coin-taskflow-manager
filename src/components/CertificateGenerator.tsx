@@ -385,10 +385,19 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                   <div className="text-center bg-gray-50 p-3 rounded-lg border border-gray-200">
                     <h5 className="text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">Authorized Signature</h5>
                     <div className="w-full border-b-2 border-gray-800 mb-3"></div>
-                    <div className="text-center">
-                      <p className="font-bold text-sm text-gray-800">{certificateData.authorityName}</p>
-                      <p className="text-xs text-gray-600 font-medium">{certificateData.signatureAuthority}</p>
-                      <p className="text-[10px] text-gray-500">SLT Finance India</p>
+                    <div className="flex items-center justify-center gap-3">
+                      <div className="text-center">
+                        <p className="font-bold text-sm text-gray-800">{certificateData.authorityName}</p>
+                        <p className="text-xs text-gray-600 font-medium">{certificateData.signatureAuthority}</p>
+                        <p className="text-[10px] text-gray-500">SLT Finance India</p>
+                      </div>
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center border-2 border-blue-600 shadow-lg">
+                        <div className="text-center">
+                          <div className="text-[8px] text-blue-700 font-bold leading-tight">
+                            SLT<br />FINANCE<br /><span className="text-[6px]">OFFICIAL</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -405,25 +414,9 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                 </div>
               </div>
 
-              {/* Logo in top left circle */}
-              <div className="absolute top-6 left-6 w-16 h-16 bg-white rounded-full border-4 border-blue-500 flex items-center justify-center shadow-lg">
-                <img 
-                  src="/lovable-uploads/eff44302-96f7-4db7-8e46-3633f8bb8a1e.png" 
-                  alt="SLT Finance India Logo" 
-                  className="h-10 w-auto"
-                />
-              </div>
-              
-              {/* Company info in top right circle */}
-              <div className="absolute top-6 right-6 w-20 h-20 bg-gradient-to-br from-blue-600 to-blue-800 rounded-full border-4 border-white flex items-center justify-center shadow-lg">
-                <div className="text-center text-white">
-                  <div className="text-[8px] font-bold leading-tight">
-                    SLT<br />FINANCE<br />INDIA
-                  </div>
-                </div>
-              </div>
-              
-              {/* Bottom decorative corners */}
+              {/* Decorative Elements */}
+              <div className="absolute top-4 left-4 w-12 h-12 border-l-4 border-t-4 border-blue-300 opacity-30"></div>
+              <div className="absolute top-4 right-4 w-12 h-12 border-r-4 border-t-4 border-blue-300 opacity-30"></div>
               <div className="absolute bottom-4 left-4 w-12 h-12 border-l-4 border-b-4 border-blue-300 opacity-30"></div>
               <div className="absolute bottom-4 right-4 w-12 h-12 border-r-4 border-b-4 border-blue-300 opacity-30"></div>
             </div>
