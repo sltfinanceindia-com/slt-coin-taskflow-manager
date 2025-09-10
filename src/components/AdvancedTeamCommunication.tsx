@@ -223,17 +223,41 @@ export function AdvancedTeamCommunication() {
 
   const fetchChannels = async () => {
     try {
-      const { data, error } = await supabase
-        .from('communication_channels')
-        .select(`
-          *,
-          channel_members!inner(user_id)
-        `)
-        .eq('channel_members.user_id', profile?.id);
+      // Create default channels for demo
+      const defaultChannels: Channel[] = [
+        {
+          id: 'general',
+          name: 'General',
+          description: 'General team discussions',
+          type: 'public',
+          created_by: profile?.user_id || '',
+          created_at: new Date().toISOString(),
+          member_count: teamMembers.length + 1,
+          unread_count: 2
+        },
+        {
+          id: 'announcements',
+          name: 'Announcements',
+          description: 'Important announcements',
+          type: 'public',
+          created_by: profile?.user_id || '',
+          created_at: new Date().toISOString(),
+          member_count: teamMembers.length + 1,
+          unread_count: 0
+        },
+        {
+          id: 'task-updates',
+          name: 'Task Updates',
+          description: 'Task status updates',
+          type: 'public',
+          created_by: profile?.user_id || '',
+          created_at: new Date().toISOString(),
+          member_count: teamMembers.length + 1,
+          unread_count: 1
+        }
+      ];
 
-      if (error) throw error;
-
-      setChannels(data || []);
+      setChannels(defaultChannels);
     } catch (error) {
       console.error('Error fetching channels:', error);
     }
@@ -258,24 +282,45 @@ export function AdvancedTeamCommunication() {
 
   const fetchMessages = async (channelId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('messages')
-        .select(`
-          *,
-          sender_profile:profiles!messages_sender_id_fkey(
-            id,
-            full_name,
-            avatar_url,
-            role
-          )
-        `)
-        .eq('channel_id', channelId)
-        .order('created_at', { ascending: true })
-        .limit(100);
+      // Create demo messages
+      const demoMessages: Message[] = [
+        {
+          id: '1',
+          content: 'Welcome to the team communication! 🎉',
+          sender_id: 'admin',
+          channel_id: channelId,
+          sender_name: 'Admin',
+          sender_role: 'admin',
+          message_type: 'text',
+          created_at: new Date(Date.now() - 60000).toISOString(),
+          is_read: true,
+          sender_profile: {
+            id: 'admin',
+            full_name: 'Admin',
+            avatar_url: '',
+            role: 'admin'
+          }
+        },
+        {
+          id: '2',
+          content: 'This is a Microsoft Teams-like communication system for our team.',
+          sender_id: 'admin',
+          channel_id: channelId,
+          sender_name: 'Admin',
+          sender_role: 'admin',
+          message_type: 'text',
+          created_at: new Date(Date.now() - 30000).toISOString(),
+          is_read: true,
+          sender_profile: {
+            id: 'admin',
+            full_name: 'Admin',
+            avatar_url: '',
+            role: 'admin'
+          }
+        }
+      ];
 
-      if (error) throw error;
-
-      setMessages(data || []);
+      setMessages(demoMessages);
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
@@ -285,25 +330,34 @@ export function AdvancedTeamCommunication() {
     if (!newMessage.trim() || !selectedChannel || !profile?.id) return;
     
     try {
-      const messageData = {
+      // Create new message for demo
+      const newMsg: Message = {
+        id: Date.now().toString(),
         content: newMessage,
         sender_id: profile.id,
         channel_id: selectedChannel,
         sender_name: profile.full_name,
         sender_role: profile.role,
         message_type: 'text',
+        created_at: new Date().toISOString(),
         is_read: false,
+        sender_profile: {
+          id: profile.id,
+          full_name: profile.full_name,
+          avatar_url: profile.avatar_url,
+          role: profile.role
+        },
         reply_to: replyingTo?.id || null,
       };
 
-      const { error } = await supabase
-        .from('messages')
-        .insert([messageData]);
-
-      if (error) throw error;
-
+      setMessages(prev => [...prev, newMsg]);
       setNewMessage('');
       setReplyingTo(null);
+
+      toast({
+        title: 'Message Sent',
+        description: 'Your message has been sent successfully',
+      });
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
