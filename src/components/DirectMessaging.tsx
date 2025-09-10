@@ -106,20 +106,25 @@ export function DirectMessaging() {
 
     fetchMessages(selectedChannel);
 
+    // Clean up previous subscription
     const messagesChannel = supabase
-      .channel('messages_changes')
+      .channel(`messages_changes_${selectedChannel}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'messages'
+          table: 'messages',
+          filter: `channel_id=eq.${selectedChannel}`
         },
         (payload) => {
           const newMessage = payload.new as Message;
-          if (newMessage.channel_id === selectedChannel) {
-            setMessages(prev => [...prev, newMessage]);
-          }
+          setMessages(prev => {
+            // Prevent duplicate messages
+            const exists = prev.find(msg => msg.id === newMessage.id);
+            if (exists) return prev;
+            return [...prev, newMessage];
+          });
         }
       )
       .subscribe();
@@ -127,17 +132,17 @@ export function DirectMessaging() {
     return () => {
       supabase.removeChannel(messagesChannel);
     };
-  }, [profile?.id, selectedChannel]);
+  }, [selectedChannel]); // Remove profile?.id dependency
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Update team members with presence data
+  // Update team members with presence data - Fixed to prevent infinite loops
   useEffect(() => {
     if (teamMembers.length > 0 && presenceList.length > 0) {
       const updatedMembers = teamMembers.map(member => {
-        const presence = getUserPresence(member.id);
+        const presence = presenceList.find(p => p.user_id === member.id);
         return {
           ...member,
           is_online: presence?.is_online || false,
@@ -147,9 +152,18 @@ export function DirectMessaging() {
           last_activity_at: presence?.last_activity_at
         };
       });
-      setTeamMembers(updatedMembers);
+      
+      // Only update if there are actual changes to prevent infinite re-renders
+      const hasChanges = updatedMembers.some((member, index) => 
+        member.is_online !== teamMembers[index]?.is_online ||
+        member.activity_status !== teamMembers[index]?.activity_status
+      );
+      
+      if (hasChanges) {
+        setTeamMembers(updatedMembers);
+      }
     }
-  }, [presenceList, getUserPresence]);
+  }, [presenceList]); // Remove teamMembers and getUserPresence from dependencies
 
   const fetchChannels = async () => {
     try {
@@ -299,7 +313,7 @@ export function DirectMessaging() {
   };
 
   const StatusIndicator = ({ member }: { member: Profile }) => {
-    const presence = getUserPresence(member.id);
+    const presence = presenceList.find(p => p.user_id === member.id);
     const statusColor = getStatusBadgeColor(presence);
     const statusText = getStatusText(presence);
 
@@ -490,11 +504,11 @@ export function DirectMessaging() {
                           <AvatarImage src={member.avatar_url} />
                           <AvatarFallback>{member.full_name.charAt(0)}</AvatarFallback>
                         </Avatar>
-                        <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background ${getStatusBadgeColor(getUserPresence(member.id))}`} />
+                        <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background ${getStatusBadgeColor(presenceList.find(p => p.user_id === member.id))}`} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium truncate">{member.full_name}</div>
-                        <div className="text-xs text-muted-foreground">{getStatusText(getUserPresence(member.id))}</div>
+                        <div className="text-xs text-muted-foreground">{getStatusText(presenceList.find(p => p.user_id === member.id))}</div>
                       </div>
                       <Button
                         variant="ghost"

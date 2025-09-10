@@ -223,15 +223,15 @@ export function usePresence() {
     };
 
     events.forEach(event => {
-      document.addEventListener(event, handleActivity, true);
+      document.addEventListener(event, handleActivity, { passive: true });
     });
 
     return () => {
       events.forEach(event => {
-        document.removeEventListener(event, handleActivity, true);
+        document.removeEventListener(event, handleActivity);
       });
     };
-  }, [myPresence]);
+  }, []); // Remove myPresence dependency to prevent infinite loops
 
   return {
     presenceList,

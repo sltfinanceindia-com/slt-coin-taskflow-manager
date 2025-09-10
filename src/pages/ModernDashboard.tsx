@@ -22,7 +22,7 @@ import { AppSidebar } from '@/components/AppSidebar';
 import { AppHeader } from '@/components/AppHeader';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { TeamCommunication } from '@/components/TeamCommunication';
-import { DirectMessaging } from '@/components/DirectMessaging';
+import { SimpleCommunication } from '@/components/SimpleCommunication';
 import { Coins, Clock, CheckCircle, Plus } from 'lucide-react';
 
 export default function ModernDashboard() {
@@ -184,7 +184,7 @@ export default function ModernDashboard() {
         return profile?.role === 'admin' ? <AdvancedTimeTracking userId={profile.id} /> : null;
       
         case 'communication':
-          return <DirectMessaging />;
+          return <SimpleCommunication />;
       
       default:
         return <EnhancedDashboardWidgets />;

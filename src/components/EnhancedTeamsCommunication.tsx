@@ -168,20 +168,24 @@ export function EnhancedTeamsCommunication() {
     fetchMessages(selectedChannel);
 
     const messagesChannel = supabase
-      .channel('messages_changes')
+      .channel(`messages_changes_${selectedChannel}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'messages'
+          table: 'messages',
+          filter: `channel_id=eq.${selectedChannel}`
         },
         (payload) => {
           const newMessage = payload.new as Message;
-          if (newMessage.channel_id === selectedChannel) {
-            setMessages(prev => [...prev, newMessage]);
-            markAsRead(newMessage.id);
-          }
+          setMessages(prev => {
+            // Prevent duplicate messages
+            const exists = prev.find(msg => msg.id === newMessage.id);
+            if (exists) return prev;
+            return [...prev, newMessage];
+          });
+          markAsRead(newMessage.id);
         }
       )
       .on(
@@ -189,7 +193,8 @@ export function EnhancedTeamsCommunication() {
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'messages'
+          table: 'messages',
+          filter: `channel_id=eq.${selectedChannel}`
         },
         (payload) => {
           const updatedMessage = payload.new as Message;
@@ -203,7 +208,7 @@ export function EnhancedTeamsCommunication() {
     return () => {
       supabase.removeChannel(messagesChannel);
     };
-  }, [profile?.id, selectedChannel]);
+  }, [selectedChannel]); // Remove profile?.id dependency
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -212,7 +217,7 @@ export function EnhancedTeamsCommunication() {
   const setupPresence = useCallback(async () => {
     if (!profile?.id) return;
 
-    const presenceChannel = supabase.channel('online_users', {
+    const presenceChannel = supabase.channel(`online_users_${profile.id}`, {
       config: {
         presence: {
           key: profile.id,
@@ -229,12 +234,12 @@ export function EnhancedTeamsCommunication() {
           is_online: onlineUsers.includes(member.id)
         })));
       })
-      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+      .on('presence', { event: 'join' }, ({ key }) => {
         setTeamMembers(prev => prev.map(member => 
           member.id === key ? { ...member, is_online: true } : member
         ));
       })
-      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+      .on('presence', { event: 'leave' }, ({ key }) => {
         setTeamMembers(prev => prev.map(member => 
           member.id === key ? { ...member, is_online: false } : member
         ));
@@ -253,7 +258,7 @@ export function EnhancedTeamsCommunication() {
     return () => {
       supabase.removeChannel(presenceChannel);
     };
-  }, [profile]);
+  }, [profile?.id, profile?.full_name]); // Added profile.full_name dependency
 
   const fetchChannels = async () => {
     try {
