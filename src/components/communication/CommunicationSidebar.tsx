@@ -12,6 +12,7 @@ import {
   User,
   Globe
 } from 'lucide-react';
+import { usePresence } from '@/hooks/usePresence';
 
 interface Profile {
   id: string;
@@ -66,6 +67,7 @@ export function CommunicationSidebar({
   startDirectMessage,
   getChannelDisplayName
 }: CommunicationSidebarProps) {
+  const { getStatusBadgeColor, getUserPresence } = usePresence();
   const filteredMembers = teamMembers.filter(member => 
     member.full_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -179,7 +181,7 @@ export function CommunicationSidebar({
                           {member.full_name.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background bg-gray-400" />
+                      <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background ${getStatusBadgeColor(getUserPresence(member.user_id))}`} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium truncate">{member.full_name}</div>

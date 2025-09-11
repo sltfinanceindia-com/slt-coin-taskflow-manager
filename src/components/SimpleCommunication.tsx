@@ -8,8 +8,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { CommunicationSidebar } from './communication/CommunicationSidebar';
-import { CallControls } from './communication/CallControls';
+import { EnhancedCallControls } from './communication/EnhancedCallControls';
 import { MessageList } from './communication/MessageList';
+import { MessageInput } from './communication/MessageInput';
 
 interface Message {
   id: string;
@@ -327,7 +328,7 @@ export function SimpleCommunication() {
                       {messages.length} messages
                     </p>
                   </div>
-                  <CallControls 
+                  <EnhancedCallControls 
                     recipientName={(() => {
                       const channel = channels.find(c => c.id === selectedChannel);
                       return channel ? getChannelDisplayName(channel) : undefined;
@@ -342,27 +343,13 @@ export function SimpleCommunication() {
                   currentUserId={profile?.id}
                 />
 
-                <Separator />
-
-                <div className="p-4 shrink-0">
-                  <div className="flex gap-2">
-                    <Textarea
-                      placeholder="Type a message..."
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSendMessage();
-                        }
-                      }}
-                      className="min-h-[40px] max-h-[120px] resize-none"
-                    />
-                    <Button onClick={handleSendMessage} disabled={!newMessage.trim()}>
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+                <MessageInput
+                  value={newMessage}
+                  onChange={setNewMessage}
+                  onSend={handleSendMessage}
+                  mentions={teamMembers.map(member => ({ id: member.id, name: member.full_name }))}
+                  disabled={!selectedChannel}
+                />
               </CardContent>
             </>
           ) : (
