@@ -20,6 +20,9 @@ interface Profile {
   avatar_url?: string;
   role: string;
   user_id: string;
+  department?: string;
+  email?: string;
+  bio?: string;
 }
 
 interface Channel {
@@ -51,6 +54,7 @@ interface CommunicationSidebarProps {
   setActiveTab: (tab: string) => void;
   setSearchQuery: (query: string) => void;
   startDirectMessage: (member: Profile) => void;
+  showUserProfile: (member: Profile) => void;
   getChannelDisplayName: (channel: Channel) => string;
 }
 
@@ -65,6 +69,7 @@ export function CommunicationSidebar({
   setActiveTab,
   setSearchQuery,
   startDirectMessage,
+  showUserProfile,
   getChannelDisplayName
 }: CommunicationSidebarProps) {
   const { getStatusBadgeColor, getUserPresence } = usePresence();
@@ -171,8 +176,8 @@ export function CommunicationSidebar({
                 filteredMembers.map(member => (
                   <div
                     key={member.id}
-                    className="flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
-                    onClick={() => startDirectMessage(member)}
+                    className="flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors group"
+                    onClick={() => showUserProfile(member)}
                   >
                     <div className="relative">
                       <Avatar className="h-10 w-10">
@@ -185,18 +190,29 @@ export function CommunicationSidebar({
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium truncate">{member.full_name}</div>
-                      <div className="text-xs text-muted-foreground capitalize">{member.role}</div>
+                      <div className="text-xs text-muted-foreground capitalize flex items-center gap-1">
+                        {member.role}
+                        {member.department && (
+                          <>
+                            <span>•</span>
+                            <span>{member.department}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={(e) => { 
-                        e.stopPropagation(); 
-                        startDirectMessage(member);
-                      }}
-                    >
-                      <MessageSquare className="h-4 w-4" />
-                    </Button>
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          startDirectMessage(member);
+                        }}
+                        title="Send message"
+                      >
+                        <MessageSquare className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 ))
               ) : (

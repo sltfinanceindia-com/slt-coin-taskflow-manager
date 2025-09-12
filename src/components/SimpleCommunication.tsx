@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { MessageSquare, Send } from 'lucide-react';
+import { MessageSquare, Send, Star, Pin, Users } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,6 +12,7 @@ import { CommunicationSidebar } from './communication/CommunicationSidebar';
 import { EnhancedCallControls } from './communication/EnhancedCallControls';
 import { MessageList } from './communication/MessageList';
 import { MessageInput } from './communication/MessageInput';
+import { UserProfileModal } from './communication/UserProfileModal';
 
 interface Message {
   id: string;
@@ -51,6 +53,9 @@ interface Profile {
   avatar_url?: string;
   role: string;
   user_id: string;
+  department?: string;
+  email?: string;
+  bio?: string;
 }
 
 export function SimpleCommunication() {
@@ -64,6 +69,8 @@ export function SimpleCommunication() {
   const [activeTab, setActiveTab] = useState('team');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMember, setSelectedMember] = useState<Profile | null>(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileModalUser, setProfileModalUser] = useState<Profile | null>(null);
 
   useEffect(() => {
     if (profile) {
@@ -135,7 +142,7 @@ export function SimpleCommunication() {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, user_id, full_name, avatar_url, role, email')
+        .select('id, user_id, full_name, avatar_url, role, email, department, bio')
         .neq('user_id', profile?.user_id) // Use user_id instead of id for comparison
         .order('full_name');
 
@@ -217,7 +224,18 @@ export function SimpleCommunication() {
       setSelectedChannel(channelId);
       setSelectedMember(member);
       await fetchChannels();
+      setShowProfileModal(false);
     }
+  };
+
+  const showUserProfile = (member: Profile) => {
+    setProfileModalUser(member);
+    setShowProfileModal(true);
+  };
+
+  const closeProfileModal = () => {
+    setShowProfileModal(false);
+    setProfileModalUser(null);
   };
 
   const handleSendMessage = async () => {
@@ -292,10 +310,11 @@ export function SimpleCommunication() {
   }
 
   return (
-    <div className="grid grid-cols-12 gap-6 h-[calc(100vh-2rem)] max-h-[800px]">
-      {/* Sidebar */}
-      <div className="col-span-4 lg:col-span-3">
-        <CommunicationSidebar
+    <div className="h-[calc(100vh-6rem)] max-w-7xl mx-auto">
+      <div className="grid grid-cols-12 gap-4 h-full">
+        {/* Sidebar */}
+        <div className="col-span-3 xl:col-span-2">
+          <CommunicationSidebar
           profile={profile}
           channels={channels}
           teamMembers={teamMembers}
@@ -306,65 +325,143 @@ export function SimpleCommunication() {
           setActiveTab={setActiveTab}
           setSearchQuery={setSearchQuery}
           startDirectMessage={startDirectMessage}
-          getChannelDisplayName={getChannelDisplayName}
-        />
-      </div>
+            showUserProfile={showUserProfile}
+            getChannelDisplayName={getChannelDisplayName}
+          />
+        </div>
 
-      {/* Main Chat Area */}
-      <div className="col-span-8 lg:col-span-9">
-        <Card className="h-full flex flex-col">
-          {selectedChannel ? (
-            <>
-              <CardHeader className="pb-3 shrink-0">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-xl">
-                      {(() => {
-                        const channel = channels.find(c => c.id === selectedChannel);
-                        return channel ? getChannelDisplayName(channel) : 'Chat';
-                      })()}
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      {messages.length} messages
+        {/* Main Chat Area */}
+        <div className="col-span-9 xl:col-span-10 flex flex-col">
+          <Card className="h-full flex flex-col shadow-lg border-0 bg-gradient-to-br from-background to-muted/20">
+            {selectedChannel ? (
+              <>
+                {/* Enhanced Header */}
+                <CardHeader className="pb-4 shrink-0 border-b bg-card/50 backdrop-blur-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
+                        {(() => {
+                          const channel = channels.find(c => c.id === selectedChannel);
+                          if (channel?.is_direct_message) {
+                            const otherMember = channel.channel_members?.find(member => 
+                              member.user_id !== profile?.id
+                            );
+                            return (
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={otherMember?.profiles?.avatar_url} />
+                                <AvatarFallback className="bg-primary text-primary-foreground">
+                                  {otherMember?.profiles?.full_name?.charAt(0) || 'U'}
+                                </AvatarFallback>
+                              </Avatar>
+                            );
+                          }
+                          return <MessageSquare className="h-8 w-8 text-primary" />;
+                        })()}
+                        <div>
+                          <CardTitle className="text-lg font-semibold">
+                            {(() => {
+                              const channel = channels.find(c => c.id === selectedChannel);
+                              return channel ? getChannelDisplayName(channel) : 'Chat';
+                            })()}
+                          </CardTitle>
+                          <p className="text-xs text-muted-foreground">
+                            {messages.length} messages • Active now
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <EnhancedCallControls 
+                        recipientName={(() => {
+                          const channel = channels.find(c => c.id === selectedChannel);
+                          return channel ? getChannelDisplayName(channel) : undefined;
+                        })()}
+                      />
+                      <Button variant="ghost" size="sm">
+                        <Star className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        <Pin className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
+                  {/* Messages Area with enhanced styling */}
+                  <div className="flex-1 bg-gradient-to-b from-muted/10 to-transparent">
+                    <MessageList 
+                      messages={messages} 
+                      currentUserId={profile?.id}
+                    />
+                  </div>
+
+                  {/* Enhanced Message Input */}
+                  <div className="border-t bg-card/80 backdrop-blur-sm">
+                    <MessageInput
+                      value={newMessage}
+                      onChange={setNewMessage}
+                      onSend={handleSendMessage}
+                      mentions={teamMembers.map(member => ({ id: member.id, name: member.full_name }))}
+                      disabled={!selectedChannel}
+                    />
+                  </div>
+                </CardContent>
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-muted/20 to-transparent">
+                <div className="text-center space-y-4 p-8">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
+                    <MessageSquare className="relative h-20 w-20 text-primary mx-auto" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                      Welcome to Team Chat
+                    </h3>
+                    <p className="text-muted-foreground max-w-sm mx-auto">
+                      Connect with your team members, share ideas, and collaborate in real-time. Select someone to start chatting!
                     </p>
                   </div>
-                  <EnhancedCallControls 
-                    recipientName={(() => {
-                      const channel = channels.find(c => c.id === selectedChannel);
-                      return channel ? getChannelDisplayName(channel) : undefined;
-                    })()}
-                  />
+                  <div className="flex gap-2 justify-center">
+                    <Button variant="outline" size="sm">
+                      <Users className="h-4 w-4 mr-2" />
+                      Browse Team
+                    </Button>
+                    <Button size="sm">
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Start Chat
+                    </Button>
+                  </div>
                 </div>
-              </CardHeader>
-
-              <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
-                <MessageList 
-                  messages={messages} 
-                  currentUserId={profile?.id}
-                />
-
-                <MessageInput
-                  value={newMessage}
-                  onChange={setNewMessage}
-                  onSend={handleSendMessage}
-                  mentions={teamMembers.map(member => ({ id: member.id, name: member.full_name }))}
-                  disabled={!selectedChannel}
-                />
-              </CardContent>
-            </>
-          ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center">
-                <MessageSquare className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Select a team member to chat</h3>
-                <p className="text-muted-foreground">
-                  Choose someone from your team to start a conversation
-                </p>
               </div>
-            </div>
-          )}
-        </Card>
+            )}
+          </Card>
+        </div>
       </div>
+
+      {/* User Profile Modal */}
+      <UserProfileModal
+        user={profileModalUser}
+        isOpen={showProfileModal}
+        onClose={closeProfileModal}
+        onStartMessage={() => profileModalUser && startDirectMessage(profileModalUser)}
+        onStartCall={() => {
+          // Handle audio call
+          toast({
+            title: 'Audio Call',
+            description: `Calling ${profileModalUser?.full_name}...`,
+          });
+        }}
+        onStartVideoCall={() => {
+          // Handle video call
+          toast({
+            title: 'Video Call',
+            description: `Video calling ${profileModalUser?.full_name}...`,
+          });
+        }}
+      />
     </div>
   );
 }
