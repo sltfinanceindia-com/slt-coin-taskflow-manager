@@ -303,7 +303,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                         alt="SLT Finance India Logo" 
                         className="h-16 w-auto mr-6"
                       />
-                      <div className="text-left">
+                      <div className="text-center">
                         <h1 className="text-2xl font-bold text-blue-600 tracking-wider">SLT FINANCE INDIA</h1>
                         <p className="text-sm text-gray-600 tracking-wide mt-1">BUILDING FUTURE IN FINANCE & TECHNOLOGY</p>
                       </div>
