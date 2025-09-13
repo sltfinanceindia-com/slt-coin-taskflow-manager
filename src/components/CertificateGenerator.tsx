@@ -322,7 +322,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                 </div>
 
                 {/* Header Section with Green Theme */}
-                <div className="relative z-20 px-16 py-8 border-b-4 border-gray-600">
+                <div className="relative z-20 px-16 py-8 rounded-lg border-2 border-green-600">
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center">
                       <img 
@@ -350,7 +350,6 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                     <h2 className="text-4xl font-bold text-gray-700 tracking-widest mb-3">
                       CERTIFICATE OF COMPLETION
                     </h2>
-                    <div className="w-32 h-1 bg-gradient-to-r from-green-500 to-green-700 mx-auto mb-3"></div>
                     <p className="text-lg text-gray-600 font-semibold tracking-wider">
                       INTERNSHIP PROGRAM
                     </p>
