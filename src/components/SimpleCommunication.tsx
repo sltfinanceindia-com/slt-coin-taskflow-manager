@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { MessageSquare, Send, Star, Pin, Users } from 'lucide-react';
+import { MessageSquare, Send, Star, Pin, Users, Hash, Phone, Video, Info, MoreHorizontal } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +14,7 @@ import { EnhancedCallControls } from './communication/EnhancedCallControls';
 import { MessageList } from './communication/MessageList';
 import { MessageInput } from './communication/MessageInput';
 import { UserProfileModal } from './communication/UserProfileModal';
+import { cn } from '@/lib/utils';
 
 interface Message {
   id: string;
@@ -36,6 +38,12 @@ interface Channel {
   is_direct_message?: boolean;
   participant_ids?: string[];
   created_at: string;
+  unread_count?: number;
+  last_message?: string;
+  last_message_time?: string;
+  last_message_sender?: string;
+  is_muted?: boolean;
+  is_pinned?: boolean;
   channel_members?: {
     user_id: string;
     profiles?: {
@@ -66,7 +74,7 @@ export function SimpleCommunication() {
   const [teamMembers, setTeamMembers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [newMessage, setNewMessage] = useState('');
-  const [activeTab, setActiveTab] = useState('team');
+  const [activeTab, setActiveTab] = useState('chats');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMember, setSelectedMember] = useState<Profile | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -83,7 +91,6 @@ export function SimpleCommunication() {
     if (selectedChannel) {
       fetchMessages(selectedChannel);
       
-      // Set up real-time subscription for messages
       const messageSubscription = supabase
         .channel(`messages_${selectedChannel}`)
         .on(
@@ -105,7 +112,6 @@ export function SimpleCommunication() {
       };
     }
   }, [selectedChannel]);
-
 
   const fetchChannels = async () => {
     try {
@@ -143,7 +149,7 @@ export function SimpleCommunication() {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, user_id, full_name, avatar_url, role, email, department, bio')
-        .neq('id', profile?.id) // Fix: use profile.id for comparison
+        .neq('id', profile?.id)
         .order('full_name');
 
       if (error) throw error;
@@ -175,7 +181,6 @@ export function SimpleCommunication() {
 
       if (error) throw error;
       
-      // Fetch sender profiles separately to avoid foreign key issues
       const messagesWithProfiles = await Promise.all(
         (data || []).map(async (msg) => {
           const { data: senderProfile } = await supabase
@@ -203,13 +208,11 @@ export function SimpleCommunication() {
 
   const createDirectMessageChannel = async (targetUserId: string) => {
     if (!profile?.id) return null;
-
     try {
       const { data, error } = await supabase.rpc('create_direct_message_channel', {
         user1_id: profile.id,
         user2_id: targetUserId
       });
-
       if (error) throw error;
       return data;
     } catch (error) {
@@ -225,6 +228,8 @@ export function SimpleCommunication() {
       setSelectedMember(member);
       await fetchChannels();
       setShowProfileModal(false);
+      // Switch to chats tab when starting a DM
+      setActiveTab('chats');
     }
   };
 
@@ -255,9 +260,8 @@ export function SimpleCommunication() {
         .insert([messageData]);
 
       if (error) throw error;
-
+      
       setNewMessage('');
-      // Refetch messages to show the new one
       fetchMessages(selectedChannel);
     } catch (error) {
       console.error('Error sending message:', error);
@@ -269,17 +273,8 @@ export function SimpleCommunication() {
     }
   };
 
-  const filteredMembers = teamMembers.filter(member => 
-    member.full_name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const filteredChannels = channels.filter(channel => 
-    channel.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   const getChannelDisplayName = (channel: Channel) => {
     if (channel.is_direct_message) {
-      // For direct messages, find the other participant from channel members
       const otherMember = channel.channel_members?.find(member => 
         member.user_id !== profile?.id
       );
@@ -288,33 +283,45 @@ export function SimpleCommunication() {
     return channel.name;
   };
 
-  const getChannelParticipants = (channel: Channel) => {
+  const getChannelIcon = (channel: Channel) => {
     if (channel.is_direct_message) {
-      const otherMember = channel.channel_members?.find(member => 
-        member.user_id !== profile?.id
-      );
-      return otherMember ? [otherMember.profiles] : [];
+      return <Users className="h-5 w-5 text-muted-foreground" />;
     }
-    return [];
+    return channel.type === 'private' 
+      ? <Hash className="h-5 w-5 text-orange-500" />
+      : <Hash className="h-5 w-5 text-muted-foreground" />;
+  };
+
+  const getCurrentChannel = () => {
+    return channels.find(c => c.id === selectedChannel);
+  };
+
+  const getOtherParticipant = (channel: Channel) => {
+    if (!channel.is_direct_message) return null;
+    return channel.channel_members?.find(member => 
+      member.user_id !== profile?.id
+    )?.profiles;
   };
 
   if (loading) {
     return (
-      <Card className="h-[600px] flex items-center justify-center">
+      <div className="h-[calc(100vh-6rem)] flex items-center justify-center">
         <div className="text-center">
           <MessageSquare className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
           <p>Loading communication...</p>
         </div>
-      </Card>
+      </div>
     );
   }
 
+  const currentChannel = getCurrentChannel();
+  const otherParticipant = currentChannel ? getOtherParticipant(currentChannel) : null;
+
   return (
-    <div className="h-[calc(100vh-6rem)] max-w-7xl mx-auto">
-      <div className="grid grid-cols-12 gap-4 h-full">
-        {/* Sidebar */}
-        <div className="col-span-3 xl:col-span-2">
-          <CommunicationSidebar
+    <div className="h-[calc(100vh-6rem)] flex bg-background overflow-hidden">
+      {/* Sidebar - Fixed width 320px */}
+      <div className="w-80 shrink-0">
+        <CommunicationSidebar
           profile={profile}
           channels={channels}
           teamMembers={teamMembers}
@@ -325,120 +332,142 @@ export function SimpleCommunication() {
           setActiveTab={setActiveTab}
           setSearchQuery={setSearchQuery}
           startDirectMessage={startDirectMessage}
-            showUserProfile={showUserProfile}
-            getChannelDisplayName={getChannelDisplayName}
-          />
-        </div>
+          showUserProfile={showUserProfile}
+          getChannelDisplayName={getChannelDisplayName}
+        />
+      </div>
 
-        {/* Main Chat Area */}
-        <div className="col-span-9 xl:col-span-10 flex flex-col">
-          <Card className="h-full flex flex-col shadow-lg border-0 bg-gradient-to-br from-background to-muted/20">
-            {selectedChannel ? (
-              <>
-                {/* Enhanced Header */}
-                <CardHeader className="pb-4 shrink-0 border-b bg-card/50 backdrop-blur-sm">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-2">
-                        {(() => {
-                          const channel = channels.find(c => c.id === selectedChannel);
-                          if (channel?.is_direct_message) {
-                            const otherMember = channel.channel_members?.find(member => 
-                              member.user_id !== profile?.id
-                            );
-                            return (
-                              <Avatar className="h-8 w-8">
-                                <AvatarImage src={otherMember?.profiles?.avatar_url} />
-                                <AvatarFallback className="bg-primary text-primary-foreground">
-                                  {otherMember?.profiles?.full_name?.charAt(0) || 'U'}
-                                </AvatarFallback>
-                              </Avatar>
-                            );
-                          }
-                          return <MessageSquare className="h-8 w-8 text-primary" />;
-                        })()}
-                        <div>
-                          <CardTitle className="text-lg font-semibold">
-                            {(() => {
-                              const channel = channels.find(c => c.id === selectedChannel);
-                              return channel ? getChannelDisplayName(channel) : 'Chat';
-                            })()}
-                          </CardTitle>
-                          <p className="text-xs text-muted-foreground">
-                            {messages.length} messages • Active now
-                          </p>
-                        </div>
+      {/* Main Chat Area - Flex grow to fill remaining space */}
+      <div className="flex-1 flex flex-col min-w-0 bg-background">
+        {selectedChannel && currentChannel ? (
+          <>
+            {/* Chat Header */}
+            <div className="h-14 px-6 py-3 border-b bg-background/95 backdrop-blur-sm shrink-0">
+              <div className="flex items-center justify-between h-full">
+                {/* Left side - Channel info */}
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="flex items-center gap-2 min-w-0">
+                    {currentChannel.is_direct_message && otherParticipant ? (
+                      <div className="relative">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={otherParticipant.avatar_url} />
+                          <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                            {otherParticipant.full_name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
                       </div>
-                    </div>
+                    ) : (
+                      getChannelIcon(currentChannel)
+                    )}
                     
-                    <div className="flex items-center gap-2">
-                      <EnhancedCallControls 
-                        recipientName={(() => {
-                          const channel = channels.find(c => c.id === selectedChannel);
-                          return channel ? getChannelDisplayName(channel) : undefined;
-                        })()}
-                      />
-                      <Button variant="ghost" size="sm">
-                        <Star className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Pin className="h-4 w-4" />
-                      </Button>
+                    <div className="min-w-0">
+                      <h1 className="text-lg font-semibold truncate">
+                        {getChannelDisplayName(currentChannel)}
+                      </h1>
+                      {currentChannel.is_direct_message && otherParticipant ? (
+                        <p className="text-xs text-muted-foreground">
+                          {otherParticipant.role} • Online
+                        </p>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">
+                          {messages.length} messages
+                        </p>
+                      )}
                     </div>
                   </div>
-                </CardHeader>
+                  
+                  {currentChannel.is_pinned && <Pin className="h-4 w-4 text-blue-600" />}
+                </div>
 
-                <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
-                  {/* Messages Area with enhanced styling */}
-                  <div className="flex-1 bg-gradient-to-b from-muted/10 to-transparent">
-                    <MessageList 
-                      messages={messages} 
-                      currentUserId={profile?.id}
-                    />
-                  </div>
-
-                  {/* Enhanced Message Input */}
-                  <div className="border-t bg-card/80 backdrop-blur-sm">
-                    <MessageInput
-                      value={newMessage}
-                      onChange={setNewMessage}
-                      onSend={handleSendMessage}
-                      mentions={teamMembers.map(member => ({ id: member.id, name: member.full_name }))}
-                      disabled={!selectedChannel}
-                    />
-                  </div>
-                </CardContent>
-              </>
-            ) : (
-              <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-muted/20 to-transparent">
-                <div className="text-center space-y-4 p-8">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
-                    <MessageSquare className="relative h-20 w-20 text-primary mx-auto" />
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                      Welcome to Team Chat
-                    </h3>
-                    <p className="text-muted-foreground max-w-sm mx-auto">
-                      Connect with your team members, share ideas, and collaborate in real-time. Select someone to start chatting!
-                    </p>
-                  </div>
-                  <div className="flex gap-2 justify-center">
-                    <Button variant="outline" size="sm">
-                      <Users className="h-4 w-4 mr-2" />
-                      Browse Team
-                    </Button>
-                    <Button size="sm">
-                      <MessageSquare className="h-4 w-4 mr-2" />
-                      Start Chat
-                    </Button>
-                  </div>
+                {/* Right side - Action buttons */}
+                <div className="flex items-center gap-1 shrink-0">
+                  <Button variant="ghost" size="sm">
+                    <Phone className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    <Video className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    <Info className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
-            )}
-          </Card>
-        </div>
+            </div>
+
+            {/* Messages Area */}
+            <div className="flex-1 bg-background">
+              <MessageList 
+                messages={messages} 
+                currentUserId={profile?.id}
+              />
+            </div>
+
+            {/* Message Input */}
+            <div className="shrink-0 border-t bg-background/95 backdrop-blur-sm">
+              <MessageInput
+                value={newMessage}
+                onChange={setNewMessage}
+                onSend={handleSendMessage}
+                mentions={teamMembers.map(member => ({ 
+                  id: member.id, 
+                  name: member.full_name 
+                }))}
+                disabled={!selectedChannel}
+                placeholder={`Message ${currentChannel.is_direct_message 
+                  ? getChannelDisplayName(currentChannel) 
+                  : `#${currentChannel.name}`
+                }...`}
+              />
+            </div>
+          </>
+        ) : (
+          /* Empty State */
+          <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-muted/10 to-transparent">
+            <div className="text-center space-y-6 p-8 max-w-md">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
+                <MessageSquare className="relative h-24 w-24 text-primary mx-auto" />
+              </div>
+              
+              <div className="space-y-3">
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                  Welcome to SLT Finance Chat
+                </h3>
+                <p className="text-muted-foreground">
+                  Connect with your team members, share ideas, and collaborate in real-time. 
+                  {activeTab === 'team' 
+                    ? ' Click on a team member to start chatting!' 
+                    : ' Select a conversation to continue.'
+                  }
+                </p>
+              </div>
+              
+              <div className="flex gap-3 justify-center">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setActiveTab('team')}
+                  className={cn(activeTab === 'team' && "bg-muted")}
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  Browse Team
+                </Button>
+                <Button 
+                  size="sm"
+                  onClick={() => setActiveTab('chats')}
+                  className={cn(activeTab === 'chats' && "bg-primary/90")}
+                >
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Recent Chats
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* User Profile Modal */}
@@ -448,19 +477,18 @@ export function SimpleCommunication() {
         onClose={closeProfileModal}
         onStartMessage={() => profileModalUser && startDirectMessage(profileModalUser)}
         onStartCall={() => {
-          // Handle audio call
           toast({
             title: 'Audio Call',
             description: `Calling ${profileModalUser?.full_name}...`,
           });
         }}
         onStartVideoCall={() => {
-          // Handle video call
           toast({
             title: 'Video Call',
             description: `Video calling ${profileModalUser?.full_name}...`,
           });
         }}
+        currentUserId={profile?.id}
       />
     </div>
   );
