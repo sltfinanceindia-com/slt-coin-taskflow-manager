@@ -20,8 +20,7 @@ import {
   Bell,
   BellOff,
   Pin,
-  Users,
-  Clock
+  Users
 } from 'lucide-react';
 import { usePresence } from '@/hooks/usePresence';
 import { cn } from '@/lib/utils';
@@ -91,7 +90,6 @@ export function CommunicationSidebar({
   getChannelDisplayName
 }: CommunicationSidebarProps) {
   const { getStatusBadgeColor, getUserPresence } = usePresence();
-  const [compactView, setCompactView] = useState(false);
 
   // Enhanced filtering with better conversation sorting
   const filteredMembers = useMemo(() => {
@@ -102,7 +100,6 @@ export function CommunicationSidebar({
         member.department?.toLowerCase().includes(searchQuery.toLowerCase())
       )
       .sort((a, b) => {
-        // Sort by presence (online first), then by name
         const aPresence = getUserPresence(a.id);
         const bPresence = getUserPresence(b.id);
         if (aPresence === 'online' && bPresence !== 'online') return -1;
@@ -114,12 +111,9 @@ export function CommunicationSidebar({
   const filteredChannels = useMemo(() => {
     return channels
       .filter(channel => 
-        getChannelDisplayName(channel).toLowerCase().includes(searchQuery.toLowerCase()) ||
-        channel.last_message?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        channel.last_message_sender?.toLowerCase().includes(searchQuery.toLowerCase())
+        getChannelDisplayName(channel).toLowerCase().includes(searchQuery.toLowerCase())
       )
       .sort((a, b) => {
-        // Sort by pinned first, then by unread, then by recent activity
         if (a.is_pinned && !b.is_pinned) return -1;
         if (b.is_pinned && !a.is_pinned) return 1;
         if (a.unread_count && !b.unread_count) return -1;
@@ -135,15 +129,10 @@ export function CommunicationSidebar({
     const now = new Date();
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 3600);
     
-    if (diffInHours < 1) {
-      return 'now';
-    } else if (diffInHours < 24) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } else if (diffInHours < 168) { // 7 days
-      return date.toLocaleDateString([], { weekday: 'short' });
-    } else {
-      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-    }
+    if (diffInHours < 1) return 'now';
+    if (diffInHours < 24) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (diffInHours < 168) return date.toLocaleDateString([], { weekday: 'short' });
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
   };
 
   const getChannelIcon = (channel: Channel) => {
@@ -155,298 +144,50 @@ export function CommunicationSidebar({
       : <Hash className="h-4 w-4 text-muted-foreground shrink-0" />;
   };
 
-  const getConversationPartner = (channel: Channel) => {
-    if (!channel.is_direct_message) return null;
-    return channel.channel_members?.find(member => 
-      member.user_id !== profile?.user_id
-    )?.profiles;
-  };
-
-  const renderChannelItem = (channel: Channel) => {
-    const conversationPartner = getConversationPartner(channel);
-    const displayName = getChannelDisplayName(channel);
-    const isUnread = channel.unread_count && channel.unread_count > 0;
-    
-    return (
-      <TooltipProvider key={channel.id}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div
-              className={cn(
-                "flex items-start gap-3 p-3 rounded-xl cursor-pointer transition-all duration-200 group relative",
-                "hover:bg-muted/50 hover:shadow-sm",
-                selectedChannel === channel.id && "bg-primary/5 border border-primary/20 shadow-sm",
-                isUnread && "bg-blue-50/80 border-l-4 border-l-blue-500"
-              )}
-              onClick={() => setSelectedChannel(channel.id)}
-            >
-              {/* Pinned indicator */}
-              {channel.is_pinned && (
-                <Pin className="h-3 w-3 text-blue-600 absolute top-1 right-1" />
-              )}
-              
-              {/* Avatar/Icon */}
-              <div className="flex-shrink-0 mt-0.5">
-                {channel.is_direct_message && conversationPartner ? (
-                  <div className="relative">
-                    <Avatar className="h-12 w-12 ring-2 ring-background shadow-sm">
-                      <AvatarImage src={conversationPartner.avatar_url} />
-                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
-                        {conversationPartner.full_name.split(' ').map(n => n.charAt(0)).join('').slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className={cn(
-                      "absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-background",
-                      getStatusBadgeColor(getUserPresence(conversationPartner.id))
-                    )} />
-                  </div>
-                ) : (
-                  <div className="h-12 w-12 rounded-full bg-muted/80 flex items-center justify-center">
-                    {getChannelIcon(channel)}
-                  </div>
-                )}
-              </div>
-              
-              {/* Content */}
-              <div className="flex-1 min-w-0 space-y-1">
-                {/* Name and Time Row */}
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className={cn(
-                    "font-semibold text-sm leading-tight",
-                    isUnread ? "text-foreground" : "text-foreground/90"
-                  )}>
-                    {displayName}
-                  </h3>
-                  
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <span className="text-xs text-muted-foreground">
-                      {formatLastMessageTime(channel.last_message_time)}
-                    </span>
-                  </div>
-                </div>
-                
-                {/* Last Message Row */}
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    {channel.last_message ? (
-                      <div className="flex items-center gap-1">
-                        {channel.last_message_sender && !channel.is_direct_message && (
-                          <span className="text-xs font-medium text-muted-foreground">
-                            {channel.last_message_sender}:
-                          </span>
-                        )}
-                        <p className={cn(
-                          "text-xs truncate",
-                          isUnread ? "text-foreground/80 font-medium" : "text-muted-foreground"
-                        )}>
-                          {channel.last_message}
-                        </p>
-                      </div>
-                    ) : (
-                      <p className="text-xs text-muted-foreground italic">
-                        No messages yet
-                      </p>
-                    )}
-                  </div>
-                  
-                  {/* Status indicators */}
-                  <div className="flex items-center gap-1">
-                    {channel.is_muted && (
-                      <BellOff className="h-3 w-3 text-muted-foreground" />
-                    )}
-                    {isUnread && (
-                      <Badge variant="destructive" className="h-5 min-w-[20px] text-xs px-1.5 bg-blue-600">
-                        {channel.unread_count! > 99 ? '99+' : channel.unread_count}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Channel metadata for non-DM channels */}
-                {!channel.is_direct_message && channel.channel_members && (
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Users className="h-3 w-3" />
-                    <span>{channel.channel_members.length} members</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent side="right" className="max-w-xs">
-            <div className="space-y-1">
-              <div className="font-medium">{displayName}</div>
-              {channel.last_message && (
-                <div className="text-xs opacity-90">
-                  Last: {channel.last_message}
-                </div>
-              )}
-            </div>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  };
-
-  const renderTeamMember = (member: Profile) => {
-    const presence = getUserPresence(member.id);
-    const isOnline = presence === 'online';
-
-    return (
-      <TooltipProvider key={member.id}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div
-              className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-muted/50 transition-all duration-200 group hover:shadow-sm"
-              onClick={() => showUserProfile(member)}
-            >
-              <div className="relative shrink-0">
-                <Avatar className="h-11 w-11 ring-2 ring-background shadow-sm">
-                  <AvatarImage src={member.avatar_url} />
-                  <AvatarFallback className="bg-gradient-to-br from-green-500 to-blue-600 text-white font-semibold">
-                    {member.full_name.split(' ').map(n => n.charAt(0)).join('').slice(0, 2)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className={cn(
-                  "absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-background",
-                  getStatusBadgeColor(presence)
-                )} />
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <div className="min-w-0 flex-1">
-                    <h3 className={cn(
-                      "font-semibold text-sm leading-tight truncate",
-                      isOnline ? "text-foreground" : "text-muted-foreground"
-                    )}>
-                      {member.full_name}
-                    </h3>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <span className="text-xs text-muted-foreground capitalize">
-                        {member.role}
-                      </span>
-                      {member.department && (
-                        <>
-                          <span className="text-xs text-muted-foreground">•</span>
-                          <span className="text-xs text-muted-foreground truncate">
-                            {member.department}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={(e) => { 
-                        e.stopPropagation(); 
-                        startDirectMessage(member);
-                      }}
-                      className="h-7 w-7 p-0"
-                      title="Send message"
-                    >
-                      <MessageSquare className="h-3 w-3" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-7 w-7 p-0"
-                      title="Start call"
-                    >
-                      <Phone className="h-3 w-3" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-7 w-7 p-0"
-                      title="Start video call"
-                    >
-                      <Video className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent side="right">
-            <div className="space-y-1">
-              <div className="font-medium">{member.full_name}</div>
-              <div className="text-xs opacity-90">
-                {member.role} • {member.department || 'No department'}
-              </div>
-              <div className="text-xs opacity-90 capitalize">
-                Status: {presence || 'Unknown'}
-              </div>
-            </div>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  };
-
   return (
-    <Card className="h-full flex flex-col border-r bg-background/95 backdrop-blur-sm">
+    <Card className="h-full flex flex-col border-r bg-background w-80 min-w-80 max-w-80">
       {/* Header */}
-      <CardHeader className="pb-4 shrink-0 border-b bg-muted/20">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-bold">Communications</CardTitle>
+      <CardHeader className="pb-4 shrink-0 border-b">
+        <div className="flex items-center justify-between mb-4">
+          <CardTitle className="text-base font-semibold">Communications</CardTitle>
           <div className="flex items-center gap-1">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => setCompactView(!compactView)}
-              className="h-8 w-8 p-0"
-              title={compactView ? "Expand view" : "Compact view"}
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <Settings className="h-4 w-4" />
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+              <Settings className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>
         
         {/* User Profile Section */}
-        <div className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-primary/5 to-blue-50 border border-primary/10">
-          <Avatar className="h-12 w-12 ring-2 ring-primary/20 shadow-sm">
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border">
+          <Avatar className="h-9 w-9 shrink-0">
             <AvatarImage src={profile?.avatar_url} />
-            <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-              {profile?.full_name?.split(' ').map((n: string) => n.charAt(0)).join('').slice(0, 2)}
+            <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+              {profile?.full_name?.charAt(0)}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <div className="font-semibold text-sm leading-tight">
-              {profile?.full_name}
-            </div>
-            <div className="flex items-center gap-2 mt-1">
+            <div className="text-sm font-medium">{profile?.full_name}</div>
+            <div className="flex items-center gap-1.5">
               <Circle className="h-2 w-2 fill-green-500 text-green-500" />
               <span className="text-xs text-muted-foreground">Available</span>
             </div>
           </div>
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 shrink-0">
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
         </div>
       </CardHeader>
       
       <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
         {/* Tab Navigation */}
-        <div className="flex border-b bg-muted/10 shrink-0">
+        <div className="flex border-b bg-muted/20 shrink-0">
           <Button
             variant={activeTab === 'chats' ? 'default' : 'ghost'}
             size="sm"
             onClick={() => setActiveTab('chats')}
-            className="flex-1 rounded-none h-12 text-sm font-medium relative"
+            className="flex-1 rounded-none h-10 text-sm font-medium"
           >
             <MessageSquare className="h-4 w-4 mr-2" />
-            Recent Chats
+            Recent
             {channels.some(c => c.unread_count && c.unread_count > 0) && (
-              <Badge 
-                variant="destructive" 
-                className="absolute -top-1 -right-1 h-5 min-w-[20px] text-xs px-1.5 bg-red-500"
-              >
+              <Badge variant="destructive" className="ml-2 h-4 min-w-4 text-xs px-1">
                 {channels.reduce((sum, c) => sum + (c.unread_count || 0), 0)}
               </Badge>
             )}
@@ -455,55 +196,220 @@ export function CommunicationSidebar({
             variant={activeTab === 'team' ? 'default' : 'ghost'}
             size="sm"
             onClick={() => setActiveTab('team')}
-            className="flex-1 rounded-none h-12 text-sm font-medium relative"
+            className="flex-1 rounded-none h-10 text-sm font-medium"
           >
             <Users className="h-4 w-4 mr-2" />
-            Team Members
-            <Badge 
-              variant="secondary" 
-              className="absolute -top-1 -right-1 h-5 min-w-[20px] text-xs px-1.5 bg-green-100 text-green-700"
-            >
+            Team
+            <Badge variant="secondary" className="ml-2 h-4 min-w-4 text-xs px-1">
               {teamMembers.filter(m => getUserPresence(m.id) === 'online').length}
             </Badge>
           </Button>
         </div>
 
         {/* Search */}
-        <div className="p-4 shrink-0 border-b bg-muted/5">
+        <div className="p-3 shrink-0 border-b">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
-              placeholder={activeTab === 'chats' ? 'Search conversations...' : 'Find team members...'}
+              placeholder={activeTab === 'chats' ? 'Search conversations...' : 'Find people...'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 text-sm bg-background/50 border-muted-foreground/20 focus:border-primary/50"
+              className="pl-10 h-8 text-sm bg-muted/50"
             />
           </div>
         </div>
 
         {/* Content Area */}
         <ScrollArea className="flex-1">
-          <div className="p-3 space-y-2">
+          <div className="p-2">
             {activeTab === 'chats' ? (
               filteredChannels.length > 0 ? (
-                filteredChannels.map(renderChannelItem)
+                <div className="space-y-1">
+                  {filteredChannels.map(channel => (
+                    <TooltipProvider key={channel.id}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div
+                            className={cn(
+                              "flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors group",
+                              selectedChannel === channel.id && "bg-muted",
+                              channel.unread_count && channel.unread_count > 0 && "bg-blue-50/50"
+                            )}
+                            onClick={() => setSelectedChannel(channel.id)}
+                          >
+                            {channel.is_pinned && (
+                              <Pin className="h-3 w-3 text-blue-600 absolute top-1 right-1" />
+                            )}
+                            
+                            <div className="shrink-0">
+                              {getChannelIcon(channel)}
+                            </div>
+                            
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className={cn(
+                                  "text-sm font-medium",
+                                  channel.unread_count && channel.unread_count > 0 ? "font-semibold" : "font-medium"
+                                )}>
+                                  {getChannelDisplayName(channel)}
+                                </span>
+                                
+                                <div className="flex items-center gap-1 shrink-0">
+                                  {channel.is_muted && (
+                                    <BellOff className="h-3 w-3 text-muted-foreground" />
+                                  )}
+                                  {channel.unread_count && channel.unread_count > 0 && (
+                                    <Badge variant="destructive" className="h-4 min-w-4 text-xs px-1">
+                                      {channel.unread_count > 99 ? '99+' : channel.unread_count}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center justify-between gap-2 mt-1">
+                                <div className="flex-1 min-w-0">
+                                  {channel.last_message ? (
+                                    <p className="text-xs text-muted-foreground truncate">
+                                      {channel.last_message_sender && !channel.is_direct_message && (
+                                        <span className="font-medium">{channel.last_message_sender}: </span>
+                                      )}
+                                      {channel.last_message}
+                                    </p>
+                                  ) : (
+                                    <p className="text-xs text-muted-foreground italic">No messages yet</p>
+                                  )}
+                                </div>
+                                <span className="text-xs text-muted-foreground shrink-0">
+                                  {formatLastMessageTime(channel.last_message_time)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                          <div className="max-w-xs">
+                            <div className="font-medium">{getChannelDisplayName(channel)}</div>
+                            {channel.last_message && (
+                              <div className="text-xs opacity-90 mt-1">
+                                Last: {channel.last_message}
+                              </div>
+                            )}
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ))}
+                </div>
               ) : (
-                <div className="text-center py-16 text-muted-foreground">
-                  <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-medium mb-2">No conversations found</p>
-                  <p className="text-sm">Start chatting with your team members</p>
+                <div className="text-center py-12 text-muted-foreground">
+                  <MessageSquare className="h-8 w-8 mx-auto mb-3 opacity-50" />
+                  <p className="text-sm font-medium mb-1">No conversations found</p>
+                  <p className="text-xs">Start a conversation with your team</p>
                 </div>
               )
             ) : (
               filteredMembers.length > 0 ? (
-                <div className="space-y-2">
-                  {filteredMembers.map(renderTeamMember)}
+                <div className="space-y-1">
+                  {filteredMembers.map(member => {
+                    const presence = getUserPresence(member.id);
+                    const isOnline = presence === 'online';
+
+                    return (
+                      <TooltipProvider key={member.id}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div
+                              className="flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors group"
+                              onClick={() => showUserProfile(member)}
+                            >
+                              <div className="relative shrink-0">
+                                <Avatar className="h-8 w-8">
+                                  <AvatarImage src={member.avatar_url} />
+                                  <AvatarFallback className="bg-secondary text-secondary-foreground text-xs">
+                                    {member.full_name.charAt(0)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className={cn(
+                                  "absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-background",
+                                  getStatusBadgeColor(presence)
+                                )} />
+                              </div>
+
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between">
+                                  <div className="min-w-0 flex-1">
+                                    <div className={cn(
+                                      "text-sm font-medium",
+                                      isOnline ? "text-foreground" : "text-muted-foreground"
+                                    )}>
+                                      {member.full_name}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground mt-0.5">
+                                      <span className="capitalize">{member.role}</span>
+                                      {member.department && (
+                                        <>
+                                          <span> • </span>
+                                          <span>{member.department}</span>
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-0.5">
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm" 
+                                      onClick={(e) => { 
+                                        e.stopPropagation(); 
+                                        startDirectMessage(member);
+                                      }}
+                                      className="h-6 w-6 p-0"
+                                      title="Send message"
+                                    >
+                                      <MessageSquare className="h-3 w-3" />
+                                    </Button>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm" 
+                                      className="h-6 w-6 p-0"
+                                      title="Start call"
+                                    >
+                                      <Phone className="h-3 w-3" />
+                                    </Button>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm" 
+                                      className="h-6 w-6 p-0"
+                                      title="Start video call"
+                                    >
+                                      <Video className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent side="right">
+                            <div className="max-w-xs">
+                              <div className="font-medium">{member.full_name}</div>
+                              <div className="text-xs opacity-90 mt-1">
+                                {member.role} • {member.department || 'No department'}
+                              </div>
+                              <div className="text-xs opacity-90 capitalize">
+                                Status: {presence || 'Unknown'}
+                              </div>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    );
+                  })}
                 </div>
               ) : (
-                <div className="text-center py-16 text-muted-foreground">
-                  <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-medium mb-2">No team members found</p>
-                  <p className="text-sm">Try adjusting your search criteria</p>
+                <div className="text-center py-12 text-muted-foreground">
+                  <Users className="h-8 w-8 mx-auto mb-3 opacity-50" />
+                  <p className="text-sm font-medium mb-1">No team members found</p>
+                  <p className="text-xs">Try adjusting your search</p>
                 </div>
               )
             )}
