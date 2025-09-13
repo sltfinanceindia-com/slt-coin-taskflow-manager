@@ -101,7 +101,7 @@ export function MessageList({ messages, currentUserId }: MessageListProps) {
                   inline-block px-3 py-2 rounded-lg max-w-full break-words
                   ${isOwn 
                     ? 'bg-primary text-primary-foreground' 
-                    : 'bg-muted text-muted-foreground'
+                    : 'bg-muted text-foreground'
                   }
                 `}>
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>

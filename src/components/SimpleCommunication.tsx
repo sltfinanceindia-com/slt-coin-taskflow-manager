@@ -143,7 +143,7 @@ export function SimpleCommunication() {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, user_id, full_name, avatar_url, role, email, department, bio')
-        .neq('user_id', profile?.user_id) // Use user_id instead of id for comparison
+        .neq('id', profile?.id) // Fix: use profile.id for comparison
         .order('full_name');
 
       if (error) throw error;

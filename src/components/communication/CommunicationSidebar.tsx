@@ -186,7 +186,7 @@ export function CommunicationSidebar({
                           {member.full_name.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
-                      <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background ${getStatusBadgeColor(getUserPresence(member.user_id))}`} />
+                      <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background ${getStatusBadgeColor(getUserPresence(member.id))}`} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium truncate">{member.full_name}</div>
