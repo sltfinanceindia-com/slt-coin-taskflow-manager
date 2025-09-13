@@ -303,9 +303,9 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                         alt="SLT Finance India Logo" 
                         className="h-16 w-auto mr-6"
                       />
-                      <div className="text-center">
+                      <div className="absolute left-1/2 transform -translate-x-1/2 text-center">
                         <h1 className="text-2xl font-bold text-blue-600 tracking-wider">SLT FINANCE INDIA</h1>
-                        <p className="text-sm text-gray-600 tracking-wide mt-1">BUILDING FUTURE IN FINANCE & TECHNOLOGY</p>
+                        <p className="text-sm text-gray-600 tracking-wide mt-1">Your Wealth Is Our Future</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -414,9 +414,6 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                             <p className="text-sm font-bold text-gray-800 mb-1">{certificateData.authorityName || 'Authority Name'}</p>
                             <p className="text-xs text-gray-600">{certificateData.signatureAuthority || 'Position'}</p>
                             <p className="text-xs text-gray-500">SLT Finance India</p>
-                          </div>
-                          <div className="w-12 h-12 rounded-full bg-blue-100 border-2 border-blue-300 flex items-center justify-center">
-                            <span className="text-sm font-bold text-blue-600">SLT</span>
                           </div>
                         </div>
                       </div>
