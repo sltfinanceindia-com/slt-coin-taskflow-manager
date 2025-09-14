@@ -468,7 +468,7 @@ export function SearchAndFilters({
             sortBy: filters.sortBy === 'newest' ? 'oldest' : 'newest' 
           })}
           className="h-10 px-3"
-          title={`Sort by ${filters.sortBy === 'newest' ? 'oldest' : 'newest'} first`}
+          
         >
           {filters.sortBy === 'newest' ? <SortDesc className="h-4 w-4" /> : <SortAsc className="h-4 w-4" />}
         </Button>

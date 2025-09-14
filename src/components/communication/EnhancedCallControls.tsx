@@ -406,7 +406,7 @@ export function EnhancedCallControls({
                 size="sm"
                 onClick={() => setIsFullscreen(!isFullscreen)}
                 className="h-8 w-8 p-0 text-gray-300 hover:text-white hover:bg-gray-700"
-                title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                
               >
                 {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
               </Button>
@@ -504,7 +504,7 @@ export function EnhancedCallControls({
                       ? 'bg-red-600 hover:bg-red-700 text-white' 
                       : 'bg-gray-600 hover:bg-gray-500 text-white'
                   )}
-                  title={isMuted ? "Unmute" : "Mute"}
+                  
                 >
                   {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
                 </Button>
@@ -521,7 +521,7 @@ export function EnhancedCallControls({
                         ? 'bg-red-600 hover:bg-red-700 text-white' 
                         : 'bg-gray-600 hover:bg-gray-500 text-white'
                     )}
-                    title={isVideoEnabled ? "Turn off camera" : "Turn on camera"}
+                    
                   >
                     {isVideoEnabled ? <Camera className="h-5 w-5" /> : <CameraOff className="h-5 w-5" />}
                   </Button>
@@ -538,7 +538,7 @@ export function EnhancedCallControls({
                       ? 'bg-green-600 hover:bg-green-700 text-white' 
                       : 'bg-gray-600 hover:bg-gray-500 text-white'
                   )}
-                  title={isScreenSharing ? "Stop sharing" : "Share screen"}
+                  
                 >
                   {isScreenSharing ? <MonitorOff className="h-5 w-5" /> : <Monitor className="h-5 w-5" />}
                 </Button>
@@ -554,7 +554,7 @@ export function EnhancedCallControls({
                       ? 'bg-yellow-600 hover:bg-yellow-700 text-white' 
                       : 'bg-gray-600 hover:bg-gray-500 text-white'
                   )}
-                  title={isHandRaised ? "Lower hand" : "Raise hand"}
+                  
                 >
                   <Hand className="h-5 w-5" />
                 </Button>
@@ -570,7 +570,7 @@ export function EnhancedCallControls({
                       ? 'bg-red-600 hover:bg-red-700 text-white animate-pulse' 
                       : 'bg-gray-600 hover:bg-gray-500 text-white'
                   )}
-                  title={isRecording ? "Stop recording" : "Start recording"}
+                  
                 >
                   <Circle className="h-5 w-5" />
                 </Button>

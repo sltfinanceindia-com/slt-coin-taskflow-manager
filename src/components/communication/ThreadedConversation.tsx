@@ -280,7 +280,7 @@ export function ThreadedConversation({
                         size="sm"
                         className="h-7 px-2 text-xs hover:bg-accent transition-colors"
                         onClick={() => onReact?.(message.id, reaction.emoji)}
-                        title={`${reaction.users.join(', ')} reacted with ${reaction.emoji}`}
+                        
                       >
                         <span className="mr-1">{reaction.emoji}</span>
                         <span>{reaction.count}</span>
@@ -311,7 +311,7 @@ export function ThreadedConversation({
                               onReact?.(message.id, reaction.emoji);
                               setShowEmojiPicker(null);
                             }}
-                            title={reaction.label}
+                            
                           >
                             {reaction.emoji}
                           </Button>
