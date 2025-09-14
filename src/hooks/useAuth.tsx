@@ -132,26 +132,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      // Set user as offline before signing out
+      // Set user as offline before signing out (optional, non-blocking)
       if (profile?.id) {
-        await supabase.rpc('update_user_presence', {
-          p_user_id: profile.id,
-          p_is_online: false
-        });
-        
-        // End current session before signing out
-        const { data: sessions } = await supabase
-          .from('session_logs')
-          .select('id')
-          .eq('user_id', profile.id)
-          .is('logout_time', null)
-          .limit(1);
-        
-        if (sessions && sessions.length > 0) {
-          await supabase
+        try {
+          await supabase.rpc('update_user_presence', {
+            p_user_id: profile.id,
+            p_is_online: false
+          });
+          
+          // End current session before signing out (optional, non-blocking)
+          const { data: sessions } = await supabase
             .from('session_logs')
-            .update({ logout_time: new Date().toISOString() })
-            .eq('id', sessions[0].id);
+            .select('id')
+            .eq('user_id', profile.id)
+            .is('logout_time', null)
+            .limit(1);
+          
+          if (sessions && sessions.length > 0) {
+            await supabase
+              .from('session_logs')
+              .update({ logout_time: new Date().toISOString() })
+              .eq('id', sessions[0].id);
+          }
+        } catch (presenceError) {
+          console.warn('Failed to update presence on signout:', presenceError);
+          // Continue with signout even if presence update fails
         }
       }
       

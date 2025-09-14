@@ -229,6 +229,8 @@ export function SimpleCommunication() {
   };
 
   const fetchMessages = async (channelId: string) => {
+    if (!channelId) return;
+    
     try {
       const { data, error } = await supabase
         .from('messages')
@@ -249,25 +251,51 @@ export function SimpleCommunication() {
       
       const messagesWithProfiles = await Promise.all(
         (data || []).map(async (msg) => {
-          const { data: senderProfile, error: profileError } = await supabase
-            .from('profiles')
-            .select('id, full_name, avatar_url, role')
-            .eq('id', msg.sender_id)
-            .maybeSingle();
-          
-          if (profileError) {
-            console.error('Error fetching sender profile for message:', msg.id, profileError);
-          }
-          
-          return {
-            ...msg,
-            sender_profile: senderProfile || { 
-              id: msg.sender_id,
-              full_name: msg.sender_name || 'Unknown User',
-              avatar_url: null,
-              role: 'unknown'
+          try {
+            // Try to find profile by sender_id first
+            let senderProfile = null;
+            if (msg.sender_id) {
+              const { data: profileData } = await supabase
+                .from('profiles')
+                .select('id, full_name, avatar_url, role')
+                .eq('id', msg.sender_id)
+                .maybeSingle();
+              
+              senderProfile = profileData;
             }
-          };
+            
+            // If no profile found by id, try by user_id
+            if (!senderProfile && msg.sender_id) {
+              const { data: userProfileData } = await supabase
+                .from('profiles')
+                .select('id, full_name, avatar_url, role')
+                .eq('user_id', msg.sender_id)
+                .maybeSingle();
+              
+              senderProfile = userProfileData;
+            }
+            
+            return {
+              ...msg,
+              sender_profile: senderProfile || { 
+                id: msg.sender_id,
+                full_name: msg.sender_name || 'Unknown User',
+                avatar_url: null,
+                role: 'unknown'
+              }
+            };
+          } catch (error) {
+            console.error('Error processing message:', msg.id, error);
+            return {
+              ...msg,
+              sender_profile: { 
+                id: msg.sender_id,
+                full_name: msg.sender_name || 'Unknown User',
+                avatar_url: null,
+                role: 'unknown'
+              }
+            };
+          }
         })
       );
       
@@ -316,7 +344,7 @@ export function SimpleCommunication() {
   };
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !selectedChannel || !profile) return;
+    if (!newMessage.trim() || !selectedChannel || !profile?.id) return;
 
     try {
       const messageData = {
