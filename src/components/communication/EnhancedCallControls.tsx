@@ -246,7 +246,7 @@ export function EnhancedCallControls({
     try {
       if (!isScreenSharing) {
         const screenStream = await navigator.mediaDevices.getDisplayMedia({
-          video: { mediaSource: 'screen' },
+          video: true,
           audio: true
         });
         
@@ -354,7 +354,6 @@ export function EnhancedCallControls({
           "max-w-6xl max-h-[90vh] p-0 gap-0 bg-gray-900 text-white border-gray-700",
           isFullscreen && "max-w-[100vw] max-h-[100vh] w-full h-full"
         )}
-        hideCloseButton
       >
         {/* Header Bar */}
         <DialogHeader className="px-6 py-3 bg-gray-800/50 border-b border-gray-700 shrink-0">
@@ -684,7 +683,7 @@ export function EnhancedCallControls({
                             {isMuted && <MicOff className="h-3 w-3 text-red-400" />}
                             {!isVideoEnabled && <CameraOff className="h-3 w-3" />}
                             {isHandRaised && <Hand className="h-3 w-3 text-yellow-400" />}
-                            <Shield className="h-3 w-3" title="Host" />
+                            <Shield className="h-3 w-3" />
                           </div>
                         </div>
                       </div>
@@ -704,7 +703,7 @@ export function EnhancedCallControls({
                               {participant.isMuted && <MicOff className="h-3 w-3 text-red-400" />}
                               {participant.isVideoOff && <CameraOff className="h-3 w-3" />}
                               {participant.isHandRaised && <Hand className="h-3 w-3 text-yellow-400" />}
-                              {participant.isHost && <Shield className="h-3 w-3" title="Host" />}
+                              {participant.isHost && <Shield className="h-3 w-3" />}
                               {getConnectionQualityIcon(participant.connectionQuality)}
                             </div>
                           </div>

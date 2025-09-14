@@ -222,10 +222,10 @@ export function ThreadedConversation({
                   </div>
                   <div className="flex items-center gap-1 ml-auto">
                     {message.isPinned && (
-                      <Pin className="h-4 w-4 text-blue-600" title="Pinned message" />
+                      <Pin className="h-4 w-4 text-blue-600" />
                     )}
                     {message.isStarred && (
-                      <Star className="h-4 w-4 text-yellow-600 fill-current" title="Starred message" />
+                      <Star className="h-4 w-4 text-yellow-600 fill-current" />
                     )}
                     {message.views && message.views > 0 && (
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">

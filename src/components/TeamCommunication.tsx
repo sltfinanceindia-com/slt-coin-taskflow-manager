@@ -45,15 +45,19 @@ interface Message {
   message_type: string;
   created_at: string;
   edited_at?: string;
+  attachments?: any;
+  reactions?: { emoji: string; count: number; users: string[]; }[];
+  reply_to?: string;
+  is_read?: boolean;
+  is_pinned?: boolean;
+  is_starred?: boolean;
+  thread_replies?: number;
   sender_profile?: {
     id: string;
     full_name: string;
     avatar_url?: string;
     role?: string;
   };
-  attachments?: any;
-  is_read: boolean;
-  reactions?: { emoji: string; count: number; users: string[] }[];
 }
 
 interface Channel {
@@ -238,7 +242,15 @@ export function TeamCommunication() {
         .limit(100);
 
       if (error) throw error;
-      setMessages(data || []);
+      setMessages((data || []).map(msg => ({
+        ...msg,
+        reactions: Array.isArray(msg.reactions) ? msg.reactions as any[] : [],
+        attachments: msg.attachments || [],
+        is_read: msg.is_read || false,
+        is_pinned: msg.is_pinned || false,
+        is_starred: msg.is_starred || false,
+        thread_replies: msg.thread_replies || 0
+      } as Message)));
     } catch (error) {
       console.error('Error fetching messages:', error);
       toast({

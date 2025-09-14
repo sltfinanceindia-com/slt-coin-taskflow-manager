@@ -586,7 +586,7 @@ export function SearchAndFilters({
                 Starred
                 <Button
                   variant="ghost"
-                  Size="sm"
+                  size="sm"
                   onClick={() => removeFilter('isStarred')}
                   className="h-3 w-3 p-0 hover:bg-transparent"
                 >

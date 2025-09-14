@@ -163,7 +163,6 @@ export function CallControls({
     <Dialog open={isCallActive} onOpenChange={() => {}}>
       <DialogContent 
         className="sm:max-w-lg max-w-[95vw] p-0 gap-0 bg-gray-900 text-white border-gray-700"
-        hideCloseButton
       >
         <DialogHeader className="p-4 pb-2">
           <DialogTitle className="flex items-center justify-between text-white">

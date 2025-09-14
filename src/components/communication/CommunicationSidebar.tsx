@@ -102,8 +102,8 @@ export function CommunicationSidebar({
       .sort((a, b) => {
         const aPresence = getUserPresence(a.id);
         const bPresence = getUserPresence(b.id);
-        if (aPresence === 'online' && bPresence !== 'online') return -1;
-        if (bPresence === 'online' && aPresence !== 'online') return 1;
+        if (aPresence?.activity_status === 'online' && bPresence?.activity_status !== 'online') return -1;
+        if (bPresence?.activity_status === 'online' && aPresence?.activity_status !== 'online') return 1;
         return a.full_name.localeCompare(b.full_name);
       });
   }, [teamMembers, searchQuery, getUserPresence]);
@@ -201,7 +201,7 @@ export function CommunicationSidebar({
             <Users className="h-4 w-4 mr-2" />
             Team
             <Badge variant="secondary" className="ml-2 h-4 min-w-4 text-xs px-1">
-              {teamMembers.filter(m => getUserPresence(m.id) === 'online').length}
+              {teamMembers.filter(m => getUserPresence(m.id)?.activity_status === 'online').length}
             </Badge>
           </Button>
         </div>
@@ -312,7 +312,7 @@ export function CommunicationSidebar({
                 <div className="space-y-1">
                   {filteredMembers.map(member => {
                     const presence = getUserPresence(member.id);
-                    const isOnline = presence === 'online';
+                    const isOnline = presence?.activity_status === 'online';
 
                     return (
                       <TooltipProvider key={member.id}>
@@ -396,7 +396,7 @@ export function CommunicationSidebar({
                                 {member.role} • {member.department || 'No department'}
                               </div>
                               <div className="text-xs opacity-90 capitalize">
-                                Status: {presence || 'Unknown'}
+                                Status: {presence?.activity_status || 'Unknown'}
                               </div>
                             </div>
                           </TooltipContent>
