@@ -1,22 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 
 export function CommunicationDebug() {
   const { user, profile } = useAuth();
-  const [debugInfo, setDebugInfo] = useState<any>({});
-  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [isDebugging, setIsDebugging] = useState(false);
 
   useEffect(() => {
     if (user || profile) {
-      fetchDebugInfo();
+      runDebugAnalysis();
     }
   }, [user, profile]);
 
-  const fetchDebugInfo = async () => {
+  const runDebugAnalysis = async () => {
     try {
+      setIsDebugging(true);
+      
       console.log('=== COMMUNICATION DEBUG START ===');
       console.log('Auth User:', user);
       console.log('Auth Profile:', profile);
@@ -40,7 +39,47 @@ export function CommunicationDebug() {
 
         console.log('Team Members Query Result:', teammates);
         console.log('Team Members Error:', teammatesError);
-        setTeamMembers(teammates || []);
+
+        // Test channel queries
+        const { data: channels, error: channelsError } = await supabase
+          .from('communication_channels')
+          .select(`
+            *,
+            channel_members(
+              user_id,
+              profiles(
+                id,
+                full_name,
+                avatar_url,
+                role
+              )
+            )
+          `)
+          .order('created_at', { ascending: false });
+
+        console.log('All Channels:', channels);
+        console.log('Channels Error:', channelsError);
+
+        // Test user's channels
+        const { data: userChannels, error: userChannelsError } = await supabase
+          .from('communication_channels')
+          .select(`
+            *,
+            channel_members!inner(
+              user_id,
+              profiles(
+                id,
+                full_name,
+                avatar_url,
+                role
+              )
+            )
+          `)
+          .eq('channel_members.user_id', profile.id)
+          .order('created_at', { ascending: false });
+
+        console.log('User Channels:', userChannels);
+        console.log('User Channels Error:', userChannelsError);
       }
 
       // Get current session
@@ -48,59 +87,18 @@ export function CommunicationDebug() {
       console.log('Current Session:', session);
       console.log('Session Error:', sessionError);
 
-      setDebugInfo({
-        user,
-        profile,
-        allProfiles,
-        profilesError,
-        session,
-        sessionError
-      });
-
+      // Test RPC functions
+      console.log('Testing RPC functions...');
+      
       console.log('=== COMMUNICATION DEBUG END ===');
+      
     } catch (error) {
-      console.error('Debug fetch error:', error);
+      console.error('Debug analysis error:', error);
+    } finally {
+      setIsDebugging(false);
     }
   };
 
-  return (
-    <div className="p-4 space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Communication Debug Info</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Button onClick={fetchDebugInfo}>Refresh Debug Info</Button>
-          
-          <div>
-            <h3 className="font-semibold">Auth User:</h3>
-            <pre className="text-xs bg-muted p-2 rounded">
-              {JSON.stringify(user, null, 2)}
-            </pre>
-          </div>
-
-          <div>
-            <h3 className="font-semibold">Profile:</h3>
-            <pre className="text-xs bg-muted p-2 rounded">
-              {JSON.stringify(profile, null, 2)}
-            </pre>
-          </div>
-
-          <div>
-            <h3 className="font-semibold">Team Members Count: {teamMembers.length}</h3>
-            <pre className="text-xs bg-muted p-2 rounded">
-              {JSON.stringify(teamMembers, null, 2)}
-            </pre>
-          </div>
-
-          <div>
-            <h3 className="font-semibold">Debug Info:</h3>
-            <pre className="text-xs bg-muted p-2 rounded max-h-64 overflow-auto">
-              {JSON.stringify(debugInfo, null, 2)}
-            </pre>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  // This component renders nothing but runs debug analysis
+  return null;
 }
