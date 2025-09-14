@@ -329,7 +329,7 @@ export function EnhancedCallControls({
           size="sm"
           onClick={startAudioCall}
           className="h-8 w-8 p-0 hover:bg-green-50 hover:text-green-600 rounded-full transition-colors"
-          title="Start audio call"
+          
         >
           <Phone className="h-4 w-4" />
         </Button>
@@ -338,7 +338,7 @@ export function EnhancedCallControls({
           size="sm"
           onClick={startVideoCall}
           className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600 rounded-full transition-colors"
-          title="Start video call"
+          
         >
           <Video className="h-4 w-4" />
         </Button>
@@ -581,7 +581,7 @@ export function EnhancedCallControls({
                   size="lg"
                   onClick={() => setShowChat(!showChat)}
                   className="h-12 w-12 rounded-full p-0 bg-gray-600 hover:bg-gray-500 text-white"
-                  title="Open chat"
+                  
                 >
                   <MessageSquare className="h-5 w-5" />
                 </Button>
@@ -592,7 +592,7 @@ export function EnhancedCallControls({
                   size="lg"
                   onClick={() => setShowParticipants(!showParticipants)}
                   className="h-12 w-12 rounded-full p-0 bg-gray-600 hover:bg-gray-500 text-white relative"
-                  title="Show participants"
+                  
                 >
                   <Users className="h-5 w-5" />
                   {participants.length > 0 && (
@@ -607,7 +607,7 @@ export function EnhancedCallControls({
                   variant="secondary"
                   size="lg"
                   className="h-12 w-12 rounded-full p-0 bg-gray-600 hover:bg-gray-500 text-white"
-                  title="More options"
+                  
                 >
                   <MoreVertical className="h-5 w-5" />
                 </Button>
@@ -618,7 +618,7 @@ export function EnhancedCallControls({
                   size="lg" 
                   onClick={endCall}
                   className="h-12 w-12 rounded-full p-0 bg-red-600 hover:bg-red-700 ml-4"
-                  title="End call"
+                  
                 >
                   <PhoneOff className="h-5 w-5" />
                 </Button>

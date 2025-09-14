@@ -245,7 +245,7 @@ export function MessageInput({
             size="sm"
             onClick={onCancelReply}
             className="ml-2 h-6 w-6 p-0"
-            title="Cancel reply"
+            
           >
             <X className="h-3 w-3" />
           </Button>
@@ -279,22 +279,22 @@ export function MessageInput({
         <div className="flex items-center gap-1 mb-3 pb-2 border-b">
           <Popover open={showFormatting} onOpenChange={setShowFormatting}>
             <PopoverTrigger asChild>
-              <Button variant="ghost" size="sm" title="Text formatting">
+              <Button variant="ghost" size="sm">
                 <Bold className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-1" side="top" align="start">
               <div className="flex gap-0.5">
-                <Button variant="ghost" size="sm" onClick={() => insertFormatting('bold')} title="Bold">
+                <Button variant="ghost" size="sm" onClick={() => insertFormatting('bold')}>
                   <Bold className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => insertFormatting('italic')} title="Italic">
+                <Button variant="ghost" size="sm" onClick={() => insertFormatting('italic')}>
                   <Italic className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => insertFormatting('list')} title="Bullet list">
+                <Button variant="ghost" size="sm" onClick={() => insertFormatting('list')}>
                   <List className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => insertFormatting('link')} title="Insert link">
+                <Button variant="ghost" size="sm" onClick={() => insertFormatting('link')}>
                   <Link className="h-4 w-4" />
                 </Button>
               </div>
@@ -308,7 +308,7 @@ export function MessageInput({
             size="sm"
             onClick={() => setIsPinned(!isPinned)}
             className={cn("transition-colors", isPinned && "text-blue-600 bg-blue-50")}
-            title="Pin this message"
+            
           >
             <Pin className="h-4 w-4" />
           </Button>
@@ -318,7 +318,7 @@ export function MessageInput({
             size="sm"
             onClick={() => setIsStarred(!isStarred)}
             className={cn("transition-colors", isStarred && "text-yellow-600 bg-yellow-50")}
-            title="Mark as important"
+            
           >
             <Star className="h-4 w-4" />
           </Button>
@@ -380,7 +380,7 @@ export function MessageInput({
 
               <Popover open={showAttachments} onOpenChange={setShowAttachments}>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" size="sm" title="Attach files" className="h-7 w-7 p-0">
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
                     <Paperclip className="h-4 w-4" />
                   </Button>
                 </PopoverTrigger>
@@ -409,7 +409,7 @@ export function MessageInput({
 
               <Popover open={showEmoji} onOpenChange={setShowEmoji}>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" size="sm" title="Add emoji" className="h-7 w-7 p-0">
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
                     <Smile className="h-4 w-4" />
                   </Button>
                 </PopoverTrigger>
@@ -425,7 +425,7 @@ export function MessageInput({
             onClick={handleSend} 
             disabled={(!value.trim() && attachedFiles.length === 0) || disabled}
             className="h-11 w-11 rounded-full p-0 shrink-0"
-            title="Send message"
+            
           >
             <Send className="h-5 w-5" />
           </Button>

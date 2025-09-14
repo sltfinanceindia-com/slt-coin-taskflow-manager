@@ -141,7 +141,7 @@ export function CallControls({
           size="sm"
           onClick={startAudioCall}
           className="h-8 w-8 p-0 hover:bg-green-50 hover:text-green-600 rounded-full transition-colors"
-          title="Start audio call"
+          
         >
           <Phone className="h-4 w-4" />
         </Button>
@@ -150,7 +150,7 @@ export function CallControls({
           size="sm"
           onClick={startVideoCall}
           className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600 rounded-full transition-colors"
-          title="Start video call"
+          
         >
           <Video className="h-4 w-4" />
         </Button>
@@ -245,7 +245,7 @@ export function CallControls({
                   ? 'bg-red-600 hover:bg-red-700 text-white' 
                   : 'bg-gray-700 hover:bg-gray-600 text-white'
               }`}
-              title={isMuted ? "Unmute" : "Mute"}
+              
             >
               {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
             </Button>
@@ -259,7 +259,7 @@ export function CallControls({
                   ? 'bg-gray-700 hover:bg-gray-600 text-white' 
                   : 'bg-gray-700 hover:bg-gray-600 text-white'
               }`}
-              title={isVideoOn ? "Turn off camera" : "Turn on camera"}
+              
             >
               {isVideoOn ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
             </Button>
@@ -273,7 +273,7 @@ export function CallControls({
                   ? 'bg-green-600 hover:bg-green-700 text-white' 
                   : 'bg-gray-700 hover:bg-gray-600 text-white'
               }`}
-              title={isScreenSharing ? "Stop sharing" : "Share screen"}
+              
             >
               {isScreenSharing ? <MonitorOff className="h-5 w-5" /> : <Monitor className="h-5 w-5" />}
             </Button>
@@ -283,7 +283,7 @@ export function CallControls({
               size="lg"
               onClick={endCall}
               className="h-12 w-12 rounded-full p-0 bg-red-600 hover:bg-red-700"
-              title="End call"
+              
             >
               <PhoneOff className="h-5 w-5" />
             </Button>

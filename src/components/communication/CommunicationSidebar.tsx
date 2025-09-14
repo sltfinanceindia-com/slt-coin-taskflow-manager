@@ -364,7 +364,7 @@ export function CommunicationSidebar({
                                         startDirectMessage(member);
                                       }}
                                       className="h-6 w-6 p-0"
-                                      title="Send message"
+                                      
                                     >
                                       <MessageSquare className="h-3 w-3" />
                                     </Button>
@@ -372,7 +372,7 @@ export function CommunicationSidebar({
                                       variant="ghost" 
                                       size="sm" 
                                       className="h-6 w-6 p-0"
-                                      title="Start call"
+                                      
                                     >
                                       <Phone className="h-3 w-3" />
                                     </Button>
@@ -380,7 +380,7 @@ export function CommunicationSidebar({
                                       variant="ghost" 
                                       size="sm" 
                                       className="h-6 w-6 p-0"
-                                      title="Start video call"
+                                      
                                     >
                                       <Video className="h-3 w-3" />
                                     </Button>

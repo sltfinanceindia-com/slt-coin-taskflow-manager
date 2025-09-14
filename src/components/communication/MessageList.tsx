@@ -258,7 +258,7 @@ export function MessageList({
                             size="sm"
                             onClick={() => onReact?.(message.id, '👍')}
                             className="h-6 w-6 p-0"
-                            title="React"
+                            
                           >
                             <Heart className="h-3 w-3" />
                           </Button>
@@ -267,7 +267,7 @@ export function MessageList({
                             size="sm"
                             onClick={() => onReply?.(message.id)}
                             className="h-6 w-6 p-0"
-                            title="Reply"
+                            
                           >
                             <Reply className="h-3 w-3" />
                           </Button>
@@ -275,7 +275,7 @@ export function MessageList({
                             variant="ghost"
                             size="sm"
                             className="h-6 w-6 p-0"
-                            title="More options"
+                            
                           >
                             <MoreHorizontal className="h-3 w-3" />
                           </Button>
