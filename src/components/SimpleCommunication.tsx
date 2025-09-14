@@ -67,7 +67,7 @@ interface Profile {
 }
 
 export function SimpleCommunication() {
-  const { profile } = useAuth();
+  const { profile, user, loading: authLoading } = useAuth();
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
   const [channels, setChannels] = useState<Channel[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -81,11 +81,65 @@ export function SimpleCommunication() {
   const [profileModalUser, setProfileModalUser] = useState<Profile | null>(null);
 
   useEffect(() => {
-    if (profile) {
+    if (profile?.id) {
+      console.log('Profile loaded, fetching data for:', profile);
       fetchChannels();
       fetchTeamMembers();
+      
+      // Create or find a general channel if none exists
+      createGeneralChannelIfNeeded();
+    } else {
+      console.log('No profile available, profile state:', profile);
+      setTeamMembers([]);
+      setChannels([]);
+      setLoading(false);
     }
   }, [profile]);
+
+  const createGeneralChannelIfNeeded = async () => {
+    if (!profile?.id) return;
+    
+    try {
+      // Check if general channel exists
+      const { data: existingChannels } = await supabase
+        .from('communication_channels')
+        .select('*')
+        .eq('name', 'General')
+        .eq('type', 'public')
+        .limit(1);
+
+      if (!existingChannels || existingChannels.length === 0) {
+        // Create general channel
+        const { data: newChannel, error } = await supabase
+          .from('communication_channels')
+          .insert([{
+            name: 'General',
+            description: 'General team discussion',
+            type: 'public',
+            is_direct_message: false,
+            created_by: profile.id,
+            member_count: 1
+          }])
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        // Add current user to the channel
+        if (newChannel) {
+          await supabase
+            .from('channel_members')
+            .insert([{
+              channel_id: newChannel.id,
+              user_id: profile.id,
+              role: 'member'
+            }]);
+        }
+      }
+    } catch (error) {
+      console.error('Error creating general channel:', error);
+    }
+  };
 
   useEffect(() => {
     if (selectedChannel) {
@@ -114,6 +168,11 @@ export function SimpleCommunication() {
   }, [selectedChannel]);
 
   const fetchChannels = async () => {
+    if (!profile?.id) {
+      console.log('No profile ID available for fetching channels');
+      return;
+    }
+    
     try {
       const { data, error } = await supabase
         .from('communication_channels')
@@ -129,11 +188,11 @@ export function SimpleCommunication() {
             )
           )
         `)
-        .eq('channel_members.user_id', profile?.id)
+        .eq('channel_members.user_id', profile.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      console.log('Fetched channels:', data);
+      console.log('Fetched channels for profile ID:', profile.id, 'Data:', data);
       setChannels(data || []);
       
       if (data && data.length > 0 && !selectedChannel) {
@@ -145,19 +204,26 @@ export function SimpleCommunication() {
   };
 
   const fetchTeamMembers = async () => {
+    if (!profile?.id) {
+      console.log('No profile ID available for fetching team members');
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, user_id, full_name, avatar_url, role, email, department, bio')
-        .neq('id', profile?.id)
+        .neq('id', profile.id)
         .order('full_name');
 
       if (error) throw error;
-      console.log('Fetched team members:', data);
+      console.log('Fetched team members for profile ID:', profile.id, 'Count:', data?.length, 'Data:', data);
       setTeamMembers(data || []);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching team members:', error);
+      setTeamMembers([]);
       setLoading(false);
     }
   };
@@ -183,17 +249,23 @@ export function SimpleCommunication() {
       
       const messagesWithProfiles = await Promise.all(
         (data || []).map(async (msg) => {
-          const { data: senderProfile } = await supabase
+          const { data: senderProfile, error: profileError } = await supabase
             .from('profiles')
             .select('id, full_name, avatar_url, role')
             .eq('id', msg.sender_id)
-            .single();
+            .maybeSingle();
+          
+          if (profileError) {
+            console.error('Error fetching sender profile for message:', msg.id, profileError);
+          }
           
           return {
             ...msg,
             sender_profile: senderProfile || { 
               id: msg.sender_id,
-              full_name: msg.sender_name || 'Unknown User' 
+              full_name: msg.sender_name || 'Unknown User',
+              avatar_url: null,
+              role: 'unknown'
             }
           };
         })
@@ -280,7 +352,7 @@ export function SimpleCommunication() {
       );
       return otherMember?.profiles?.full_name || selectedMember?.full_name || 'Direct Message';
     }
-    return channel.name;
+    return channel.name || 'General';
   };
 
   const getChannelIcon = (channel: Channel) => {
@@ -303,12 +375,26 @@ export function SimpleCommunication() {
     )?.profiles;
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="h-[calc(100vh-6rem)] flex items-center justify-center">
         <div className="text-center">
           <MessageSquare className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
           <p>Loading communication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user || !profile) {
+    return (
+      <div className="h-[calc(100vh-6rem)] flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground" />
+          <div>
+            <h2 className="text-xl font-semibold">Authentication Required</h2>
+            <p className="text-muted-foreground">Please log in to access the communication system.</p>
+          </div>
         </div>
       </div>
     );
@@ -320,7 +406,7 @@ export function SimpleCommunication() {
   return (
     <div className="h-[calc(100vh-6rem)] flex bg-background overflow-hidden">
       {/* Sidebar - Fixed width 320px */}
-      <div className="w-80 shrink-0">
+      <div className="w-80 shrink-0 border-r bg-card/50 backdrop-blur-sm">
         <CommunicationSidebar
           profile={profile}
           channels={channels}
@@ -382,13 +468,31 @@ export function SimpleCommunication() {
 
                 {/* Right side - Action buttons */}
                 <div className="flex items-center gap-1 shrink-0">
-                  <Button variant="ghost" size="sm">
-                    <Phone className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="sm">
-                    <Video className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="sm">
+                  <EnhancedCallControls
+                    recipientName={currentChannel.is_direct_message ? getChannelDisplayName(currentChannel) : undefined}
+                    onStartCall={() => console.log('Audio call started')}
+                    onStartVideoCall={() => console.log('Video call started')}
+                    onEndCall={() => console.log('Call ended')}
+                  />
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      if (currentChannel.is_direct_message && otherParticipant) {
+                        const memberProfile: Profile = {
+                          id: otherParticipant.id,
+                          full_name: otherParticipant.full_name,
+                          avatar_url: otherParticipant.avatar_url,
+                          role: otherParticipant.role,
+                          user_id: otherParticipant.id,
+                          department: undefined,
+                          email: undefined,
+                          bio: undefined
+                        };
+                        showUserProfile(memberProfile);
+                      }
+                    }}
+                  >
                     <Info className="h-4 w-4" />
                   </Button>
                   <Button variant="ghost" size="sm">
