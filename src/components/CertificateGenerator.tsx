@@ -442,12 +442,9 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                             <p className="text-xs text-gray-600">{certificateData.signatureAuthority || 'Position'}</p>
                             <p className="text-xs text-gray-500">SLT Finance India</p>
                           </div>
-                          <div className="w-12 h-12 rounded-full bg-green-100 border-3 border-green-400 flex items-center justify-center shadow-md">
-                            <span className="text-sm font-bold text-green-700">SLT</span>
-                          </div>
                         </div>
                       </div>
-                    </div>
+                    </div
                   </div>
                 </div>
 
