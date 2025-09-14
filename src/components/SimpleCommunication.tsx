@@ -85,13 +85,9 @@ export function SimpleCommunication() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log('Auth state:', { user, profile, authLoading });
-    
     if (profile?.id) {
-      console.log('Profile available, initializing with profile.id:', profile.id);
       initializeData();
     } else if (!authLoading) {
-      console.log('No profile available after auth loading completed');
       setTeamMembers([]);
       setChannels([]);
       setLoading(false);
@@ -102,8 +98,6 @@ export function SimpleCommunication() {
     try {
       setError(null);
       setLoading(true);
-      
-      console.log('Starting data initialization for profile:', profile);
       
       await Promise.all([
         fetchChannels(),
@@ -120,9 +114,6 @@ export function SimpleCommunication() {
     if (!profile?.id) return;
     
     try {
-      console.log('Checking for general channel...');
-      
-      // Check if general channel exists where user is a member
       const { data: existingChannels } = await supabase
         .from('communication_channels')
         .select(`
@@ -133,12 +124,7 @@ export function SimpleCommunication() {
         .eq('type', 'public')
         .eq('channel_members.user_id', profile.id);
 
-      console.log('Existing general channels for user:', existingChannels);
-
       if (!existingChannels || existingChannels.length === 0) {
-        console.log('Creating general channel...');
-        
-        // Create general channel
         const { data: newChannel, error: channelError } = await supabase
           .from('communication_channels')
           .insert([{
@@ -146,7 +132,7 @@ export function SimpleCommunication() {
             description: 'General team discussion',
             type: 'public',
             is_direct_message: false,
-            created_by: profile.id, // Use profile.id
+            created_by: profile.id,
             member_count: 1
           }])
           .select()
@@ -154,18 +140,16 @@ export function SimpleCommunication() {
 
         if (channelError) throw channelError;
 
-        // Add current user to the channel using profile.id
         if (newChannel) {
           const { error: memberError } = await supabase
             .from('channel_members')
             .insert([{
               channel_id: newChannel.id,
-              user_id: profile.id, // Use profile.id, not user.id
+              user_id: profile.id,
               role: 'member'
             }]);
             
           if (memberError) throw memberError;
-          console.log('Created general channel and added user as member');
         }
       }
     } catch (error) {
@@ -187,8 +171,7 @@ export function SimpleCommunication() {
             table: 'messages',
             filter: `channel_id=eq.${selectedChannel}`
           },
-          (payload) => {
-            console.log('Message update received:', payload);
+          () => {
             fetchMessages(selectedChannel);
           }
         )
@@ -201,15 +184,9 @@ export function SimpleCommunication() {
   }, [selectedChannel]);
 
   const fetchChannels = async () => {
-    if (!profile?.id) {
-      console.log('No profile ID available for fetching channels');
-      return;
-    }
+    if (!profile?.id) return;
     
     try {
-      console.log('Fetching channels for profile.id:', profile.id);
-      
-      // Use profile.id for channel member queries
       const { data, error } = await supabase
         .from('communication_channels')
         .select(`
@@ -224,19 +201,14 @@ export function SimpleCommunication() {
             )
           )
         `)
-        .eq('channel_members.user_id', profile.id) // Use profile.id
+        .eq('channel_members.user_id', profile.id)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Supabase error fetching channels:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log('Successfully fetched channels:', data);
       setChannels(data || []);
       
       if (data && data.length > 0 && !selectedChannel) {
-        console.log('Auto-selecting first channel:', data[0]);
         setSelectedChannel(data[0].id);
       }
     } catch (error) {
@@ -251,26 +223,19 @@ export function SimpleCommunication() {
 
   const fetchTeamMembers = async () => {
     if (!profile?.id) {
-      console.log('No profile ID available for fetching team members');
       setLoading(false);
       return;
     }
 
     try {
-      console.log('Fetching team members, excluding profile.id:', profile.id);
-      
       const { data, error } = await supabase
         .from('profiles')
         .select('id, user_id, full_name, avatar_url, role, email, department, bio')
-        .neq('id', profile.id) // Exclude current profile by profile.id
+        .neq('id', profile.id)
         .order('full_name');
 
-      if (error) {
-        console.error('Supabase error fetching team members:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log('Successfully fetched team members:', data);
       setTeamMembers(data || []);
       setLoading(false);
     } catch (error) {
@@ -289,8 +254,6 @@ export function SimpleCommunication() {
     if (!channelId) return;
     
     try {
-      console.log('Fetching messages for channel:', channelId);
-      
       const { data, error } = await supabase
         .from('messages')
         .select(`
@@ -308,20 +271,14 @@ export function SimpleCommunication() {
 
       if (error) throw error;
       
-      console.log('Raw messages fetched:', data);
-      
-      // Process messages and get sender profiles
       const messagesWithProfiles = await Promise.all(
         (data || []).map(async (msg) => {
           try {
-            // sender_id should be profile.id, so query by id
             const { data: senderProfile } = await supabase
               .from('profiles')
               .select('id, full_name, avatar_url, role')
-              .eq('id', msg.sender_id) // sender_id is profile.id
+              .eq('id', msg.sender_id)
               .maybeSingle();
-            
-            console.log(`Message ${msg.id} sender profile:`, senderProfile);
             
             return {
               ...msg,
@@ -347,7 +304,6 @@ export function SimpleCommunication() {
         })
       );
       
-      console.log('Processed messages with profiles:', messagesWithProfiles);
       setMessages(messagesWithProfiles);
     } catch (error) {
       console.error('Error fetching messages:', error);
@@ -363,9 +319,6 @@ export function SimpleCommunication() {
     if (!profile?.id) return null;
     
     try {
-      console.log('Creating DM channel between:', profile.id, 'and', targetProfileId);
-      
-      // Check if DM channel already exists
       const { data: existingChannel, error: searchError } = await supabase
         .rpc('find_direct_message_channel', {
           user1_id: profile.id,
@@ -377,19 +330,15 @@ export function SimpleCommunication() {
       }
       
       if (existingChannel) {
-        console.log('Found existing DM channel:', existingChannel);
         return existingChannel;
       }
       
-      // Create new DM channel
       const { data, error } = await supabase.rpc('create_direct_message_channel', {
         user1_id: profile.id,
         user2_id: targetProfileId
       });
       
       if (error) throw error;
-      
-      console.log('Created new DM channel:', data);
       return data;
     } catch (error) {
       console.error('Error creating DM channel:', error);
@@ -404,12 +353,11 @@ export function SimpleCommunication() {
 
   const startDirectMessage = async (member: Profile) => {
     try {
-      console.log('Starting DM with member:', member);
-      const channelId = await createDirectMessageChannel(member.id); // Use profile.id
+      const channelId = await createDirectMessageChannel(member.id);
       if (channelId) {
         setSelectedChannel(channelId);
         setSelectedMember(member);
-        await fetchChannels(); // Refresh channels to show new DM
+        await fetchChannels();
         setShowProfileModal(false);
         setActiveTab('chats');
       }
@@ -432,15 +380,9 @@ export function SimpleCommunication() {
     if (!newMessage.trim() || !selectedChannel || !profile?.id) return;
 
     try {
-      console.log('Sending message:', {
-        content: newMessage.trim(),
-        sender_id: profile.id,
-        channel_id: selectedChannel
-      });
-
       const messageData = {
         content: newMessage.trim(),
-        sender_id: profile.id, // Use profile.id as sender_id
+        sender_id: profile.id,
         channel_id: selectedChannel,
         message_type: 'text',
         sender_name: profile.full_name || 'Unknown User',
@@ -453,7 +395,6 @@ export function SimpleCommunication() {
       if (error) throw error;
       
       setNewMessage('');
-      console.log('Message sent successfully');
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
@@ -469,7 +410,7 @@ export function SimpleCommunication() {
     
     if (channel.is_direct_message) {
       const otherMember = channel.channel_members?.find(member => 
-        member.user_id !== profile?.id // Compare with profile.id
+        member.user_id !== profile?.id
       );
       return otherMember?.profiles?.full_name || selectedMember?.full_name || 'Direct Message';
     }
@@ -494,7 +435,7 @@ export function SimpleCommunication() {
   const getOtherParticipant = (channel: Channel) => {
     if (!channel?.is_direct_message) return null;
     return channel.channel_members?.find(member => 
-      member.user_id !== profile?.id // Compare with profile.id
+      member.user_id !== profile?.id
     )?.profiles;
   };
 
@@ -519,12 +460,6 @@ export function SimpleCommunication() {
           <div>
             <h2 className="text-xl font-semibold">Authentication Required</h2>
             <p className="text-muted-foreground">Please log in to access the communication system.</p>
-            <div className="mt-4 text-sm text-muted-foreground">
-              <p>Debug Info:</p>
-              <p>User: {user ? 'Present' : 'Missing'}</p>
-              <p>Profile: {profile ? 'Present' : 'Missing'}</p>
-              <p>Loading: {authLoading ? 'True' : 'False'}</p>
-            </div>
           </div>
         </div>
       </div>
@@ -536,11 +471,7 @@ export function SimpleCommunication() {
       <div className="h-[calc(100vh-6rem)] flex items-center justify-center">
         <div className="text-center">
           <MessageSquare className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-          <p>Loading communication data...</p>
-          <div className="mt-4 text-sm text-muted-foreground">
-            <p>Profile ID: {profile.id}</p>
-            <p>User: {profile.full_name}</p>
-          </div>
+          <p>Loading communication...</p>
         </div>
       </div>
     );
@@ -573,16 +504,6 @@ export function SimpleCommunication() {
 
   return (
     <div className="h-[calc(100vh-6rem)] flex bg-background overflow-hidden">
-      {/* Debug Info in Development */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="fixed top-4 right-4 bg-black/80 text-white p-2 rounded text-xs z-50">
-          <p>Profile ID: {profile.id}</p>
-          <p>Channels: {channels.length}</p>
-          <p>Messages: {messages.length}</p>
-          <p>Team: {teamMembers.length}</p>
-        </div>
-      )}
-
       {/* Sidebar - Fixed width 320px */}
       <div className="w-80 shrink-0 border-r bg-card/50 backdrop-blur-sm">
         <CommunicationSidebar
@@ -684,7 +605,7 @@ export function SimpleCommunication() {
             <div className="flex-1 bg-background">
               <MessageList 
                 messages={messages} 
-                currentUserId={profile?.id} // Pass profile.id
+                currentUserId={profile?.id}
               />
             </div>
 
@@ -721,19 +642,11 @@ export function SimpleCommunication() {
                 </h3>
                 <p className="text-muted-foreground">
                   Connect with your team members, share ideas, and collaborate in real-time.
+                  {activeTab === 'team' 
+                    ? ' Click on a team member to start chatting!' 
+                    : ' Select a conversation to continue.'
+                  }
                 </p>
-                {channels.length === 0 && teamMembers.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No channels or team members found. Try refreshing the page.
-                  </p>
-                ) : (
-                  <p className="text-muted-foreground">
-                    {activeTab === 'team' 
-                      ? ' Click on a team member to start chatting!' 
-                      : ' Select a conversation to continue.'
-                    }
-                  </p>
-                )}
               </div>
               
               <div className="flex gap-3 justify-center">
@@ -744,7 +657,7 @@ export function SimpleCommunication() {
                   className={cn(activeTab === 'team' && "bg-muted")}
                 >
                   <Users className="h-4 w-4 mr-2" />
-                  Browse Team ({teamMembers.length})
+                  Browse Team
                 </Button>
                 <Button 
                   size="sm"
@@ -752,13 +665,9 @@ export function SimpleCommunication() {
                   className={cn(activeTab === 'chats' && "bg-primary/90")}
                 >
                   <MessageSquare className="h-4 w-4 mr-2" />
-                  Recent Chats ({channels.length})
+                  Recent Chats
                 </Button>
               </div>
-              
-              <Button onClick={initializeData} variant="outline" size="sm">
-                Refresh Data
-              </Button>
             </div>
           </div>
         )}
@@ -783,7 +692,7 @@ export function SimpleCommunication() {
               description: `Video calling ${profileModalUser?.full_name}...`,
             });
           }}
-          currentUserId={profile?.id} // Pass profile.id
+          currentUserId={profile?.id}
         />
       )}
     </div>
