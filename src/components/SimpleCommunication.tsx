@@ -23,6 +23,7 @@ interface Message {
   channel_id?: string;
   sender_name?: string;
   created_at: string;
+  message_type?: string;
   sender_profile?: {
     id?: string;
     full_name: string;
@@ -44,6 +45,8 @@ interface Channel {
   last_message_sender?: string;
   is_muted?: boolean;
   is_pinned?: boolean;
+  description?: string;
+  member_count?: number;
   channel_members?: {
     user_id: string;
     profiles?: {
@@ -79,15 +82,12 @@ export function SimpleCommunication() {
   const [selectedMember, setSelectedMember] = useState<Profile | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profileModalUser, setProfileModalUser] = useState<Profile | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (profile?.id) {
       console.log('Profile loaded, fetching data for:', profile);
-      fetchChannels();
-      fetchTeamMembers();
-      
-      // Create or find a general channel if none exists
-      createGeneralChannelIfNeeded();
+      initializeData();
     } else {
       console.log('No profile available, profile state:', profile);
       setTeamMembers([]);
@@ -95,6 +95,20 @@ export function SimpleCommunication() {
       setLoading(false);
     }
   }, [profile]);
+
+  const initializeData = async () => {
+    try {
+      setError(null);
+      await Promise.all([
+        fetchChannels(),
+        fetchTeamMembers(),
+        createGeneralChannelIfNeeded()
+      ]);
+    } catch (error) {
+      console.error('Error initializing data:', error);
+      setError('Failed to load communication data');
+    }
+  };
 
   const createGeneralChannelIfNeeded = async () => {
     if (!profile?.id) return;
@@ -192,6 +206,7 @@ export function SimpleCommunication() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+
       console.log('Fetched channels for profile ID:', profile.id, 'Data:', data);
       setChannels(data || []);
       
@@ -200,6 +215,11 @@ export function SimpleCommunication() {
       }
     } catch (error) {
       console.error('Error fetching channels:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load channels',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -218,13 +238,19 @@ export function SimpleCommunication() {
         .order('full_name');
 
       if (error) throw error;
-      console.log('Fetched team members for profile ID:', profile.id, 'Count:', data?.length, 'Data:', data);
+
+      console.log('Fetched team members for profile ID:', profile.id, 'Count:', data?.length);
       setTeamMembers(data || []);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching team members:', error);
       setTeamMembers([]);
       setLoading(false);
+      toast({
+        title: 'Error',
+        description: 'Failed to load team members',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -252,8 +278,8 @@ export function SimpleCommunication() {
       const messagesWithProfiles = await Promise.all(
         (data || []).map(async (msg) => {
           try {
-            // Try to find profile by sender_id first
             let senderProfile = null;
+            
             if (msg.sender_id) {
               const { data: profileData } = await supabase
                 .from('profiles')
@@ -264,7 +290,6 @@ export function SimpleCommunication() {
               senderProfile = profileData;
             }
             
-            // If no profile found by id, try by user_id
             if (!senderProfile && msg.sender_id) {
               const { data: userProfileData } = await supabase
                 .from('profiles')
@@ -280,8 +305,8 @@ export function SimpleCommunication() {
               sender_profile: senderProfile || { 
                 id: msg.sender_id,
                 full_name: msg.sender_name || 'Unknown User',
-                avatar_url: null,
-                role: 'unknown'
+                avatar_url: undefined,
+                role: 'user'
               }
             };
           } catch (error) {
@@ -291,45 +316,59 @@ export function SimpleCommunication() {
               sender_profile: { 
                 id: msg.sender_id,
                 full_name: msg.sender_name || 'Unknown User',
-                avatar_url: null,
-                role: 'unknown'
+                avatar_url: undefined,
+                role: 'user'
               }
             };
           }
         })
       );
       
-      console.log('Fetched messages with profiles:', messagesWithProfiles);
       setMessages(messagesWithProfiles);
     } catch (error) {
       console.error('Error fetching messages:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load messages',
+        variant: 'destructive',
+      });
     }
   };
 
   const createDirectMessageChannel = async (targetUserId: string) => {
     if (!profile?.id) return null;
+    
     try {
       const { data, error } = await supabase.rpc('create_direct_message_channel', {
         user1_id: profile.id,
         user2_id: targetUserId
       });
+      
       if (error) throw error;
       return data;
     } catch (error) {
       console.error('Error creating DM channel:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create direct message',
+        variant: 'destructive',
+      });
       return null;
     }
   };
 
   const startDirectMessage = async (member: Profile) => {
-    const channelId = await createDirectMessageChannel(member.id);
-    if (channelId) {
-      setSelectedChannel(channelId);
-      setSelectedMember(member);
-      await fetchChannels();
-      setShowProfileModal(false);
-      // Switch to chats tab when starting a DM
-      setActiveTab('chats');
+    try {
+      const channelId = await createDirectMessageChannel(member.id);
+      if (channelId) {
+        setSelectedChannel(channelId);
+        setSelectedMember(member);
+        await fetchChannels();
+        setShowProfileModal(false);
+        setActiveTab('chats');
+      }
+    } catch (error) {
+      console.error('Error starting direct message:', error);
     }
   };
 
@@ -352,7 +391,7 @@ export function SimpleCommunication() {
         sender_id: profile.id,
         channel_id: selectedChannel,
         message_type: 'text',
-        sender_name: profile.full_name,
+        sender_name: profile.full_name || 'Unknown User',
       };
 
       const { error } = await supabase
@@ -362,7 +401,6 @@ export function SimpleCommunication() {
       if (error) throw error;
       
       setNewMessage('');
-      fetchMessages(selectedChannel);
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
@@ -374,6 +412,8 @@ export function SimpleCommunication() {
   };
 
   const getChannelDisplayName = (channel: Channel) => {
+    if (!channel) return 'Unknown Channel';
+    
     if (channel.is_direct_message) {
       const otherMember = channel.channel_members?.find(member => 
         member.user_id !== profile?.id
@@ -384,6 +424,8 @@ export function SimpleCommunication() {
   };
 
   const getChannelIcon = (channel: Channel) => {
+    if (!channel) return <Hash className="h-5 w-5 text-muted-foreground" />;
+    
     if (channel.is_direct_message) {
       return <Users className="h-5 w-5 text-muted-foreground" />;
     }
@@ -397,12 +439,13 @@ export function SimpleCommunication() {
   };
 
   const getOtherParticipant = (channel: Channel) => {
-    if (!channel.is_direct_message) return null;
+    if (!channel?.is_direct_message) return null;
     return channel.channel_members?.find(member => 
       member.user_id !== profile?.id
     )?.profiles;
   };
 
+  // Loading state
   if (authLoading || loading) {
     return (
       <div className="h-[calc(100vh-6rem)] flex items-center justify-center">
@@ -414,6 +457,7 @@ export function SimpleCommunication() {
     );
   }
 
+  // Authentication error state
   if (!user || !profile) {
     return (
       <div className="h-[calc(100vh-6rem)] flex items-center justify-center">
@@ -422,6 +466,28 @@ export function SimpleCommunication() {
           <div>
             <h2 className="text-xl font-semibold">Authentication Required</h2>
             <p className="text-muted-foreground">Please log in to access the communication system.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="h-[calc(100vh-6rem)] flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <MessageSquare className="h-12 w-12 mx-auto text-destructive" />
+          <div>
+            <h2 className="text-xl font-semibold">Error Loading Communication</h2>
+            <p className="text-muted-foreground">{error}</p>
+            <Button 
+              onClick={initializeData} 
+              className="mt-4"
+              variant="outline"
+            >
+              Try Again
+            </Button>
           </div>
         </div>
       </div>
@@ -466,7 +532,7 @@ export function SimpleCommunication() {
                         <Avatar className="h-8 w-8">
                           <AvatarImage src={otherParticipant.avatar_url} />
                           <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                            {otherParticipant.full_name.charAt(0)}
+                            {otherParticipant.full_name?.charAt(0) || '?'}
                           </AvatarFallback>
                         </Avatar>
                         <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
@@ -496,12 +562,12 @@ export function SimpleCommunication() {
 
                 {/* Right side - Action buttons */}
                 <div className="flex items-center gap-1 shrink-0">
-                  <EnhancedCallControls
-                    recipientName={currentChannel.is_direct_message ? getChannelDisplayName(currentChannel) : undefined}
-                    onStartCall={() => console.log('Audio call started')}
-                    onStartVideoCall={() => console.log('Video call started')}
-                    onEndCall={() => console.log('Call ended')}
-                  />
+                  <Button variant="ghost" size="sm">
+                    <Phone className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    <Video className="h-4 w-4" />
+                  </Button>
                   <Button 
                     variant="ghost" 
                     size="sm"
@@ -551,7 +617,7 @@ export function SimpleCommunication() {
                 disabled={!selectedChannel}
                 placeholder={`Message ${currentChannel.is_direct_message 
                   ? getChannelDisplayName(currentChannel) 
-                  : `#${currentChannel.name}`
+                  : `#${currentChannel.name || 'channel'}`
                 }...`}
               />
             </div>
@@ -603,25 +669,27 @@ export function SimpleCommunication() {
       </div>
 
       {/* User Profile Modal */}
-      <UserProfileModal
-        user={profileModalUser}
-        isOpen={showProfileModal}
-        onClose={closeProfileModal}
-        onStartMessage={() => profileModalUser && startDirectMessage(profileModalUser)}
-        onStartCall={() => {
-          toast({
-            title: 'Audio Call',
-            description: `Calling ${profileModalUser?.full_name}...`,
-          });
-        }}
-        onStartVideoCall={() => {
-          toast({
-            title: 'Video Call',
-            description: `Video calling ${profileModalUser?.full_name}...`,
-          });
-        }}
-        currentUserId={profile?.id}
-      />
+      {profileModalUser && (
+        <UserProfileModal
+          user={profileModalUser}
+          isOpen={showProfileModal}
+          onClose={closeProfileModal}
+          onStartMessage={() => profileModalUser && startDirectMessage(profileModalUser)}
+          onStartCall={() => {
+            toast({
+              title: 'Audio Call',
+              description: `Calling ${profileModalUser?.full_name}...`,
+            });
+          }}
+          onStartVideoCall={() => {
+            toast({
+              title: 'Video Call',
+              description: `Video calling ${profileModalUser?.full_name}...`,
+            });
+          }}
+          currentUserId={profile?.id}
+        />
+      )}
     </div>
   );
 }
