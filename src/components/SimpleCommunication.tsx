@@ -190,29 +190,46 @@ export function SimpleCommunication() {
     if (!profile?.id) return;
     
     try {
-      const { data, error } = await supabase
+      // First get channels where user is a member
+      const { data: channelData, error: channelError } = await supabase
         .from('communication_channels')
         .select(`
           *,
-          channel_members!inner(
-            user_id,
-            profiles(
-              id,
-              full_name,
-              avatar_url,
-              role
-            )
-          )
+          channel_members!inner(user_id)
         `)
         .eq('channel_members.user_id', profile.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (channelError) throw channelError;
 
-      setChannels(data || []);
+      // Then get all channel members for these channels
+      const channelsWithMembers = await Promise.all(
+        (channelData || []).map(async (channel) => {
+          const { data: membersData } = await supabase
+            .from('channel_members')
+            .select(`
+              user_id,
+              profiles!inner(
+                id,
+                user_id,
+                full_name,
+                avatar_url,
+                role
+              )
+            `)
+            .eq('channel_id', channel.id);
+
+          return {
+            ...channel,
+            channel_members: membersData || []
+          };
+        })
+      );
+
+      setChannels(channelsWithMembers || []);
       
-      if (data && data.length > 0 && !selectedChannel) {
-        setSelectedChannel(data[0].id);
+      if (channelsWithMembers && channelsWithMembers.length > 0 && !selectedChannel) {
+        setSelectedChannel(channelsWithMembers[0].id);
       }
     } catch (error) {
       console.error('Error fetching channels:', error);
@@ -420,10 +437,30 @@ export function SimpleCommunication() {
     if (!channel) return 'Unknown Channel';
     
     if (channel.is_direct_message) {
+      // Find the other participant in the DM
       const otherMember = channel.channel_members?.find(member => 
         member.user_id !== profile?.id
       );
-      return otherMember?.profiles?.full_name || selectedMember?.full_name || 'Direct Message';
+      
+      if (otherMember?.profiles?.full_name) {
+        return otherMember.profiles.full_name;
+      }
+      
+      // If selectedMember is available, use that
+      if (selectedMember?.full_name) {
+        return selectedMember.full_name;
+      }
+      
+      // Try to find from teamMembers as backup
+      const participantId = channel.participant_ids?.find(id => id !== profile?.id);
+      if (participantId) {
+        const memberFromTeam = teamMembers.find(m => m.id === participantId || m.user_id === participantId);
+        if (memberFromTeam?.full_name) {
+          return memberFromTeam.full_name;
+        }
+      }
+      
+      return 'Direct Message';
     }
     return channel.name || 'General';
   };
