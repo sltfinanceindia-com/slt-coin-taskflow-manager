@@ -18,6 +18,9 @@ import { WebRTCCall } from './communication/WebRTCCall';
 import { PresenceIndicator } from './communication/PresenceIndicator';
 import { AdvancedFeatures } from './communication/AdvancedFeatures';
 import { EnhancedMobileLayout } from './communication/EnhancedMobileLayout';
+import { TypingIndicator } from './communication/TypingIndicator';
+import { VoiceMessage } from './communication/VoiceMessage';
+import { FileUploadModal } from './communication/FileUploadModal';
 import { usePresence } from '@/hooks/usePresence';
 import { cn } from '@/lib/utils';
 
