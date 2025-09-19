@@ -741,14 +741,15 @@ export function SimpleCommunication() {
       {/* WebRTC Calls */}
       {(showVideoCall || showAudioCall) && activeCallRecipient && activeCallId && (
         <WebRTCCall
-          callId={activeCallId}
-          isVideoCall={showVideoCall}
-          recipientId={activeCallRecipient.id}
-          recipientName={activeCallRecipient.full_name}
-          recipientAvatar={activeCallRecipient.avatar_url}
-          onEndCall={handleEndCall}
+          isOpen={true}
+          onClose={handleEndCall}
+          callType={showVideoCall ? 'video' : 'audio'}
+          recipient={{
+            id: activeCallRecipient.id,
+            name: activeCallRecipient.full_name,
+            avatar: activeCallRecipient.avatar_url
+          }}
           onMinimize={handleMinimizeCall}
-          isMinimized={callMinimized}
         />
       )}
     </EnhancedMobileLayout>
