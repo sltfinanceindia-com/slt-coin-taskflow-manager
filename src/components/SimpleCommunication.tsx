@@ -17,6 +17,7 @@ import { UserProfileModal } from './communication/UserProfileModal';
 import { WebRTCCall } from './communication/WebRTCCall';
 import { PresenceIndicator } from './communication/PresenceIndicator';
 import { AdvancedFeatures } from './communication/AdvancedFeatures';
+import { EnhancedMobileLayout } from './communication/EnhancedMobileLayout';
 import { usePresence } from '@/hooks/usePresence';
 import { cn } from '@/lib/utils';
 
@@ -93,6 +94,7 @@ export function SimpleCommunication() {
   const [callMinimized, setCallMinimized] = useState(false);
   const [activeCallId, setActiveCallId] = useState<string | null>(null);
   const [activeCallRecipient, setActiveCallRecipient] = useState<Profile | null>(null);
+  const [showSidebar, setShowSidebar] = useState(false);
   
   // Initialize presence
   const presence = usePresence();
@@ -398,16 +400,21 @@ export function SimpleCommunication() {
 
   const startDirectMessage = async (member: Profile) => {
     try {
+      setSelectedMember(member); // Set this first for immediate UI update
       const channelId = await createDirectMessageChannel(member.id);
       if (channelId) {
         setSelectedChannel(channelId);
-        setSelectedMember(member);
-        await fetchChannels();
+        await fetchChannels(); // Refresh channels to get updated member data
         setShowProfileModal(false);
         setActiveTab('chats');
       }
     } catch (error) {
       console.error('Error starting direct message:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to start direct message',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -459,27 +466,32 @@ export function SimpleCommunication() {
     if (!channel) return 'Unknown Channel';
     
     if (channel.is_direct_message) {
-      // Find the other participant in the DM
-      const otherMember = channel.channel_members?.find(member => 
-        member.user_id !== profile?.id
-      );
+      // Find the other participant in the DM - improved logic
+      const otherMember = channel.channel_members?.find(member => {
+        // Check user_id to handle data inconsistencies
+        return member.user_id !== profile?.id;
+      });
       
-      if (otherMember?.profiles?.full_name) {
+      if (otherMember?.profiles) {
         return otherMember.profiles.full_name;
       }
       
-      // If selectedMember is available, use that
-      if (selectedMember?.full_name) {
-        return selectedMember.full_name;
-      }
-      
-      // Try to find from teamMembers as backup
+      // Fallback: Try to find from participant_ids array
       const participantId = channel.participant_ids?.find(id => id !== profile?.id);
       if (participantId) {
-        const memberFromTeam = teamMembers.find(m => m.id === participantId || m.user_id === participantId);
+        // Search in teamMembers by both id and user_id
+        const memberFromTeam = teamMembers.find(m => 
+          m.id === participantId || 
+          m.user_id === participantId
+        );
         if (memberFromTeam?.full_name) {
           return memberFromTeam.full_name;
         }
+      }
+      
+      // Last resort: use selectedMember if available
+      if (selectedMember?.full_name) {
+        return selectedMember.full_name;
       }
       
       return 'Direct Message';
@@ -498,277 +510,127 @@ export function SimpleCommunication() {
       : <Hash className="h-5 w-5 text-muted-foreground" />;
   };
 
-  const getCurrentChannel = () => {
-    return channels.find(c => c.id === selectedChannel);
+  // Enhanced call handlers with proper recipient detection
+  const handleVideoCall = (recipient?: Profile) => {
+    const callRecipient = recipient || getCallRecipient();
+    if (callRecipient) {
+      setActiveCallRecipient(callRecipient);
+      setActiveCallId(`call_${Date.now()}`);
+      setShowVideoCall(true);
+      setCallMinimized(false);
+    } else {
+      toast({
+        title: 'Error',
+        description: 'Please select a team member to call',
+        variant: 'destructive',
+      });
+    }
   };
 
-  const getOtherParticipant = (channel: Channel) => {
-    if (!channel?.is_direct_message) return null;
-    return channel.channel_members?.find(member => 
-      member.user_id !== profile?.id
-    )?.profiles;
+  const handleAudioCall = (recipient?: Profile) => {
+    const callRecipient = recipient || getCallRecipient();
+    if (callRecipient) {
+      setActiveCallRecipient(callRecipient);
+      setActiveCallId(`call_${Date.now()}`);
+      setShowAudioCall(true);
+      setCallMinimized(false);
+    } else {
+      toast({
+        title: 'Error',
+        description: 'Please select a team member to call',
+        variant: 'destructive',
+      });
+    }
   };
 
-  // Loading state
-  if (authLoading) {
+  const handleStartCall = (type: 'audio' | 'video', member?: Profile) => {
+    if (type === 'video') {
+      handleVideoCall(member);
+    } else {
+      handleAudioCall(member);
+    }
+  };
+
+  const getCallRecipient = (): Profile | null => {
+    if (selectedMember) return selectedMember;
+    
+    // If in a DM channel, find the other participant
+    const currentChannel = channels.find(c => c.id === selectedChannel);
+    if (currentChannel?.is_direct_message) {
+      const otherMember = currentChannel.channel_members?.find(member => 
+        member.user_id !== profile?.id
+      );
+      
+      if (otherMember?.profiles) {
+        return {
+          id: otherMember.profiles.id,
+          full_name: otherMember.profiles.full_name,
+          avatar_url: otherMember.profiles.avatar_url,
+          role: otherMember.profiles.role,
+          user_id: otherMember.user_id,
+        } as Profile;
+      }
+    }
+    
+    return null;
+  };
+
+  const handleEndCall = () => {
+    setShowVideoCall(false);
+    setShowAudioCall(false);
+    setCallMinimized(false);
+    setActiveCallId(null);
+    setActiveCallRecipient(null);
+  };
+
+  const handleMinimizeCall = () => {
+    setCallMinimized(true);
+  };
+
+  const currentChannel = channels.find(c => c.id === selectedChannel);
+
+  if (loading && authLoading) {
     return (
-      <div className="h-[calc(100vh-6rem)] flex items-center justify-center">
+      <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <MessageSquare className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-          <p>Loading authentication...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-sm text-muted-foreground">Loading communication...</p>
         </div>
       </div>
     );
   }
 
-  // Authentication error state
-  if (!user || !profile) {
-    return (
-      <div className="h-[calc(100vh-6rem)] flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground" />
-          <div>
-            <h2 className="text-xl font-semibold">Authentication Required</h2>
-            <p className="text-muted-foreground">Please log in to access the communication system.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="h-[calc(100vh-6rem)] flex items-center justify-center">
-        <div className="text-center">
-          <MessageSquare className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-          <p>Loading communication...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
   if (error) {
     return (
-      <div className="h-[calc(100vh-6rem)] flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <MessageSquare className="h-12 w-12 mx-auto text-destructive" />
-          <div>
-            <h2 className="text-xl font-semibold">Error Loading Communication</h2>
-            <p className="text-muted-foreground">{error}</p>
-            <Button 
-              onClick={initializeData} 
-              className="mt-4"
-              variant="outline"
-            >
-              Try Again
-            </Button>
-          </div>
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <p className="text-sm text-destructive mb-2">Error: {error}</p>
+          <Button onClick={initializeData} size="sm">
+            Retry
+          </Button>
         </div>
       </div>
     );
   }
 
-  const currentChannel = getCurrentChannel();
-  const otherParticipant = currentChannel ? getOtherParticipant(currentChannel) : null;
-
   return (
-    <div className="h-[calc(100vh-6rem)] flex bg-background">
-      {/* Sidebar */}
-      <div className="w-80 border-r bg-muted/30 flex flex-col">
-        <div className="p-4 border-b">
-          <h2 className="text-xl font-semibold mb-4">Communication</h2>
-          <div className="flex bg-muted rounded-lg p-1">
-            <Button
-              variant={activeTab === 'chats' ? 'default' : 'ghost'}
-              size="sm"
-              className="flex-1"
-              onClick={() => setActiveTab('chats')}
-            >
-              Chats
-            </Button>
-            <Button
-              variant={activeTab === 'team' ? 'default' : 'ghost'}
-              size="sm"
-              className="flex-1"
-              onClick={() => setActiveTab('team')}
-            >
-              Team ({teamMembers.length})
-            </Button>
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto">
-          {activeTab === 'chats' ? (
-            <div className="p-2">
-              {channels.length === 0 ? (
-                <div className="text-center py-8">
-                  <MessageSquare className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">No channels yet</p>
-                </div>
-              ) : (
-                channels.map((channel) => {
-                  const isSelected = selectedChannel === channel.id;
-                  return (
-                    <div
-                      key={channel.id}
-                      className={cn(
-                        "flex items-center p-3 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors mb-1",
-                        isSelected && "bg-primary/10 border border-primary/20"
-                      )}
-                      onClick={() => setSelectedChannel(channel.id)}
-                    >
-                      <div className="flex items-center flex-1 min-w-0">
-                        {getChannelIcon(channel)}
-                        <div className="ml-3 flex-1 min-w-0">
-                          <div className="font-medium text-sm truncate">
-                            {getChannelDisplayName(channel)}
-                          </div>
-                          {channel.description && (
-                            <div className="text-xs text-muted-foreground truncate">
-                              {channel.description}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          ) : (
-            <div className="p-2">
-              {loading ? (
-                <div className="text-center py-8">
-                  <Users className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Loading team members...</p>
-                </div>
-              ) : teamMembers.length === 0 ? (
-                <div className="text-center py-8">
-                  <Users className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">No team members found</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Check your permissions or try refreshing
-                  </p>
-                </div>
-              ) : (
-                teamMembers.map((member) => (
-                  <div
-                    key={member.id}
-                    className="flex items-center p-3 rounded-lg hover:bg-muted/50 cursor-pointer mb-1 transition-colors"
-                    onClick={() => showUserProfileFunc(member)}
-                  >
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={member.avatar_url} />
-                      <AvatarFallback className="text-xs">
-                        {member.full_name?.split(' ').map(n => n[0]).join('') || '?'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="ml-3 flex-1 min-w-0">
-                      <div className="font-medium text-sm truncate">
-                        {member.full_name}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-xs capitalize">
-                          {member.role}
-                        </Badge>
-                        {member.department && (
-                          <span className="text-xs text-muted-foreground">
-                            {member.department}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Main Chat Area */}
+    <EnhancedMobileLayout
+      showSidebar={showSidebar}
+      onToggleSidebar={() => setShowSidebar(!showSidebar)}
+      selectedChannel={selectedChannel}
+      teamMembers={teamMembers}
+      channels={channels}
+      onChannelSelect={setSelectedChannel}
+      onMemberSelect={startDirectMessage}
+      onStartCall={handleStartCall}
+      getChannelDisplayName={getChannelDisplayName}
+      getChannelIcon={getChannelIcon}
+      currentChannelName={currentChannel ? getChannelDisplayName(currentChannel) : 'Communication'}
+    >
+      {/* Messages */}
       <div className="flex-1 flex flex-col min-w-0">
         {selectedChannel ? (
           <>
-            {/* Chat Header */}
-            <div className="p-4 border-b bg-background flex items-center justify-between">
-              <div className="flex items-center min-w-0">
-                {currentChannel && getChannelIcon(currentChannel)}
-                <div className="ml-3 min-w-0">
-                  <h3 className="font-semibold truncate">
-                    {currentChannel && getChannelDisplayName(currentChannel)}
-                  </h3>
-                  {currentChannel?.description && (
-                    <p className="text-sm text-muted-foreground truncate">
-                      {currentChannel.description}
-                    </p>
-                  )}
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="flex items-center justify-center h-10 w-10 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors"
-                  onClick={() => {
-                    console.log('Starting video call...');
-                    setShowVideoCall(true);
-                  }}
-                  disabled={!selectedChannel}
-                  title="Start video call"
-                >
-                  <Video className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="flex items-center justify-center h-10 w-10 bg-secondary text-secondary-foreground rounded-full hover:bg-secondary/90 transition-colors"
-                  onClick={() => {
-                    console.log('Starting audio call...');
-                    setShowAudioCall(true);
-                  }}
-                  disabled={!selectedChannel}
-                  title="Start audio call"
-                >
-                  <Phone className="h-4 w-4" />
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  onClick={() => {
-                    if (currentChannel?.is_direct_message && otherParticipant) {
-                      showUserProfileFunc({
-                        id: otherParticipant.id || '',
-                        full_name: otherParticipant.full_name,
-                        avatar_url: otherParticipant.avatar_url,
-                        role: otherParticipant.role || 'user',
-                        user_id: otherParticipant.id || '',
-                        email: '',
-                        department: ''
-                      });
-                    } else {
-                      console.log('Opening channel info...');
-                    }
-                  }}
-                  disabled={!selectedChannel}
-                  title="View profile/info"
-                >
-                  <Info className="h-4 w-4" />
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  onClick={() => console.log('More options clicked')}
-                  disabled={!selectedChannel}
-                  title="More options"
-                >
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.length === 0 ? (
@@ -780,49 +642,59 @@ export function SimpleCommunication() {
               ) : (
                 messages.map((message) => (
                   <div key={message.id} className="flex items-start gap-3">
-                    <Avatar className="h-8 w-8 flex-shrink-0">
-                      <AvatarImage src={message.sender_profile?.avatar_url} />
-                      <AvatarFallback className="text-xs">
-                        {message.sender_profile?.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className="relative">
+                      <Avatar className="h-8 w-8 flex-shrink-0">
+                        <AvatarImage src={message.sender_profile?.avatar_url} />
+                        <AvatarFallback className="text-xs">
+                          {message.sender_profile?.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <PresenceIndicator userId={message.sender_id} size="sm" className="absolute -bottom-0.5 -right-0.5" />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-medium text-sm">
                           {message.sender_profile?.full_name || 'Unknown User'}
                         </span>
+                        <Badge variant="outline" className="text-xs capitalize">
+                          {message.sender_profile?.role || 'user'}
+                        </Badge>
                         <span className="text-xs text-muted-foreground">
                           {new Date(message.created_at).toLocaleTimeString()}
                         </span>
                       </div>
-                      <p className="text-sm text-foreground break-words">
-                        {message.content}
-                      </p>
+                      <div className="bg-muted rounded-lg p-3 max-w-md">
+                        <p className="text-sm text-foreground break-words">
+                          {message.content}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 ))
               )}
             </div>
 
-            {/* Message Input */}
+            {/* Enhanced Message Input */}
             <div className="p-4 border-t bg-background">
-              <div className="flex gap-2">
-                <Textarea
-                  placeholder={`Message ${currentChannel ? getChannelDisplayName(currentChannel) : 'channel'}...`}
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  className="flex-1 min-h-0 resize-none bg-background border-input"
-                  rows={2}
-                  disabled={!selectedChannel}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      if (newMessage.trim() && selectedChannel) {
-                        handleSendMessage();
+              <div className="flex gap-2 items-end">
+                <div className="flex-1">
+                  <Textarea
+                    placeholder={`Message ${currentChannel ? getChannelDisplayName(currentChannel) : 'channel'}...`}
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    className="flex-1 min-h-0 resize-none bg-background border-input"
+                    rows={2}
+                    disabled={!selectedChannel}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        if (newMessage.trim() && selectedChannel) {
+                          handleSendMessage();
+                        }
                       }
-                    }
-                  }}
-                />
+                    }}
+                  />
+                </div>
                 <Button
                   type="submit" 
                   size="sm"
@@ -863,34 +735,19 @@ export function SimpleCommunication() {
         />
       )}
 
-      {/* Call Modals */}
-      {showVideoCall && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-background p-6 rounded-lg max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Video Call</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Video calling feature is coming soon!
-            </p>
-            <Button onClick={() => setShowVideoCall(false)} className="w-full">
-              Close
-            </Button>
-          </div>
-        </div>
+      {/* WebRTC Calls */}
+      {(showVideoCall || showAudioCall) && activeCallRecipient && activeCallId && (
+        <WebRTCCall
+          callId={activeCallId}
+          isVideoCall={showVideoCall}
+          recipientId={activeCallRecipient.id}
+          recipientName={activeCallRecipient.full_name}
+          recipientAvatar={activeCallRecipient.avatar_url}
+          onEndCall={handleEndCall}
+          onMinimize={handleMinimizeCall}
+          isMinimized={callMinimized}
+        />
       )}
-
-      {showAudioCall && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-background p-6 rounded-lg max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Audio Call</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Audio calling feature is coming soon!
-            </p>
-            <Button onClick={() => setShowAudioCall(false)} className="w-full">
-              Close
-            </Button>
-          </div>
-        </div>
-      )}
-    </div>
+    </EnhancedMobileLayout>
   );
 }
