@@ -248,27 +248,34 @@ export function SimpleCommunication() {
     }
 
     try {
-      // Get all profiles except current user - same logic for both admin and employee
+      setLoading(true);
+      console.log('Fetching team members for profile:', profile.id, 'role:', profile.role);
+      
+      // Get all profiles except current user - both admin and employee should see everyone
       const { data, error } = await supabase
         .from('profiles')
         .select('id, user_id, full_name, avatar_url, role, email, department, bio')
         .neq('id', profile.id)
         .order('full_name');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error fetching team members:', error);
+        throw error;
+      }
 
-      console.log('Team members loaded:', data?.length || 0);
+      console.log('✅ Team members loaded successfully:', data?.length || 0, 'members');
+      console.log('Team members data:', data);
       setTeamMembers(data || []);
-      setLoading(false);
     } catch (error) {
-      console.error('Error fetching team members:', error);
+      console.error('❌ Error fetching team members:', error);
       setTeamMembers([]);
-      setLoading(false);
       toast({
         title: 'Error',
-        description: 'Failed to load team members',
+        description: 'Failed to load team members. Please check your permissions.',
         variant: 'destructive',
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -416,18 +423,23 @@ export function SimpleCommunication() {
         sender_name: profile.full_name || 'Unknown User',
       };
 
+      console.log('Sending message:', messageData);
       const { error } = await supabase
         .from('messages')
         .insert([messageData]);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error inserting message:', error);
+        throw error;
+      }
       
+      console.log('✅ Message sent successfully');
       setNewMessage('');
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('❌ Error sending message:', error);
       toast({
         title: 'Error',
-        description: 'Failed to send message',
+        description: 'Failed to send message. Please try again.',
         variant: 'destructive',
       });
     }
@@ -616,22 +628,30 @@ export function SimpleCommunication() {
             </div>
           ) : (
             <div className="p-2">
-              {teamMembers.length === 0 ? (
+              {loading ? (
+                <div className="text-center py-8">
+                  <Users className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">Loading team members...</p>
+                </div>
+              ) : teamMembers.length === 0 ? (
                 <div className="text-center py-8">
                   <Users className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                   <p className="text-sm text-muted-foreground">No team members found</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Check your permissions or try refreshing
+                  </p>
                 </div>
               ) : (
                 teamMembers.map((member) => (
                   <div
                     key={member.id}
-                    className="flex items-center p-3 rounded-lg hover:bg-muted/50 cursor-pointer mb-1"
+                    className="flex items-center p-3 rounded-lg hover:bg-muted/50 cursor-pointer mb-1 transition-colors"
                     onClick={() => showUserProfileFunc(member)}
                   >
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={member.avatar_url} />
                       <AvatarFallback className="text-xs">
-                        {member.full_name.split(' ').map(n => n[0]).join('')}
+                        {member.full_name?.split(' ').map(n => n[0]).join('') || '?'}
                       </AvatarFallback>
                     </Avatar>
                     <div className="ml-3 flex-1 min-w-0">
@@ -639,9 +659,14 @@ export function SimpleCommunication() {
                         {member.full_name}
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs capitalize">
                           {member.role}
                         </Badge>
+                        {member.department && (
+                          <span className="text-xs text-muted-foreground">
+                            {member.department}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -681,6 +706,8 @@ export function SimpleCommunication() {
                     console.log('Starting video call...');
                     setShowVideoCall(true);
                   }}
+                  disabled={!selectedChannel}
+                  title="Start video call"
                 >
                   <Video className="h-4 w-4" />
                 </Button>
@@ -692,6 +719,8 @@ export function SimpleCommunication() {
                     console.log('Starting audio call...');
                     setShowAudioCall(true);
                   }}
+                  disabled={!selectedChannel}
+                  title="Start audio call"
                 >
                   <Phone className="h-4 w-4" />
                 </Button>
@@ -699,9 +728,22 @@ export function SimpleCommunication() {
                   size="sm" 
                   variant="outline"
                   onClick={() => {
-                    console.log('Opening user profile...');
-                    setShowUserProfile(true);
+                    if (currentChannel?.is_direct_message && otherParticipant) {
+                      showUserProfileFunc({
+                        id: otherParticipant.id || '',
+                        full_name: otherParticipant.full_name,
+                        avatar_url: otherParticipant.avatar_url,
+                        role: otherParticipant.role || 'user',
+                        user_id: otherParticipant.id || '',
+                        email: '',
+                        department: ''
+                      });
+                    } else {
+                      console.log('Opening channel info...');
+                    }
                   }}
+                  disabled={!selectedChannel}
+                  title="View profile/info"
                 >
                   <Info className="h-4 w-4" />
                 </Button>
@@ -709,6 +751,8 @@ export function SimpleCommunication() {
                   size="sm" 
                   variant="outline"
                   onClick={() => console.log('More options clicked')}
+                  disabled={!selectedChannel}
+                  title="More options"
                 >
                   <MoreVertical className="h-4 w-4" />
                 </Button>
@@ -751,18 +795,19 @@ export function SimpleCommunication() {
             </div>
 
             {/* Message Input */}
-            <div className="p-4 border-t">
+            <div className="p-4 border-t bg-background">
               <div className="flex gap-2">
                 <Textarea
-                  placeholder="Type a message..."
+                  placeholder={`Message ${currentChannel ? getChannelDisplayName(currentChannel) : 'channel'}...`}
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  className="flex-1 min-h-0 resize-none"
+                  className="flex-1 min-h-0 resize-none bg-background border-input"
                   rows={2}
+                  disabled={!selectedChannel}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
-                      if (newMessage.trim()) {
+                      if (newMessage.trim() && selectedChannel) {
                         handleSendMessage();
                       }
                     }
@@ -771,13 +816,14 @@ export function SimpleCommunication() {
                 <Button
                   type="submit" 
                   size="sm"
-                  disabled={!newMessage.trim()}
+                  disabled={!newMessage.trim() || !selectedChannel}
                   onClick={(e) => {
                     e.preventDefault();
-                    if (newMessage.trim()) {
+                    if (newMessage.trim() && selectedChannel) {
                       handleSendMessage();
                     }
                   }}
+                  title="Send message"
                 >
                   <Send className="h-4 w-4" />
                 </Button>
