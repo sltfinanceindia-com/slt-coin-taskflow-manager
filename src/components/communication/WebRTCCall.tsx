@@ -6,20 +6,20 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Phone, 
   PhoneOff, 
-  Mic, 
-  MicOff, 
-  Video, 
+  Mic,
+  MicOff,
+  Video,
   VideoOff,
   Minimize2,
   Maximize2,
-  Speaker,
-  Settings,
   MoreVertical,
   Volume2,
-  VolumeX
+  Speaker
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { EnhancedCallControls } from './EnhancedCallControls';
+import { audioNotifications } from '@/utils/audioNotifications';
 
 interface WebRTCCallProps {
   isOpen: boolean;
@@ -70,6 +70,7 @@ export function WebRTCCall({
 
   // Initialize call when opened
   useEffect(() => {
+    audioNotifications.initialize();
     if (isOpen && !isIncoming) {
       initializeCall();
     }
@@ -128,6 +129,7 @@ export function WebRTCCall({
           case 'connected':
             setIsConnected(true);
             setConnectionStatus('connected');
+            audioNotifications.playCallConnected();
             toast({
               title: "Call Connected",
               description: `Connected to ${recipient?.name || 'participant'}`,
@@ -196,17 +198,19 @@ export function WebRTCCall({
     setIsAnswering(false);
   };
 
-  const handleEndCall = useCallback(() => {
+  const handleEndCall = useCallback(async () => {
+    await audioNotifications.playCallEnded();
     cleanup();
     onClose();
   }, [cleanup, onClose]);
 
-  const toggleMute = () => {
+  const toggleMute = async () => {
     if (localStreamRef.current) {
       const audioTrack = localStreamRef.current.getAudioTracks()[0];
       if (audioTrack) {
         audioTrack.enabled = !audioTrack.enabled;
         setIsMuted(!audioTrack.enabled);
+        await audioNotifications.playMuteToggle(!audioTrack.enabled);
         toast({
           title: audioTrack.enabled ? "Microphone On" : "Microphone Off",
           description: audioTrack.enabled ? "You are now unmuted" : "You are now muted",
@@ -231,7 +235,6 @@ export function WebRTCCall({
 
   const toggleSpeaker = () => {
     setIsSpeakerOn(!isSpeakerOn);
-    // Note: Speaker control is limited in web browsers
     toast({
       title: isSpeakerOn ? "Speaker Off" : "Speaker On",
       description: isSpeakerOn ? "Audio output normal" : "Speaker mode enabled",
@@ -472,7 +475,7 @@ export function WebRTCCall({
             </div>
           )}
 
-          {/* Call controls */}
+          {/* Enhanced Call controls */}
           <div className="flex justify-center items-center space-x-4">
             <Button
               variant={isMuted ? "destructive" : "secondary"}

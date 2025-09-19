@@ -16,6 +16,8 @@ import { MessageInput } from './communication/MessageInput';
 import { UserProfileModal } from './communication/UserProfileModal';
 import { WebRTCCall } from './communication/WebRTCCall';
 import { PresenceIndicator } from './communication/PresenceIndicator';
+import { CallHistory } from './communication/CallHistory';
+import { MissedCallNotifications, useMissedCalls } from './communication/MissedCallNotifications';
 import { AdvancedFeatures } from './communication/AdvancedFeatures';
 import { EnhancedMobileLayout } from './communication/EnhancedMobileLayout';
 import { TypingIndicator } from './communication/TypingIndicator';
@@ -93,10 +95,11 @@ export function SimpleCommunication() {
   const [error, setError] = useState<string | null>(null);
   const [showVideoCall, setShowVideoCall] = useState(false);
   const [showAudioCall, setShowAudioCall] = useState(false);
+  const [activeCallRecipient, setActiveCallRecipient] = useState<Profile | null>(null);
+  const [activeCallId, setActiveCallId] = useState<string | null>(null);
+  const { missedCalls, addMissedCall, removeMissedCall } = useMissedCalls();
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [callMinimized, setCallMinimized] = useState(false);
-  const [activeCallId, setActiveCallId] = useState<string | null>(null);
-  const [activeCallRecipient, setActiveCallRecipient] = useState<Profile | null>(null);
   const [showSidebar, setShowSidebar] = useState(false);
   
   // Initialize presence
