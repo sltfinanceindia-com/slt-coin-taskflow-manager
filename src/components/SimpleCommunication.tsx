@@ -14,6 +14,10 @@ import { EnhancedCallControls } from './communication/EnhancedCallControls';
 import { MessageList } from './communication/MessageList';
 import { MessageInput } from './communication/MessageInput';
 import { UserProfileModal } from './communication/UserProfileModal';
+import { WebRTCCall } from './communication/WebRTCCall';
+import { PresenceIndicator } from './communication/PresenceIndicator';
+import { AdvancedFeatures } from './communication/AdvancedFeatures';
+import { usePresence } from '@/hooks/usePresence';
 import { cn } from '@/lib/utils';
 
 interface Message {
@@ -86,6 +90,12 @@ export function SimpleCommunication() {
   const [showVideoCall, setShowVideoCall] = useState(false);
   const [showAudioCall, setShowAudioCall] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
+  const [callMinimized, setCallMinimized] = useState(false);
+  const [activeCallId, setActiveCallId] = useState<string | null>(null);
+  const [activeCallRecipient, setActiveCallRecipient] = useState<Profile | null>(null);
+  
+  // Initialize presence
+  const presence = usePresence();
 
   useEffect(() => {
     if (profile?.id) {
