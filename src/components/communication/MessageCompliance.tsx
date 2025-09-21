@@ -69,11 +69,17 @@ export default function MessageCompliance() {
     }
   ]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [newPolicy, setNewPolicy] = useState({
+  const [newPolicy, setNewPolicy] = useState<{
+    name: string;
+    description: string;
+    retention_days: number;
+    applies_to: 'all' | 'channels' | 'direct_messages';
+    channel_patterns: string;
+  }>({
     name: '',
     description: '',
     retention_days: 365,
-    applies_to: 'all' as const,
+    applies_to: 'all',
     channel_patterns: ''
   });
 
