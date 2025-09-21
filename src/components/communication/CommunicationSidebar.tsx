@@ -60,7 +60,7 @@ import {
   Share2,
   Copy,
   ExternalLink,
-  Mute,
+  MicOff,
   Volume2
 } from 'lucide-react';
 import { usePresence } from '@/hooks/usePresence';

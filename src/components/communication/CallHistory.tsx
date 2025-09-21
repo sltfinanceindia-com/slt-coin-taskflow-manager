@@ -33,7 +33,7 @@ import {
   StarOff,
   MoreVertical,
   Archive,
-  Unarchive,
+  Archive,
   UserPlus,
   MessageSquare,
   ChevronDown,
@@ -49,7 +49,7 @@ import {
   CheckCircle,
   XCircle,
   RefreshCw,
-  Export,
+  Download,
   Settings
 } from 'lucide-react';
 import { cn } from '@/lib/utils';

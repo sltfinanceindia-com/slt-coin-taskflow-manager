@@ -30,7 +30,7 @@ import {
   UserPlus,
   Shield,
   Hand,
-  HandOff,
+  PhoneOff,
   Grid3X3,
   Maximize,
   Minimize,
