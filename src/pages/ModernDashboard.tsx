@@ -22,7 +22,7 @@ import { AppSidebar } from '@/components/AppSidebar';
 import { AppHeader } from '@/components/AppHeader';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { TeamCommunication } from '@/components/TeamCommunication';
-import SimpleCommunication from '@/components/SimpleCommunication';
+import { SimpleCommunication } from '@/components/SimpleCommunication';
 
 import { Coins, Clock, CheckCircle, Plus } from 'lucide-react';
 
