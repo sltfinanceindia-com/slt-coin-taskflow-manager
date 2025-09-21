@@ -5,6 +5,7 @@ import { useTimeLogs } from '@/hooks/useTimeLogs';
 import { Navigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { TaskCard } from '@/components/TaskCard';
 import { CreateTaskDialog } from '@/components/CreateTaskDialog';
 import { TimeLogDialog } from '@/components/TimeLogDialog';
@@ -100,9 +101,15 @@ export default function ModernDashboard() {
         return <ProjectManagement />;
       
       case 'training':
-        // Redirect to training page instead of inline component
-        window.location.href = '/training';
-        return null;
+        // Use React Router navigation instead of window.location
+        return (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground mb-4">Redirecting to Training Center...</p>
+            <Button onClick={() => window.open('/training', '_blank')} variant="outline">
+              Open Training Center
+            </Button>
+          </div>
+        );
       
       case 'time':
         return (
