@@ -48,6 +48,7 @@ import {
   MoreHorizontal,
   Sparkles,
   Brain,
+  Upload,
   MessageCircle,
   Users,
   Clock,
@@ -547,8 +548,7 @@ export function AdvancedFeatures({
                     onClick={() => {
                       if (voiceRecording.audioBlob) {
                         const file = new File([voiceRecording.audioBlob], 
-                          `voice-${Date.now()}.webm`, 
-                          { type: 'audio/webm' });
+                          `voice-${Date.now()}.webm`);
                         onFileUpload(file, 'audio');
                         setVoiceRecording({ 
                           isRecording: false, 

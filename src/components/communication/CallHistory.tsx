@@ -33,7 +33,6 @@ import {
   StarOff,
   MoreVertical,
   Archive,
-  Archive,
   UserPlus,
   MessageSquare,
   ChevronDown,
@@ -49,8 +48,8 @@ import {
   CheckCircle,
   XCircle,
   RefreshCw,
-  Download,
-  Settings
+  Settings,
+  FileDown as Export
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, isToday, isYesterday, formatDistanceToNow, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';

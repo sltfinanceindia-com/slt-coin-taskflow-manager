@@ -391,7 +391,7 @@ export function CallControls({
                   </Badge>
                   {isRecording && (
                     <Badge className="text-xs bg-red-600 text-white animate-pulse">
-                      <Circle className="h-3 w-3 mr-1 fill-current" />
+                      <div className="h-3 w-3 mr-1 bg-red-500 rounded-full" />
                       REC
                     </Badge>
                   )}
@@ -666,7 +666,7 @@ export function CallControls({
                           : 'bg-gray-700 hover:bg-gray-600 text-white'
                       )}
                     >
-                      {isRecording ? <Square className="h-6 w-6" /> : <Record className="h-6 w-6" />}
+                      {isRecording ? <Square className="h-6 w-6" /> : <div className="h-6 w-6 rounded bg-red-500" />}
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>{isRecording ? 'Stop recording' : 'Start recording'}</TooltipContent>

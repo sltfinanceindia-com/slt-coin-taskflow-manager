@@ -48,6 +48,7 @@ import {
   Camera,
   Code,
   Hash,
+  Square,
   AtSign,
   Zap,
   AlertCircle,
@@ -789,6 +790,7 @@ export function ThreadedConversation({
     );
   }, [enableReactions, onReact, showEmojiPicker]);
 
+  const allowMessageActions = true; // Add this variable
   const renderMessageActions = useCallback((message: ThreadMessage, isReply = false, reply?: Reply) => {
     if (!allowMessageActions) return null;
 
