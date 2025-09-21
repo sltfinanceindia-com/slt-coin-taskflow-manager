@@ -1569,7 +1569,7 @@ const EnhancedSimpleCommunication: React.FC = () => {
   // Desktop layout
   return (
     <TooltipProvider>
-      <div className="fixed inset-0 flex bg-background">
+      <div className="flex h-[calc(100vh-8rem)] bg-background rounded-lg border overflow-hidden">
         {/* Call Interface Overlay */}
         <CallInterface
           callState={state.callState}
