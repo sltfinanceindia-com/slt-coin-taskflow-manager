@@ -6,6 +6,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import EnhancedMessageComposer from './EnhancedMessageComposer';
+import InfiniteMessageScroll from './InfiniteMessageScroll';
+import QuickActions from './QuickActions';
 import { 
   Send, 
   Paperclip, 
@@ -295,48 +298,15 @@ export default function MessageArea({
         )}
       </div>
 
-      {/* Message Input */}
+      {/* Enhanced Message Input */}
       <div className="p-4 border-t border-border bg-card">
-        <div className="flex items-end gap-3">
-          <Button variant="ghost" size="sm" className="mb-2">
-            <Paperclip className="h-4 w-4" />
-          </Button>
-          
-          <div className="flex-1 relative">
-            <Textarea
-              ref={textareaRef}
-              value={newMessage}
-              onChange={(e) => {
-                setNewMessage(e.target.value);
-                setIsComposing(e.target.value.length > 0);
-              }}
-              onKeyPress={handleKeyPress}
-              placeholder={`Message ${channel.name}...`}
-              className="min-h-[40px] max-h-32 resize-none pr-20"
-              rows={1}
-            />
-            
-            <div className="absolute right-2 bottom-2 flex items-center gap-1">
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                <Smile className="h-4 w-4" />
-              </Button>
-              <Button 
-                size="sm" 
-                onClick={handleSendMessage}
-                disabled={!newMessage.trim()}
-                className="h-6 w-6 p-0"
-              >
-                <Send className="h-3 w-3" />
-              </Button>
-            </div>
-          </div>
-        </div>
-        
-        {isComposing && (
-          <div className="text-xs text-muted-foreground mt-2">
-            Press Enter to send, Shift+Enter for new line
-          </div>
-        )}
+        <EnhancedMessageComposer
+          onSendMessage={async (content) => {
+            onSendMessage(content);
+          }}
+          placeholder={`Message ${channel.name}...`}
+          channel={channel}
+        />
       </div>
     </div>
   );
