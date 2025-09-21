@@ -34,7 +34,7 @@ import {
   Speaker,
   Headphones,
   Clock,
-  Record,
+  Circle,
   Square,
   Pause,
   Play,
