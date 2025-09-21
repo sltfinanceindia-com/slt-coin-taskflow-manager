@@ -358,23 +358,12 @@ export function useWebRTC() {
     if (!profile) return;
 
     try {
-  // Mock meeting rooms functionality for now
-  const createMeetingRoom = useCallback(async (title: string, description?: string, scheduledStart?: Date, scheduledEnd?: Date) => {
-    toast({
-      title: "Meeting Created",
-      description: `Meeting "${title}" has been scheduled (demo mode)`
-    });
-    return { id: 'demo-meeting', title, description };
-  }, [toast]);
-
-      if (error) throw error;
-
+      // Mock meeting rooms functionality for now
       toast({
         title: "Meeting Created",
-        description: `Meeting "${title}" has been scheduled`
+        description: `Meeting "${title}" has been scheduled (demo mode)`
       });
-
-      return data;
+      return { id: 'demo-meeting', title, description };
     } catch (error) {
       console.error('Error creating meeting room:', error);
       toast({
