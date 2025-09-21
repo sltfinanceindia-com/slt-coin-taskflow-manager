@@ -5,16 +5,22 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { Menu, X, Video, Phone, Settings, Users, Search } from 'lucide-react';
 import { useCommunication } from '@/hooks/useCommunication';
+import { useWebRTC } from '@/hooks/useWebRTC';
 import CommunicationSidebar from './CommunicationSidebar';
 import MessageArea from './MessageArea';
 import DetailsPanel from './DetailsPanel';
+import CallInterface from './CallInterface';
+import MeetingRooms from './MeetingRooms';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function CommunicationLayout() {
   const { profile } = useAuth();
   const communication = useCommunication();
+  const webrtc = useWebRTC();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [detailsPanelOpen, setDetailsPanelOpen] = useState(false);
+  const [activeView, setActiveView] = useState<'chat' | 'meetings' | 'files'>('chat');
+  const [callMinimized, setCallMinimized] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   React.useEffect(() => {
@@ -31,6 +37,7 @@ export default function CommunicationLayout() {
 
   const handleChannelSelect = (channel: any) => {
     communication.selectChannel(channel);
+    setActiveView('chat');
     if (isMobile) {
       setSidebarCollapsed(true);
     }
@@ -38,8 +45,17 @@ export default function CommunicationLayout() {
 
   const handleMemberSelect = async (member: any) => {
     const dmChannel = await communication.createDirectMessage(member.id);
+    setActiveView('chat');
     if (dmChannel && isMobile) {
       setSidebarCollapsed(true);
+    }
+  };
+
+  const handleStartCall = (memberId: string, isVideo: boolean = false) => {
+    if (isVideo) {
+      webrtc.startVideoCall(memberId);
+    } else {
+      webrtc.startVoiceCall(memberId);
     }
   };
 
@@ -70,9 +86,11 @@ export default function CommunicationLayout() {
           
           <div className="flex items-center gap-2">
             <h1 className="text-lg font-semibold bg-gradient-primary bg-clip-text text-transparent">
-              {communication.selectedChannel?.name || 'Team Communication'}
+              {activeView === 'meetings' ? 'Meeting Rooms' : 
+               activeView === 'files' ? 'File Sharing' :
+               communication.selectedChannel?.name || 'Team Communication'}
             </h1>
-            {communication.selectedChannel && (
+            {communication.selectedChannel && activeView === 'chat' && (
               <span className="text-xs text-muted-foreground">
                 {communication.selectedChannel.member_count} members
               </span>
@@ -81,12 +99,37 @@ export default function CommunicationLayout() {
         </div>
 
         <div className="flex items-center gap-2">
-          {communication.selectedChannel && !communication.selectedChannel.is_direct_message && (
+          {/* View Switcher */}
+          <div className="flex items-center gap-1 mr-4">
+            <Button 
+              variant={activeView === 'chat' ? 'default' : 'ghost'} 
+              size="sm"
+              onClick={() => setActiveView('chat')}
+            >
+              Chat
+            </Button>
+            <Button 
+              variant={activeView === 'meetings' ? 'default' : 'ghost'} 
+              size="sm"
+              onClick={() => setActiveView('meetings')}
+            >
+              Meetings
+            </Button>
+            <Button 
+              variant={activeView === 'files' ? 'default' : 'ghost'} 
+              size="sm"
+              onClick={() => setActiveView('files')}
+            >
+              Files
+            </Button>
+          </div>
+
+          {activeView === 'chat' && communication.selectedChannel && !communication.selectedChannel.is_direct_message && (
             <>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={() => handleStartCall('group', true)}>
                 <Video className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={() => handleStartCall('group', false)}>
                 <Phone className="h-4 w-4" />
               </Button>
               <Separator orientation="vertical" className="h-6" />
@@ -135,43 +178,56 @@ export default function CommunicationLayout() {
           />
         )}
 
-        {/* Main Message Area */}
+        {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0">
-          {communication.selectedChannel ? (
-            <MessageArea
-              channel={communication.selectedChannel}
-              messages={communication.messages}
-              isLoading={communication.isLoadingMessages}
-              onSendMessage={(content) => communication.sendMessage(content, communication.selectedChannel?.id)}
-              currentUser={profile}
-            />
+          {activeView === 'chat' ? (
+            communication.selectedChannel ? (
+              <MessageArea
+                channel={communication.selectedChannel}
+                messages={communication.messages}
+                isLoading={communication.isLoadingMessages}
+                onSendMessage={(content) => communication.sendMessage(content, communication.selectedChannel?.id)}
+                currentUser={profile}
+              />
+            ) : (
+              <div className="flex-1 flex items-center justify-center bg-background/50">
+                <div className="text-center space-y-4 max-w-md mx-auto p-6">
+                  <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto">
+                    <Users className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold">Welcome to Team Communication</h3>
+                  <p className="text-muted-foreground">
+                    Select a channel from the sidebar to start messaging, or click on a team member to start a direct conversation.
+                  </p>
+                  <div className="flex flex-col gap-2 mt-6">
+                    <Button
+                      variant="outline"
+                      onClick={() => setSidebarCollapsed(false)}
+                      className="w-full"
+                    >
+                      <Menu className="h-4 w-4 mr-2" />
+                      Open Channels
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )
+          ) : activeView === 'meetings' ? (
+            <div className="flex-1 overflow-auto p-6">
+              <MeetingRooms />
+            </div>
           ) : (
-            <div className="flex-1 flex items-center justify-center bg-background/50">
-              <div className="text-center space-y-4 max-w-md mx-auto p-6">
-                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto">
-                  <Users className="h-8 w-8 text-white" />
-                </div>
-                <h3 className="text-xl font-semibold">Welcome to Team Communication</h3>
-                <p className="text-muted-foreground">
-                  Select a channel from the sidebar to start messaging, or click on a team member to start a direct conversation.
-                </p>
-                <div className="flex flex-col gap-2 mt-6">
-                  <Button
-                    variant="outline"
-                    onClick={() => setSidebarCollapsed(false)}
-                    className="w-full"
-                  >
-                    <Menu className="h-4 w-4 mr-2" />
-                    Open Channels
-                  </Button>
-                </div>
+            <div className="flex-1 overflow-auto p-6">
+              <div className="text-center py-12">
+                <h3 className="text-lg font-semibold mb-2">File Sharing</h3>
+                <p className="text-muted-foreground">Enhanced file sharing coming soon!</p>
               </div>
             </div>
           )}
         </div>
 
         {/* Details Panel */}
-        {detailsPanelOpen && communication.selectedChannel && (
+        {detailsPanelOpen && communication.selectedChannel && activeView === 'chat' && (
           <div className="w-80 bg-card border-l border-border">
             <DetailsPanel
               channel={communication.selectedChannel}
@@ -183,6 +239,13 @@ export default function CommunicationLayout() {
           </div>
         )}
       </div>
+
+      {/* Call Interface Overlay */}
+      <CallInterface 
+        onMinimize={() => setCallMinimized(true)}
+        onMaximize={() => setCallMinimized(false)}
+        isMinimized={callMinimized}
+      />
     </div>
   );
 }
