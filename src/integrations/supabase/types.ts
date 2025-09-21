@@ -351,57 +351,6 @@ export type Database = {
         }
         Relationships: []
       }
-      call_history: {
-        Row: {
-          call_type: string
-          caller_id: string
-          created_at: string
-          duration_seconds: number | null
-          ended_at: string | null
-          id: string
-          receiver_id: string
-          started_at: string
-          status: string
-        }
-        Insert: {
-          call_type: string
-          caller_id: string
-          created_at?: string
-          duration_seconds?: number | null
-          ended_at?: string | null
-          id?: string
-          receiver_id: string
-          started_at?: string
-          status: string
-        }
-        Update: {
-          call_type?: string
-          caller_id?: string
-          created_at?: string
-          duration_seconds?: number | null
-          ended_at?: string | null
-          id?: string
-          receiver_id?: string
-          started_at?: string
-          status?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "call_history_caller_id_fkey"
-            columns: ["caller_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "call_history_receiver_id_fkey"
-            columns: ["receiver_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       channel_members: {
         Row: {
           channel_id: string
@@ -434,42 +383,6 @@ export type Database = {
           },
           {
             foreignKeyName: "channel_members_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      channel_read_status: {
-        Row: {
-          channel_id: string | null
-          id: string
-          last_read_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          channel_id?: string | null
-          id?: string
-          last_read_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          channel_id?: string | null
-          id?: string
-          last_read_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "channel_read_status_channel_id_fkey"
-            columns: ["channel_id"]
-            isOneToOne: false
-            referencedRelation: "communication_channels"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "channel_read_status_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -767,86 +680,6 @@ export type Database = {
         }
         Relationships: []
       }
-      message_attachments: {
-        Row: {
-          created_at: string | null
-          id: string
-          message_id: string | null
-          name: string
-          size: number
-          thumbnail_url: string | null
-          type: string
-          url: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          message_id?: string | null
-          name: string
-          size: number
-          thumbnail_url?: string | null
-          type: string
-          url: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          message_id?: string | null
-          name?: string
-          size?: number
-          thumbnail_url?: string | null
-          type?: string
-          url?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "message_attachments_message_id_fkey"
-            columns: ["message_id"]
-            isOneToOne: false
-            referencedRelation: "messages"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      message_reactions: {
-        Row: {
-          created_at: string | null
-          emoji: string
-          id: string
-          message_id: string | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          emoji: string
-          id?: string
-          message_id?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          emoji?: string
-          id?: string
-          message_id?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "message_reactions_message_id_fkey"
-            columns: ["message_id"]
-            isOneToOne: false
-            referencedRelation: "messages"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "message_reactions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       messages: {
         Row: {
           attachments: Json | null
@@ -855,12 +688,9 @@ export type Database = {
           created_at: string
           edited_at: string | null
           id: string
-          is_edited: boolean | null
-          is_important: boolean | null
           is_pinned: boolean | null
           is_read: boolean | null
           is_starred: boolean | null
-          mentions: string[] | null
           message_type: string
           reactions: Json | null
           receiver_id: string | null
@@ -868,7 +698,6 @@ export type Database = {
           sender_id: string
           sender_name: string | null
           sender_role: string | null
-          thread_count: number | null
           thread_replies: number | null
         }
         Insert: {
@@ -878,12 +707,9 @@ export type Database = {
           created_at?: string
           edited_at?: string | null
           id?: string
-          is_edited?: boolean | null
-          is_important?: boolean | null
           is_pinned?: boolean | null
           is_read?: boolean | null
           is_starred?: boolean | null
-          mentions?: string[] | null
           message_type?: string
           reactions?: Json | null
           receiver_id?: string | null
@@ -891,7 +717,6 @@ export type Database = {
           sender_id: string
           sender_name?: string | null
           sender_role?: string | null
-          thread_count?: number | null
           thread_replies?: number | null
         }
         Update: {
@@ -901,12 +726,9 @@ export type Database = {
           created_at?: string
           edited_at?: string | null
           id?: string
-          is_edited?: boolean | null
-          is_important?: boolean | null
           is_pinned?: boolean | null
           is_read?: boolean | null
           is_starred?: boolean | null
-          mentions?: string[] | null
           message_type?: string
           reactions?: Json | null
           receiver_id?: string | null
@@ -914,7 +736,6 @@ export type Database = {
           sender_id?: string
           sender_name?: string | null
           sender_role?: string | null
-          thread_count?: number | null
           thread_replies?: number | null
         }
         Relationships: [
@@ -1606,14 +1427,6 @@ export type Database = {
       extract_video_duration: {
         Args: { video_url: string }
         Returns: number
-      }
-      get_chat_partner_name: {
-        Args: { channel_id_param: string; current_user_id: string }
-        Returns: {
-          partner_avatar: string
-          partner_name: string
-          partner_role: string
-        }[]
       }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
