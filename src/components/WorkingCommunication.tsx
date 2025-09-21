@@ -29,8 +29,8 @@ interface Channel {
   participants: string[];
 }
 
-export default function SimplifiedCommunication() {
-  const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
+export default function WorkingCommunication() {
+  const [selectedChannel, setSelectedChannel] = useState<string | null>('1');
   const [newMessage, setNewMessage] = useState('');
   const [channels] = useState<Channel[]>([
     { id: '1', name: 'General', type: 'public', participants: [] },
@@ -38,7 +38,8 @@ export default function SimplifiedCommunication() {
     { id: '3', name: 'Design', type: 'public', participants: [] }
   ]);
   const [messages] = useState<Message[]>([
-    { id: '1', content: 'Welcome to the communication center!', sender: 'System', timestamp: new Date() }
+    { id: '1', content: 'Welcome to the team communication center! 🎉', sender: 'System', timestamp: new Date() },
+    { id: '2', content: 'This is a simplified communication interface while we fix the advanced components.', sender: 'System', timestamp: new Date() }
   ]);
 
   const handleSendMessage = () => {
@@ -55,7 +56,7 @@ export default function SimplifiedCommunication() {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
-            Communication
+            Team Communication
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -94,7 +95,7 @@ export default function SimplifiedCommunication() {
                 </h2>
                 <Badge variant="secondary">
                   <Users className="h-3 w-3 mr-1" />
-                  Online
+                  Active
                 </Badge>
               </div>
               <div className="flex items-center gap-2">
