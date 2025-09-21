@@ -15,6 +15,12 @@ export interface CallState {
   duration: number;
   callId?: string;
   meetingId?: string;
+  incomingCallData?: {
+    callerId: string;
+    callerName: string;
+    callerAvatar?: string;
+    callType: 'voice' | 'video';
+  };
 }
 
 export interface CallParticipant {
@@ -152,6 +158,68 @@ export function useWebRTC() {
       });
     }
   }, [profile, initializeMedia, toast]);
+
+  // Answer incoming call
+  const answerCall = useCallback(async () => {
+    if (!callState.isIncoming) return;
+
+    try {
+      const isVideo = callState.incomingCallData?.callType === 'video';
+      const stream = await initializeMedia(isVideo);
+      
+      setCallState(prev => ({
+        ...prev,
+        isActive: true,
+        isIncoming: false,
+        isVideoEnabled: isVideo,
+        duration: 0
+      }));
+
+      // Start call timer
+      const startTime = Date.now();
+      callTimer.current = setInterval(() => {
+        setCallState(prev => ({
+          ...prev,
+          duration: Math.floor((Date.now() - startTime) / 1000)
+        }));
+      }, 1000);
+
+    } catch (error) {
+      console.error('Error answering call:', error);
+      toast({
+        title: "Call Failed",
+        description: "Could not answer the call",
+        variant: "destructive"
+      });
+    }
+  }, [callState.isIncoming, callState.incomingCallData, initializeMedia, toast]);
+
+  // Decline incoming call
+  const declineCall = useCallback(() => {
+    setCallState(prev => ({
+      ...prev,
+      isIncoming: false,
+      incomingCallData: undefined
+    }));
+    
+    toast({
+      title: "Call Declined",
+      description: "Incoming call was declined"
+    });
+  }, [toast]);
+
+  // Simulate incoming call (for demo purposes)
+  const simulateIncomingCall = useCallback((callerId: string, callerName: string, callType: 'voice' | 'video' = 'voice') => {
+    setCallState(prev => ({
+      ...prev,
+      isIncoming: true,
+      incomingCallData: {
+        callerId,
+        callerName,
+        callType
+      }
+    }));
+  }, []);
 
   // Start video call
   const startVideoCall = useCallback(async (userId: string) => {
@@ -413,6 +481,8 @@ export function useWebRTC() {
     localVideoRef,
     startVoiceCall,
     startVideoCall,
+    answerCall,
+    declineCall,
     endCall,
     toggleMute,
     toggleVideo,
@@ -420,6 +490,7 @@ export function useWebRTC() {
     stopScreenShare,
     createMeetingRoom,
     joinMeetingRoom,
-    fetchMeetingRooms
+    fetchMeetingRooms,
+    simulateIncomingCall
   };
 }

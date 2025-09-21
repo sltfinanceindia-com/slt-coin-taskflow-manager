@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Channel, TeamMember } from '@/hooks/useCommunication';
+import { useWebRTC } from '@/hooks/useWebRTC';
 
 interface CommunicationSidebarProps {
   channels: Channel[];
@@ -45,6 +46,7 @@ export default function CommunicationSidebar({
   onSearchChange,
   className
 }: CommunicationSidebarProps) {
+  const { startVoiceCall, startVideoCall } = useWebRTC();
   const [activeTab, setActiveTab] = useState('channels');
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
 
@@ -260,10 +262,26 @@ export default function CommunicationSidebar({
                       </div>
 
                       <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-6 w-6 p-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            startVoiceCall(member.id);
+                          }}
+                        >
                           <Phone className="h-3 w-3" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-6 w-6 p-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            startVideoCall(member.id);
+                          }}
+                        >
                           <Video className="h-3 w-3" />
                         </Button>
                       </div>

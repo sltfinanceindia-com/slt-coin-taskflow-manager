@@ -14,6 +14,9 @@ import DetailsPanel from './DetailsPanel';
 import CallInterface from './CallInterface';
 import MeetingRooms from './MeetingRooms';
 import ProductivitySidebar from './ProductivitySidebar';
+import IncomingCallNotification from './IncomingCallNotification';
+import MissedCallNotifications from './MissedCallNotifications';
+import CallTestButtons from './CallTestButtons';
 import { FullLayoutSkeleton } from './SkeletonLoaders';
 
 export default function CommunicationLayout() {
@@ -116,7 +119,7 @@ export default function CommunicationLayout() {
       />
     ) : (
       <div className="flex-1 flex items-center justify-center bg-background/50">
-        <div className="text-center space-y-4 max-w-md mx-auto p-6">
+        <div className="text-center space-y-6 max-w-md mx-auto p-6">
           <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto">
             <Users className="h-8 w-8 text-white" />
           </div>
@@ -124,6 +127,9 @@ export default function CommunicationLayout() {
           <p className="text-muted-foreground">
             Select a channel from the sidebar to start messaging, or click on a team member to start a direct conversation.
           </p>
+          
+          {/* Demo Call Testing */}
+          <CallTestButtons />
         </div>
       </div>
     )
@@ -186,6 +192,12 @@ export default function CommunicationLayout() {
         onMaximize={() => setCallMinimized(false)}
         isMinimized={callMinimized}
       />
+
+      {/* Incoming Call Notification */}
+      <IncomingCallNotification />
+
+      {/* Missed Call Notifications */}
+      <MissedCallNotifications />
     </>
   );
 }
