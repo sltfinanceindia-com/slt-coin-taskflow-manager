@@ -1,201 +1,120 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { 
-  Search,
-  Users,
-  MessageSquare,
-  Phone,
-  Video,
-  MoreHorizontal,
-  Settings,
+  Search, 
+  Hash, 
+  Lock, 
+  Users, 
+  MessageCircle, 
   Plus,
-  Hash,
-  User,
-  Bell,
-  BellOff,
-  VolumeOff,
-  Volume2,
+  Settings,
+  Filter,
   Circle,
-  Minus
+  Phone,
+  Video
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-interface Channel {
-  id: string;
-  name: string;
-  type: 'public' | 'private' | 'direct';
-  participants: string[];
-  unreadCount: number;
-  lastMessage?: {
-    content: string;
-    sender: string;
-    timestamp: Date;
-  };
-  isActive?: boolean;
-}
-
-interface TeamMember {
-  id: string;
-  name: string;
-  avatar?: string;
-  status: 'online' | 'away' | 'offline';
-  role: string;
-  lastSeen?: Date;
-  isInCall?: boolean;
-  isMuted?: boolean;
-}
+import type { Channel, TeamMember } from '@/hooks/useCommunication';
 
 interface CommunicationSidebarProps {
-  onChannelSelect: (channelId: string) => void;
-  onMemberSelect: (memberId: string) => void;
-  selectedChannel?: string;
+  channels: Channel[];
+  teamMembers: TeamMember[];
+  selectedChannel: Channel | null;
+  onChannelSelect: (channel: Channel) => void;
+  onMemberSelect: (member: TeamMember) => void;
+  collapsed?: boolean;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
   className?: string;
 }
 
 export default function CommunicationSidebar({
+  channels,
+  teamMembers,
+  selectedChannel,
   onChannelSelect,
   onMemberSelect,
-  selectedChannel,
+  collapsed = false,
+  searchQuery = '',
+  onSearchChange,
   className
 }: CommunicationSidebarProps) {
-  const [activeTab, setActiveTab] = useState<'channels' | 'members'>('channels');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [channels, setChannels] = useState<Channel[]>([]);
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [activeTab, setActiveTab] = useState('channels');
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
-  useEffect(() => {
-    // Mock data - replace with actual API calls
-    setChannels([
-      {
-        id: '1',
-        name: 'General',
-        type: 'public',
-        participants: ['1', '2', '3'],
-        unreadCount: 3,
-        lastMessage: {
-          content: 'Welcome to the team!',
-          sender: 'Admin',
-          timestamp: new Date(Date.now() - 1000 * 60 * 5)
-        }
-      },
-      {
-        id: '2',
-        name: 'Development',
-        type: 'public',
-        participants: ['1', '2'],
-        unreadCount: 1,
-        lastMessage: {
-          content: 'Code review needed',
-          sender: 'John',
-          timestamp: new Date(Date.now() - 1000 * 60 * 30)
-        }
-      },
-      {
-        id: '3',
-        name: 'Design',
-        type: 'private',
-        participants: ['1', '3'],
-        unreadCount: 0,
-        lastMessage: {
-          content: 'New mockups ready',
-          sender: 'Sarah',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2)
-        }
-      }
-    ]);
-
-    setTeamMembers([
-      {
-        id: '1',
-        name: 'John Doe',
-        avatar: '/avatars/john.png',
-        status: 'online',
-        role: 'Developer',
-        isInCall: true
-      },
-      {
-        id: '2',
-        name: 'Sarah Wilson',
-        avatar: '/avatars/sarah.png',
-        status: 'away',
-        role: 'Designer',
-        lastSeen: new Date(Date.now() - 1000 * 60 * 15)
-      },
-      {
-        id: '3',
-        name: 'Mike Johnson',
-        avatar: '/avatars/mike.png',
-        status: 'offline',
-        role: 'Manager',
-        lastSeen: new Date(Date.now() - 1000 * 60 * 60 * 3)
-      }
-    ]);
-  }, []);
-
-  const filteredChannels = channels.filter(channel =>
-    channel.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const filteredMembers = teamMembers.filter(member => {
-    const matchesSearch = member.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = !showOnlineOnly || member.status === 'online';
-    return matchesSearch && matchesStatus;
-  });
+  const getChannelIcon = (channel: Channel) => {
+    if (channel.is_direct_message) {
+      return <MessageCircle className="h-4 w-4" />;
+    }
+    return channel.type === 'private' ? <Lock className="h-4 w-4" /> : <Hash className="h-4 w-4" />;
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'online': return 'bg-green-500';
-      case 'away': return 'bg-yellow-500';
-      case 'offline': return 'bg-gray-400';
-      default: return 'bg-gray-400';
+      case 'online': return 'text-green-500';
+      case 'away': return 'text-yellow-500';
+      case 'busy': return 'text-red-500';
+      default: return 'text-gray-400';
     }
   };
 
-  const formatLastSeen = (date: Date) => {
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const minutes = Math.floor(diff / (1000 * 60));
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-    if (minutes < 1) return 'Just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    return `${days}d ago`;
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
-  const formatMessageTime = (date: Date) => {
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const minutes = Math.floor(diff / (1000 * 60));
-    const hours = Math.floor(diff / (1000 * 60 * 60));
+  const filteredChannels = useMemo(() => {
+    return channels.filter(channel =>
+      channel.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [channels, searchQuery]);
 
-    if (minutes < 1) return 'now';
-    if (minutes < 60) return `${minutes}m`;
-    if (hours < 24) return `${hours}h`;
-    return date.toLocaleDateString();
+  const filteredMembers = useMemo(() => {
+    let filtered = teamMembers.filter(member =>
+      member.full_name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    
+    if (showOnlineOnly) {
+      filtered = filtered.filter(member => member.is_online);
+    }
+    
+    return filtered.sort((a, b) => {
+      // Sort by online status first, then by name
+      if (a.is_online && !b.is_online) return -1;
+      if (!a.is_online && b.is_online) return 1;
+      return a.full_name.localeCompare(b.full_name);
+    });
+  }, [teamMembers, searchQuery, showOnlineOnly]);
+
+  const formatLastSeen = (lastSeen?: string) => {
+    if (!lastSeen) return 'Unknown';
+    const date = new Date(lastSeen);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    return `${Math.floor(diffInMinutes / 1440)}d ago`;
   };
 
-  if (isCollapsed) {
+  if (collapsed) {
     return (
-      <div className={cn("w-16 border-r bg-background", className)}>
-        <div className="p-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsCollapsed(false)}
-            className="w-full h-8"
-          >
-            <Users className="h-4 w-4" />
+      <div className={cn("h-full bg-card border-r border-border w-16", className)}>
+        <div className="p-2 space-y-2">
+          <Button variant="ghost" size="sm" className="w-full h-10 p-0">
+            <Hash className="h-5 w-5" />
+          </Button>
+          <Button variant="ghost" size="sm" className="w-full h-10 p-0">
+            <Users className="h-5 w-5" />
+          </Button>
+          <Button variant="ghost" size="sm" className="w-full h-10 p-0">
+            <Plus className="h-5 w-5" />
           </Button>
         </div>
       </div>
@@ -203,198 +122,167 @@ export default function CommunicationSidebar({
   }
 
   return (
-    <Card className={cn("w-80 h-full border-r rounded-none", className)}>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Communication</CardTitle>
-          <div className="flex gap-1">
-            <Button variant="ghost" size="sm">
-              <Plus className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <Settings className="h-4 w-4" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => setIsCollapsed(true)}
-            >
-              <Minus className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Search */}
+    <div className={cn("h-full bg-card flex flex-col", className)}>
+      {/* Search */}
+      <div className="p-4 border-b border-border">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 text-muted-foreground transform -translate-y-1/2" />
           <Input
-            placeholder="Search..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search channels and people..."
             className="pl-10"
+            value={searchQuery}
+            onChange={(e) => onSearchChange?.(e.target.value)}
           />
         </div>
+      </div>
 
-        {/* Tabs */}
-        <div className="flex border rounded-lg p-1">
-          <Button
-            variant={activeTab === 'channels' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setActiveTab('channels')}
-            className="flex-1"
-          >
-            <Hash className="h-4 w-4 mr-2" />
-            Channels
-          </Button>
-          <Button
-            variant={activeTab === 'members' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setActiveTab('members')}
-            className="flex-1"
-          >
-            <Users className="h-4 w-4 mr-2" />
-            Team
-          </Button>
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+        <div className="px-4 pt-4">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="channels" className="text-xs">
+              Channels ({filteredChannels.length})
+            </TabsTrigger>
+            <TabsTrigger value="people" className="text-xs">
+              People ({filteredMembers.length})
+            </TabsTrigger>
+          </TabsList>
         </div>
-      </CardHeader>
 
-      <CardContent className="p-0 flex-1">
-        <ScrollArea className="h-full">
-          {activeTab === 'channels' ? (
-            <div className="space-y-1 p-4">
-              {filteredChannels.map((channel) => (
-                <Button
-                  key={channel.id}
-                  variant={selectedChannel === channel.id ? 'secondary' : 'ghost'}
-                  className="w-full justify-start h-auto p-3"
-                  onClick={() => onChannelSelect(channel.id)}
-                >
-                  <div className="flex items-center gap-3 w-full">
-                    <div className="flex items-center gap-2">
-                      {channel.type === 'private' ? (
-                        <User className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <Hash className="h-4 w-4 text-muted-foreground" />
-                      )}
-                    </div>
-                    
-                    <div className="flex-1 text-left">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-sm">{channel.name}</span>
-                        {channel.unreadCount > 0 && (
-                          <Badge variant="default" className="text-xs h-5 min-w-5 flex items-center justify-center">
-                            {channel.unreadCount}
-                          </Badge>
+        <div className="flex-1 overflow-hidden">
+          {/* Channels Tab */}
+          <TabsContent value="channels" className="h-full m-0">
+            <div className="px-4 py-2">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">CHANNELS</span>
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                  <Plus className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+            
+            <ScrollArea className="flex-1 px-2">
+              <div className="space-y-1">
+                {filteredChannels.map((channel) => (
+                  <Button
+                    key={channel.id}
+                    variant={selectedChannel?.id === channel.id ? "secondary" : "ghost"}
+                    className="w-full justify-start h-auto py-2 px-3"
+                    onClick={() => onChannelSelect(channel)}
+                  >
+                    <div className="flex items-center gap-2 w-full">
+                      {getChannelIcon(channel)}
+                      <div className="flex-1 text-left min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm truncate">
+                            {channel.name}
+                          </span>
+                          {channel.unread_count > 0 && (
+                            <Badge variant="destructive" className="h-5 text-xs">
+                              {channel.unread_count}
+                            </Badge>
+                          )}
+                        </div>
+                        {channel.last_message && (
+                          <p className="text-xs text-muted-foreground truncate mt-0.5">
+                            {channel.last_message.content}
+                          </p>
                         )}
                       </div>
-                      
-                      {channel.lastMessage && (
-                        <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
-                          <span className="truncate max-w-32">
-                            {channel.lastMessage.sender}: {channel.lastMessage.content}
-                          </span>
-                          <span className="ml-2 flex-shrink-0">
-                            {formatMessageTime(channel.lastMessage.timestamp)}
-                          </span>
-                        </div>
-                      )}
                     </div>
-                  </div>
-                </Button>
-              ))}
+                  </Button>
+                ))}
+              </div>
+            </ScrollArea>
+          </TabsContent>
 
-              {filteredChannels.length === 0 && (
-                <div className="text-center py-8">
-                  <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">No channels found</p>
+          {/* People Tab */}
+          <TabsContent value="people" className="h-full m-0">
+            <div className="px-4 py-2">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">TEAM MEMBERS</span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-6 w-6 p-0"
+                  onClick={() => setShowOnlineOnly(!showOnlineOnly)}
+                >
+                  <Filter className={cn("h-3 w-3", showOnlineOnly && "text-primary")} />
+                </Button>
+              </div>
+              {showOnlineOnly && (
+                <div className="text-xs text-muted-foreground mb-2">
+                  Showing online only
                 </div>
               )}
             </div>
-          ) : (
-            <div className="space-y-4 p-4">
-              {/* Online Only Toggle */}
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Show online only</span>
-                <Switch 
-                  checked={showOnlineOnly} 
-                  onCheckedChange={setShowOnlineOnly}
-                />
-              </div>
-
-              <Separator />
-
-              {/* Team Members */}
+            
+            <ScrollArea className="flex-1 px-2">
               <div className="space-y-1">
                 {filteredMembers.map((member) => (
                   <Button
                     key={member.id}
                     variant="ghost"
-                    className="w-full justify-start h-auto p-3"
-                    onClick={() => onMemberSelect(member.id)}
+                    className="w-full justify-start h-auto py-2 px-3 group"
+                    onClick={() => onMemberSelect(member)}
                   >
                     <div className="flex items-center gap-3 w-full">
                       <div className="relative">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={member.avatar} />
-                          <AvatarFallback>
-                            {member.name.split(' ').map(n => n[0]).join('')}
+                          <AvatarImage src={member.avatar_url} />
+                          <AvatarFallback className="text-xs">
+                            {getInitials(member.full_name)}
                           </AvatarFallback>
                         </Avatar>
-                        <div className={cn(
-                          "absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background",
-                          getStatusColor(member.status)
-                        )} />
+                        <Circle 
+                          className={cn(
+                            "absolute -bottom-0.5 -right-0.5 h-3 w-3 fill-current",
+                            getStatusColor(member.activity_status)
+                          )} 
+                        />
+                      </div>
+                      
+                      <div className="flex-1 text-left min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm truncate">
+                            {member.full_name}
+                          </span>
+                          <Badge variant="outline" className="text-xs">
+                            {member.role}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {member.is_online 
+                            ? (member.status_message || 'Online') 
+                            : `Last seen ${formatLastSeen(member.last_seen)}`
+                          }
+                        </p>
                       </div>
 
-                      <div className="flex-1 text-left">
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium text-sm">{member.name}</span>
-                          <div className="flex items-center gap-1">
-                            {member.isInCall && (
-                              <Phone className="h-3 w-3 text-green-500" />
-                            )}
-                            {member.isMuted && (
-                              <VolumeOff className="h-3 w-3 text-muted-foreground" />
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <span>{member.role}</span>
-                          {member.status === 'offline' && member.lastSeen && (
-                            <span>{formatLastSeen(member.lastSeen)}</span>
-                          )}
-                        </div>
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                          <Phone className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                          <Video className="h-3 w-3" />
+                        </Button>
                       </div>
                     </div>
                   </Button>
                 ))}
-
-                {filteredMembers.length === 0 && (
-                  <div className="text-center py-8">
-                    <Users className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground">No team members found</p>
-                  </div>
-                )}
               </div>
-            </div>
-          )}
-        </ScrollArea>
-
-        {/* Quick Actions */}
-        <div className="border-t p-4">
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="flex-1">
-              <Phone className="h-4 w-4 mr-2" />
-              Call
-            </Button>
-            <Button variant="outline" size="sm" className="flex-1">
-              <Video className="h-4 w-4 mr-2" />
-              Video
-            </Button>
-          </div>
+            </ScrollArea>
+          </TabsContent>
         </div>
-      </CardContent>
-    </Card>
+      </Tabs>
+
+      {/* Footer */}
+      <div className="p-4 border-t border-border">
+        <Button variant="outline" size="sm" className="w-full justify-start">
+          <Settings className="h-4 w-4 mr-2" />
+          Communication Settings
+        </Button>
+      </div>
+    </div>
   );
 }

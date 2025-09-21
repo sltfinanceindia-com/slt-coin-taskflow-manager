@@ -24,7 +24,7 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 // Temporarily disabled problematic communication components
 // import { TeamCommunication } from '@/components/TeamCommunication';
 // import { SimpleCommunication } from '@/components/SimpleCommunication';
-import WorkingCommunication from '@/components/WorkingCommunication';
+import ModernCommunication from '@/components/ModernCommunication';
 
 import { Coins, Clock, CheckCircle, Plus } from 'lucide-react';
 
@@ -187,7 +187,7 @@ export default function ModernDashboard() {
         return profile?.role === 'admin' ? <AdvancedTimeTracking userId={profile.id} /> : null;
       
         case 'communication':
-          return <WorkingCommunication />;
+          return <ModernCommunication />;
       
       default:
         return <EnhancedDashboardWidgets />;

@@ -1,0 +1,407 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+
+export interface Channel {
+  id: string;
+  name: string;
+  description?: string | null;
+  type: string;
+  is_direct_message: boolean | null;
+  member_count: number | null;
+  unread_count: number;
+  participant_ids: string[] | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  last_message?: {
+    content: string;
+    sender_name: string;
+    timestamp: string;
+  };
+}
+
+export interface Message {
+  id: string;
+  content: string;
+  sender_id: string;
+  sender_name?: string | null;
+  sender_role?: string | null;
+  channel_id?: string | null;
+  receiver_id?: string | null;
+  message_type: string;
+  attachments: any;
+  reactions: any;
+  mentions: string[] | null;
+  reply_to?: string | null;
+  thread_count: number | null;
+  is_read: boolean | null;
+  is_edited: boolean | null;
+  is_pinned: boolean | null;
+  created_at: string;
+  edited_at?: string | null;
+}
+
+export interface TeamMember {
+  id: string;
+  full_name: string;
+  email: string;
+  role: string;
+  avatar_url?: string;
+  department?: string;
+  is_online: boolean;
+  activity_status: 'online' | 'away' | 'busy' | 'offline';
+  status_message?: string;
+  last_seen?: string;
+}
+
+export function useCommunication() {
+  const { profile } = useAuth();
+  const { toast } = useToast();
+  
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [typingUsers, setTypingUsers] = useState<TeamMember[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Fetch channels
+  const fetchChannels = useCallback(async () => {
+    if (!profile) return;
+
+    try {
+      const { data: channelMembers, error: memberError } = await supabase
+        .from('channel_members')
+        .select(`
+          channel_id,
+          communication_channels (
+            id,
+            name,
+            description,
+            type,
+            is_direct_message,
+            member_count,
+            participant_ids,
+            created_by,
+            created_at,
+            updated_at
+          )
+        `)
+        .eq('user_id', profile.id);
+
+      if (memberError) throw memberError;
+
+      // Get unread counts and last messages
+      const channelIds = channelMembers?.map(cm => cm.channel_id) || [];
+      
+      const { data: lastMessages } = await supabase
+        .from('messages')
+        .select('channel_id, content, sender_name, created_at')
+        .in('channel_id', channelIds)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      const channelsWithMetadata = channelMembers?.map(cm => {
+        const channel = cm.communication_channels;
+        const lastMessage = lastMessages?.find(m => m.channel_id === channel.id);
+        
+        return {
+          ...channel,
+          unread_count: 0, // Will be updated by real-time subscription
+          last_message: lastMessage ? {
+            content: lastMessage.content,
+            sender_name: lastMessage.sender_name || 'Unknown',
+            timestamp: lastMessage.created_at
+          } : undefined
+        } as Channel;
+      }) || [];
+
+      setChannels(channelsWithMetadata);
+    } catch (error) {
+      console.error('Error fetching channels:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load channels",
+        variant: "destructive"
+      });
+    }
+  }, [profile, toast]);
+
+  // Fetch team members
+  const fetchTeamMembers = useCallback(async () => {
+    try {
+      const { data: members, error } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          full_name,
+          email,
+          role,
+          avatar_url,
+          department,
+          user_presence (
+            is_online,
+            activity_status,
+            status_message,
+            last_seen
+          )
+        `);
+
+      if (error) throw error;
+
+      const teamMembersData = members?.map(member => ({
+        ...member,
+        is_online: member.user_presence?.[0]?.is_online || false,
+        activity_status: member.user_presence?.[0]?.activity_status || 'offline',
+        status_message: member.user_presence?.[0]?.status_message,
+        last_seen: member.user_presence?.[0]?.last_seen
+      })) || [];
+
+      setTeamMembers(teamMembersData);
+    } catch (error) {
+      console.error('Error fetching team members:', error);
+    }
+  }, []);
+
+  // Fetch messages for selected channel
+  const fetchMessages = useCallback(async (channelId: string) => {
+    if (!channelId) return;
+
+    setIsLoadingMessages(true);
+    try {
+      const { data: messagesData, error } = await supabase
+        .from('messages')
+        .select(`
+          id,
+          content,
+          sender_id,
+          sender_name,
+          sender_role,
+          channel_id,
+          receiver_id,
+          message_type,
+          attachments,
+          reactions,
+          mentions,
+          reply_to,
+          thread_count,
+          is_read,
+          is_edited,
+          is_pinned,
+          created_at,
+          edited_at
+        `)
+        .eq('channel_id', channelId)
+        .order('created_at', { ascending: true })
+        .limit(100);
+
+      if (error) throw error;
+
+      setMessages((messagesData || []) as Message[]);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load messages",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingMessages(false);
+    }
+  }, [toast]);
+
+  // Send message
+  const sendMessage = useCallback(async (content: string, channelId?: string, receiverId?: string) => {
+    if (!profile || (!channelId && !receiverId) || !content.trim()) return;
+
+    try {
+      const messageData = {
+        content: content.trim(),
+        sender_id: profile.id,
+        sender_name: profile.full_name,
+        sender_role: profile.role,
+        channel_id: channelId,
+        receiver_id: receiverId,
+        message_type: 'text' as const,
+        attachments: [],
+        reactions: [],
+        mentions: [],
+        thread_count: 0,
+        is_read: false,
+        is_edited: false,
+        is_pinned: false
+      };
+
+      const { error } = await supabase
+        .from('messages')
+        .insert([messageData]);
+
+      if (error) throw error;
+
+      // Message will be added via real-time subscription
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send message",
+        variant: "destructive"
+      });
+    }
+  }, [profile, toast]);
+
+  // Create or get direct message channel
+  const createDirectMessage = useCallback(async (memberId: string) => {
+    if (!profile || !memberId) return;
+
+    try {
+      const { data, error } = await supabase.rpc('create_direct_message_channel', {
+        user1_id: profile.id,
+        user2_id: memberId
+      });
+
+      if (error) throw error;
+
+      // Fetch the created/existing channel
+      const { data: channelData, error: channelError } = await supabase
+        .from('communication_channels')
+        .select('*')
+        .eq('id', data)
+        .single();
+
+      if (channelError) throw channelError;
+
+      const newChannel = {
+        ...channelData,
+        unread_count: 0,
+        last_message: undefined
+      };
+
+      setSelectedChannel(newChannel);
+      setChannels(prev => {
+        const exists = prev.some(c => c.id === newChannel.id);
+        if (exists) return prev;
+        return [...prev, newChannel];
+      });
+
+      return newChannel;
+    } catch (error) {
+      console.error('Error creating direct message:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create direct message",
+        variant: "destructive"
+      });
+    }
+  }, [profile, toast]);
+
+  // Handle channel selection
+  const selectChannel = useCallback((channel: Channel) => {
+    setSelectedChannel(channel);
+    fetchMessages(channel.id);
+    
+    // Mark channel as read
+    if (channel.unread_count > 0) {
+      supabase
+        .from('channel_read_status')
+        .upsert({
+          channel_id: channel.id,
+          user_id: profile?.id,
+          last_read_at: new Date().toISOString(),
+          unread_count: 0
+        })
+        .then(() => {
+          setChannels(prev => prev.map(c => 
+            c.id === channel.id ? { ...c, unread_count: 0 } : c
+          ));
+        });
+    }
+  }, [profile, fetchMessages]);
+
+  // Set up real-time subscriptions
+  useEffect(() => {
+    if (!profile) return;
+
+    // Subscribe to new messages
+    const messagesChannel = supabase
+      .channel('messages')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages'
+      }, (payload) => {
+        const newMessage = payload.new as Message;
+        
+        // Update messages if in the current channel
+        if (selectedChannel && newMessage.channel_id === selectedChannel.id) {
+          setMessages(prev => [...prev, newMessage]);
+        }
+        
+        // Update channel last message and unread count
+        setChannels(prev => prev.map(channel => {
+          if (channel.id === newMessage.channel_id) {
+            return {
+              ...channel,
+              last_message: {
+                content: newMessage.content,
+                sender_name: newMessage.sender_name || 'Unknown',
+                timestamp: newMessage.created_at
+              },
+              unread_count: selectedChannel?.id === channel.id ? 0 : channel.unread_count + 1
+            };
+          }
+          return channel;
+        }));
+      })
+      .subscribe();
+
+    // Subscribe to presence changes
+    const presenceChannel = supabase
+      .channel('user_presence')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'user_presence'
+      }, () => {
+        fetchTeamMembers();
+      })
+      .subscribe();
+
+    return () => {
+      messagesChannel.unsubscribe();
+      presenceChannel.unsubscribe();
+    };
+  }, [profile, selectedChannel, fetchTeamMembers]);
+
+  // Initial data fetch
+  useEffect(() => {
+    if (profile) {
+      Promise.all([
+        fetchChannels(),
+        fetchTeamMembers()
+      ]).finally(() => {
+        setIsLoading(false);
+      });
+    }
+  }, [profile, fetchChannels, fetchTeamMembers]);
+
+  return {
+    channels,
+    selectedChannel,
+    messages,
+    teamMembers,
+    typingUsers,
+    isLoading,
+    isLoadingMessages,
+    searchQuery,
+    setSearchQuery,
+    selectChannel,
+    sendMessage,
+    createDirectMessage,
+    fetchChannels,
+    fetchMessages
+  };
+}
