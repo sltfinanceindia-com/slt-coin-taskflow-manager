@@ -351,6 +351,54 @@ export type Database = {
         }
         Relationships: []
       }
+      calendar_events: {
+        Row: {
+          attendees: string[] | null
+          created_at: string
+          description: string | null
+          end_time: string
+          event_type: string
+          id: string
+          is_online: boolean | null
+          location: string | null
+          meeting_url: string | null
+          start_time: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attendees?: string[] | null
+          created_at?: string
+          description?: string | null
+          end_time: string
+          event_type?: string
+          id?: string
+          is_online?: boolean | null
+          location?: string | null
+          meeting_url?: string | null
+          start_time: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attendees?: string[] | null
+          created_at?: string
+          description?: string | null
+          end_time?: string
+          event_type?: string
+          id?: string
+          is_online?: boolean | null
+          location?: string | null
+          meeting_url?: string | null
+          start_time?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       call_history: {
         Row: {
           call_type: string
@@ -1717,6 +1765,80 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      webhook_deliveries: {
+        Row: {
+          delivered_at: string
+          endpoint_id: string
+          event_id: string
+          id: string
+          response_body: string | null
+          retry_count: number
+          status_code: number
+          success: boolean
+        }
+        Insert: {
+          delivered_at?: string
+          endpoint_id: string
+          event_id: string
+          id?: string
+          response_body?: string | null
+          retry_count?: number
+          status_code: number
+          success?: boolean
+        }
+        Update: {
+          delivered_at?: string
+          endpoint_id?: string
+          event_id?: string
+          id?: string
+          response_body?: string | null
+          retry_count?: number
+          status_code?: number
+          success?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_deliveries_endpoint_id_fkey"
+            columns: ["endpoint_id"]
+            isOneToOne: false
+            referencedRelation: "webhook_endpoints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhook_endpoints: {
+        Row: {
+          active: boolean
+          created_at: string
+          events: string[]
+          id: string
+          metadata: Json | null
+          secret: string | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          events?: string[]
+          id?: string
+          metadata?: Json | null
+          secret?: string | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          events?: string[]
+          id?: string
+          metadata?: Json | null
+          secret?: string | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
       }
     }
     Views: {
