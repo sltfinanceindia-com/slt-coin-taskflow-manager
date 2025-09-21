@@ -534,9 +534,12 @@ export type Database = {
           is_direct_message: boolean | null
           is_favorite: boolean | null
           is_muted: boolean | null
+          last_message_at: string | null
           member_count: number | null
           name: string
           participant_ids: string[] | null
+          permissions: Json
+          settings: Json
           type: string
           unread_count: number | null
           updated_at: string
@@ -549,9 +552,12 @@ export type Database = {
           is_direct_message?: boolean | null
           is_favorite?: boolean | null
           is_muted?: boolean | null
+          last_message_at?: string | null
           member_count?: number | null
           name: string
           participant_ids?: string[] | null
+          permissions?: Json
+          settings?: Json
           type?: string
           unread_count?: number | null
           updated_at?: string
@@ -564,9 +570,12 @@ export type Database = {
           is_direct_message?: boolean | null
           is_favorite?: boolean | null
           is_muted?: boolean | null
+          last_message_at?: string | null
           member_count?: number | null
           name?: string
           participant_ids?: string[] | null
+          permissions?: Json
+          settings?: Json
           type?: string
           unread_count?: number | null
           updated_at?: string
@@ -847,6 +856,60 @@ export type Database = {
           },
         ]
       }
+      message_read_receipts: {
+        Row: {
+          created_at: string
+          id: string
+          message_id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message_id: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message_id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      message_threads: {
+        Row: {
+          channel_id: string
+          created_at: string
+          id: string
+          last_message_at: string
+          parent_message_id: string
+          participant_count: number
+          updated_at: string
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          parent_message_id: string
+          participant_count?: number
+          updated_at?: string
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          parent_message_id?: string
+          participant_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           attachments: Json | null
@@ -854,13 +917,16 @@ export type Database = {
           content: string
           created_at: string
           edited_at: string | null
+          forwarded_from: string | null
           id: string
           is_edited: boolean | null
           is_important: boolean | null
           is_pinned: boolean | null
           is_read: boolean | null
           is_starred: boolean | null
+          is_system_message: boolean
           mentions: string[] | null
+          message_status: string
           message_type: string
           reactions: Json | null
           receiver_id: string | null
@@ -869,6 +935,7 @@ export type Database = {
           sender_name: string | null
           sender_role: string | null
           thread_count: number | null
+          thread_id: string | null
           thread_replies: number | null
         }
         Insert: {
@@ -877,13 +944,16 @@ export type Database = {
           content: string
           created_at?: string
           edited_at?: string | null
+          forwarded_from?: string | null
           id?: string
           is_edited?: boolean | null
           is_important?: boolean | null
           is_pinned?: boolean | null
           is_read?: boolean | null
           is_starred?: boolean | null
+          is_system_message?: boolean
           mentions?: string[] | null
+          message_status?: string
           message_type?: string
           reactions?: Json | null
           receiver_id?: string | null
@@ -892,6 +962,7 @@ export type Database = {
           sender_name?: string | null
           sender_role?: string | null
           thread_count?: number | null
+          thread_id?: string | null
           thread_replies?: number | null
         }
         Update: {
@@ -900,13 +971,16 @@ export type Database = {
           content?: string
           created_at?: string
           edited_at?: string | null
+          forwarded_from?: string | null
           id?: string
           is_edited?: boolean | null
           is_important?: boolean | null
           is_pinned?: boolean | null
           is_read?: boolean | null
           is_starred?: boolean | null
+          is_system_message?: boolean
           mentions?: string[] | null
+          message_status?: string
           message_type?: string
           reactions?: Json | null
           receiver_id?: string | null
@@ -915,6 +989,7 @@ export type Database = {
           sender_name?: string | null
           sender_role?: string | null
           thread_count?: number | null
+          thread_id?: string | null
           thread_replies?: number | null
         }
         Relationships: [
@@ -947,6 +1022,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notification_settings: {
+        Row: {
+          channel_notifications: Json
+          created_at: string
+          email_notifications: boolean
+          id: string
+          mention_notifications: boolean
+          push_notifications: boolean
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          channel_notifications?: Json
+          created_at?: string
+          email_notifications?: boolean
+          id?: string
+          mention_notifications?: boolean
+          push_notifications?: boolean
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          channel_notifications?: Json
+          created_at?: string
+          email_notifications?: boolean
+          id?: string
+          mention_notifications?: boolean
+          push_notifications?: boolean
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -1527,6 +1641,33 @@ export type Database = {
           },
         ]
       }
+      typing_indicators: {
+        Row: {
+          channel_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_presence: {
         Row: {
           activity_status: string | null
@@ -1598,6 +1739,10 @@ export type Database = {
       check_and_log_daily_email: {
         Args: { p_email_type: string; p_user_id: string }
         Returns: boolean
+      }
+      cleanup_expired_typing_indicators: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       create_direct_message_channel: {
         Args: { user1_id: string; user2_id: string }
