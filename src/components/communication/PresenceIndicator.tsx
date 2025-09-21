@@ -304,10 +304,7 @@ export function PresenceIndicator({
     getUserPresence, 
     getStatusBadgeColor, 
     getStatusText, 
-    setUserStatus,
-    getUserAnalytics,
-    scheduleStatus,
-    setCustomStatus 
+    setUserStatus
   } = usePresence();
   
   const [isEditing, setIsEditing] = useState(false);

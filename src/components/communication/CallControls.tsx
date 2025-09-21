@@ -391,7 +391,7 @@ export function CallControls({
                   </Badge>
                   {isRecording && (
                     <Badge className="text-xs bg-red-600 text-white animate-pulse">
-                      <Record className="h-3 w-3 mr-1" />
+                      <Circle className="h-3 w-3 mr-1 fill-current" />
                       REC
                     </Badge>
                   )}

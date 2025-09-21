@@ -1275,7 +1275,7 @@ export function MessageInput({
                     <EmojiPicker 
                       onEmojiClick={handleEmojiClick}
                       lazyLoadEmojis={true}
-                      theme="auto"
+                      theme={Theme.AUTO}
                       searchDisabled={false}
                       skinTonesDisabled={false}
                       width={350}
