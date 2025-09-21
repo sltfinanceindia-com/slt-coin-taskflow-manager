@@ -214,7 +214,7 @@ export default function MessageInput({
 
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-        const audioFile = new File([audioBlob], `voice-message-${Date.now()}.wav`);
+        const audioFile = Object.assign(audioBlob, { name: `voice-message-${Date.now()}.wav` }) as File;
         
         const attachment: Attachment = {
           id: Math.random().toString(36).substr(2, 9),
