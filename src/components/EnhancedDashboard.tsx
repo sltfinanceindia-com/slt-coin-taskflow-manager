@@ -28,7 +28,7 @@ import { useTasks } from '@/hooks/useTasks';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
 import { ProductivityDashboard } from '@/components/ProductivityDashboard';
 import { AdvancedTimeTracking } from '@/components/AdvancedTimeTracking';
-import SimpleCommunication from '@/components/SimpleCommunication';
+import { SimpleCommunication } from '@/components/communication';
 import { AnalyticsPage } from '@/components/AnalyticsPage';
 import { format } from 'date-fns';
 
