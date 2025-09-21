@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { Menu, X, Video, Phone, Settings, Users, Search } from 'lucide-react';
+import { Menu, X, Video, Phone, Settings, Users, Search, Wrench } from 'lucide-react';
 import { useCommunication } from '@/hooks/useCommunication';
 import { useWebRTC } from '@/hooks/useWebRTC';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,6 +13,7 @@ import MessageArea from './MessageArea';
 import DetailsPanel from './DetailsPanel';
 import CallInterface from './CallInterface';
 import MeetingRooms from './MeetingRooms';
+import ProductivitySidebar from './ProductivitySidebar';
 import { FullLayoutSkeleton } from './SkeletonLoaders';
 
 export default function CommunicationLayout() {
@@ -21,6 +22,7 @@ export default function CommunicationLayout() {
   const webrtc = useWebRTC();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [detailsPanelOpen, setDetailsPanelOpen] = useState(false);
+  const [productivitySidebarOpen, setProductivitySidebarOpen] = useState(false);
   const [activeView, setActiveView] = useState<'chat' | 'meetings' | 'files'>('chat');
   const [callMinimized, setCallMinimized] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -59,6 +61,31 @@ export default function CommunicationLayout() {
     } else {
       webrtc.startVoiceCall(memberId);
     }
+  };
+
+  const handleInsertTemplate = (content: string) => {
+    // In a real app, this would insert the template into the message composer
+    console.log('Insert template:', content);
+  };
+
+  const handleScheduleMessage = (content: string, scheduledFor: Date, channelId?: string) => {
+    // In a real app, this would schedule the message
+    console.log('Schedule message:', { content, scheduledFor, channelId });
+  };
+
+  const handleSetReminder = (messageId: string, reminderTime: Date) => {
+    // In a real app, this would set a reminder for the message
+    console.log('Set reminder:', { messageId, reminderTime });
+  };
+
+  const handleTranslate = async (text: string, targetLang: string): Promise<string> => {
+    // In a real app, this would call a translation API
+    return `[Translated to ${targetLang}]: ${text}`;
+  };
+
+  const handleAdvancedSearch = (filters: any) => {
+    // In a real app, this would perform advanced search
+    console.log('Advanced search:', filters);
   };
 
   if (communication.isLoading) {
@@ -133,11 +160,24 @@ export default function CommunicationLayout() {
         centerPanelTitle={
           activeView === 'meetings' ? 'Meeting Rooms' : 
           activeView === 'files' ? 'File Sharing' :
-          communication.selectedChannel?.name || 'Team Communication'
+          communication.selectedChannel ? communication.getChannelDisplayName(communication.selectedChannel) : 'Team Communication'
         }
         rightPanelTitle="Details"
         showRightPanel={detailsPanelOpen}
         onRightPanelToggle={() => setDetailsPanelOpen(!detailsPanelOpen)}
+      />
+
+      {/* Productivity Sidebar */}
+      <ProductivitySidebar
+        isOpen={productivitySidebarOpen}
+        onClose={() => setProductivitySidebarOpen(false)}
+        teamMembers={communication.teamMembers}
+        channels={communication.channels}
+        onInsertTemplate={handleInsertTemplate}
+        onScheduleMessage={handleScheduleMessage}
+        onSetReminder={handleSetReminder}
+        onTranslate={handleTranslate}
+        onSearch={handleAdvancedSearch}
       />
 
       {/* Call Interface Overlay */}

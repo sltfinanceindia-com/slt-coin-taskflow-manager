@@ -253,6 +253,22 @@ export function useCommunication() {
     }
   }, [profile, toast]);
 
+  // Get channel display name (for direct messages, show the other person's name)
+  const getChannelDisplayName = useCallback((channel: Channel) => {
+    if (!channel.is_direct_message) {
+      return channel.name;
+    }
+    
+    // For direct messages, find the other participant
+    const otherParticipantId = channel.participant_ids?.find(id => id !== profile?.id);
+    if (otherParticipantId) {
+      const otherUser = teamMembers.find(member => member.id === otherParticipantId);
+      return otherUser?.full_name || 'Direct Message';
+    }
+    
+    return 'Direct Message';
+  }, [profile, teamMembers]);
+
   // Create or get direct message channel
   const createDirectMessage = useCallback(async (memberId: string) => {
     if (!profile || !memberId) return;
@@ -401,6 +417,7 @@ export function useCommunication() {
     selectChannel,
     sendMessage,
     createDirectMessage,
+    getChannelDisplayName,
     fetchChannels,
     fetchMessages
   };
