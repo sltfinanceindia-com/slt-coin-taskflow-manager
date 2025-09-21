@@ -448,34 +448,19 @@ export default function EnhancedSimpleCommunication() {
     isRinging: false,
   });
 
-  // Mock call history
-  const [callHistory] = useState<CallHistoryItem[]>([
-    {
-      id: '1',
-      with: 'John Doe',
-      type: 'video',
-      status: 'completed',
-      duration: 1243,
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      avatar: '',
-    },
-    {
-      id: '2',
-      with: 'Jane Smith',
-      type: 'voice',
-      status: 'missed',
-      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-      avatar: '',
-    },
-  ]);
+  // Mock call history - Replace with real data from database
+  const [callHistory] = useState<CallHistoryItem[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Load initial data
   useEffect(() => {
     if (profile) {
+      console.log('Loading communication data for profile:', profile);
       loadChannels();
       loadTeamMembers();
+      // If no channels exist, create a default one for admins
+      checkAndCreateDefaultChannel();
     }
   }, [profile]);
 
@@ -529,26 +514,67 @@ export default function EnhancedSimpleCommunication() {
 
   const loadChannels = async () => {
     try {
-      const { data, error } = await supabase
-        .from('communication_channels')
+      // First try to get channels where the user is a member
+      const { data: memberChannels, error: memberError } = await supabase
+        .from('channel_members')
         .select(`
-          *,
-          channel_members(
-            user_id,
-            profiles(id, full_name, avatar_url, role)
+          channel_id,
+          communication_channels(
+            id,
+            name,
+            description,
+            type,
+            is_direct_message,
+            participant_ids,
+            member_count,
+            created_at,
+            channel_members(
+              user_id,
+              profiles(id, full_name, avatar_url, role)
+            )
           )
         `)
-        .order('created_at', { ascending: false });
+        .eq('user_id', profile?.id);
 
-      if (error) throw error;
+      if (memberError) {
+        console.error('Error fetching member channels:', memberError);
+        // Fallback to getting all channels
+        const { data: allChannels, error: allError } = await supabase
+          .from('communication_channels')
+          .select(`
+            *,
+            channel_members(
+              user_id,
+              profiles(id, full_name, avatar_url, role)
+            )
+          `)
+          .order('created_at', { ascending: false });
+
+        if (allError) throw allError;
+        
+        const channelsData = (allChannels || []).map(ch => ({
+          ...ch,
+          type: ch.type as 'public' | 'private' | 'direct',
+          unread_count: 0,
+        }));
+        
+        console.log('Loaded channels (fallback):', channelsData.length);
+        setChannels(channelsData);
+        return;
+      }
+
+      // Process member channels
+      const channelsData = (memberChannels || [])
+        .map(mc => mc.communication_channels)
+        .filter(Boolean)
+        .map(ch => ({
+          ...ch,
+          type: ch.type as 'public' | 'private' | 'direct',
+          unread_count: 0,
+        }));
       
-      const channelsWithMeta = (data || []).map(ch => ({
-        ...ch,
-        type: ch.type as 'public' | 'private' | 'direct',
-        unread_count: Math.floor(Math.random() * 3), // Mock unread count
-      }));
-      
-      setChannels(channelsWithMeta);
+      console.log('Loaded channels:', channelsData.length);
+      setChannels(channelsData);
     } catch (error) {
       console.error('Error loading channels:', error);
       toast({
@@ -563,12 +589,28 @@ export default function EnhancedSimpleCommunication() {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
-        .neq('id', profile?.id)
+        .select(`
+          id,
+          full_name,
+          email,
+          role,
+          avatar_url,
+          department,
+          user_id
+        `)
+        .neq('user_id', profile?.user_id)
         .order('full_name');
 
       if (error) throw error;
-      setTeamMembers(data || []);
+      
+      // Map the profiles to team members with presence data
+      const teamMembersData = (data || []).map(member => ({
+        ...member,
+        email: member.email || `${member.full_name.toLowerCase().replace(' ', '.')}@company.com`
+      }));
+      
+      console.log('Loaded team members:', teamMembersData.length);
+      setTeamMembers(teamMembersData);
       setLoading(false);
     } catch (error) {
       console.error('Error loading team members:', error);
@@ -580,18 +622,36 @@ export default function EnhancedSimpleCommunication() {
     try {
       const { data, error } = await supabase
         .from('messages')
-        .select('*')
+        .select(`
+          id,
+          content,
+          sender_id,
+          sender_name,
+          sender_role,
+          channel_id,
+          receiver_id,
+          created_at,
+          message_type,
+          attachments,
+          reactions,
+          is_read,
+          is_pinned,
+          reply_to
+        `)
         .eq('channel_id', channelId)
         .order('created_at', { ascending: true })
         .limit(100);
 
       if (error) throw error;
+      
+      console.log('Loaded messages for channel:', channelId, data?.length || 0);
+      
       setMessages((data || []).map(msg => ({
         id: msg.id,
         content: msg.content,
         sender_id: msg.sender_id,
-        sender_name: msg.sender_name || '',
-        sender_role: msg.sender_role || '',
+        sender_name: msg.sender_name || 'Unknown User',
+        sender_role: msg.sender_role || 'intern',
         channel_id: msg.channel_id || '',
         receiver_id: msg.receiver_id || '',
         created_at: msg.created_at,
@@ -628,10 +688,27 @@ export default function EnhancedSimpleCommunication() {
       const { data, error } = await supabase
         .from('messages')
         .insert([messageData])
-        .select()
+        .select(`
+          id,
+          content,
+          sender_id,
+          sender_name,
+          sender_role,
+          channel_id,
+          receiver_id,
+          created_at,
+          message_type,
+          attachments,
+          reactions,
+          is_read,
+          is_pinned,
+          reply_to
+        `)
         .single();
 
       if (error) throw error;
+
+      console.log('Message sent successfully:', data);
 
       setMessages(prev => [...prev, {
         id: data.id,
@@ -741,6 +818,29 @@ export default function EnhancedSimpleCommunication() {
 
   const toggleVideo = () => {
     setCallState(prev => ({ ...prev, isVideoOn: !prev.isVideoOn }));
+  };
+
+  const checkAndCreateDefaultChannel = async () => {
+    try {
+      // Check if any channels exist
+      const { data: existingChannels, error } = await supabase
+        .from('communication_channels')
+        .select('id')
+        .limit(1);
+
+      if (error) {
+        console.error('Error checking channels:', error);
+        return;
+      }
+
+      // If no channels exist and user is admin, create a general channel
+      if ((!existingChannels || existingChannels.length === 0) && profile?.role === 'admin') {
+        console.log('No channels found, creating default channel...');
+        await createChannel('general', 'General team discussion channel', 'public');
+      }
+    } catch (error) {
+      console.error('Error in checkAndCreateDefaultChannel:', error);
+    }
   };
 
   const createChannel = async (name: string, description: string, type: 'public' | 'private') => {
