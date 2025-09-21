@@ -29,6 +29,9 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { usePresence } from '@/hooks/usePresence';
+import { useCommunicationRealtime } from '@/hooks/useCommunicationRealtime';
+import EmojiPicker from '@/components/EmojiPicker';
+import FileUploadZone from '@/components/FileUploadZone';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { format, formatDistanceToNow, isToday, isYesterday, parseISO, differenceInMinutes } from 'date-fns';
@@ -471,10 +474,176 @@ const UserDetailsDialog: React.FC<{
   );
 };
 
+// Typing Indicator Component
+const TypingIndicator: React.FC<{ typingUsers: { full_name: string; avatar_url?: string }[] }> = ({ typingUsers }) => {
+  if (typingUsers.length === 0) return null;
+
+  return (
+    <div className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground">
+      <div className="flex -space-x-1">
+        {typingUsers.slice(0, 3).map((user, index) => (
+          <Avatar key={index} className="h-4 w-4 border border-background">
+            <AvatarImage src={user.avatar_url} />
+            <AvatarFallback className="text-xs">
+              {user.full_name.substring(0, 1).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        ))}
+      </div>
+      <span>
+        {typingUsers.length === 1 
+          ? `${typingUsers[0].full_name} is typing...`
+          : typingUsers.length === 2
+          ? `${typingUsers[0].full_name} and ${typingUsers[1].full_name} are typing...`
+          : `${typingUsers[0].full_name} and ${typingUsers.length - 1} others are typing...`
+        }
+      </span>
+      <div className="flex space-x-1">
+        <div className="w-1 h-1 bg-current rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+        <div className="w-1 h-1 bg-current rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+        <div className="w-1 h-1 bg-current rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+      </div>
+    </div>
+  );
+};
+
+// Message Reactions Component
+const MessageReactions: React.FC<{ 
+  reactions: any[]; 
+  onReact: (emoji: string) => void;
+  currentUserId?: string;
+}> = ({ reactions, onReact, currentUserId }) => {
+  if (!reactions || reactions.length === 0) return null;
+
+  return (
+    <div className="flex flex-wrap gap-1 mt-1">
+      {reactions.map((reaction, index) => {
+        const hasReacted = currentUserId && reaction.users?.includes(currentUserId);
+        return (
+          <Button
+            key={index}
+            variant={hasReacted ? "default" : "outline"}
+            size="sm"
+            className="h-6 px-2 text-xs"
+            onClick={() => onReact(reaction.emoji)}
+          >
+            {reaction.emoji} {reaction.count}
+          </Button>
+        );
+      })}
+    </div>
+  );
+};
+
+// Enhanced Message Component with reactions and status
+const MessageComponent: React.FC<{
+  message: Message;
+  showAvatar: boolean;
+  isOwn: boolean;
+  onReact: (messageId: string, emoji: string) => void;
+  messageStatus?: any;
+  currentUserId?: string;
+}> = ({ message, showAvatar, isOwn, onReact, messageStatus, currentUserId }) => {
+  const [showFileUpload, setShowFileUpload] = useState(false);
+
+  return (
+    <div className={cn("flex gap-3", isOwn ? "justify-end" : "justify-start")}>
+      {!isOwn && (
+        <div className="flex-shrink-0">
+          {showAvatar ? (
+            <Avatar className="h-8 w-8">
+              <AvatarFallback>
+                {message.sender_name?.substring(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          ) : (
+            <div className="w-8 h-8" />
+          )}
+        </div>
+      )}
+      <div className={cn("max-w-[70%] space-y-1", isOwn && "items-end")}>
+        <div
+          className={cn(
+            "rounded-lg px-4 py-2",
+            isOwn
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted"
+          )}
+        >
+          {!isOwn && showAvatar && (
+            <div className="flex items-center gap-2 mb-1">
+              <p className="text-xs font-semibold">{message.sender_name}</p>
+              {message.sender_role && (
+                <Badge variant="outline" className="text-xs h-4">
+                  {message.sender_role}
+                </Badge>
+              )}
+            </div>
+          )}
+          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+          <div className="flex items-center justify-between mt-1">
+            <p className={cn(
+              "text-xs opacity-70",
+              isOwn ? "text-primary-foreground" : "text-muted-foreground"
+            )}>
+              {format(parseISO(message.created_at), 'HH:mm')}
+            </p>
+            {isOwn && messageStatus && (
+              <div className="text-xs opacity-70">
+                {messageStatus.status === 'sending' && <Loader2 className="h-3 w-3 animate-spin inline" />}
+                {messageStatus.status === 'sent' && <Check className="h-3 w-3 inline" />}
+                {messageStatus.status === 'delivered' && <CheckCircle className="h-3 w-3 inline" />}
+                {messageStatus.status === 'read' && <CheckCircle className="h-3 w-3 inline text-blue-500" />}
+                {messageStatus.status === 'failed' && <XCircle className="h-3 w-3 inline text-destructive" />}
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Message Reactions */}
+        <MessageReactions 
+          reactions={message.reactions || []} 
+          onReact={(emoji) => onReact(message.id, emoji)}
+          currentUserId={currentUserId}
+        />
+        
+        {/* Quick reaction buttons */}
+        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {['👍', '❤️', '😂', '😮', '😢', '😡'].map(emoji => (
+            <Button
+              key={emoji}
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 text-xs hover:bg-accent"
+              onClick={() => onReact(message.id, emoji)}
+            >
+              {emoji}
+            </Button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Main Communication Component
 const EnhancedSimpleCommunication: React.FC = () => {
   const { profile } = useAuth();
   const { presenceList, setUserStatus, getUserPresence, getStatusBadgeColor, getStatusText } = usePresence();
+  const {
+    typingUsers,
+    messageStatuses,
+    callNotifications,
+    connectionStatus,
+    subscribeToChannelMessages,
+    unsubscribeFromChannelMessages,
+    broadcastTypingStart,
+    broadcastTypingStop,
+    broadcastMessageStatus,
+    getTypingUsersForChannel,
+    getMessageStatus,
+    playMessageSound
+  } = useCommunicationRealtime();
   
   const initialState: CommunicationState = {
     messages: [],
@@ -505,6 +674,8 @@ const EnhancedSimpleCommunication: React.FC = () => {
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [isUserDetailsOpen, setIsUserDetailsOpen] = useState(false);
   const [callDurationInterval, setCallDurationInterval] = useState<NodeJS.Timeout | null>(null);
+  const [showFileUpload, setShowFileUpload] = useState(false);
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -541,7 +712,14 @@ const EnhancedSimpleCommunication: React.FC = () => {
   useEffect(() => {
     if (state.selectedChannel) {
       fetchMessages(state.selectedChannel.id);
+      subscribeToChannelMessages(state.selectedChannel.id);
     }
+    
+    return () => {
+      if (state.selectedChannel) {
+        unsubscribeFromChannelMessages(state.selectedChannel.id);
+      }
+    };
   }, [state.selectedChannel]);
 
   // Call duration timer
@@ -720,42 +898,113 @@ const EnhancedSimpleCommunication: React.FC = () => {
   const handleSendMessage = async () => {
     if (!messageInput.trim() || !state.selectedChannel || !profile?.id) return;
 
+    const tempMessageId = Date.now().toString();
+    
+    // Add optimistic message
+    const optimisticMessage: Message = {
+      id: tempMessageId,
+      content: messageInput.trim(),
+      sender_id: profile.id,
+      sender_name: profile.full_name,
+      sender_role: profile.role,
+      channel_id: state.selectedChannel.id,
+      created_at: new Date().toISOString(),
+      message_type: 'text',
+      is_read: false,
+      attachments: [],
+      reactions: []
+    };
+
+    dispatch({ type: 'ADD_MESSAGE', payload: optimisticMessage });
+    broadcastMessageStatus(tempMessageId, 'sending');
+    
+    const inputValue = messageInput;
+    setMessageInput('');
+
+    // Stop typing indicator
+    if (typingTimeout) {
+      clearTimeout(typingTimeout);
+      setTypingTimeout(null);
+    }
+    broadcastTypingStop(state.selectedChannel.id);
+
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('messages')
         .insert([{
-          content: messageInput.trim(),
+          content: inputValue,
           sender_id: profile.id,
           channel_id: state.selectedChannel.id,
           message_type: 'text',
           is_read: false
-        }]);
+        }])
+        .select()
+        .single();
 
       if (error) throw error;
 
-      const newMessage: Message = {
-        id: Date.now().toString(),
-        content: messageInput.trim(),
-        sender_id: profile.id,
-        sender_name: profile.full_name,
-        sender_role: profile.role,
-        channel_id: state.selectedChannel.id,
-        created_at: new Date().toISOString(),
-        message_type: 'text',
-        is_read: false,
-        attachments: [],
-        reactions: []
-      };
+      // Update optimistic message with real data
+      dispatch({ 
+        type: 'UPDATE_MESSAGE', 
+        payload: { 
+          id: tempMessageId, 
+          updates: { 
+            id: data.id,
+            created_at: data.created_at
+          } 
+        } 
+      });
+      
+      broadcastMessageStatus(data.id, 'sent');
 
-      dispatch({ type: 'ADD_MESSAGE', payload: newMessage });
-      setMessageInput('');
     } catch (error) {
       console.error('Error sending message:', error);
+      broadcastMessageStatus(tempMessageId, 'failed');
+      
       toast({
         title: "Error",
         description: "Failed to send message",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleTyping = (value: string) => {
+    setMessageInput(value);
+    
+    if (!state.selectedChannel) return;
+
+    // Start typing indicator
+    broadcastTypingStart(state.selectedChannel.id);
+    
+    // Clear existing timeout
+    if (typingTimeout) {
+      clearTimeout(typingTimeout);
+    }
+    
+    // Set new timeout to stop typing indicator
+    const timeout = setTimeout(() => {
+      broadcastTypingStop(state.selectedChannel!.id);
+    }, 1000);
+    
+    setTypingTimeout(timeout);
+  };
+
+  const handleEmojiSelect = (emoji: string) => {
+    setMessageInput(prev => prev + emoji);
+  };
+
+  const handleFileUpload = (files: any[]) => {
+    console.log('Files uploaded:', files);
+    // TODO: Implement file message sending
+  };
+
+  const handleMessageReaction = async (messageId: string, emoji: string) => {
+    try {
+      // TODO: Implement message reactions in database
+      console.log('React to message:', messageId, emoji);
+    } catch (error) {
+      console.error('Error adding reaction:', error);
     }
   };
 
@@ -912,6 +1161,11 @@ const EnhancedSimpleCommunication: React.FC = () => {
 
   const currentUserStatus = profile?.id ? 
     getUserPresence(profile.id)?.manual_status as TeamMember['status'] || 'available' : 'offline';
+
+  // Get typing users for current channel
+  const currentTypingUsers = state.selectedChannel 
+    ? getTypingUsersForChannel(state.selectedChannel.id) 
+    : [];
 
   if (state.isLoading) {
     return (
@@ -1162,75 +1416,74 @@ const EnhancedSimpleCommunication: React.FC = () => {
 
               {/* Messages */}
               <ScrollArea className="flex-1 p-4">
-                <div className="space-y-4">
-                  {state.messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={cn(
-                        "flex gap-3",
-                        message.sender_id === profile?.id ? "justify-end" : "justify-start"
-                      )}
-                    >
-                      {message.sender_id !== profile?.id && (
-                        <Avatar className="h-8 w-8 flex-shrink-0">
-                          <AvatarFallback>
-                            {message.sender_name?.substring(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                      )}
-                      <div
-                        className={cn(
-                          "max-w-[80%] rounded-lg px-3 py-2",
-                          message.sender_id === profile?.id
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted"
-                        )}
-                      >
-                        {message.sender_id !== profile?.id && (
-                          <p className="text-xs font-medium mb-1">{message.sender_name}</p>
-                        )}
-                        <p className="text-sm">{message.content}</p>
-                        <p className={cn(
-                          "text-xs mt-1",
-                          message.sender_id === profile?.id 
-                            ? "text-primary-foreground/70" 
-                            : "text-muted-foreground"
-                        )}>
-                          {formatMessageTime(message.created_at)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                <div className="space-y-4 group">
+                  {state.messages.map((message, index) => {
+                    const showAvatar = index === 0 || 
+                      state.messages[index - 1].sender_id !== message.sender_id ||
+                      differenceInMinutes(parseISO(message.created_at), parseISO(state.messages[index - 1].created_at)) > 5;
+
+                    return (
+                      <MessageComponent
+                        key={message.id}
+                        message={message}
+                        showAvatar={showAvatar}
+                        isOwn={message.sender_id === profile?.id}
+                        onReact={handleMessageReaction}
+                        messageStatus={getMessageStatus(message.id)}
+                        currentUserId={profile?.id}
+                      />
+                    );
+                  })}
+                  <TypingIndicator typingUsers={currentTypingUsers} />
                   <div ref={messagesEndRef} />
                 </div>
               </ScrollArea>
 
               {/* Message Input */}
-              <div className="p-4 border-t bg-card">
-                <div className="flex gap-2">
-                  <Textarea
-                    placeholder="Type a message..."
-                    value={messageInput}
-                    onChange={(e) => setMessageInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendMessage();
-                      }
-                    }}
-                    className="resize-none min-h-[40px] max-h-[120px]"
-                    rows={1}
-                  />
-                  <Button 
-                    onClick={handleSendMessage}
-                    disabled={!messageInput.trim()}
-                    size="icon"
-                    className="flex-shrink-0"
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
+              <div className="border-t bg-card">
+                {showFileUpload && (
+                  <div className="p-4 border-b">
+                    <FileUploadZone onFilesUploaded={handleFileUpload} />
+                  </div>
+                )}
+                <div className="p-4">
+                  <div className="flex gap-2">
+                    <Textarea
+                      placeholder="Type a message..."
+                      value={messageInput}
+                      onChange={(e) => handleTyping(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendMessage();
+                        }
+                      }}
+                      className="resize-none min-h-[40px] max-h-[120px]"
+                      rows={1}
+                    />
+                    <div className="flex flex-col gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => setShowFileUpload(!showFileUpload)}
+                      >
+                        <Paperclip className="h-4 w-4" />
+                      </Button>
+                      <EmojiPicker onEmojiSelect={handleEmojiSelect} className="h-8 w-8" />
+                    </div>
+                    <Button 
+                      onClick={handleSendMessage}
+                      disabled={!messageInput.trim()}
+                      size="icon"
+                      className="flex-shrink-0"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
+            </div>
             </div>
           ) : (
             <div className="flex-1 flex items-center justify-center">
@@ -1566,99 +1819,70 @@ const EnhancedSimpleCommunication: React.FC = () => {
 
               {/* Messages Area */}
               <ScrollArea className="flex-1 p-4">
-                <div className="space-y-4">
+                <div className="space-y-4 group">
                   {state.messages.map((message, index) => {
                     const showAvatar = index === 0 || 
                       state.messages[index - 1].sender_id !== message.sender_id ||
                       differenceInMinutes(parseISO(message.created_at), parseISO(state.messages[index - 1].created_at)) > 5;
 
                     return (
-                      <div
+                      <MessageComponent
                         key={message.id}
-                        className={cn(
-                          "flex gap-3",
-                          message.sender_id === profile?.id ? "justify-end" : "justify-start"
-                        )}
-                      >
-                        {message.sender_id !== profile?.id && (
-                          <div className="flex-shrink-0">
-                            {showAvatar ? (
-                              <Avatar className="h-8 w-8">
-                                <AvatarFallback>
-                                  {message.sender_name?.substring(0, 2).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                            ) : (
-                              <div className="w-8 h-8" />
-                            )}
-                          </div>
-                        )}
-                        <div
-                          className={cn(
-                            "max-w-[70%] rounded-lg px-4 py-2",
-                            message.sender_id === profile?.id
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted"
-                          )}
-                        >
-                          {message.sender_id !== profile?.id && showAvatar && (
-                            <div className="flex items-center gap-2 mb-1">
-                              <p className="text-xs font-semibold">{message.sender_name}</p>
-                              {message.sender_role && (
-                                <Badge variant="outline" className="text-xs h-4">
-                                  {message.sender_role}
-                                </Badge>
-                              )}
-                            </div>
-                          )}
-                          <p className="text-sm">{message.content}</p>
-                          <p className={cn(
-                            "text-xs mt-1 opacity-70",
-                            message.sender_id === profile?.id 
-                              ? "text-primary-foreground" 
-                              : "text-muted-foreground"
-                          )}>
-                            {formatMessageTime(message.created_at)}
-                          </p>
-                        </div>
-                      </div>
+                        message={message}
+                        showAvatar={showAvatar}
+                        isOwn={message.sender_id === profile?.id}
+                        onReact={handleMessageReaction}
+                        messageStatus={getMessageStatus(message.id)}
+                        currentUserId={profile?.id}
+                      />
                     );
                   })}
+                  <TypingIndicator typingUsers={currentTypingUsers} />
                   <div ref={messagesEndRef} />
                 </div>
               </ScrollArea>
 
               {/* Message Input */}
-              <div className="p-4 border-t bg-card">
-                <div className="flex gap-3 items-end">
-                  <Button variant="ghost" size="icon" className="flex-shrink-0">
-                    <Paperclip className="h-4 w-4" />
-                  </Button>
-                  <div className="flex-1">
-                    <Textarea
-                      placeholder={`Message ${state.selectedChannel.name}...`}
-                      value={messageInput}
-                      onChange={(e) => setMessageInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSendMessage();
-                        }
-                      }}
-                      className="resize-none min-h-[44px] max-h-[120px]"
-                      rows={1}
-                    />
+              <div className="border-t bg-card">
+                {showFileUpload && (
+                  <div className="p-4 border-b">
+                    <FileUploadZone onFilesUploaded={handleFileUpload} />
                   </div>
-                  <Button variant="ghost" size="icon" className="flex-shrink-0">
-                    <Smile className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    onClick={handleSendMessage}
-                    disabled={!messageInput.trim()}
-                    className="flex-shrink-0"
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
+                )}
+                <div className="p-4">
+                  <div className="flex gap-3 items-end">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="flex-shrink-0"
+                      onClick={() => setShowFileUpload(!showFileUpload)}
+                    >
+                      <Paperclip className="h-4 w-4" />
+                    </Button>
+                    <div className="flex-1">
+                      <Textarea
+                        placeholder={`Message ${state.selectedChannel.name}...`}
+                        value={messageInput}
+                        onChange={(e) => handleTyping(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSendMessage();
+                          }
+                        }}
+                        className="resize-none min-h-[44px] max-h-[120px]"
+                        rows={1}
+                      />
+                    </div>
+                    <EmojiPicker onEmojiSelect={handleEmojiSelect} className="flex-shrink-0" />
+                    <Button 
+                      onClick={handleSendMessage}
+                      disabled={!messageInput.trim()}
+                      className="flex-shrink-0"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </>
