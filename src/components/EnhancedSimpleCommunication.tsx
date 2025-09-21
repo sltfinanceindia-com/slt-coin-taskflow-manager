@@ -650,6 +650,7 @@ const EnhancedSimpleCommunication: React.FC = () => {
     broadcastTypingStart,
     broadcastTypingStop,
     broadcastMessageStatus,
+    broadcastCallNotification,
     getTypingUsersForChannel,
     getMessageStatus,
     playMessageSound
@@ -1022,18 +1023,17 @@ const EnhancedSimpleCommunication: React.FC = () => {
     if (!profile?.id) return;
 
     try {
-      // Insert call record
-      const { error } = await supabase
+      // Create call history record
+      const { data: callRecord, error } = await supabase
         .from('call_history')
         .insert([{
           caller_id: profile.id,
           receiver_id: member.id,
           call_type: callType,
-          status: 'completed', // For demo purposes
-          started_at: new Date().toISOString(),
-          ended_at: new Date(Date.now() + 60000).toISOString(), // Demo: 1 minute call
-          duration_seconds: 60
-        }]);
+          status: 'started'
+        }])
+        .select()
+        .single();
 
       if (error) throw error;
 
@@ -1051,12 +1051,71 @@ const EnhancedSimpleCommunication: React.FC = () => {
         }
       });
 
+      // Send call notification to receiver
+      if (broadcastCallNotification && callRecord) {
+        broadcastCallNotification({
+          caller_id: profile.id,
+          receiver_id: member.id,
+          call_type: callType,
+          caller_name: profile.full_name || '',
+          status: 'ringing'
+        });
+      }
+
       toast({
         title: "Call Started",
         description: `Starting ${callType} call with ${member.full_name}`,
       });
+
+      console.log('Call initiated:', {
+        caller: profile.full_name,
+        receiver: member.full_name,
+        type: callType,
+        callId: callRecord?.id
+      });
     } catch (error) {
       console.error('Error starting call:', error);
+      toast({
+        title: "Error",
+        description: "Failed to start call",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Handle calls from chat interface
+  const handleChatCall = async (type: 'voice' | 'video') => {
+    if (!state.selectedChannel || !profile?.id) return;
+
+    try {
+      // Find the other participant in the channel
+      let receiverId: string | undefined;
+      let receiverName: string | undefined;
+
+      if (state.selectedChannel.is_direct_message) {
+        // For direct messages, find the other participant
+        const otherParticipantId = state.selectedChannel.participant_ids.find(id => id !== profile.id);
+        const receiver = state.teamMembers.find(m => m.id === otherParticipantId);
+        if (receiver) {
+          receiverId = receiver.id;
+          receiverName = receiver.full_name;
+          await handleStartCall(receiver, type);
+        } else {
+          toast({
+            title: "Error",
+            description: "Unable to find recipient for call",
+            variant: "destructive",
+          });
+        }
+      } else {
+        // For group channels, show a participant selector
+        toast({
+          title: "Select Participant",
+          description: "Please select who to call in group channels",
+        });
+      }
+    } catch (error) {
+      console.error('Error starting chat call:', error);
       toast({
         title: "Error",
         description: "Failed to start call",
@@ -1510,7 +1569,7 @@ const EnhancedSimpleCommunication: React.FC = () => {
   // Desktop layout
   return (
     <TooltipProvider>
-      <div className="flex h-screen bg-background">
+      <div className="fixed inset-0 flex bg-background">
         {/* Call Interface Overlay */}
         <CallInterface
           callState={state.callState}
@@ -1530,9 +1589,9 @@ const EnhancedSimpleCommunication: React.FC = () => {
         />
 
         {/* Sidebar */}
-        <div className="w-80 border-r bg-card flex flex-col">
+        <div className="w-80 border-r bg-card flex flex-col shrink-0">
           {/* User Profile Section */}
-          <div className="p-4 border-b">
+          <div className="p-4 border-b shrink-0">
             <div className="flex items-center gap-3">
               <div className="relative">
                 <Avatar className="h-10 w-10">
@@ -1592,19 +1651,28 @@ const EnhancedSimpleCommunication: React.FC = () => {
                       )}
                       onClick={() => dispatch({ type: 'SET_SELECTED_CHANNEL', payload: channel })}
                     >
-                      <div className="flex-shrink-0">
-                        {channel.is_direct_message ? (
+                    <div className="flex-shrink-0">
+                      {channel.is_direct_message ? (
+                        <div className="relative">
                           <Avatar className="h-10 w-10">
+                            <AvatarImage src={(channel as any).partner_avatar} />
                             <AvatarFallback>
                               {channel.name.substring(0, 2).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
-                        ) : (
-                          <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
-                            <Hash className="h-5 w-5" />
-                          </div>
-                        )}
-                      </div>
+                          <div className={cn(
+                            "absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-background",
+                            getStatusBadgeColor(presenceList.find(p => 
+                              state.teamMembers.find(m => m.full_name === channel.name)?.id === p.user_id
+                            ))
+                          )} />
+                        </div>
+                      ) : (
+                        <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
+                          <Hash className="h-5 w-5" />
+                        </div>
+                      )}
+                    </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                           <p className="font-medium truncate">{channel.name}</p>
@@ -1852,7 +1920,7 @@ const EnhancedSimpleCommunication: React.FC = () => {
               </ScrollArea>
 
               {/* Message Input */}
-              <div className="border-t bg-card">
+              <div className="border-t bg-card shrink-0">
                 {showFileUpload && (
                   <div className="p-4 border-b">
                     <FileUploadZone onFilesUploaded={handleFileUpload} />
@@ -1900,7 +1968,7 @@ const EnhancedSimpleCommunication: React.FC = () => {
               <div className="text-center space-y-4">
                 <MessageSquare className="h-16 w-16 mx-auto text-muted-foreground" />
                 <div>
-                  <h3 className="text-lg font-semibold">Welcome to Communications</h3>
+                  <h3 className="text-lg font-semibold">Team Communication</h3>
                   <p className="text-muted-foreground">Select a channel or start a conversation to begin</p>
                 </div>
               </div>
