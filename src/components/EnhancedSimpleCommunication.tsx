@@ -140,6 +140,7 @@ type CommunicationState = {
 type CommunicationAction = 
   | { type: 'SET_MESSAGES'; payload: Message[] }
   | { type: 'ADD_MESSAGE'; payload: Message }
+  | { type: 'UPDATE_MESSAGE'; payload: { id: string; updates: Partial<Message> } }
   | { type: 'SET_CHANNELS'; payload: Channel[] }
   | { type: 'SET_SELECTED_CHANNEL'; payload: Channel | null }
   | { type: 'SET_TEAM_MEMBERS'; payload: TeamMember[] }
@@ -156,6 +157,15 @@ const communicationReducer = (state: CommunicationState, action: CommunicationAc
       return { ...state, messages: action.payload };
     case 'ADD_MESSAGE':
       return { ...state, messages: [...state.messages, action.payload] };
+    case 'UPDATE_MESSAGE':
+      return {
+        ...state,
+        messages: state.messages.map(m => 
+          m.id === action.payload.id 
+            ? { ...m, ...action.payload.updates }
+            : m
+        )
+      };
     case 'SET_CHANNELS':
       return { ...state, channels: action.payload };
     case 'SET_SELECTED_CHANNEL':
@@ -1483,7 +1493,6 @@ const EnhancedSimpleCommunication: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </div>
             </div>
           ) : (
             <div className="flex-1 flex items-center justify-center">
