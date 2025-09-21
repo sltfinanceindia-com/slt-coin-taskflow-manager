@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Send, 
   Phone, 
@@ -17,12 +18,18 @@ import {
   Settings,
   Menu,
   MessageSquare,
-  Hash
+  Hash,
+  PhoneCall,
+  History,
+  Bell,
+  BellOff
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { CallManager } from './CallManager';
+import { notificationSounds, initNotificationSounds } from '@/utils/notificationSounds';
 
 interface Message {
   id: string;
@@ -80,7 +87,15 @@ export default function SimpleCommunication() {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [activeTab, setActiveTab] = useState('chat');
+  const [soundsEnabled, setSoundsEnabled] = useState(true);
+  const [isInCall, setIsInCall] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Initialize notification sounds
+  useEffect(() => {
+    initNotificationSounds();
+  }, []);
 
   // Load initial data
   useEffect(() => {
@@ -212,6 +227,11 @@ export default function SimpleCommunication() {
         attachments: []
       }]);
       setNewMessage('');
+      
+      // Play message sound
+      if (soundsEnabled) {
+        notificationSounds.playMessageSound();
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
@@ -272,6 +292,51 @@ export default function SimpleCommunication() {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  const startCall = (type: 'audio' | 'video') => {
+    if (!selectedChannel) return;
+    
+    let participant;
+    if (selectedChannel.is_direct_message && selectedChannel.channel_members) {
+      const otherMember = selectedChannel.channel_members.find(
+        member => member.user_id !== profile?.id
+      );
+      participant = {
+        id: otherMember?.user_id || '',
+        name: otherMember?.profiles?.full_name || 'Unknown',
+        avatar: otherMember?.profiles?.avatar_url
+      };
+    } else {
+      participant = {
+        id: selectedChannel.id,
+        name: selectedChannel.name,
+        avatar: undefined
+      };
+    }
+
+    setActiveTab('calls');
+    setIsInCall(true);
+    
+    if (soundsEnabled) {
+      notificationSounds.playCallSound();
+    }
+  };
+
+  const endCall = () => {
+    setIsInCall(false);
+    if (soundsEnabled) {
+      notificationSounds.playCallEndSound();
+    }
+  };
+
+  const toggleSounds = () => {
+    setSoundsEnabled(!soundsEnabled);
+    notificationSounds.setEnabled(!soundsEnabled);
+    toast({
+      title: soundsEnabled ? "Sounds Disabled" : "Sounds Enabled",
+      description: soundsEnabled ? "Notification sounds turned off" : "Notification sounds turned on",
+    });
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -284,13 +349,23 @@ export default function SimpleCommunication() {
   }
 
   return (
-    <div className="flex h-[600px] bg-background border rounded-lg overflow-hidden">
+    <div className="flex h-[calc(100vh-2rem)] bg-background border rounded-lg overflow-hidden">
       {/* Desktop Sidebar */}
       <div className="hidden md:flex w-80 border-r bg-card">
         <div className="flex flex-col w-full">
           {/* Sidebar Header */}
           <div className="p-4 border-b">
-            <h2 className="text-lg font-semibold">Communication</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Communication</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleSounds}
+                className="h-8 w-8 p-0"
+              >
+                {soundsEnabled ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
+              </Button>
+            </div>
           </div>
 
           {/* Channels Section */}
@@ -441,12 +516,11 @@ export default function SimpleCommunication() {
         </SheetContent>
       </Sheet>
 
-      {/* Main Chat Area */}
+      {/* Main Communication Area */}
       <div className="flex-1 flex flex-col">
-        {selectedChannel ? (
-          <>
-            {/* Chat Header */}
-            <header className="p-4 border-b bg-card flex items-center justify-between">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+          <div className="p-4 border-b bg-card">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Button
                   variant="ghost"
@@ -457,140 +531,156 @@ export default function SimpleCommunication() {
                 >
                   <Menu className="h-4 w-4" />
                 </Button>
-                <div>
-                  <h1 className="font-semibold text-lg">{getChannelDisplayName(selectedChannel)}</h1>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedChannel.is_direct_message ? 'Direct Message' : 'Team Channel'}
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="chat" className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4" />
+                    Chat
+                  </TabsTrigger>
+                  <TabsTrigger value="calls" className="flex items-center gap-2">
+                    <PhoneCall className="h-4 w-4" />
+                    Calls
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+              {selectedChannel && activeTab === 'chat' && (
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => startCall('audio')}
+                    aria-label="Start voice call"
+                  >
+                    <Phone className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => startCall('video')}
+                    aria-label="Start video call"
+                  >
+                    <Video className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+            {selectedChannel && activeTab === 'chat' && (
+              <div className="mt-2">
+                <h1 className="font-semibold text-lg">{getChannelDisplayName(selectedChannel)}</h1>
+                <p className="text-sm text-muted-foreground">
+                  {selectedChannel.is_direct_message ? 'Direct Message' : 'Team Channel'}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <TabsContent value="chat" className="flex-1 flex flex-col mt-0">
+            {selectedChannel ? (
+              <>
+                {/* Messages */}
+                <main className="flex-1">
+                  <ScrollArea className="h-full p-4">
+                    <div className="space-y-4" role="log" aria-label="Chat messages">
+                      {messages.length === 0 ? (
+                        <div className="text-center py-8">
+                          <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                          <h2 className="text-lg font-semibold mb-2">No messages yet</h2>
+                          <p className="text-muted-foreground">Start the conversation by sending a message!</p>
+                        </div>
+                      ) : (
+                        messages.map((message) => (
+                          <article
+                            key={message.id}
+                            className={cn(
+                              "flex gap-3",
+                              message.sender_id === profile?.id ? "justify-end" : "justify-start"
+                            )}
+                          >
+                            {message.sender_id !== profile?.id && (
+                              <Avatar className="h-8 w-8" aria-hidden="true">
+                                <AvatarFallback>
+                                  {message.sender_name?.substring(0, 2).toUpperCase() || 'U'}
+                                </AvatarFallback>
+                              </Avatar>
+                            )}
+                            <div
+                              className={cn(
+                                "max-w-[70%] rounded-lg px-3 py-2 transition-colors",
+                                message.sender_id === profile?.id
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-muted"
+                              )}
+                            >
+                              {message.sender_id !== profile?.id && (
+                                <div className="text-xs text-muted-foreground mb-1 font-medium">
+                                  {message.sender_name}
+                                </div>
+                              )}
+                              <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+                              <time className="text-xs mt-1 opacity-70 block" dateTime={message.created_at}>
+                                {formatMessageTime(message.created_at)}
+                              </time>
+                            </div>
+                          </article>
+                        ))
+                      )}
+                      <div ref={messagesEndRef} aria-hidden="true" />
+                    </div>
+                  </ScrollArea>
+                </main>
+
+                {/* Message Input */}
+                <footer className="p-4 border-t bg-card">
+                  <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="flex gap-2">
+                    <Input
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      placeholder="Type a message..."
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          sendMessage();
+                        }
+                      }}
+                      className="flex-1"
+                      aria-label="Message input"
+                      maxLength={1000}
+                    />
+                    <Button 
+                      type="submit" 
+                      disabled={!newMessage.trim() || newMessage.length > 1000}
+                      aria-label="Send message"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </form>
+                </footer>
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="md:hidden mb-4"
+                    onClick={() => setShowSidebar(true)}
+                  >
+                    <Menu className="h-4 w-4 mr-2" />
+                    Open Channels
+                  </Button>
+                  <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Select a Channel</h3>
+                  <p className="text-muted-foreground">
+                    Choose a channel or start a direct message to begin chatting
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => toast({ title: "Voice Call", description: "Voice call feature coming soon!" })}
-                  aria-label="Start voice call"
-                >
-                  <Phone className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => toast({ title: "Video Call", description: "Video call feature coming soon!" })}
-                  aria-label="Start video call"
-                >
-                  <Video className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => toast({ title: "Settings", description: "Channel settings coming soon!" })}
-                  aria-label="Channel settings"
-                >
-                  <Settings className="h-4 w-4" />
-                </Button>
-              </div>
-            </header>
+            )}
+          </TabsContent>
 
-            {/* Messages */}
-            <main className="flex-1">
-              <ScrollArea className="h-full p-4">
-                <div className="space-y-4" role="log" aria-label="Chat messages">
-                  {messages.length === 0 ? (
-                    <div className="text-center py-8">
-                      <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h2 className="text-lg font-semibold mb-2">No messages yet</h2>
-                      <p className="text-muted-foreground">Start the conversation by sending a message!</p>
-                    </div>
-                  ) : (
-                    messages.map((message) => (
-                      <article
-                        key={message.id}
-                        className={cn(
-                          "flex gap-3",
-                          message.sender_id === profile?.id ? "justify-end" : "justify-start"
-                        )}
-                      >
-                        {message.sender_id !== profile?.id && (
-                          <Avatar className="h-8 w-8" aria-hidden="true">
-                            <AvatarFallback>
-                              {message.sender_name?.substring(0, 2).toUpperCase() || 'U'}
-                            </AvatarFallback>
-                          </Avatar>
-                        )}
-                        <div
-                          className={cn(
-                            "max-w-[70%] rounded-lg px-3 py-2 transition-colors",
-                            message.sender_id === profile?.id
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted"
-                          )}
-                        >
-                          {message.sender_id !== profile?.id && (
-                            <div className="text-xs text-muted-foreground mb-1 font-medium">
-                              {message.sender_name}
-                            </div>
-                          )}
-                          <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
-                          <time className="text-xs mt-1 opacity-70 block" dateTime={message.created_at}>
-                            {formatMessageTime(message.created_at)}
-                          </time>
-                        </div>
-                      </article>
-                    ))
-                  )}
-                  <div ref={messagesEndRef} aria-hidden="true" />
-                </div>
-              </ScrollArea>
-            </main>
-
-            {/* Message Input */}
-            <footer className="p-4 border-t bg-card">
-              <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="flex gap-2">
-                <Input
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Type a message..."
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      sendMessage();
-                    }
-                  }}
-                  className="flex-1"
-                  aria-label="Message input"
-                  maxLength={1000}
-                />
-                <Button 
-                  type="submit" 
-                  disabled={!newMessage.trim() || newMessage.length > 1000}
-                  aria-label="Send message"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </form>
-            </footer>
-          </>
-        ) : (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="md:hidden mb-4"
-                onClick={() => setShowSidebar(true)}
-              >
-                <Menu className="h-4 w-4 mr-2" />
-                Open Channels
-              </Button>
-              <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Select a Channel</h3>
-              <p className="text-muted-foreground">
-                Choose a channel or start a direct message to begin chatting
-              </p>
-            </div>
-          </div>
-        )}
+          <TabsContent value="calls" className="flex-1 mt-0 p-4">
+            <CallManager onCallStart={() => setIsInCall(true)} onCallEnd={endCall} />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
