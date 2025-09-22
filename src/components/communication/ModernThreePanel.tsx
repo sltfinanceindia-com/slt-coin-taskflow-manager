@@ -85,65 +85,29 @@ export default function ModernThreePanel({
       isFullscreen && "fixed inset-0 z-50",
       className
     )}>
-      {/* Global Header */}
-      <div className="h-14 bg-card/95 backdrop-blur-sm border-b border-border/50 flex items-center justify-between px-4 z-50 shadow-sm">
-        <div className="flex items-center gap-3">
+      {/* Mobile Menu Button - Only for Mobile */}
+      {isMobile && (
+        <div className="h-12 bg-card/95 backdrop-blur-sm border-b border-border/50 flex items-center justify-between px-4 z-50 shadow-sm">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setLeftCollapsed(!leftCollapsed)}
             className="hover-scale"
           >
-            {leftCollapsed ? <Menu className="h-4 w-4" /> : <X className="h-4 w-4" />}
+            <Menu className="h-4 w-4" />
           </Button>
-          
           <div className="flex items-center gap-2">
-            <h1 className="text-lg font-semibold bg-gradient-primary bg-clip-text text-transparent">
-              Team Communication
-            </h1>
-            <Badge className="bg-primary/10 text-primary hover:bg-primary/20">
-              Beta
-            </Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleTheme}
+              className="hover-scale"
+            >
+              {getThemeIcon()}
+            </Button>
           </div>
         </div>
-
-        <div className="flex items-center gap-2">
-          {/* Density Toggle */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setDensity(density === 'compact' ? 'comfortable' : 'compact')}
-            className="hidden md:flex"
-          >
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-
-          {/* Theme Toggle */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleTheme}
-            className="hover-scale"
-          >
-            {getThemeIcon()}
-          </Button>
-
-          {/* Fullscreen Toggle */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsFullscreen(!isFullscreen)}
-            className="hidden lg:flex hover-scale"
-          >
-            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-          </Button>
-
-          {/* Settings */}
-          <Button variant="ghost" size="sm" className="hover-scale">
-            <Settings className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      )}
 
       {/* Main Layout */}
       <div className="flex-1 overflow-hidden">
@@ -176,9 +140,6 @@ export default function ModernThreePanel({
             {/* Mobile Center Panel */}
             <div className="h-full">
               <div className="h-full overflow-hidden">
-                <div className="p-4 border-b border-border bg-card/95 backdrop-blur-sm">
-                  <h2 className="font-semibold">{centerPanelTitle}</h2>
-                </div>
                 <div className="flex-1 overflow-hidden">
                   {centerPanel}
                 </div>
@@ -261,27 +222,6 @@ export default function ModernThreePanel({
             {/* Center Panel */}
             <ResizablePanel defaultSize={showRightPanel ? 50 : 75} minSize={30}>
               <div className="h-full bg-background/50 backdrop-blur-sm overflow-hidden">
-                <div className="p-4 border-b border-border/50 bg-card/95 backdrop-blur-sm flex items-center justify-between">
-                  <h2 className="font-semibold">{centerPanelTitle}</h2>
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" className="hover-scale">
-                      <Search className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="hover-scale">
-                      <Filter className="h-4 w-4" />
-                    </Button>
-                    {rightPanel && (
-                      <Button
-                        variant={showRightPanel ? "default" : "ghost"}
-                        size="sm"
-                        onClick={onRightPanelToggle}
-                        className="hover-scale"
-                      >
-                        Details
-                      </Button>
-                    )}
-                  </div>
-                </div>
                 <div className="flex-1 overflow-hidden">
                   {centerPanel}
                 </div>

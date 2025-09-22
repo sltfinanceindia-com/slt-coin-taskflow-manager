@@ -22,7 +22,9 @@ import {
   Edit,
   Trash,
   MessageSquare,
-  Clock
+  Clock,
+  Phone,
+  Video
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, isToday, isYesterday, formatDistanceToNow } from 'date-fns';
@@ -242,19 +244,27 @@ export default function MessageArea({
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-background">
+    <div className="flex-1 flex flex-col bg-background h-full">
       {/* Channel Header */}
-      <div className="p-4 border-b border-border bg-card">
+      <div className="p-3 border-b border-border bg-card/95 backdrop-blur-sm flex-shrink-0">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="font-semibold text-lg">{channel.name}</h2>
+            <h2 className="font-semibold text-base">{channel.name}</h2>
             {channel.description && (
-              <p className="text-sm text-muted-foreground">{channel.description}</p>
+              <p className="text-xs text-muted-foreground">{channel.description}</p>
             )}
           </div>
-          {channel.is_direct_message && (
-            <Badge variant="outline">Direct Message</Badge>
-          )}
+          <div className="flex items-center gap-2">
+            {channel.is_direct_message && (
+              <Badge variant="outline" className="text-xs">DM</Badge>
+            )}
+            <Button variant="ghost" size="sm">
+              <Phone className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <Video className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -299,7 +309,7 @@ export default function MessageArea({
       </div>
 
       {/* Enhanced Message Input */}
-      <div className="p-4 border-t border-border bg-card">
+      <div className="p-3 border-t border-border bg-card/95 backdrop-blur-sm flex-shrink-0">
         <EnhancedMessageComposer
           onSendMessage={async (content) => {
             onSendMessage(content);

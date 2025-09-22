@@ -29,6 +29,7 @@ interface CommunicationSidebarProps {
   selectedChannel: Channel | null;
   onChannelSelect: (channel: Channel) => void;
   onMemberSelect: (member: TeamMember) => void;
+  onStartCall?: (memberId: string, callType: 'voice' | 'video') => void;
   collapsed?: boolean;
   searchQuery?: string;
   onSearchChange?: (query: string) => void;

@@ -253,7 +253,7 @@ export function useCommunication() {
     }
   }, [profile, toast]);
 
-  // Get channel display name (for direct messages, show the other person's name)
+  // Get channel display name (for direct messages, show the other person's name with status)
   const getChannelDisplayName = useCallback((channel: Channel) => {
     if (!channel.is_direct_message) {
       return channel.name;
@@ -263,7 +263,13 @@ export function useCommunication() {
     const otherParticipantId = channel.participant_ids?.find(id => id !== profile?.id);
     if (otherParticipantId) {
       const otherUser = teamMembers.find(member => member.id === otherParticipantId);
-      return otherUser?.full_name || 'Direct Message';
+      if (otherUser) {
+        const status = otherUser.is_online ? '🟢 ' : 
+                      otherUser.activity_status === 'away' ? '🟡 ' :
+                      otherUser.activity_status === 'busy' ? '🔴 ' : '⚫ ';
+        return `${status}${otherUser.full_name}`;
+      }
+      return 'Direct Message';
     }
     
     return 'Direct Message';

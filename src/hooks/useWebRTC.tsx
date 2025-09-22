@@ -107,6 +107,9 @@ export function useWebRTC() {
   // Start voice call
   const startVoiceCall = useCallback(async (userId: string) => {
     try {
+      // Check for microphone permissions first
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      
       const stream = await initializeMedia(false);
       
       setCallState(prev => ({
@@ -123,22 +126,11 @@ export function useWebRTC() {
         }]
       }));
 
-      // Log call start in database
-      const { data: callData, error } = await supabase
-        .from('call_history')
-        .insert({
-          caller_id: profile?.id,
-          receiver_id: userId,
-          call_type: 'voice',
-          status: 'initiated',
-          started_at: new Date().toISOString()
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setCallState(prev => ({ ...prev, callId: callData.id }));
+      // Show success message
+      toast({
+        title: "Call Started",
+        description: "Voice call initiated successfully"
+      });
 
       // Start call timer
       const startTime = Date.now();
@@ -151,9 +143,19 @@ export function useWebRTC() {
 
     } catch (error) {
       console.error('Error starting voice call:', error);
+      let errorMessage = "Could not start voice call";
+      
+      if (error instanceof Error) {
+        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+          errorMessage = "Microphone access denied. Please allow microphone permission and try again.";
+        } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+          errorMessage = "No microphone found. Please connect a microphone and try again.";
+        }
+      }
+      
       toast({
         title: "Call Failed",
-        description: "Could not start voice call",
+        description: errorMessage,
         variant: "destructive"
       });
     }
@@ -224,6 +226,9 @@ export function useWebRTC() {
   // Start video call
   const startVideoCall = useCallback(async (userId: string) => {
     try {
+      // Check for camera and microphone permissions first
+      await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      
       const stream = await initializeMedia(true);
       
       setCallState(prev => ({
@@ -241,22 +246,11 @@ export function useWebRTC() {
         }]
       }));
 
-      // Log call start in database
-      const { data: callData, error } = await supabase
-        .from('call_history')
-        .insert({
-          caller_id: profile?.id,
-          receiver_id: userId,
-          call_type: 'video',
-          status: 'initiated',
-          started_at: new Date().toISOString()
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setCallState(prev => ({ ...prev, callId: callData.id }));
+      // Show success message
+      toast({
+        title: "Video Call Started",
+        description: "Video call initiated successfully"
+      });
 
       // Start call timer
       const startTime = Date.now();
@@ -269,9 +263,19 @@ export function useWebRTC() {
 
     } catch (error) {
       console.error('Error starting video call:', error);
+      let errorMessage = "Could not start video call";
+      
+      if (error instanceof Error) {
+        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+          errorMessage = "Camera/microphone access denied. Please allow permissions and try again.";
+        } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+          errorMessage = "Camera or microphone not found. Please connect devices and try again.";
+        }
+      }
+      
       toast({
-        title: "Call Failed", 
-        description: "Could not start video call",
+        title: "Video Call Failed", 
+        description: errorMessage,
         variant: "destructive"
       });
     }

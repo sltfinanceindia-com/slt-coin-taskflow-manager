@@ -17,6 +17,7 @@ import ProductivitySidebar from './ProductivitySidebar';
 import IncomingCallNotification from './IncomingCallNotification';
 import MissedCallNotifications from './MissedCallNotifications';
 import CallTestButtons from './CallTestButtons';
+import EnhancedCallHistory from './EnhancedCallHistory';
 import { FullLayoutSkeleton } from './SkeletonLoaders';
 
 export default function CommunicationLayout() {
@@ -58,8 +59,8 @@ export default function CommunicationLayout() {
     }
   };
 
-  const handleStartCall = (memberId: string, isVideo: boolean = false) => {
-    if (isVideo) {
+  const handleStartCall = (memberId: string, callType: 'voice' | 'video') => {
+    if (callType === 'video') {
       webrtc.startVideoCall(memberId);
     } else {
       webrtc.startVoiceCall(memberId);
@@ -102,6 +103,7 @@ export default function CommunicationLayout() {
       selectedChannel={communication.selectedChannel}
       onChannelSelect={handleChannelSelect}
       onMemberSelect={handleMemberSelect}
+      onStartCall={handleStartCall}
       collapsed={false}
       searchQuery={communication.searchQuery}
       onSearchChange={communication.setSearchQuery}
@@ -196,8 +198,14 @@ export default function CommunicationLayout() {
       {/* Incoming Call Notification */}
       <IncomingCallNotification />
 
-      {/* Missed Call Notifications */}
-      <MissedCallNotifications />
+      {/* Enhanced Call History */}
+      <EnhancedCallHistory 
+        onCallBack={handleStartCall}
+        onMessage={(participantId) => {
+          const member = communication.teamMembers.find(m => m.id === participantId);
+          if (member) handleMemberSelect(member);
+        }}
+      />
     </>
   );
 }
