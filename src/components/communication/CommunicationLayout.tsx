@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useCommunication } from '@/hooks/useCommunication';
 import { useWebRTC } from '@/hooks/useWebRTC';
+import { usePresence } from '@/hooks/usePresence';
 import { useAuth } from '@/hooks/useAuth';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import TeamsNavigation from './TeamsNavigation';
@@ -8,15 +9,17 @@ import EnhancedChatList from './EnhancedChatList';
 import EnhancedMessageArea from './EnhancedMessageArea';
 import EnhancedCallHistory from './EnhancedCallHistory';
 import CallInterface from './CallInterface';
-import IncomingCallNotification from './IncomingCallNotification';
+import IncomingCallModal from './IncomingCallModal';
 import { FullLayoutSkeleton } from './SkeletonLoaders';
 
 export default function CommunicationLayout() {
   const { profile } = useAuth();
   const communication = useCommunication();
   const webrtc = useWebRTC();
+  const { presenceList } = usePresence();
   const [activeView, setActiveView] = useState<'chats' | 'calls' | 'calendar' | 'files' | 'teams'>('chats');
   const [callMinimized, setCallMinimized] = useState(false);
+  const [showIncomingCall, setShowIncomingCall] = useState(false);
 
   const handleChannelSelect = (channel: any) => {
     communication.selectChannel(channel);
@@ -179,7 +182,22 @@ export default function CommunicationLayout() {
       />
 
       {/* Incoming Call Notification */}
-      <IncomingCallNotification />
+      {webrtc.callState.incomingCallData && !webrtc.callState.isActive && (
+        <IncomingCallModal
+          isOpen={true}
+          callerName={webrtc.callState.participants[0]?.name || 'Unknown Caller'}
+          callerAvatar={webrtc.callState.participants[0]?.avatar}
+          callType={webrtc.callState.callType.includes('video') ? 'video' : 'voice'}
+          onAccept={() => webrtc.answerCall()}
+          onDecline={() => webrtc.declineCall()}
+          onAcceptWithVideo={() => {
+            webrtc.answerCall();
+            if (!webrtc.callState.callType.includes('video')) {
+              webrtc.toggleVideo();
+            }
+          }}
+        />
+      )}
     </>
   );
 }

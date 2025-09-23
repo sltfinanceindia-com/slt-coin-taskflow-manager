@@ -21,6 +21,8 @@ import {
   Archive
 } from 'lucide-react';
 import type { Channel, TeamMember } from '@/hooks/useCommunication';
+import { usePresence } from '@/hooks/usePresence';
+import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 
 interface EnhancedChatListProps {
@@ -44,6 +46,8 @@ export default function EnhancedChatList({
   searchQuery = '',
   onSearchChange
 }: EnhancedChatListProps) {
+  const { profile } = useAuth();
+  const { presenceList, getStatusText, getStatusBadgeColor } = usePresence();
   const [pinnedChats, setPinnedChats] = useState<Set<string>>(new Set());
 
   const getChannelIcon = (channel: Channel) => {
@@ -81,16 +85,16 @@ export default function EnhancedChatList({
     }
   };
 
-  const getDirectMessageUser = (channel: Channel): TeamMember | null => {
+  const getDirectMessageUser = (channel: Channel, currentUserId: string): TeamMember | null => {
     if (!channel.is_direct_message || !channel.participant_ids) return null;
     
-    const otherUserId = channel.participant_ids.find(id => id !== teamMembers[0]?.id);
+    const otherUserId = channel.participant_ids.find(id => id !== currentUserId);
     return teamMembers.find(member => member.id === otherUserId) || null;
   };
 
-  const getChannelDisplayName = (channel: Channel) => {
+  const getChannelDisplayName = (channel: Channel, currentUserId: string) => {
     if (channel.is_direct_message) {
-      const user = getDirectMessageUser(channel);
+      const user = getDirectMessageUser(channel, currentUserId);
       return user ? user.full_name : 'Direct Message';
     }
     return channel.name;
@@ -99,7 +103,7 @@ export default function EnhancedChatList({
   // Process and sort channels
   const processedChannels = useMemo(() => {
     let filtered = channels.filter(channel =>
-      getChannelDisplayName(channel).toLowerCase().includes(searchQuery.toLowerCase())
+      getChannelDisplayName(channel, profile?.id || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     // Sort by: pinned first, then unread, then recent activity
@@ -133,7 +137,7 @@ export default function EnhancedChatList({
   };
 
   const renderChannelRow = (channel: Channel) => {
-    const user = getDirectMessageUser(channel);
+    const user = getDirectMessageUser(channel, profile?.id || '');
     const isPinned = pinnedChats.has(channel.id);
     const isSelected = selectedChannel?.id === channel.id;
 
@@ -172,7 +176,7 @@ export default function EnhancedChatList({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                   <h4 className="font-medium text-sm truncate">
-                    {getChannelDisplayName(channel)}
+                    {getChannelDisplayName(channel, profile?.id || '')}
                   </h4>
                   {isPinned && (
                     <Pin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
@@ -201,7 +205,7 @@ export default function EnhancedChatList({
               ) : (
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {channel.is_direct_message && user ? 
-                    `${user.activity_status === 'online' ? 'Online' : `Last seen ${formatTimestamp(user.last_seen || new Date().toISOString())}`}` :
+                    getStatusText(presenceList.find(p => p.user_id === user.id)) :
                     'No messages yet'
                   }
                 </p>
