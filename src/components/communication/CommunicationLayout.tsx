@@ -3,6 +3,7 @@ import { useCommunication } from '@/hooks/useCommunication';
 import { useWebRTC } from '@/hooks/useWebRTC';
 import { usePresence } from '@/hooks/usePresence';
 import { useAuth } from '@/hooks/useAuth';
+import { useNotifications } from '@/hooks/useNotifications';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import TeamsNavigation from './TeamsNavigation';
 import EnhancedChatList from './EnhancedChatList';
@@ -10,6 +11,9 @@ import EnhancedMessageArea from './EnhancedMessageArea';
 import EnhancedCallHistory from './EnhancedCallHistory';
 import CallInterface from './CallInterface';
 import IncomingCallModal from './IncomingCallModal';
+import OutgoingCallScreen from './OutgoingCallScreen';
+import ConnectedCallScreen from './ConnectedCallScreen';
+import NotificationBanner from './NotificationBanner';
 import { FullLayoutSkeleton } from './SkeletonLoaders';
 
 export default function CommunicationLayout() {
@@ -17,9 +21,9 @@ export default function CommunicationLayout() {
   const communication = useCommunication();
   const webrtc = useWebRTC();
   const { presenceList } = usePresence();
+  const notifications = useNotifications();
   const [activeView, setActiveView] = useState<'chats' | 'calls' | 'calendar' | 'files' | 'teams'>('chats');
   const [callMinimized, setCallMinimized] = useState(false);
-  const [showIncomingCall, setShowIncomingCall] = useState(false);
 
   const handleChannelSelect = (channel: any) => {
     communication.selectChannel(channel);
@@ -181,23 +185,57 @@ export default function CommunicationLayout() {
         isMinimized={callMinimized}
       />
 
-      {/* Incoming Call Notification */}
+      {/* Call Screens */}
+      {webrtc.callState.isOutgoing && !webrtc.callState.isActive && (
+        <OutgoingCallScreen
+          recipientName={webrtc.callState.participants[0]?.name || 'Connecting...'}
+          recipientAvatar={webrtc.callState.participants[0]?.avatar}
+          callType={webrtc.callState.callType}
+          onCancel={() => webrtc.endCall()}
+          onSwitchToVideo={() => webrtc.toggleVideo()}
+        />
+      )}
+
+      {webrtc.callState.isActive && !callMinimized && (
+        <ConnectedCallScreen
+          callType={webrtc.callState.callType}
+          participants={webrtc.callState.participants}
+          duration={webrtc.callState.duration}
+          onEndCall={() => webrtc.endCall()}
+          onMinimize={() => setCallMinimized(true)}
+        />
+      )}
+
+      {/* Incoming Call Modal */}
       {webrtc.callState.incomingCallData && !webrtc.callState.isActive && (
         <IncomingCallModal
           isOpen={true}
-          callerName={webrtc.callState.participants[0]?.name || 'Unknown Caller'}
-          callerAvatar={webrtc.callState.participants[0]?.avatar}
-          callType={webrtc.callState.callType.includes('video') ? 'video' : 'voice'}
+          callerName={webrtc.callState.incomingCallData.callerName}
+          callerAvatar={webrtc.callState.incomingCallData.callerAvatar}
+          callType={webrtc.callState.incomingCallData.callType}
           onAccept={() => webrtc.answerCall()}
           onDecline={() => webrtc.declineCall()}
           onAcceptWithVideo={() => {
             webrtc.answerCall();
-            if (!webrtc.callState.callType.includes('video')) {
+            if (webrtc.callState.incomingCallData?.callType === 'voice') {
               webrtc.toggleVideo();
             }
           }}
         />
       )}
+
+      {/* Notification Banner */}
+      <NotificationBanner
+        notifications={notifications.notifications}
+        position="top-right"
+        maxVisible={3}
+        autoDismiss={5}
+        onDismiss={notifications.dismissNotification}
+        onAction={(notificationId, actionIndex) => {
+          // Handle notification actions
+          notifications.markAsRead(notificationId);
+        }}
+      />
     </>
   );
 }

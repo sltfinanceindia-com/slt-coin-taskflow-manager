@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { audioNotifications } from '@/utils/audioNotifications';
 
 export interface CallState {
   isActive: boolean;
@@ -126,6 +127,9 @@ export function useWebRTC() {
         }]
       }));
 
+      // Play outgoing call sound
+      audioNotifications.playOutgoingCall();
+
       // Show success message
       toast({
         title: "Call Started",
@@ -177,6 +181,9 @@ export function useWebRTC() {
         duration: 0
       }));
 
+      // Play call connected sound
+      audioNotifications.playCallConnected();
+
       // Start call timer
       const startTime = Date.now();
       callTimer.current = setInterval(() => {
@@ -198,6 +205,9 @@ export function useWebRTC() {
 
   // Decline incoming call
   const declineCall = useCallback(() => {
+    // Stop incoming call sound
+    audioNotifications.stopAllSounds();
+    
     setCallState(prev => ({
       ...prev,
       isIncoming: false,
@@ -212,6 +222,9 @@ export function useWebRTC() {
 
   // Simulate incoming call (for demo purposes)
   const simulateIncomingCall = useCallback((callerId: string, callerName: string, callType: 'voice' | 'video' = 'voice') => {
+    // Play incoming call sound
+    audioNotifications.playIncomingCall();
+    
     setCallState(prev => ({
       ...prev,
       isIncoming: true,
@@ -245,6 +258,9 @@ export function useWebRTC() {
           isScreenSharing: false
         }]
       }));
+
+      // Play video call start sound
+      audioNotifications.playVideoCallStart();
 
       // Show success message
       toast({
@@ -328,6 +344,9 @@ export function useWebRTC() {
         duration: 0
       });
 
+      // Play call ended sound
+      audioNotifications.playCallEnded();
+
       toast({
         title: "Call Ended",
         description: `Call duration: ${Math.floor(callState.duration / 60)}:${(callState.duration % 60).toString().padStart(2, '0')}`
@@ -343,8 +362,12 @@ export function useWebRTC() {
     if (localStream) {
       const audioTrack = localStream.getAudioTracks()[0];
       if (audioTrack) {
+        const wasMuted = !audioTrack.enabled;
         audioTrack.enabled = !audioTrack.enabled;
         setCallState(prev => ({ ...prev, isMuted: !audioTrack.enabled }));
+        
+        // Play mute/unmute sound
+        audioNotifications.playMuteToggle(!audioTrack.enabled);
       }
     }
   }, [localStream]);
@@ -381,10 +404,14 @@ export function useWebRTC() {
       });
 
       setCallState(prev => ({ ...prev, isScreenSharing: true }));
+      
+      // Play screen share start sound
+      audioNotifications.playScreenShareStart();
 
       // Handle screen share end
       videoTrack.onended = () => {
         setCallState(prev => ({ ...prev, isScreenSharing: false }));
+        audioNotifications.playScreenShareStop();
       };
 
     } catch (error) {
@@ -419,6 +446,9 @@ export function useWebRTC() {
       });
 
       setCallState(prev => ({ ...prev, isScreenSharing: false }));
+      
+      // Play screen share stop sound
+      audioNotifications.playScreenShareStop();
 
     } catch (error) {
       console.error('Error stopping screen share:', error);
