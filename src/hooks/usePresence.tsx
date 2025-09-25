@@ -7,7 +7,7 @@ interface UserPresence {
   is_online: boolean;
   status: string;
   status_message?: string;
-  activity_status: 'online' | 'away' | 'offline';
+  activity_status: 'online' | 'away' | 'busy' | 'offline';
   manual_status?: string;
   last_seen: string;
   last_activity_at: string;
@@ -180,6 +180,8 @@ export function usePresence() {
         return 'bg-green-500';
       case 'away':
         return 'bg-yellow-500';
+      case 'busy':
+        return 'bg-red-500';
       case 'offline':
         return 'bg-gray-400';
       default:
@@ -199,6 +201,8 @@ export function usePresence() {
         return 'Online';
       case 'away':
         return 'Away';
+      case 'busy':
+        return 'Busy';
       case 'offline':
         return 'Offline';
       default:
@@ -233,6 +237,31 @@ export function usePresence() {
     };
   }, []); // Remove myPresence dependency to prevent infinite loops
 
+  const getStatusIcon = (presence: UserPresence | undefined) => {
+    if (!presence || !presence.is_online) return '⚪';
+    
+    switch (presence.activity_status) {
+      case 'online':
+        return '🟢';
+      case 'away':
+        return '🟡';
+      case 'busy':
+        return '🔴';
+      case 'offline':
+        return '⚪';
+      default:
+        return '⚪';
+    }
+  };
+
+  const setBusyStatus = async () => {
+    await updatePresenceStatus(true, undefined, 'busy');
+  };
+
+  const clearBusyStatus = async () => {
+    await updatePresenceStatus(true);
+  };
+
   return {
     presenceList,
     myPresence,
@@ -241,6 +270,9 @@ export function usePresence() {
     getUserPresence,
     getStatusBadgeColor,
     getStatusText,
+    getStatusIcon,
+    setBusyStatus,
+    clearBusyStatus,
     fetchPresenceList
   };
 }

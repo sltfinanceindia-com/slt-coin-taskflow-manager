@@ -160,7 +160,12 @@ export function DirectMessaging() {
       );
       
       if (hasChanges) {
-        setTeamMembers(updatedMembers);
+        // Filter out 'busy' status to match expected type
+        const validMembers = updatedMembers.map(member => ({
+          ...member,
+          activity_status: member.activity_status === 'busy' ? 'online' : member.activity_status
+        })) as Profile[];
+        setTeamMembers(validMembers);
       }
     }
   }, [presenceList]); // Remove teamMembers and getUserPresence from dependencies

@@ -19,8 +19,13 @@ import {
   Reply,
   Heart,
   ThumbsUp,
-  Laugh
+  Laugh,
+  ArrowLeft
 } from 'lucide-react';
+import UserProfileModal from './UserProfileModal';
+import MessageStateIndicator from './MessageStateIndicator';
+import TypingIndicator from './TypingIndicator';
+import { usePresence } from '@/hooks/usePresence';
 import type { Channel, Message, TeamMember } from '@/hooks/useCommunication';
 import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
 
@@ -33,6 +38,8 @@ interface EnhancedMessageAreaProps {
   onSendMessage: (content: string) => void;
   onStartCall?: (callType: 'voice' | 'video') => void;
   onShowDetails?: () => void;
+  onBack?: () => void;
+  isMobile?: boolean;
 }
 
 const reactions = [
@@ -50,12 +57,16 @@ export default function EnhancedMessageArea({
   isLoading,
   onSendMessage,
   onStartCall,
-  onShowDetails
+  onShowDetails,
+  onBack,
+  isMobile = false
 }: EnhancedMessageAreaProps) {
   const [messageInput, setMessageInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { getUserPresence, getStatusText, getStatusIcon } = usePresence();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -182,12 +193,17 @@ export default function EnhancedMessageArea({
             </div>
           </div>
 
-          {/* Read Receipts */}
-          {isOwn && message.is_read && (
-            <div className="text-xs text-muted-foreground mt-1">
-              ✓✓ Read
-            </div>
-          )}
+            {/* Message State Indicator */}
+            {isOwn && (
+              <div className="flex items-center gap-1 mt-1">
+                <MessageStateIndicator 
+                  state={message.is_read ? 'read' : 'delivered'} 
+                />
+                <span className="text-xs text-muted-foreground">
+                  {message.is_read ? 'Read' : 'Delivered'}
+                </span>
+              </div>
+            )}
         </div>
       </div>
     );
@@ -199,9 +215,18 @@ export default function EnhancedMessageArea({
       <div className="p-4 border-b border-border bg-card/50 backdrop-blur-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
+            {/* Mobile Back Button */}
+            {isMobile && onBack && (
+              <Button variant="ghost" size="sm" onClick={onBack}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            )}
             {/* Channel Avatar/Info */}
             {channel.is_direct_message && channelUser ? (
-              <div className="flex items-center gap-3">
+              <div 
+                className="flex items-center gap-3 cursor-pointer hover:bg-muted/50 rounded-lg p-2 -m-2 transition-colors"
+                onClick={() => setShowProfileModal(true)}
+              >
                 <div className="relative">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={channelUser.avatar_url} />
@@ -209,20 +234,14 @@ export default function EnhancedMessageArea({
                       {getInitials(channelUser.full_name)}
                     </AvatarFallback>
                   </Avatar>
-                  <Circle className={cn(
-                    "absolute -bottom-0.5 -right-0.5 h-3 w-3 fill-current border-2 border-background",
-                    channelUser.is_online ? "text-green-500" : 
-                    channelUser.activity_status === 'away' ? "text-yellow-500" :
-                    channelUser.activity_status === 'busy' ? "text-red-500" : "text-gray-400"
-                  )} />
+                  <div className="absolute -bottom-0.5 -right-0.5 text-sm">
+                    {getStatusIcon(getUserPresence(channelUser.id))}
+                  </div>
                 </div>
                 <div>
                   <h2 className="font-semibold">{channelUser.full_name}</h2>
                   <p className="text-sm text-muted-foreground">
-                    {channelUser.is_online 
-                      ? (channelUser.status_message || 'Online') 
-                      : `Last seen ${formatDistanceToNow(new Date(channelUser.last_seen || Date.now()))} ago`
-                    }
+                    {getStatusText(getUserPresence(channelUser.id))}
                   </p>
                 </div>
               </div>
@@ -338,16 +357,10 @@ export default function EnhancedMessageArea({
           )}
           
           {/* Typing Indicator */}
-          {isTyping && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <div className="flex gap-1">
-                <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
-                <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-              </div>
-              <span>Someone is typing...</span>
-            </div>
-          )}
+          <TypingIndicator 
+            typingUsers={[]} 
+            className="mb-4"
+          />
           
           <div ref={messagesEndRef} />
         </div>
@@ -388,6 +401,21 @@ export default function EnhancedMessageArea({
           </Button>
         </div>
       </div>
+
+      {/* User Profile Modal */}
+      <UserProfileModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        user={channelUser}
+        onStartCall={(callType) => {
+          onStartCall?.(callType);
+          setShowProfileModal(false);
+        }}
+        onSendMessage={() => {
+          setShowProfileModal(false);
+          inputRef.current?.focus();
+        }}
+      />
     </div>
   );
 }

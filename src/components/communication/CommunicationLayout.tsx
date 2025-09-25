@@ -4,6 +4,8 @@ import { useWebRTC } from '@/hooks/useWebRTC';
 import { usePresence } from '@/hooks/usePresence';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { MessageCircle } from 'lucide-react';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import TeamsNavigation from './TeamsNavigation';
 import EnhancedChatList from './EnhancedChatList';
@@ -18,12 +20,14 @@ import { FullLayoutSkeleton } from './SkeletonLoaders';
 
 export default function CommunicationLayout() {
   const { profile } = useAuth();
+  const isMobile = useIsMobile();
   const communication = useCommunication();
   const webrtc = useWebRTC();
-  const { presenceList } = usePresence();
+  const { presenceList, setBusyStatus, clearBusyStatus } = usePresence();
   const notifications = useNotifications();
   const [activeView, setActiveView] = useState<'chats' | 'calls' | 'calendar' | 'files' | 'teams'>('chats');
   const [callMinimized, setCallMinimized] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(!isMobile);
 
   const handleChannelSelect = (channel: any) => {
     communication.selectChannel(channel);
@@ -35,12 +39,36 @@ export default function CommunicationLayout() {
     setActiveView('chats');
   };
 
-  const handleStartCall = (memberId: string, callType: 'voice' | 'video') => {
-    if (callType === 'video') {
-      webrtc.startVideoCall(memberId);
-    } else {
-      webrtc.startVoiceCall(memberId);
+  const handleStartCall = async (memberId: string, callType: 'voice' | 'video') => {
+    try {
+      // Set busy status during call
+      await setBusyStatus();
+      
+      if (callType === 'video') {
+        webrtc.startVideoCall(memberId);
+      } else {
+        webrtc.startVoiceCall(memberId);
+      }
+    } catch (error) {
+      console.error('Failed to start call:', error);
     }
+  };
+
+  const handleEndCall = async () => {
+    try {
+      webrtc.endCall();
+      // Clear busy status after call
+      await clearBusyStatus();
+    } catch (error) {
+      console.error('Failed to end call:', error);
+    }
+  };
+
+  // Helper function to get user from team members
+  const getChannelUser = (channel: any) => {
+    if (!channel?.is_direct_message || !channel?.participant_ids) return null;
+    const otherUserId = channel.participant_ids.find((id: string) => id !== profile?.id);
+    return communication.teamMembers.find(member => member.id === otherUserId) || null;
   };
 
   if (communication.isLoading) {
@@ -54,7 +82,40 @@ export default function CommunicationLayout() {
   const renderMainContent = () => {
     switch (activeView) {
       case 'chats':
-        return (
+        return isMobile ? (
+          // Mobile: Single panel view
+          showSidebar || !communication.selectedChannel ? (
+            <EnhancedChatList
+              channels={communication.channels}
+              teamMembers={communication.teamMembers}
+              selectedChannel={communication.selectedChannel}
+              onChannelSelect={(channel) => {
+                handleChannelSelect(channel);
+                setShowSidebar(false);
+              }}
+              onMemberSelect={handleMemberSelect}
+              onStartCall={handleStartCall}
+              searchQuery={communication.searchQuery}
+              onSearchChange={communication.setSearchQuery}
+            />
+          ) : (
+            <EnhancedMessageArea
+              channel={communication.selectedChannel}
+              messages={communication.messages}
+              teamMembers={communication.teamMembers}
+              currentUser={profile}
+              isLoading={communication.isLoadingMessages}
+              onSendMessage={(content) => communication.sendMessage(content, communication.selectedChannel?.id)}
+              onStartCall={(callType) => {
+                const channelUser = getChannelUser(communication.selectedChannel);
+                if (channelUser) handleStartCall(channelUser.id, callType);
+              }}
+              onBack={() => setShowSidebar(true)}
+              isMobile={true}
+            />
+          )
+        ) : (
+          // Desktop: Resizable panels
           <ResizablePanelGroup direction="horizontal" className="h-full">
             {/* Chat List Panel */}
             <ResizablePanel defaultSize={30} minSize={25} maxSize={40}>
@@ -83,16 +144,14 @@ export default function CommunicationLayout() {
                   isLoading={communication.isLoadingMessages}
                   onSendMessage={(content) => communication.sendMessage(content, communication.selectedChannel?.id)}
                   onStartCall={(callType) => {
-                    const channelUser = communication.selectedChannel?.participant_ids?.find(id => id !== profile?.id);
-                    if (channelUser) handleStartCall(channelUser, callType);
+                    const channelUser = getChannelUser(communication.selectedChannel);
+                    if (channelUser) handleStartCall(channelUser.id, callType);
                   }}
                 />
               ) : (
                 <div className="h-full flex items-center justify-center bg-background">
                   <div className="text-center space-y-6 max-w-md mx-auto p-6">
-                    <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                      <span className="text-4xl">💬</span>
-                    </div>
+                    <MessageCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                     <h3 className="text-2xl font-semibold">Welcome to Chat</h3>
                     <p className="text-muted-foreground">
                       Select a conversation from the left panel to start chatting, or create a new conversation with a team member.
@@ -191,7 +250,7 @@ export default function CommunicationLayout() {
           recipientName={webrtc.callState.participants[0]?.name || 'Connecting...'}
           recipientAvatar={webrtc.callState.participants[0]?.avatar}
           callType={webrtc.callState.callType}
-          onCancel={() => webrtc.endCall()}
+          onCancel={handleEndCall}
           onSwitchToVideo={() => webrtc.toggleVideo()}
         />
       )}
@@ -201,7 +260,7 @@ export default function CommunicationLayout() {
           callType={webrtc.callState.callType}
           participants={webrtc.callState.participants}
           duration={webrtc.callState.duration}
-          onEndCall={() => webrtc.endCall()}
+          onEndCall={handleEndCall}
           onMinimize={() => setCallMinimized(true)}
         />
       )}

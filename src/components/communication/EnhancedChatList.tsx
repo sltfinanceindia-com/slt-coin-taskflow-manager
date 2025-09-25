@@ -57,18 +57,14 @@ export default function EnhancedChatList({
     return channel.type === 'private' ? <Lock className="h-4 w-4 text-orange-500" /> : <Hash className="h-4 w-4 text-gray-500" />;
   };
 
-  const getStatusIndicator = (member: TeamMember) => {
-    const statusColors = {
-      online: 'bg-green-500',
-      away: 'bg-yellow-500',
-      busy: 'bg-red-500',
-      offline: 'bg-gray-400'
-    };
+  const getStatusIndicator = (userId: string) => {
+    const presence = presenceList.find(p => p.user_id === userId);
+    const statusColor = getStatusBadgeColor(presence);
     
     return (
       <div className={cn(
         "w-3 h-3 rounded-full border-2 border-background absolute -bottom-0.5 -right-0.5",
-        statusColors[member.activity_status]
+        statusColor
       )} />
     );
   };
@@ -161,8 +157,8 @@ export default function EnhancedChatList({
                     <AvatarFallback className="text-sm">
                       {getInitials(user.full_name)}
                     </AvatarFallback>
-                  </Avatar>
-                  {getStatusIndicator(user)}
+                   </Avatar>
+                   {getStatusIndicator(user.id)}
                 </>
               ) : (
                 <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
