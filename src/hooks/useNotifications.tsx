@@ -25,6 +25,23 @@ export function useNotifications() {
     dndEnabled: false
   });
 
+  // Push notification support for desktop
+  const [pushPermission, setPushPermission] = useState<NotificationPermission>('default');
+
+  // Initialize push notifications
+  useEffect(() => {
+    if ('Notification' in window) {
+      setPushPermission(Notification.permission);
+      
+      // Request permission if not already granted
+      if (Notification.permission === 'default') {
+        Notification.requestPermission().then(permission => {
+          setPushPermission(permission);
+        });
+      }
+    }
+  }, []);
+
   // Initialize audio notifications
   useEffect(() => {
     audioNotifications.initialize();
@@ -76,8 +93,18 @@ export function useNotifications() {
       }
     }
 
+    // Show desktop push notification if enabled and permission granted
+    if (pushPermission === 'granted' && !isDNDActive() && settings.showBanners) {
+      showPushNotification(newNotification);
+    }
+
+    // Vibrate on mobile if enabled
+    if (settings.vibrationEnabled && 'navigator' in window && 'vibrate' in navigator) {
+      navigator.vibrate([200]);
+    }
+
     return newNotification.id;
-  }, [settings.soundEnabled, isDNDActive]);
+  }, [settings.soundEnabled, settings.showBanners, settings.vibrationEnabled, isDNDActive, pushPermission]);
 
   const dismissNotification = useCallback((id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
@@ -250,14 +277,82 @@ export function useNotifications() {
     return notifications.filter(n => n.type === type && !n.isRead).length;
   }, [notifications]);
 
+  // Show desktop push notification
+  const showPushNotification = useCallback((notification: NotificationItem) => {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+    const title = notification.title;
+    const options: NotificationOptions = {
+      body: notification.message,
+      icon: notification.sender?.avatar || '/favicon.ico',
+      badge: '/favicon.ico',
+      tag: notification.id,
+      requireInteraction: notification.priority === 'urgent',
+      silent: false
+    };
+
+    const pushNotification = new Notification(title, options);
+    
+    pushNotification.onclick = () => {
+      window.focus();
+      pushNotification.close();
+      
+      // Handle notification click actions
+      if (notification.actions && notification.actions.length > 0) {
+        notification.actions[0].action();
+      }
+    };
+
+    // Auto close after 5 seconds for non-urgent notifications
+    if (notification.priority !== 'urgent') {
+      setTimeout(() => pushNotification.close(), 5000);
+    }
+  }, [settings.vibrationEnabled]);
+
+  // Batch notifications for better UX
+  const addBatchNotifications = useCallback((notifications: Omit<NotificationItem, 'id' | 'timestamp'>[]) => {
+    const newNotifications = notifications.map(notification => ({
+      ...notification,
+      id: `notification-${Date.now()}-${Math.random()}`,
+      timestamp: new Date(),
+      isRead: false
+    }));
+
+    setNotifications(prev => [...newNotifications, ...prev]);
+    
+    // Play sound only once for batch
+    if (settings.soundEnabled && !isDNDActive() && newNotifications.length > 0) {
+      audioNotifications.playMessageReceived();
+    }
+
+    return newNotifications.map(n => n.id);
+  }, [settings.soundEnabled, isDNDActive]);
+
+  // Smart notification grouping
+  const getGroupedNotifications = useCallback(() => {
+    const grouped: { [key: string]: NotificationItem[] } = {};
+    
+    notifications.forEach(notification => {
+      const key = `${notification.type}-${notification.sender?.name || 'system'}`;
+      if (!grouped[key]) {
+        grouped[key] = [];
+      }
+      grouped[key].push(notification);
+    });
+
+    return grouped;
+  }, [notifications]);
+
   return {
     // State
     notifications,
     unreadCount,
     settings,
+    pushPermission,
     
     // Core functions
     addNotification,
+    addBatchNotifications,
     dismissNotification,
     markAsRead,
     markAllAsRead,
@@ -276,6 +371,8 @@ export function useNotifications() {
     
     // Utility functions
     getNotificationsByType,
-    getUnreadCountByType
+    getUnreadCountByType,
+    getGroupedNotifications,
+    showPushNotification
   };
 }

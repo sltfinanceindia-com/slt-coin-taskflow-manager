@@ -16,6 +16,9 @@ import IncomingCallModal from './IncomingCallModal';
 import OutgoingCallScreen from './OutgoingCallScreen';
 import ConnectedCallScreen from './ConnectedCallScreen';
 import NotificationBanner from './NotificationBanner';
+import AdvancedSearch from './AdvancedSearch';
+import ThreadedConversation from './ThreadedConversation';
+import GroupManagement from './GroupManagement';
 import { FullLayoutSkeleton } from './SkeletonLoaders';
 
 export default function CommunicationLayout() {
@@ -28,6 +31,10 @@ export default function CommunicationLayout() {
   const [activeView, setActiveView] = useState<'chats' | 'calls' | 'calendar' | 'files' | 'teams'>('chats');
   const [callMinimized, setCallMinimized] = useState(false);
   const [showSidebar, setShowSidebar] = useState(!isMobile);
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [showThreadPanel, setShowThreadPanel] = useState(false);
+  const [selectedThread, setSelectedThread] = useState<any>(null);
+  const [showGroupManagement, setShowGroupManagement] = useState(false);
 
   const handleChannelSelect = (channel: any) => {
     communication.selectChannel(channel);
@@ -294,6 +301,52 @@ export default function CommunicationLayout() {
           // Handle notification actions
           notifications.markAsRead(notificationId);
         }}
+      />
+
+      {/* Advanced Search Modal */}
+      <AdvancedSearch
+        isOpen={showAdvancedSearch}
+        onClose={() => setShowAdvancedSearch(false)}
+        searchQuery={communication.searchQuery}
+        onSearchChange={communication.setSearchQuery}
+        onResultSelect={(result) => {
+          // Handle search result selection
+          if (result.type === 'person') {
+            const member = communication.teamMembers.find(m => m.full_name === result.title);
+            if (member) handleMemberSelect(member);
+          }
+        }}
+      />
+
+      {/* Threaded Conversation Panel */}
+      <ThreadedConversation
+        isOpen={showThreadPanel}
+        onClose={() => setShowThreadPanel(false)}
+        parentMessage={selectedThread}
+        threadMessages={[]} // Would come from thread hook
+        currentUser={profile}
+        teamMembers={communication.teamMembers}
+        onSendReply={(content, parentId) => {
+          // Handle thread reply
+          console.log('Thread reply:', content, parentId);
+        }}
+      />
+
+      {/* Group Management Modal */}
+      <GroupManagement
+        isOpen={showGroupManagement}
+        onClose={() => setShowGroupManagement(false)}
+        group={null} // Would be selected group
+        members={[]} // Group members
+        availableUsers={communication.teamMembers}
+        currentUser={profile}
+        onAddMember={(userId) => console.log('Add member:', userId)}
+        onRemoveMember={(userId) => console.log('Remove member:', userId)}
+        onUpdateMemberRole={(userId, role) => console.log('Update role:', userId, role)}
+        onUpdateGroupSettings={(settings) => console.log('Update settings:', settings)}
+        onUpdateGroupInfo={(info) => console.log('Update info:', info)}
+        onLeaveGroup={() => console.log('Leave group')}
+        onDeleteGroup={() => console.log('Delete group')}
       />
     </>
   );

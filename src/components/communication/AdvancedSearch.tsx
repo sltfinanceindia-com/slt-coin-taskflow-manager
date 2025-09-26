@@ -1,358 +1,307 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Search, Filter, Calendar, User, FileText, Hash, X } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-
-interface SearchFilters {
-  query: string;
-  sender: string;
-  channel: string;
-  fileType: string;
-  dateFrom: string;
-  dateTo: string;
-  hasAttachments: boolean;
-  messageType: 'all' | 'text' | 'file' | 'image' | 'voice';
-}
+import { 
+  Search, 
+  Users, 
+  MessageCircle, 
+  FileText,
+  Filter,
+  Calendar,
+  User,
+  Hash,
+  X
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { formatDistanceToNow } from 'date-fns';
 
 interface SearchResult {
   id: string;
-  content: string;
-  sender_name: string;
-  channel_name: string;
-  created_at: string;
-  message_type: string;
-  attachments: any[];
-  snippet: string;
+  type: 'person' | 'message' | 'file' | 'channel';
+  title: string;
+  content?: string;
+  timestamp?: string;
+  avatar?: string;
+  channel?: string;
+  sender?: string;
+  fileType?: string;
+  size?: string;
 }
 
 interface AdvancedSearchProps {
-  onSearch: (filters: SearchFilters) => void;
-  teamMembers: Array<{ id: string; full_name: string }>;
-  channels: Array<{ id: string; name: string }>;
+  isOpen: boolean;
+  onClose: () => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
+  onResultSelect?: (result: SearchResult) => void;
 }
 
-export default function AdvancedSearch({ onSearch, teamMembers, channels }: AdvancedSearchProps) {
-  const { toast } = useToast();
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [filters, setFilters] = useState<SearchFilters>({
-    query: '',
-    sender: '',
-    channel: '',
-    fileType: '',
-    dateFrom: '',
-    dateTo: '',
-    hasAttachments: false,
-    messageType: 'all'
-  });
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+export default function AdvancedSearch({
+  isOpen,
+  onClose,
+  searchQuery,
+  onSearchChange,
+  onResultSelect
+}: AdvancedSearchProps) {
+  const [activeFilter, setActiveFilter] = useState<'all' | 'people' | 'messages' | 'files'>('all');
+  const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
+  const [senderFilter, setSenderFilter] = useState('');
 
-  const handleSearch = async () => {
-    if (!filters.query.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a search query",
-        variant: "destructive"
-      });
-      return;
+  // Mock search results - in real app, this would come from API
+  const mockResults: SearchResult[] = [
+    {
+      id: '1',
+      type: 'person',
+      title: 'Eric Ishida',
+      content: 'Admin • eric@sltfinance.com',
+      avatar: '/avatars/eric.jpg'
+    },
+    {
+      id: '2',
+      type: 'message',
+      title: 'Project Update',
+      content: 'Hey team, just wanted to update everyone on the project progress...',
+      timestamp: '2024-01-15T10:30:00Z',
+      channel: '#general',
+      sender: 'Harsha Vardhana'
+    },
+    {
+      id: '3',
+      type: 'file',
+      title: 'Q4_Report_Final.pdf',
+      content: 'Financial report for Q4 2023',
+      timestamp: '2024-01-14T14:20:00Z',
+      fileType: 'pdf',
+      size: '2.4 MB',
+      sender: 'Sarah Johnson'
+    },
+    {
+      id: '4',
+      type: 'channel',
+      title: 'Development Team',
+      content: '12 members • Last message 2 hours ago'
     }
+  ];
 
-    setIsSearching(true);
-    
-    // Simulate search API call
-    setTimeout(() => {
-      const mockResults: SearchResult[] = [
-        {
-          id: '1',
-          content: 'Here are the latest updates on the project timeline and deliverables',
-          sender_name: 'John Smith',
-          channel_name: 'Project Updates',
-          created_at: new Date(Date.now() - 86400000).toISOString(),
-          message_type: 'text',
-          attachments: [],
-          snippet: 'Here are the latest updates on the project...'
-        },
-        {
-          id: '2',
-          content: 'Please find the quarterly report attached for your review',
-          sender_name: 'Sarah Johnson',
-          channel_name: 'General',
-          created_at: new Date(Date.now() - 172800000).toISOString(),
-          message_type: 'file',
-          attachments: [{ name: 'Q3-Report.pdf', type: 'pdf' }],
-          snippet: 'Please find the quarterly report attached...'
-        }
-      ];
-
-      // Filter results based on criteria
-      const filteredResults = mockResults.filter(result => {
-        if (filters.sender && !result.sender_name.toLowerCase().includes(filters.sender.toLowerCase())) {
-          return false;
-        }
-        if (filters.channel && result.channel_name !== filters.channel) {
-          return false;
-        }
-        if (filters.messageType !== 'all' && result.message_type !== filters.messageType) {
-          return false;
-        }
-        if (filters.hasAttachments && result.attachments.length === 0) {
-          return false;
-        }
-        return result.content.toLowerCase().includes(filters.query.toLowerCase());
-      });
-
-      setSearchResults(filteredResults);
-      setIsSearching(false);
-      onSearch(filters);
-    }, 1000);
-  };
-
-  const handleClearFilters = () => {
-    setFilters({
-      query: '',
-      sender: '',
-      channel: '',
-      fileType: '',
-      dateFrom: '',
-      dateTo: '',
-      hasAttachments: false,
-      messageType: 'all'
-    });
-    setSearchResults([]);
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) {
-      return `Today at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-    } else if (diffDays === 1) {
-      return `Yesterday at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-    } else {
-      return date.toLocaleDateString();
-    }
-  };
-
-  const highlightText = (text: string, query: string) => {
-    if (!query.trim()) return text;
-    
-    const regex = new RegExp(`(${query})`, 'gi');
-    const parts = text.split(regex);
-    
-    return parts.map((part, index) => 
-      regex.test(part) ? (
-        <mark key={index} className="bg-yellow-200 dark:bg-yellow-800 px-1 rounded">
-          {part}
-        </mark>
-      ) : part
+  const filteredResults = useMemo(() => {
+    let filtered = mockResults.filter(result => 
+      result.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      result.content?.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    if (activeFilter !== 'all') {
+      filtered = filtered.filter(result => {
+        if (activeFilter === 'people') return result.type === 'person';
+        if (activeFilter === 'messages') return result.type === 'message';
+        if (activeFilter === 'files') return result.type === 'file';
+        return true;
+      });
+    }
+
+    if (senderFilter) {
+      filtered = filtered.filter(result => 
+        result.sender?.toLowerCase().includes(senderFilter.toLowerCase())
+      );
+    }
+
+    return filtered;
+  }, [searchQuery, activeFilter, senderFilter]);
+
+  const getResultIcon = (type: string) => {
+    switch (type) {
+      case 'person':
+        return <User className="h-4 w-4 text-blue-500" />;
+      case 'message':
+        return <MessageCircle className="h-4 w-4 text-green-500" />;
+      case 'file':
+        return <FileText className="h-4 w-4 text-orange-500" />;
+      case 'channel':
+        return <Hash className="h-4 w-4 text-purple-500" />;
+      default:
+        return <Search className="h-4 w-4 text-muted-foreground" />;
+    }
   };
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  };
+
+  if (!isOpen) return null;
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-4">
-        <div className="flex gap-2">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search messages, files, and conversations..."
-              value={filters.query}
-              onChange={(e) => setFilters(prev => ({ ...prev, query: e.target.value }))}
-              className="pl-9"
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            />
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center pt-20">
+      <div className="bg-background border rounded-lg shadow-lg max-w-2xl w-full mx-4 max-h-[80vh] flex flex-col">
+        {/* Search Header */}
+        <div className="p-4 border-b border-border">
+          <div className="flex items-center gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 text-muted-foreground transform -translate-y-1/2" />
+              <Input
+                placeholder="Search for people, messages, files..."
+                className="pl-10 pr-4"
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <X className="h-4 w-4" />
+            </Button>
           </div>
-          <Button 
-            variant="outline" 
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center gap-2"
-          >
-            <Filter className="h-4 w-4" />
-            Filters
-          </Button>
-          <Button onClick={handleSearch} disabled={isSearching}>
-            {isSearching ? 'Searching...' : 'Search'}
-          </Button>
+
+          {/* Filters */}
+          <div className="flex items-center gap-2 mt-3">
+            <span className="text-sm text-muted-foreground">Filter by:</span>
+            <Button
+              variant={activeFilter === 'all' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setActiveFilter('all')}
+            >
+              All
+            </Button>
+            <Button
+              variant={activeFilter === 'people' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setActiveFilter('people')}
+            >
+              <Users className="h-3 w-3 mr-1" />
+              People
+            </Button>
+            <Button
+              variant={activeFilter === 'messages' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setActiveFilter('messages')}
+            >
+              <MessageCircle className="h-3 w-3 mr-1" />
+              Messages
+            </Button>
+            <Button
+              variant={activeFilter === 'files' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setActiveFilter('files')}
+            >
+              <FileText className="h-3 w-3 mr-1" />
+              Files
+            </Button>
+          </div>
         </div>
 
-        {isExpanded && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm flex items-center justify-between">
-                Advanced Filters
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={handleClearFilters}
-                  className="h-auto p-1"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    From User
-                  </label>
-                  <select
-                    className="w-full p-2 border rounded-md"
-                    value={filters.sender}
-                    onChange={(e) => setFilters(prev => ({ ...prev, sender: e.target.value }))}
-                  >
-                    <option value="">Any user</option>
-                    {teamMembers.map(member => (
-                      <option key={member.id} value={member.full_name}>
-                        {member.full_name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
-                    <Hash className="h-4 w-4" />
-                    In Channel
-                  </label>
-                  <select
-                    className="w-full p-2 border rounded-md"
-                    value={filters.channel}
-                    onChange={(e) => setFilters(prev => ({ ...prev, channel: e.target.value }))}
-                  >
-                    <option value="">Any channel</option>
-                    {channels.map(channel => (
-                      <option key={channel.id} value={channel.name}>
-                        {channel.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    Date From
-                  </label>
-                  <Input
-                    type="date"
-                    value={filters.dateFrom}
-                    onChange={(e) => setFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    Date To
-                  </label>
-                  <Input
-                    type="date"
-                    value={filters.dateTo}
-                    onChange={(e) => setFilters(prev => ({ ...prev, dateTo: e.target.value }))}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    Message Type
-                  </label>
-                  <select
-                    className="w-full p-2 border rounded-md"
-                    value={filters.messageType}
-                    onChange={(e) => setFilters(prev => ({ ...prev, messageType: e.target.value as any }))}
-                  >
-                    <option value="all">All types</option>
-                    <option value="text">Text only</option>
-                    <option value="file">Files</option>
-                    <option value="image">Images</option>
-                    <option value="voice">Voice messages</option>
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">File Type</label>
-                  <Input
-                    placeholder="e.g., pdf, docx, xlsx"
-                    value={filters.fileType}
-                    onChange={(e) => setFilters(prev => ({ ...prev, fileType: e.target.value }))}
-                  />
-                </div>
+        {/* Search Results */}
+        <ScrollArea className="flex-1">
+          <div className="p-4">
+            {searchQuery === '' ? (
+              <div className="text-center py-12">
+                <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Search Everything</h3>
+                <p className="text-muted-foreground">
+                  Find people, messages, files, and channels across your workspace
+                </p>
               </div>
-
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="hasAttachments"
-                  checked={filters.hasAttachments}
-                  onChange={(e) => setFilters(prev => ({ ...prev, hasAttachments: e.target.checked }))}
-                  className="w-4 h-4"
-                />
-                <label htmlFor="hasAttachments" className="text-sm">
-                  Has attachments only
-                </label>
+            ) : filteredResults.length === 0 ? (
+              <div className="text-center py-12">
+                <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No results found</h3>
+                <p className="text-muted-foreground">
+                  Try adjusting your search terms or filters
+                </p>
               </div>
-            </CardContent>
-          </Card>
+            ) : (
+              <div className="space-y-2">
+                {filteredResults.map((result) => (
+                  <div
+                    key={result.id}
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                    onClick={() => {
+                      onResultSelect?.(result);
+                      onClose();
+                    }}
+                  >
+                    {/* Icon/Avatar */}
+                    <div className="flex-shrink-0">
+                      {result.type === 'person' ? (
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={result.avatar} />
+                          <AvatarFallback>
+                            {getInitials(result.title)}
+                          </AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                          {getResultIcon(result.type)}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-medium text-sm truncate">
+                          {result.title}
+                        </h4>
+                        <Badge variant="outline" className="text-xs">
+                          {result.type}
+                        </Badge>
+                        {result.timestamp && (
+                          <span className="text-xs text-muted-foreground">
+                            {formatDistanceToNow(new Date(result.timestamp), { addSuffix: true })}
+                          </span>
+                        )}
+                      </div>
+                      
+                      {result.content && (
+                        <p className="text-sm text-muted-foreground truncate mt-0.5">
+                          {result.content}
+                        </p>
+                      )}
+                      
+                      {result.channel && (
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-muted-foreground">
+                            in {result.channel}
+                          </span>
+                          {result.sender && (
+                            <span className="text-xs text-muted-foreground">
+                              by {result.sender}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      
+                      {result.fileType && result.size && (
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="secondary" className="text-xs">
+                            {result.fileType.toUpperCase()}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">
+                            {result.size}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+
+        {/* Search Tips */}
+        {searchQuery === '' && (
+          <div className="p-4 border-t border-border bg-muted/20">
+            <div className="text-xs text-muted-foreground space-y-1">
+              <p><strong>Search tips:</strong></p>
+              <p>• Use quotes for exact phrases: "project update"</p>
+              <p>• Search by sender: from:@username</p>
+              <p>• Search in specific channel: in:#channel-name</p>
+              <p>• Search file types: filetype:pdf</p>
+            </div>
+          </div>
         )}
       </div>
-
-      {/* Search Results */}
-      {searchResults.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">
-              Search Results ({searchResults.length})
-            </h3>
-          </div>
-          
-          <div className="space-y-2">
-            {searchResults.map((result) => (
-              <Card key={result.id} className="cursor-pointer hover:bg-accent/50 transition-colors">
-                <CardContent className="p-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{result.sender_name}</span>
-                        <span className="text-muted-foreground">in</span>
-                        <span className="font-medium">#{result.channel_name}</span>
-                      </div>
-                      <span className="text-muted-foreground">
-                        {formatDate(result.created_at)}
-                      </span>
-                    </div>
-                    
-                    <p className="text-sm">
-                      {highlightText(result.snippet, filters.query)}
-                    </p>
-                    
-                    {result.attachments.length > 0 && (
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <FileText className="h-3 w-3" />
-                        {result.attachments.map(att => att.name).join(', ')}
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {isSearching && (
-        <div className="text-center py-8">
-          <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-2"></div>
-          <p className="text-muted-foreground">Searching messages...</p>
-        </div>
-      )}
     </div>
   );
 }
