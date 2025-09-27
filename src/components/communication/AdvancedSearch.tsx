@@ -33,19 +33,25 @@ interface SearchResult {
 }
 
 interface AdvancedSearchProps {
-  isOpen: boolean;
-  onClose: () => void;
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
+  isOpen?: boolean;
+  onClose?: () => void;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
   onResultSelect?: (result: SearchResult) => void;
+  onSearch?: (filters: any) => void;
+  teamMembers?: Array<{ id: string; full_name: string }>;
+  channels?: Array<{ id: string; name: string }>;
 }
 
 export default function AdvancedSearch({
-  isOpen,
-  onClose,
-  searchQuery,
-  onSearchChange,
-  onResultSelect
+  isOpen = false,
+  onClose = () => {},
+  searchQuery = '',
+  onSearchChange = () => {},
+  onResultSelect,
+  onSearch,
+  teamMembers = [],
+  channels = []
 }: AdvancedSearchProps) {
   const [activeFilter, setActiveFilter] = useState<'all' | 'people' | 'messages' | 'files'>('all');
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
