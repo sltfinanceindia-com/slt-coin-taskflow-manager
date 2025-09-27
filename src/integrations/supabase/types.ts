@@ -401,34 +401,40 @@ export type Database = {
       }
       call_history: {
         Row: {
+          answered_at: string | null
           call_type: string
           caller_id: string
           created_at: string
           duration_seconds: number | null
           ended_at: string | null
           id: string
+          missed: boolean | null
           receiver_id: string
           started_at: string
           status: string
         }
         Insert: {
+          answered_at?: string | null
           call_type: string
           caller_id: string
           created_at?: string
           duration_seconds?: number | null
           ended_at?: string | null
           id?: string
+          missed?: boolean | null
           receiver_id: string
           started_at?: string
           status: string
         }
         Update: {
+          answered_at?: string | null
           call_type?: string
           caller_id?: string
           created_at?: string
           duration_seconds?: number | null
           ended_at?: string | null
           id?: string
+          missed?: boolean | null
           receiver_id?: string
           started_at?: string
           status?: string
@@ -520,6 +526,44 @@ export type Database = {
             foreignKeyName: "channel_read_status_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_users: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean | null
+          last_seen: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          last_seen?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          last_seen?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_users_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -734,6 +778,137 @@ export type Database = {
           },
         ]
       }
+      file_attachments: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_size: number
+          file_type: string
+          id: string
+          message_id: string
+          storage_path: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_size: number
+          file_type: string
+          id?: string
+          message_id: string
+          storage_path: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          message_id?: string
+          storage_path?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_attachments_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "file_attachments_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_members: {
+        Row: {
+          group_id: string
+          id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      groups: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_private: boolean | null
+          member_count: number | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          is_private?: boolean | null
+          member_count?: number | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_private?: boolean | null
+          member_count?: number | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "groups_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kanban_events: {
         Row: {
           analytics_data: Json | null
@@ -927,6 +1102,45 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      message_states: {
+        Row: {
+          id: string
+          message_id: string
+          state: string
+          timestamp: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          message_id: string
+          state?: string
+          timestamp?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          message_id?: string
+          state?: string
+          timestamp?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_states_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_states_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       message_threads: {
         Row: {
@@ -1910,6 +2124,10 @@ export type Database = {
           p_user_id: string
         }
         Returns: string
+      }
+      update_chat_user_status: {
+        Args: { p_status: string; p_user_id: string }
+        Returns: undefined
       }
       update_user_presence: {
         Args: {

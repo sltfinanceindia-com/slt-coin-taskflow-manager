@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import type { Channel, TeamMember } from '@/hooks/useCommunication';
 import { usePresence } from '@/hooks/usePresence';
+import { useChatUsers } from '@/hooks/useChatUsers';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 
