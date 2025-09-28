@@ -23,29 +23,61 @@ export const useChatUsers = () => {
   const [loading, setLoading] = useState(true);
   const [currentUserStatus, setCurrentUserStatus] = useState<string>('offline');
 
-  // Fetch all chat users with their profiles
+  // Fetch all users from profiles table (including all interns/admins)
   const fetchChatUsers = async () => {
     try {
-      const { data, error } = await supabase
-        .from('chat_users')
-        .select(`
-          *,
-          profile:profiles!inner(
-            id,
-            full_name,
-            email,
-            role,
-            avatar_url
-          )
-        `)
-        .eq('is_active', true);
+      // First get all profiles
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('full_name');
 
-      if (error) throw error;
-      // Type assertion since we know the structure matches ChatUser
-      setChatUsers((data || []).map(item => ({
-        ...item,
-        status: item.status as 'online' | 'offline' | 'busy' | 'away'
-      })) as ChatUser[]);
+      if (profilesError) throw profilesError;
+
+      if (profiles) {
+        // Map profiles to chat users format and ensure they exist in chat_users table
+        const users: ChatUser[] = await Promise.all(
+          profiles.map(async (profile) => {
+            // Check if user exists in chat_users, if not create them
+            const { data: chatUser, error: chatUserError } = await supabase
+              .from('chat_users')
+              .select('*')
+              .eq('user_id', profile.id)
+              .single();
+
+            let status = 'offline';
+            if (!chatUser && !chatUserError) {
+              // Create chat user if doesn't exist
+              await supabase
+                .from('chat_users')
+                .insert({
+                  user_id: profile.id,
+                  status: 'offline',
+                  is_active: true
+                });
+            } else if (chatUser) {
+              status = chatUser.status;
+            }
+
+            return {
+              id: profile.id,
+              user_id: profile.id,
+              status: status as 'online' | 'offline' | 'busy' | 'away',
+              last_seen: new Date().toISOString(),
+              is_active: true,
+              profile: {
+                id: profile.id,
+                full_name: profile.full_name,
+                email: profile.email,
+                role: profile.role,
+                avatar_url: profile.avatar_url
+              }
+            };
+          })
+        );
+
+        setChatUsers(users);
+      }
     } catch (error) {
       console.error('Error fetching chat users:', error);
     } finally {

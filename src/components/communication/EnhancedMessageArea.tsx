@@ -25,7 +25,12 @@ import {
 import UserProfileModal from './UserProfileModal';
 import MessageStateIndicator from './MessageStateIndicator';
 import TypingIndicator from './TypingIndicator';
+import EmojiPicker from './EmojiPicker';
+import AttachmentUpload from './AttachmentUpload';
+import VoiceRecorder from './VoiceRecorder';
 import { usePresence } from '@/hooks/usePresence';
+import { useMessageStates } from '@/hooks/useMessageStates';
+import { useFileUpload } from '@/hooks/useFileUpload';
 import type { Channel, Message, TeamMember } from '@/hooks/useCommunication';
 import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
 
@@ -64,9 +69,15 @@ export default function EnhancedMessageArea({
   const [messageInput, setMessageInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showAttachmentUpload, setShowAttachmentUpload] = useState(false);
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
+  const [messageReactions, setMessageReactions] = useState<{[key: string]: string[]}>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { getUserPresence, getStatusText, getStatusIcon } = usePresence();
+  const { markAsRead } = useMessageStates();
+  const { uploadFile } = useFileUpload();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -90,6 +101,30 @@ export default function EnhancedMessageArea({
     onSendMessage(messageInput.trim());
     setMessageInput('');
     inputRef.current?.focus();
+    setShowEmojiPicker(false);
+  };
+
+  const handleEmojiSelect = (emoji: string) => {
+    setMessageInput(prev => prev + emoji);
+    inputRef.current?.focus();
+  };
+
+  const handleFileUploaded = (attachment: any) => {
+    // Handle file upload - could send as message or add to current message
+    console.log('File uploaded:', attachment);
+  };
+
+  const handleVoiceRecorded = (audioBlob: Blob) => {
+    // Handle voice message - could convert to file and upload
+    console.log('Voice recorded:', audioBlob);
+  };
+
+  const handleReaction = (messageId: string, emoji: string) => {
+    setMessageReactions(prev => ({
+      ...prev,
+      [messageId]: [...(prev[messageId] || []), emoji]
+    }));
+    // TODO: Save reaction to database
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -180,6 +215,7 @@ export default function EnhancedMessageArea({
                   variant="ghost"
                   size="sm"
                   className="h-6 w-6 p-0"
+                  onClick={() => handleReaction(message.id, reaction.emoji)}
                 >
                   <span className="text-xs">{reaction.emoji}</span>
                 </Button>
@@ -191,6 +227,26 @@ export default function EnhancedMessageArea({
                 <MoreHorizontal className="h-3 w-3" />
               </Button>
             </div>
+
+            {/* Message Reactions Display */}
+            {messageReactions[message.id] && messageReactions[message.id].length > 0 && (
+              <div className="flex items-center gap-1 mt-2 flex-wrap">
+                {Array.from(new Set(messageReactions[message.id])).map((emoji, index) => {
+                  const count = messageReactions[message.id].filter(r => r === emoji).length;
+                  return (
+                    <Button
+                      key={index}
+                      variant="outline"
+                      size="sm"
+                      className="h-6 px-2 py-0 text-xs"
+                      onClick={() => handleReaction(message.id, emoji)}
+                    >
+                      {emoji} {count > 1 && count}
+                    </Button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
             {/* Message State Indicator */}
@@ -379,15 +435,54 @@ export default function EnhancedMessageArea({
               className="pr-20"
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                <Smile className="h-4 w-4 text-muted-foreground" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                <Paperclip className="h-4 w-4 text-muted-foreground" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                <Mic className="h-4 w-4 text-muted-foreground" />
-              </Button>
+              <div className="relative">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-6 w-6 p-0"
+                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                >
+                  <Smile className="h-4 w-4 text-muted-foreground" />
+                </Button>
+                <EmojiPicker
+                  isOpen={showEmojiPicker}
+                  onClose={() => setShowEmojiPicker(false)}
+                  onEmojiSelect={handleEmojiSelect}
+                />
+              </div>
+              
+              <div className="relative">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-6 w-6 p-0"
+                  onClick={() => setShowAttachmentUpload(!showAttachmentUpload)}
+                >
+                  <Paperclip className="h-4 w-4 text-muted-foreground" />
+                </Button>
+                <AttachmentUpload
+                  isOpen={showAttachmentUpload}
+                  onClose={() => setShowAttachmentUpload(false)}
+                  onFileUploaded={handleFileUploaded}
+                  messageId={`temp-${Date.now()}`}
+                />
+              </div>
+              
+              <div className="relative">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-6 w-6 p-0"
+                  onClick={() => setShowVoiceRecorder(!showVoiceRecorder)}
+                >
+                  <Mic className="h-4 w-4 text-muted-foreground" />
+                </Button>
+                <VoiceRecorder
+                  isOpen={showVoiceRecorder}
+                  onClose={() => setShowVoiceRecorder(false)}
+                  onVoiceRecorded={handleVoiceRecorded}
+                />
+              </div>
             </div>
           </div>
           
