@@ -35,36 +35,41 @@ export const useChatUsers = () => {
       if (profilesError) throw profilesError;
 
       if (profiles) {
+        // Get all chat users status
+        const { data: chatUsers, error: chatUsersError } = await supabase
+          .from('chat_users')
+          .select('*');
+
+        const chatUsersMap = new Map(chatUsers?.map(cu => [cu.user_id, cu]) || []);
+
         // Map profiles to chat users format and ensure they exist in chat_users table
         const users: ChatUser[] = await Promise.all(
           profiles.map(async (profile) => {
-            // Check if user exists in chat_users, if not create them
-            const { data: chatUser, error: chatUserError } = await supabase
-              .from('chat_users')
-              .select('*')
-              .eq('user_id', profile.id)
-              .single();
-
-            let status = 'offline';
-            if (!chatUser && !chatUserError) {
+            let chatUser = chatUsersMap.get(profile.id);
+            
+            if (!chatUser) {
               // Create chat user if doesn't exist
-              await supabase
+              const { data: newChatUser, error: insertError } = await supabase
                 .from('chat_users')
                 .insert({
                   user_id: profile.id,
                   status: 'offline',
                   is_active: true
-                });
-            } else if (chatUser) {
-              status = chatUser.status;
+                })
+                .select()
+                .single();
+
+              if (!insertError) {
+                chatUser = newChatUser;
+              }
             }
 
             return {
               id: profile.id,
               user_id: profile.id,
-              status: status as 'online' | 'offline' | 'busy' | 'away',
-              last_seen: new Date().toISOString(),
-              is_active: true,
+              status: (chatUser?.status || 'offline') as 'online' | 'offline' | 'busy' | 'away',
+              last_seen: chatUser?.last_seen || new Date().toISOString(),
+              is_active: chatUser?.is_active ?? true,
               profile: {
                 id: profile.id,
                 full_name: profile.full_name,
