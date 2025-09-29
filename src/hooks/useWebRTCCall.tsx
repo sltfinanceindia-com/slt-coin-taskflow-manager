@@ -75,7 +75,8 @@ export const useWebRTCCall = () => {
   // Send signaling message via Supabase
   const sendSignalingMessage = async (type: string, data: any) => {
     try {
-      await supabase
+      // Using any to bypass TypeScript until types are regenerated
+      await (supabase as any)
         .from('webrtc_signals')
         .insert({
           call_id: callState.callId,
