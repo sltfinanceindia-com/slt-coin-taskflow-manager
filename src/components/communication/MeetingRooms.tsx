@@ -60,14 +60,9 @@ export default function MeetingRooms({ className }: MeetingRoomsProps) {
       return;
     }
 
-    const startDate = newMeeting.scheduledStart ? new Date(newMeeting.scheduledStart) : new Date();
-    const endDate = newMeeting.scheduledEnd ? new Date(newMeeting.scheduledEnd) : new Date(Date.now() + 3600000);
-
     await createMeetingRoom(
       newMeeting.title,
-      newMeeting.description || undefined,
-      startDate,
-      endDate
+      newMeeting.description || undefined
     );
 
     setNewMeeting({

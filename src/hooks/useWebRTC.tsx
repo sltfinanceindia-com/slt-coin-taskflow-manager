@@ -659,10 +659,7 @@ export function useWebRTC() {
   const startScreenShare = useCallback(async () => {
     try {
       const screenShareStream = await navigator.mediaDevices.getDisplayMedia({
-        video: {
-          cursor: 'always',
-          displaySurface: 'monitor'
-        },
+        video: true,
         audio: true
       });
 

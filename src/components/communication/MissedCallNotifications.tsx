@@ -31,7 +31,7 @@ import {
   Dot,
   Wifi,
   WifiOff,
-  Record,
+  Circle,
   StopCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -530,7 +530,7 @@ export default function CallControls() {
               {isRecording ? (
                 <StopCircle className="h-5 w-5" />
               ) : (
-                <Record className="h-5 w-5" />
+                <Circle className="h-5 w-5 fill-current" />
               )}
             </Button>
 

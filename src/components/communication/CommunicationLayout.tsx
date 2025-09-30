@@ -51,10 +51,14 @@ export default function CommunicationLayout() {
       // Set busy status during call
       await setBusyStatus();
       
+      // Find member name from team members
+      const member = communication.teamMembers.find(m => m.id === memberId);
+      const memberName = member?.full_name || 'Unknown User';
+      
       if (callType === 'video') {
-        webrtc.startVideoCall(memberId);
+        webrtc.startVideoCall(memberId, memberName);
       } else {
-        webrtc.startVoiceCall(memberId);
+        webrtc.startVoiceCall(memberId, memberName);
       }
     } catch (error) {
       console.error('Failed to start call:', error);

@@ -15,7 +15,7 @@ export default function CallTestButtons() {
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <Button
-            onClick={() => startVoiceCall('demo-user-1')}
+            onClick={() => startVoiceCall('demo-user-1', 'Demo User')}
             className="flex items-center gap-2"
           >
             <Phone className="h-4 w-4" />
@@ -23,7 +23,7 @@ export default function CallTestButtons() {
           </Button>
           
           <Button
-            onClick={() => startVideoCall('demo-user-1')}
+            onClick={() => startVideoCall('demo-user-1', 'Demo User')}
             variant="outline"
             className="flex items-center gap-2"
           >

@@ -269,7 +269,7 @@ export default function CommunicationSidebar({
                           className="h-6 w-6 p-0"
                           onClick={(e) => {
                             e.stopPropagation();
-                            startVoiceCall(member.id);
+                            startVoiceCall(member.id, member.full_name);
                           }}
                         >
                           <Phone className="h-3 w-3" />
@@ -280,7 +280,7 @@ export default function CommunicationSidebar({
                           className="h-6 w-6 p-0"
                           onClick={(e) => {
                             e.stopPropagation();
-                            startVideoCall(member.id);
+                            startVideoCall(member.id, member.full_name);
                           }}
                         >
                           <Video className="h-3 w-3" />
