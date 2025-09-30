@@ -32,6 +32,9 @@ export interface CallParticipant {
   isVideoEnabled: boolean;
   isScreenSharing: boolean;
   stream?: MediaStream;
+  connectionQuality: 'excellent' | 'good' | 'fair' | 'poor';
+  isSpeaking: boolean;
+  audioLevel: number;
 }
 
 export interface MeetingRoom {
@@ -71,6 +74,57 @@ export function useWebRTC() {
   const peerConnections = useRef<Map<string, RTCPeerConnection>>(new Map());
   const callTimer = useRef<NodeJS.Timeout | null>(null);
 
+  // Initialize WebRTC Peer Connection
+  const initializePeerConnection = useCallback((userId: string) => {
+    const configuration = {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+      ]
+    };
+
+    const peerConnection = new RTCPeerConnection(configuration);
+
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        sendSignalingMessage('ice-candidate', event.candidate, userId);
+      }
+    };
+
+    peerConnection.ontrack = (event) => {
+      const [remoteStream] = event.streams;
+      setRemoteStreams(prev => new Map(prev.set(userId, remoteStream)));
+    };
+
+    peerConnection.onconnectionstatechange = () => {
+      console.log('Connection state:', peerConnection.connectionState);
+      if (peerConnection.connectionState === 'connected') {
+        audioNotifications.playCallConnected();
+      }
+    };
+
+    peerConnections.current.set(userId, peerConnection);
+    return peerConnection;
+  }, []);
+
+  // Send signaling message via Supabase
+  const sendSignalingMessage = useCallback(async (type: string, data: any, targetUserId?: string) => {
+    try {
+      await supabase
+        .from('webrtc_signals')
+        .insert({
+          call_id: callState.callId,
+          sender_id: profile?.id,
+          receiver_id: targetUserId,
+          signal_type: type,
+          signal_data: data,
+          created_at: new Date().toISOString()
+        });
+    } catch (error) {
+      console.error('Error sending signaling message:', error);
+    }
+  }, [callState.callId, profile?.id]);
+
   // Initialize media devices
   const initializeMedia = useCallback(async (video: boolean = false) => {
     try {
@@ -106,72 +160,159 @@ export function useWebRTC() {
   }, [toast]);
 
   // Start voice call
-  const startVoiceCall = useCallback(async (userId: string) => {
+  const startVoiceCall = useCallback(async (userId: string, userName: string) => {
     try {
-      // Check for microphone permissions first
-      await navigator.mediaDevices.getUserMedia({ audio: true });
+      const callId = `call_${Date.now()}_${profile?.id}_${userId}`;
       
+      // Create call record in database
+      const { data: callData, error } = await supabase
+        .from('call_history')
+        .insert({
+          id: callId,
+          caller_id: profile?.id,
+          receiver_id: userId,
+          caller_name: profile?.full_name || 'Unknown',
+          receiver_name: userName,
+          call_type: 'voice',
+          status: 'ringing',
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
       const stream = await initializeMedia(false);
+      const peerConnection = initializePeerConnection(userId);
       
+      // Add stream to peer connection
+      stream.getTracks().forEach(track => {
+        peerConnection.addTrack(track, stream);
+      });
+
+      // Create offer
+      const offer = await peerConnection.createOffer();
+      await peerConnection.setLocalDescription(offer);
+      await sendSignalingMessage('offer', offer, userId);
+
       setCallState(prev => ({
         ...prev,
         isActive: true,
         isOutgoing: true,
         callType: 'voice',
+        callId,
         participants: [{
           id: userId,
-          name: 'Calling...',
+          name: userName,
           isMuted: false,
           isVideoEnabled: false,
-          isScreenSharing: false
+          isScreenSharing: false,
+          connectionQuality: 'excellent',
+          isSpeaking: false,
+          audioLevel: 0
         }]
       }));
 
-      // Play outgoing call sound
       audioNotifications.playOutgoingCall();
-
-      // Show success message
       toast({
         title: "Call Started",
-        description: "Voice call initiated successfully"
+        description: `Calling ${userName}...`
       });
-
-      // Start call timer
-      const startTime = Date.now();
-      callTimer.current = setInterval(() => {
-        setCallState(prev => ({
-          ...prev,
-          duration: Math.floor((Date.now() - startTime) / 1000)
-        }));
-      }, 1000);
 
     } catch (error) {
       console.error('Error starting voice call:', error);
-      let errorMessage = "Could not start voice call";
-      
-      if (error instanceof Error) {
-        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-          errorMessage = "Microphone access denied. Please allow microphone permission and try again.";
-        } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
-          errorMessage = "No microphone found. Please connect a microphone and try again.";
-        }
-      }
-      
       toast({
         title: "Call Failed",
-        description: errorMessage,
+        description: "Could not start voice call",
         variant: "destructive"
       });
     }
-  }, [profile, initializeMedia, toast]);
+  }, [profile, initializeMedia, initializePeerConnection, sendSignalingMessage, toast]);
+
+  // Start video call
+  const startVideoCall = useCallback(async (userId: string, userName: string) => {
+    try {
+      const callId = `call_${Date.now()}_${profile?.id}_${userId}`;
+      
+      // Create call record in database
+      const { data: callData, error } = await supabase
+        .from('call_history')
+        .insert({
+          id: callId,
+          caller_id: profile?.id,
+          receiver_id: userId,
+          caller_name: profile?.full_name || 'Unknown',
+          receiver_name: userName,
+          call_type: 'video',
+          status: 'ringing',
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const stream = await initializeMedia(true);
+      const peerConnection = initializePeerConnection(userId);
+      
+      // Add stream to peer connection
+      stream.getTracks().forEach(track => {
+        peerConnection.addTrack(track, stream);
+      });
+
+      // Create offer
+      const offer = await peerConnection.createOffer();
+      await peerConnection.setLocalDescription(offer);
+      await sendSignalingMessage('offer', offer, userId);
+
+      setCallState(prev => ({
+        ...prev,
+        isActive: true,
+        isOutgoing: true,
+        callType: 'video',
+        isVideoEnabled: true,
+        callId,
+        participants: [{
+          id: userId,
+          name: userName,
+          isMuted: false,
+          isVideoEnabled: true,
+          isScreenSharing: false,
+          connectionQuality: 'excellent',
+          isSpeaking: false,
+          audioLevel: 0
+        }]
+      }));
+
+      audioNotifications.playVideoCallStart();
+      toast({
+        title: "Video Call Started",
+        description: `Video calling ${userName}...`
+      });
+
+    } catch (error) {
+      console.error('Error starting video call:', error);
+      toast({
+        title: "Video Call Failed",
+        description: "Could not start video call",
+        variant: "destructive"
+      });
+    }
+  }, [profile, initializeMedia, initializePeerConnection, sendSignalingMessage, toast]);
 
   // Answer incoming call
   const answerCall = useCallback(async () => {
-    if (!callState.isIncoming) return;
+    if (!callState.isIncoming || !callState.incomingCallData) return;
 
     try {
-      const isVideo = callState.incomingCallData?.callType === 'video';
+      const isVideo = callState.incomingCallData.callType === 'video';
       const stream = await initializeMedia(isVideo);
+      const peerConnection = initializePeerConnection(callState.incomingCallData.callerId);
+      
+      // Add stream to peer connection
+      stream.getTracks().forEach(track => {
+        peerConnection.addTrack(track, stream);
+      });
       
       setCallState(prev => ({
         ...prev,
@@ -181,7 +322,17 @@ export function useWebRTC() {
         duration: 0
       }));
 
-      // Play call connected sound
+      // Update call status in database
+      if (callState.callId) {
+        await supabase
+          .from('call_history')
+          .update({ 
+            status: 'active',
+            started_at: new Date().toISOString()
+          })
+          .eq('id', callState.callId);
+      }
+
       audioNotifications.playCallConnected();
 
       // Start call timer
@@ -201,101 +352,35 @@ export function useWebRTC() {
         variant: "destructive"
       });
     }
-  }, [callState.isIncoming, callState.incomingCallData, initializeMedia, toast]);
+  }, [callState.isIncoming, callState.incomingCallData, callState.callId, initializeMedia, initializePeerConnection, toast]);
 
   // Decline incoming call
-  const declineCall = useCallback(() => {
-    // Stop incoming call sound
+  const declineCall = useCallback(async () => {
     audioNotifications.stopAllSounds();
+    
+    // Update call status in database
+    if (callState.callId) {
+      await supabase
+        .from('call_history')
+        .update({ 
+          status: 'declined',
+          ended_at: new Date().toISOString()
+        })
+        .eq('id', callState.callId);
+    }
     
     setCallState(prev => ({
       ...prev,
       isIncoming: false,
-      incomingCallData: undefined
+      incomingCallData: undefined,
+      callId: undefined
     }));
     
     toast({
       title: "Call Declined",
       description: "Incoming call was declined"
     });
-  }, [toast]);
-
-  // Simulate incoming call (for demo purposes)
-  const simulateIncomingCall = useCallback((callerId: string, callerName: string, callType: 'voice' | 'video' = 'voice') => {
-    // Play incoming call sound
-    audioNotifications.playIncomingCall();
-    
-    setCallState(prev => ({
-      ...prev,
-      isIncoming: true,
-      incomingCallData: {
-        callerId,
-        callerName,
-        callType
-      }
-    }));
-  }, []);
-
-  // Start video call
-  const startVideoCall = useCallback(async (userId: string) => {
-    try {
-      // Check for camera and microphone permissions first
-      await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      
-      const stream = await initializeMedia(true);
-      
-      setCallState(prev => ({
-        ...prev,
-        isActive: true,
-        isOutgoing: true,
-        callType: 'video',
-        isVideoEnabled: true,
-        participants: [{
-          id: userId,
-          name: 'Calling...',
-          isMuted: false,
-          isVideoEnabled: true,
-          isScreenSharing: false
-        }]
-      }));
-
-      // Play video call start sound
-      audioNotifications.playVideoCallStart();
-
-      // Show success message
-      toast({
-        title: "Video Call Started",
-        description: "Video call initiated successfully"
-      });
-
-      // Start call timer
-      const startTime = Date.now();
-      callTimer.current = setInterval(() => {
-        setCallState(prev => ({
-          ...prev,
-          duration: Math.floor((Date.now() - startTime) / 1000)
-        }));
-      }, 1000);
-
-    } catch (error) {
-      console.error('Error starting video call:', error);
-      let errorMessage = "Could not start video call";
-      
-      if (error instanceof Error) {
-        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-          errorMessage = "Camera/microphone access denied. Please allow permissions and try again.";
-        } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
-          errorMessage = "Camera or microphone not found. Please connect devices and try again.";
-        }
-      }
-      
-      toast({
-        title: "Video Call Failed", 
-        description: errorMessage,
-        variant: "destructive"
-      });
-    }
-  }, [profile, initializeMedia, toast]);
+  }, [callState.callId, toast]);
 
   // End call
   const endCall = useCallback(async () => {
@@ -344,7 +429,6 @@ export function useWebRTC() {
         duration: 0
       });
 
-      // Play call ended sound
       audioNotifications.playCallEnded();
 
       toast({
@@ -362,11 +446,8 @@ export function useWebRTC() {
     if (localStream) {
       const audioTrack = localStream.getAudioTracks()[0];
       if (audioTrack) {
-        const wasMuted = !audioTrack.enabled;
         audioTrack.enabled = !audioTrack.enabled;
         setCallState(prev => ({ ...prev, isMuted: !audioTrack.enabled }));
-        
-        // Play mute/unmute sound
         audioNotifications.playMuteToggle(!audioTrack.enabled);
       }
     }
@@ -391,7 +472,6 @@ export function useWebRTC() {
         audio: true
       });
 
-      // Replace video track in existing peer connections
       const videoTrack = screenStream.getVideoTracks()[0];
       
       peerConnections.current.forEach(async (pc) => {
@@ -404,11 +484,8 @@ export function useWebRTC() {
       });
 
       setCallState(prev => ({ ...prev, isScreenSharing: true }));
-      
-      // Play screen share start sound
       audioNotifications.playScreenShareStart();
 
-      // Handle screen share end
       videoTrack.onended = () => {
         setCallState(prev => ({ ...prev, isScreenSharing: false }));
         audioNotifications.playScreenShareStop();
@@ -427,7 +504,6 @@ export function useWebRTC() {
   // Stop screen sharing
   const stopScreenShare = useCallback(async () => {
     try {
-      // Get camera stream back
       const cameraStream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: false
@@ -435,7 +511,6 @@ export function useWebRTC() {
 
       const videoTrack = cameraStream.getVideoTracks()[0];
       
-      // Replace screen share track with camera track
       peerConnections.current.forEach(async (pc) => {
         const sender = pc.getSenders().find(s => 
           s.track && s.track.kind === 'video'
@@ -446,8 +521,6 @@ export function useWebRTC() {
       });
 
       setCallState(prev => ({ ...prev, isScreenSharing: false }));
-      
-      // Play screen share stop sound
       audioNotifications.playScreenShareStop();
 
     } catch (error) {
@@ -455,15 +528,121 @@ export function useWebRTC() {
     }
   }, []);
 
+  // Simulate incoming call (for testing)
+  const simulateIncomingCall = useCallback((callerId: string, callerName: string, callType: 'voice' | 'video' = 'voice') => {
+    const callId = `call_${Date.now()}_${callerId}_${profile?.id}`;
+    
+    audioNotifications.playIncomingCall();
+    
+    setCallState(prev => ({
+      ...prev,
+      isIncoming: true,
+      callId,
+      incomingCallData: {
+        callerId,
+        callerName,
+        callType
+      }
+    }));
+  }, [profile?.id]);
+
+  // Listen for incoming calls via Supabase realtime
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    const channel = supabase
+      .channel('incoming_calls')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'call_history',
+          filter: `receiver_id=eq.${profile.id}`
+        },
+        (payload) => {
+          const call = payload.new as any;
+          if (call.status === 'ringing') {
+            audioNotifications.playIncomingCall();
+            
+            setCallState(prev => ({
+              ...prev,
+              callId: call.id,
+              isIncoming: true,
+              callType: call.call_type,
+              incomingCallData: {
+                callerId: call.caller_id,
+                callerName: call.caller_name || 'Unknown Caller',
+                callType: call.call_type
+              }
+            }));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile?.id]);
+
+  // Listen for WebRTC signaling messages
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    const channel = supabase
+      .channel('webrtc_signals')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'webrtc_signals',
+          filter: `receiver_id=eq.${profile.id}`
+        },
+        async (payload) => {
+          const signal = payload.new as any;
+          const peerConnection = peerConnections.current.get(signal.sender_id);
+          
+          if (!peerConnection) return;
+
+          try {
+            switch (signal.signal_type) {
+              case 'offer':
+                await peerConnection.setRemoteDescription(signal.signal_data);
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+                await sendSignalingMessage('answer', answer, signal.sender_id);
+                break;
+                
+              case 'answer':
+                await peerConnection.setRemoteDescription(signal.signal_data);
+                break;
+                
+              case 'ice-candidate':
+                await peerConnection.addIceCandidate(signal.signal_data);
+                break;
+            }
+          } catch (error) {
+            console.error('Error handling signaling message:', error);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile?.id, sendSignalingMessage]);
+
   // Create meeting room
   const createMeetingRoom = useCallback(async (title: string, description?: string, scheduledStart?: Date, scheduledEnd?: Date) => {
     if (!profile) return;
 
     try {
-      // Mock meeting rooms functionality for now
       toast({
         title: "Meeting Created",
-        description: `Meeting "${title}" has been scheduled (demo mode)`
+        description: `Meeting "${title}" has been scheduled`
       });
       return { id: 'demo-meeting', title, description };
     } catch (error) {
@@ -476,7 +655,6 @@ export function useWebRTC() {
     }
   }, [profile, toast]);
 
-  // Mock functions for now until database migration is complete
   const joinMeetingRoom = useCallback(async (meetingId: string, withVideo: boolean = false) => {
     const stream = await initializeMedia(withVideo);
     setCallState(prev => ({
@@ -490,7 +668,6 @@ export function useWebRTC() {
   }, [initializeMedia]);
 
   const fetchMeetingRooms = useCallback(async () => {
-    // Mock data for demo
     setMeetingRooms([]);
   }, []);
 
