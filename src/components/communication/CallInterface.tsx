@@ -27,13 +27,10 @@ interface CallParticipant {
   id: string;
   name: string;
   avatar?: string;
-  isLocal: boolean;
-  isAudioEnabled: boolean;
+  isMuted: boolean;
   isVideoEnabled: boolean;
   isScreenSharing: boolean;
-  connectionQuality: 'excellent' | 'good' | 'fair' | 'poor';
-  isSpeaking: boolean;
-  audioLevel: number;
+  stream?: MediaStream;
 }
 
 interface CallInterfaceProps {
@@ -69,9 +66,9 @@ export default function CallInterface({
   const [showControls, setShowControls] = useState(true);
   const [layout, setLayout] = useState<'grid' | 'speaker' | 'sidebar'>('grid');
 
-  const localParticipant = participants.find(p => p.isLocal);
-  const remoteParticipants = participants.filter(p => !p.isLocal);
-  const speakingParticipant = participants.find(p => p.isSpeaking && !p.isLocal) || participants[0];
+  // Use first participant as local for demo
+  const localParticipant = participants[0];
+  const remoteParticipants = participants.slice(1);
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -104,16 +101,6 @@ export default function CallInterface({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const getConnectionQualityColor = (quality: CallParticipant['connectionQuality']) => {
-    switch (quality) {
-      case 'excellent': return 'text-green-500';
-      case 'good': return 'text-yellow-500';
-      case 'fair': return 'text-orange-500';
-      case 'poor': return 'text-red-500';
-      default: return 'text-gray-500';
-    }
-  };
-
   const ParticipantVideo = ({ participant }: { participant: CallParticipant }) => (
     <div className="relative bg-gray-900 rounded-lg overflow-hidden aspect-video">
       {participant.isVideoEnabled ? (
@@ -135,18 +122,15 @@ export default function CallInterface({
       <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Badge 
-            variant={participant.isLocal ? "default" : "secondary"}
+            variant="secondary"
             className="text-xs"
           >
-            {participant.isLocal ? 'You' : participant.name}
+            {participant.name}
           </Badge>
-          {participant.isSpeaking && (
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-          )}
         </div>
         
         <div className="flex items-center gap-1">
-          {!participant.isAudioEnabled && (
+          {participant.isMuted && (
             <MicOff className="h-4 w-4 text-red-500" />
           )}
           {!participant.isVideoEnabled && callType === 'video' && (
@@ -155,7 +139,6 @@ export default function CallInterface({
           {participant.isScreenSharing && (
             <Monitor className="h-4 w-4 text-blue-500" />
           )}
-          <div className={cn("w-2 h-2 rounded-full", getConnectionQualityColor(participant.connectionQuality))} />
         </div>
       </div>
     </div>
@@ -224,10 +207,7 @@ export default function CallInterface({
                 {participants.slice(0, 3).map((participant, index) => (
                   <Avatar 
                     key={participant.id} 
-                    className={cn(
-                      "h-24 w-24 border-4 border-gray-900",
-                      participant.isSpeaking && "ring-4 ring-green-500"
-                    )}
+                    className="h-24 w-24 border-4 border-gray-900"
                     style={{ zIndex: participants.length - index }}
                   >
                     <AvatarImage src={participant.avatar} />
@@ -253,12 +233,7 @@ export default function CallInterface({
                 {[...Array(5)].map((_, i) => (
                   <div
                     key={i}
-                    className={cn(
-                      "w-1 bg-green-500 rounded-full transition-all duration-150",
-                      participants.some(p => p.isSpeaking) 
-                        ? "animate-pulse"
-                        : "opacity-30"
-                    )}
+                    className="w-1 bg-green-500 rounded-full transition-all duration-150 animate-pulse opacity-30"
                     style={{
                       height: `${Math.random() * 20 + 10}px`,
                       animationDelay: `${i * 0.1}s`
@@ -279,12 +254,12 @@ export default function CallInterface({
         <div className="flex items-center justify-center gap-4">
           {/* Audio Toggle */}
           <Button
-            variant={localParticipant?.isAudioEnabled ? "secondary" : "destructive"}
+            variant={!localParticipant?.isMuted ? "secondary" : "destructive"}
             size="lg"
             className="h-12 w-12 rounded-full"
             onClick={onToggleAudio}
           >
-            {localParticipant?.isAudioEnabled ? (
+            {!localParticipant?.isMuted ? (
               <Mic className="h-5 w-5" />
             ) : (
               <MicOff className="h-5 w-5" />

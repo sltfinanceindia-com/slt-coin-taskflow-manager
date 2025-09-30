@@ -244,12 +244,19 @@ export default function CommunicationLayout() {
         </div>
       </div>
 
-      {/* Call Interface Overlay */}
-      <CallInterface 
-        onMinimize={() => setCallMinimized(true)}
-        onMaximize={() => setCallMinimized(false)}
-        isMinimized={callMinimized}
-      />
+      {/* Call Interface Overlay - Minimized View */}
+      {webrtc.callState.isActive && callMinimized && (
+        <CallInterface 
+          callId={webrtc.callState.callId || 'call-1'}
+          callType={webrtc.callState.callType}
+          participants={webrtc.callState.participants}
+          duration={webrtc.callState.duration}
+          onEndCall={handleEndCall}
+          onToggleAudio={() => webrtc.toggleMute()}
+          onToggleVideo={() => webrtc.toggleVideo()}
+          className="fixed bottom-4 right-4 w-80 z-50"
+        />
+      )}
 
       {/* Call Screens */}
       {webrtc.callState.isOutgoing && !webrtc.callState.isActive && (
