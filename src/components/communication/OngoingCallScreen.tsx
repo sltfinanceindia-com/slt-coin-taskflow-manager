@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +28,7 @@ interface Participant {
   hasVideo: boolean;
   isSpeaking: boolean;
   connectionQuality: 'excellent' | 'good' | 'poor';
+  stream?: MediaStream; // Added stream property
 }
 
 interface OngoingCallScreenProps {
@@ -39,6 +40,8 @@ interface OngoingCallScreenProps {
   isSpeakerOn: boolean;
   isScreenSharing: boolean;
   showParticipants: boolean;
+  localStream: MediaStream | null; // Added local stream
+  remoteStreams: Map<string, MediaStream>; // Added remote streams
   onToggleMute: () => void;
   onToggleVideo: () => void;
   onToggleSpeaker: () => void;
@@ -46,6 +49,7 @@ interface OngoingCallScreenProps {
   onAddParticipant: () => void;
   onToggleParticipants: () => void;
   onEndCall: () => void;
+  onTakeSnapshot?: () => void; // Added snapshot callback
   className?: string;
 }
 
@@ -58,6 +62,8 @@ export default function OngoingCallScreen({
   isSpeakerOn,
   isScreenSharing,
   showParticipants,
+  localStream,
+  remoteStreams,
   onToggleMute,
   onToggleVideo,
   onToggleSpeaker,
@@ -65,10 +71,33 @@ export default function OngoingCallScreen({
   onAddParticipant,
   onToggleParticipants,
   onEndCall,
+  onTakeSnapshot,
   className
 }: OngoingCallScreenProps) {
   const [networkQuality, setNetworkQuality] = useState<'excellent' | 'good' | 'poor'>('excellent');
-  
+  const localVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteVideoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
+
+  // Set up local video stream
+  useEffect(() => {
+    if (localVideoRef.current && localStream && callType === 'video') {
+      localVideoRef.current.srcObject = localStream;
+      localVideoRef.current.play().catch(console.error);
+    }
+  }, [localStream, callType]);
+
+  // Set up remote video streams
+  useEffect(() => {
+    remoteStreams.forEach((stream, participantId) => {
+      const videoElement = remoteVideoRefs.current.get(participantId);
+      if (videoElement && callType === 'video') {
+        videoElement.srcObject = stream;
+        videoElement.play().catch(console.error);
+      }
+    });
+  }, [remoteStreams, callType]);
+
+  // Format call duration
   const formatDuration = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -96,6 +125,45 @@ export default function OngoingCallScreen({
         return <Wifi className="h-4 w-4 text-gray-500" />;
     }
   };
+
+  // Register video element refs for remote streams
+  const setRemoteVideoRef = useCallback((participantId: string, element: HTMLVideoElement | null) => {
+    if (element) {
+      remoteVideoRefs.current.set(participantId, element);
+    } else {
+      remoteVideoRefs.current.delete(participantId);
+    }
+  }, []);
+
+  // Take snapshot function
+  const handleTakeSnapshot = useCallback(() => {
+    if (callType === 'video' && localVideoRef.current) {
+      const canvas = document.createElement('canvas');
+      const video = localVideoRef.current;
+      
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(video, 0, 0);
+        
+        // Convert to blob and download
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `call-snapshot-${Date.now()}.png`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }
+        }, 'image/png');
+      }
+    }
+    
+    onTakeSnapshot?.();
+  }, [callType, onTakeSnapshot]);
 
   const renderVoiceCallView = () => (
     <div className="flex-1 flex flex-col items-center justify-center space-y-8">
@@ -152,24 +220,42 @@ export default function OngoingCallScreen({
       {participants.length === 1 ? (
         // 1:1 Video Call
         <div className="relative w-full h-full bg-gray-900 rounded-lg overflow-hidden">
+          {/* Remote participant video */}
           <video 
+            ref={(el) => setRemoteVideoRef(participants[0].id, el)}
             className="w-full h-full object-cover"
             autoPlay
             playsInline
+            muted={false} // Remote audio should not be muted [web:79]
           />
-          <div className="absolute bottom-4 left-4">
+          
+          {/* Participant info overlay */}
+          <div className="absolute bottom-4 left-4 flex items-center space-x-2">
             <Badge variant="secondary" className="bg-black/50 text-white">
               {participants[0].name}
             </Badge>
+            {participants[0].isMuted && (
+              <div className="bg-red-500 rounded p-1">
+                <MicOff className="h-3 w-3 text-white" />
+              </div>
+            )}
+            {getQualityIcon(participants[0].connectionQuality)}
           </div>
-          {/* Self video (small) */}
-          <div className="absolute top-4 right-4 w-32 h-24 bg-gray-800 rounded-lg overflow-hidden">
+          
+          {/* Local video (picture-in-picture) */}
+          <div className="absolute top-4 right-4 w-32 h-24 bg-gray-800 rounded-lg overflow-hidden border-2 border-white/20">
             <video 
+              ref={localVideoRef}
               className="w-full h-full object-cover"
               autoPlay
               playsInline
-              muted
+              muted // Local video should always be muted to prevent feedback [web:75]
             />
+            {isMuted && (
+              <div className="absolute bottom-1 right-1 bg-red-500 rounded p-1">
+                <MicOff className="h-2 w-2 text-white" />
+              </div>
+            )}
           </div>
         </div>
       ) : (
@@ -183,9 +269,11 @@ export default function OngoingCallScreen({
           {participants.map((participant) => (
             <div key={participant.id} className="relative bg-gray-900 rounded-lg overflow-hidden">
               <video 
+                ref={(el) => setRemoteVideoRef(participant.id, el)}
                 className="w-full h-full object-cover"
                 autoPlay
                 playsInline
+                muted={false}
               />
               <div className="absolute bottom-2 left-2 flex items-center space-x-2">
                 <Badge variant="secondary" className="bg-black/50 text-white text-xs">
@@ -197,9 +285,32 @@ export default function OngoingCallScreen({
                   </div>
                 )}
               </div>
-              {getQualityIcon(participant.connectionQuality)}
+              <div className="absolute top-2 right-2">
+                {getQualityIcon(participant.connectionQuality)}
+              </div>
             </div>
           ))}
+          
+          {/* Local video in grid */}
+          <div className="relative bg-gray-800 rounded-lg overflow-hidden border-2 border-primary/20">
+            <video 
+              ref={localVideoRef}
+              className="w-full h-full object-cover"
+              autoPlay
+              playsInline
+              muted
+            />
+            <div className="absolute bottom-2 left-2">
+              <Badge variant="secondary" className="bg-black/50 text-white text-xs">
+                You
+              </Badge>
+            </div>
+            {isMuted && (
+              <div className="absolute bottom-2 right-2 bg-red-500 rounded p-1">
+                <MicOff className="h-3 w-3 text-white" />
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -218,6 +329,7 @@ export default function OngoingCallScreen({
               <span>{formatDuration(duration)}</span>
               <span>•</span>
               {getQualityIcon(networkQuality)}
+              <span className="capitalize">{callType} call</span>
             </div>
           </div>
         </div>
@@ -251,6 +363,32 @@ export default function OngoingCallScreen({
           <div className="w-80 border-l border-border p-4 space-y-4">
             <h3 className="font-semibold">Participants ({participants.length + 1})</h3>
             <div className="space-y-3">
+              {/* You (local user) */}
+              <div className="flex items-center space-x-3 p-2 rounded-lg bg-primary/5">
+                <Avatar className="w-10 h-10">
+                  <AvatarFallback>You</AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">You</p>
+                  <div className="flex items-center space-x-2">
+                    {isMuted ? (
+                      <MicOff className="h-3 w-3 text-red-500" />
+                    ) : (
+                      <Mic className="h-3 w-3 text-green-500" />
+                    )}
+                    {callType === 'video' && (
+                      hasVideo ? (
+                        <Video className="h-3 w-3 text-green-500" />
+                      ) : (
+                        <VideoOff className="h-3 w-3 text-red-500" />
+                      )
+                    )}
+                    {getQualityIcon(networkQuality)}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Other participants */}
               {participants.map((participant) => (
                 <div key={participant.id} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50">
                   <Avatar className="w-10 h-10">
@@ -353,6 +491,7 @@ export default function OngoingCallScreen({
             <Button
               variant="outline"
               size="lg"
+              onClick={handleTakeSnapshot}
               className="w-12 h-12 rounded-full"
             >
               <Camera className="h-5 w-5" />
