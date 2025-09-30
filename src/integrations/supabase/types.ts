@@ -401,60 +401,45 @@ export type Database = {
       }
       call_history: {
         Row: {
-          answered_at: string | null
-          call_type: string
-          caller_id: string
-          created_at: string
+          call_type: string | null
+          caller_id: string | null
+          caller_name: string | null
+          created_at: string | null
           duration_seconds: number | null
           ended_at: string | null
           id: string
-          missed: boolean | null
-          receiver_id: string
-          started_at: string
-          status: string
+          receiver_id: string | null
+          receiver_name: string | null
+          started_at: string | null
+          status: string | null
         }
         Insert: {
-          answered_at?: string | null
-          call_type: string
-          caller_id: string
-          created_at?: string
+          call_type?: string | null
+          caller_id?: string | null
+          caller_name?: string | null
+          created_at?: string | null
           duration_seconds?: number | null
           ended_at?: string | null
-          id?: string
-          missed?: boolean | null
-          receiver_id: string
-          started_at?: string
-          status: string
+          id: string
+          receiver_id?: string | null
+          receiver_name?: string | null
+          started_at?: string | null
+          status?: string | null
         }
         Update: {
-          answered_at?: string | null
-          call_type?: string
-          caller_id?: string
-          created_at?: string
+          call_type?: string | null
+          caller_id?: string | null
+          caller_name?: string | null
+          created_at?: string | null
           duration_seconds?: number | null
           ended_at?: string | null
           id?: string
-          missed?: boolean | null
-          receiver_id?: string
-          started_at?: string
-          status?: string
+          receiver_id?: string | null
+          receiver_name?: string | null
+          started_at?: string | null
+          status?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "call_history_caller_id_fkey"
-            columns: ["caller_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "call_history_receiver_id_fkey"
-            columns: ["receiver_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       channel_members: {
         Row: {
@@ -2056,28 +2041,31 @@ export type Database = {
       }
       webrtc_signals: {
         Row: {
-          call_id: string
-          created_at: string
-          id: string
-          sender_id: string
-          signal_data: Json
-          signal_type: string
+          call_id: string | null
+          created_at: string | null
+          id: number
+          receiver_id: string | null
+          sender_id: string | null
+          signal_data: Json | null
+          signal_type: string | null
         }
         Insert: {
-          call_id: string
-          created_at?: string
-          id?: string
-          sender_id: string
-          signal_data: Json
-          signal_type: string
+          call_id?: string | null
+          created_at?: string | null
+          id?: number
+          receiver_id?: string | null
+          sender_id?: string | null
+          signal_data?: Json | null
+          signal_type?: string | null
         }
         Update: {
-          call_id?: string
-          created_at?: string
-          id?: string
-          sender_id?: string
-          signal_data?: Json
-          signal_type?: string
+          call_id?: string | null
+          created_at?: string | null
+          id?: number
+          receiver_id?: string | null
+          sender_id?: string | null
+          signal_data?: Json | null
+          signal_type?: string | null
         }
         Relationships: []
       }

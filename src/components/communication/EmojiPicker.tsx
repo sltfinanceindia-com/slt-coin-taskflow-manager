@@ -42,46 +42,44 @@ export default function EmojiPicker({ onEmojiSelect, isOpen, onClose }: EmojiPic
   if (!isOpen) return null;
 
   return (
-    <div className="absolute bottom-12 left-0 z-50">
-      <Card className="w-80 shadow-lg">
-        <CardContent className="p-4">
-          <Tabs defaultValue="smileys" className="w-full">
-            <TabsList className="grid w-full grid-cols-6">
-              {Object.entries(emojiCategories).map(([key, category]) => {
-                const Icon = category.icon;
-                return (
-                  <TabsTrigger key={key} value={key} className="p-2">
-                    <Icon className="h-4 w-4" />
-                  </TabsTrigger>
-                );
-              })}
-            </TabsList>
-            
-            {Object.entries(emojiCategories).map(([key, category]) => (
-              <TabsContent key={key} value={key}>
-                <ScrollArea className="h-48">
-                  <div className="grid grid-cols-8 gap-1 p-2">
-                    {category.emojis.map((emoji, index) => (
-                      <Button
-                        key={index}
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 hover:bg-muted"
-                        onClick={() => {
-                          onEmojiSelect(emoji);
-                          onClose();
-                        }}
-                      >
-                        <span className="text-lg">{emoji}</span>
-                      </Button>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </TabsContent>
-            ))}
-          </Tabs>
-        </CardContent>
-      </Card>
-    </div>
+    <Card className="w-80 shadow-lg border">
+      <CardContent className="p-4">
+        <Tabs defaultValue="smileys" className="w-full">
+          <TabsList className="grid w-full grid-cols-6 mb-2">
+            {Object.entries(emojiCategories).map(([key, category]) => {
+              const Icon = category.icon;
+              return (
+                <TabsTrigger key={key} value={key} className="p-2">
+                  <Icon className="h-4 w-4" />
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+          
+          {Object.entries(emojiCategories).map(([key, category]) => (
+            <TabsContent key={key} value={key} className="mt-0">
+              <ScrollArea className="h-48">
+                <div className="grid grid-cols-8 gap-1 p-2">
+                  {category.emojis.map((emoji, index) => (
+                    <Button
+                      key={index}
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 hover:bg-muted"
+                      onClick={() => {
+                        onEmojiSelect(emoji);
+                        onClose();
+                      }}
+                    >
+                      <span className="text-lg">{emoji}</span>
+                    </Button>
+                  ))}
+                </div>
+              </ScrollArea>
+            </TabsContent>
+          ))}
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 }

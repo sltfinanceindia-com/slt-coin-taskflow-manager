@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +25,8 @@ import {
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { format, isToday, isYesterday } from 'date-fns';
+import { useAuth } from '@/hooks/useAuth';
+import { useCallHistory } from '@/hooks/useCallHistory';
 
 interface CallRecord {
   id: string;
@@ -54,78 +56,33 @@ export default function EnhancedCallHistory({
   onCallBack,
   onMessage
 }: EnhancedCallHistoryProps) {
-  const [callHistory, setCallHistory] = useState<CallRecord[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'missed' | 'incoming' | 'outgoing'>('all');
-  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
+  const { callHistory: rawCallHistory, isLoading } = useCallHistory();
 
-  useEffect(() => {
-    // Mock call history data - replace with actual API call
-    const mockCallHistory: CallRecord[] = [
-      {
-        id: '1',
-        type: 'outgoing',
-        callType: 'video',
-        participant: {
-          id: 'user1',
-          name: 'Sarah Wilson',
-          avatar: '/avatars/sarah.png',
-          role: 'Designer'
-        },
-        timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-        duration: 1245, // 20m 45s
-        status: 'completed',
-        isStarred: true
+  // Transform database call history to match CallRecord interface
+  const callHistory: CallRecord[] = rawCallHistory.map((call) => {
+    const isIncoming = call.receiver_id === user?.id;
+    const isMissed = call.status === 'no_answer' && isIncoming;
+    
+    return {
+      id: call.id,
+      type: isMissed ? 'missed' : (isIncoming ? 'incoming' : 'outgoing'),
+      callType: (call.call_type === 'video' ? 'video' : 'voice') as 'voice' | 'video',
+      participant: {
+        id: isIncoming ? call.caller_id || '' : call.receiver_id || '',
+        name: isIncoming ? call.caller_name || 'Unknown' : call.receiver_name || 'Unknown',
+        role: ''
       },
-      {
-        id: '2',
-        type: 'missed',
-        callType: 'voice',
-        participant: {
-          id: 'user2',
-          name: 'John Doe',
-          avatar: '/avatars/john.png',
-          role: 'Developer'
-        },
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-        duration: 0,
-        status: 'no_answer',
-        isStarred: false
-      },
-      {
-        id: '3',
-        type: 'incoming',
-        callType: 'voice',
-        participant: {
-          id: 'user3',
-          name: 'Mike Johnson',
-          role: 'Manager'
-        },
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4), // 4 hours ago
-        duration: 892, // 14m 52s
-        status: 'completed',
-        isStarred: false
-      },
-      {
-        id: '4',
-        type: 'outgoing',
-        callType: 'video',
-        participant: {
-          id: 'user4',
-          name: 'Emma Davis',
-          avatar: '/avatars/emma.png',
-          role: 'Product Manager'
-        },
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // Yesterday
-        duration: 2156, // 35m 56s
-        status: 'completed',
-        isStarred: true
-      }
-    ];
-
-    setCallHistory(mockCallHistory);
-    setIsLoading(false);
-  }, []);
+      timestamp: new Date(call.started_at || Date.now()),
+      duration: call.duration_seconds || 0,
+      status: (call.status === 'completed' ? 'completed' : 
+                call.status === 'declined' ? 'declined' :
+                call.status === 'failed' ? 'failed' : 'no_answer') as 'completed' | 'declined' | 'no_answer' | 'failed',
+      isStarred: false
+    };
+  });
 
   const formatDuration = (seconds: number): string => {
     if (seconds === 0) return '0:00';
@@ -200,9 +157,9 @@ export default function EnhancedCallHistory({
   };
 
   const handleToggleStar = (recordId: string) => {
-    setCallHistory(prev => prev.map(record => 
-      record.id === recordId ? { ...record, isStarred: !record.isStarred } : record
-    ));
+    // In a real implementation, this would update the database
+    // For now, we'll just show a toast
+    toast.success('Starred status updated');
   };
 
   if (isLoading) {

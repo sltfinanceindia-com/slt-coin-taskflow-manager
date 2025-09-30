@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { audioNotifications } from '@/utils/audioNotifications';
 
 export interface CallState {
@@ -285,14 +285,15 @@ export function useWebRTC() {
     audioLevelInterval.current = setInterval(checkAudioLevel, 100);
   }, []);
 
-  // Start voice call with enhanced features
   const startVoiceCall = useCallback(async (userId: string, userName: string) => {
     try {
+      console.log('Starting voice call with:', userId, userName);
+      
       const callId = `call_${Date.now()}_${user?.id}_${userId}`;
       currentCallId.current = callId;
       
       // Create call record in database
-      const { error } = await supabase
+      const { error: callError } = await supabase
         .from('call_history')
         .insert({
           id: callId,
@@ -302,71 +303,63 @@ export function useWebRTC() {
           receiver_name: userName,
           call_type: 'voice',
           status: 'ringing',
-          created_at: new Date().toISOString()
+          started_at: new Date().toISOString()
         });
 
-      if (error) throw error;
+      if (callError) {
+        console.error('Error creating call record:', callError);
+        toast.error('Failed to start call');
+        return;
+      }
 
-      const stream = await initializeMedia(false, true);
-      const peerConnection = initializePeerConnection(userId);
-      
-      // Add stream to peer connection
-      stream.getTracks().forEach(track => {
-        peerConnection.addTrack(track, stream);
-      });
-
-      // Create offer
-      const offer = await peerConnection.createOffer({
-        offerToReceiveAudio: true,
-        offerToReceiveVideo: false
-      });
-      
-      await peerConnection.setLocalDescription(offer);
-      await sendSignalingMessage('offer', offer, userId);
-
-      setCallState(prev => ({
-        ...prev,
-        isActive: true,
-        isOutgoing: true,
-        callType: 'voice',
-        callId,
-        participants: [{
-          id: userId,
-          name: userName,
-          isMuted: false,
-          isVideoEnabled: false,
-          isScreenSharing: false,
-          isSpeaking: false,
-          connectionQuality: 'excellent',
-          audioLevel: 0
-        }]
-      }));
-
-      audioNotifications.playOutgoingCall();
-      
-      // Start call timer
-      const startTime = Date.now();
-      callTimer.current = setInterval(() => {
+      // Initialize media for voice call
+      try {
+        const stream = await initializeMedia(false, true);
+        
         setCallState(prev => ({
           ...prev,
-          duration: Math.floor((Date.now() - startTime) / 1000)
+          callId,
+          isActive: true,
+          isOutgoing: true,
+          callType: 'voice',
+          participants: [{
+            id: userId,
+            name: userName,
+            isMuted: false,
+            isVideoEnabled: false,
+            isScreenSharing: false,
+            isSpeaking: false,
+            connectionQuality: 'excellent',
+            audioLevel: 0
+          }]
         }));
-      }, 1000);
 
-      toast({
-        title: "Voice Call Started",
-        description: `Calling ${userName}...`
-      });
+        audioNotifications.playOutgoingCall();
+        
+        // Start call timer
+        const startTime = Date.now();
+        callTimer.current = setInterval(() => {
+          setCallState(prev => ({
+            ...prev,
+            duration: Math.floor((Date.now() - startTime) / 1000)
+          }));
+        }, 1000);
 
+        toast.success('Call connected');
+      } catch (mediaError) {
+        console.error('Error accessing media devices:', mediaError);
+        
+        // Clean up call record
+        await supabase
+          .from('call_history')
+          .update({ status: 'failed', ended_at: new Date().toISOString() })
+          .eq('id', callId);
+      }
     } catch (error) {
       console.error('Error starting voice call:', error);
-      toast({
-        title: "Call Failed",
-        description: "Could not start voice call",
-        variant: "destructive"
-      });
+      toast.error('Failed to start voice call');
     }
-  }, [user?.id, profile?.full_name, initializeMedia, initializePeerConnection, sendSignalingMessage, toast]);
+  }, [user?.id, profile?.full_name, initializeMedia, audioNotifications, toast]);
 
   // Start video call with enhanced features
   const startVideoCall = useCallback(async (userId: string, userName: string) => {

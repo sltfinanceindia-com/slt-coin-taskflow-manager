@@ -131,10 +131,12 @@ export const useWebRTCCall = () => {
       await supabase
         .from('call_history')
         .insert({
+          id: callId,
           caller_id: user?.id,
           receiver_id: recipientId,
           call_type: callType,
-          status: 'ringing'
+          status: 'ringing',
+          started_at: new Date().toISOString()
         });
 
       // Send offer via signaling

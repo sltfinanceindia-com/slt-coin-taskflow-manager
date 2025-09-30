@@ -57,27 +57,55 @@ export default function AttachmentUpload({
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
-    setSelectedFiles(files);
+    
+    // Validate file sizes
+    const maxSize = 20 * 1024 * 1024; // 20MB
+    const validFiles = files.filter(file => {
+      if (file.size > maxSize) {
+        toast.error(`${file.name} is too large. Maximum size is 20MB.`);
+        return false;
+      }
+      return true;
+    });
+
+    setSelectedFiles(validFiles);
   };
 
   const handleUpload = async () => {
-    if (!selectedFiles.length || !messageId) return;
+    if (!selectedFiles.length) {
+      toast.error('Please select files to upload');
+      return;
+    }
+
+    if (!messageId) {
+      toast.error('Unable to upload: no message ID');
+      return;
+    }
 
     try {
-      for (const file of selectedFiles) {
-        setUploadProgress(0);
+      const uploadedAttachments = [];
+      
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        setUploadProgress(((i + 0.5) / selectedFiles.length) * 100);
+        
         const attachment = await uploadFile(file, messageId);
         if (attachment) {
+          uploadedAttachments.push(attachment);
           onFileUploaded(attachment);
         }
-        setUploadProgress(100);
+        
+        setUploadProgress(((i + 1) / selectedFiles.length) * 100);
       }
       
       setSelectedFiles([]);
+      setUploadProgress(0);
       onClose();
-      toast.success('Files uploaded successfully');
+      toast.success(`${uploadedAttachments.length} file(s) uploaded successfully`);
     } catch (error) {
+      console.error('Upload error:', error);
       toast.error('Failed to upload files');
+      setUploadProgress(0);
     }
   };
 
@@ -86,16 +114,15 @@ export default function AttachmentUpload({
   };
 
   return (
-    <div className="absolute bottom-12 left-0 z-50">
-      <Card className="w-96 shadow-lg">
-        <CardContent className="p-4">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-medium">Upload Files</h3>
-              <Button variant="ghost" size="sm" onClick={onClose}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
+    <Card className="w-96 shadow-lg border">
+      <CardContent className="p-4">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-medium">Upload Files</h3>
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
 
             {/* File Input */}
             <div className="space-y-2">
@@ -225,13 +252,12 @@ export default function AttachmentUpload({
               </Button>
             )}
 
-            {/* File Size Limit */}
+            {/* Helper Text */}
             <p className="text-xs text-muted-foreground text-center">
               Maximum file size: 20MB per file
             </p>
           </div>
         </CardContent>
       </Card>
-    </div>
   );
 }

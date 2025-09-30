@@ -8,7 +8,7 @@ import { InternManager } from '@/components/InternManager';
 import { ProfileSettings } from '@/components/ProfileSettings';
 import { TrainingAdmin } from '@/components/TrainingAdmin';
 import { CertificateGenerator } from '@/components/CertificateGenerator';
-import { Calendar } from '@/components/Calendar';
+import Calendar from '@/components/Calendar';
 import { supabase } from '@/integrations/supabase/client';
 
 export function AdminDashboard() {

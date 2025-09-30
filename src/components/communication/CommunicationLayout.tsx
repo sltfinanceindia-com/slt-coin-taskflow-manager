@@ -6,6 +6,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MessageCircle } from 'lucide-react';
+import Calendar from '../Calendar';
+import { toast } from 'sonner';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import TeamsNavigation from './TeamsNavigation';
 import EnhancedChatList from './EnhancedChatList';
@@ -189,14 +191,8 @@ export default function CommunicationLayout() {
 
       case 'calendar':
         return (
-          <div className="h-full flex items-center justify-center bg-background">
-            <div className="text-center space-y-6">
-              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                <span className="text-4xl">📅</span>
-              </div>
-              <h3 className="text-2xl font-semibold">Calendar</h3>
-              <p className="text-muted-foreground">Calendar integration coming soon!</p>
-            </div>
+          <div className="h-full">
+            <Calendar />
           </div>
         );
 
