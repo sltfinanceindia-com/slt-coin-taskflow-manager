@@ -28,6 +28,7 @@ import EnhancedChatList from './EnhancedChatList';
 import EnhancedMessageArea from './EnhancedMessageArea';
 import PresenceIndicator from './PresenceIndicator';
 import ModernThreePanel from './ModernThreePanel';
+import MissedCallNotifications from './MissedCallNotifications';
 
 // Import hooks
 import { useCommunication } from '@/hooks/useCommunication';
@@ -271,6 +272,8 @@ export default function EnhancedCommunication() {
 
   return (
     <div className="h-screen bg-background">
+      <MissedCallNotifications />
+      
       <ModernThreePanel
         leftPanel={leftPanelContent}
         centerPanel={centerPanelContent}
