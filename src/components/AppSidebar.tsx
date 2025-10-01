@@ -13,7 +13,8 @@ import {
   Settings,
   Activity,
   Monitor,
-  MessageSquare
+  MessageSquare,
+  Phone
 } from "lucide-react"
 
 import {
@@ -39,6 +40,7 @@ const adminItems = [
   { title: "Time Logs", url: "time", icon: Clock },
   { title: "Training", url: "training", icon: BookOpen },
   { title: "Communication", url: "communication", icon: MessageSquare },
+  { title: "Calls", url: "/calls", icon: Phone },
   { title: "Coins", url: "coins", icon: Coins },
   { title: "Interns", url: "interns", icon: Users },
   { title: "Productivity", url: "productivity", icon: Activity },
@@ -53,6 +55,7 @@ const internItems = [
   { title: "Training", url: "training", icon: BookOpen },
   { title: "Time Logs", url: "time", icon: Clock },
   { title: "Communication", url: "communication", icon: MessageSquare },
+  { title: "Calls", url: "/calls", icon: Phone },
   { title: "My Coins", url: "my-coins", icon: Coins },
   { title: "Analytics", url: "analytics", icon: BarChart3 },
 ]
@@ -134,18 +137,31 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
             <SidebarMenu className="space-y-1">
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    asChild
-                    className={`${isActive(item.url) ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""} h-8 sm:h-10`}
-                  >
-                    <button
-                      onClick={() => onTabChange(item.url)}
-                      className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3"
+                  {item.url.startsWith('/') ? (
+                    <NavLink to={item.url} className="w-full">
+                      {({ isActive: navIsActive }) => (
+                        <SidebarMenuButton 
+                          className={`${navIsActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""} h-8 sm:h-10 w-full`}
+                        >
+                          <item.icon className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
+                          {!collapsed && <span className="text-xs sm:text-sm truncate">{item.title}</span>}
+                        </SidebarMenuButton>
+                      )}
+                    </NavLink>
+                  ) : (
+                    <SidebarMenuButton 
+                      asChild
+                      className={`${isActive(item.url) ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""} h-8 sm:h-10`}
                     >
-                      <item.icon className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-                      {!collapsed && <span className="text-xs sm:text-sm truncate">{item.title}</span>}
-                    </button>
-                  </SidebarMenuButton>
+                      <button
+                        onClick={() => onTabChange(item.url)}
+                        className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3"
+                      >
+                        <item.icon className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
+                        {!collapsed && <span className="text-xs sm:text-sm truncate">{item.title}</span>}
+                      </button>
+                    </SidebarMenuButton>
+                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>

@@ -12,6 +12,7 @@ import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Training from "./pages/Training";
 import Assessment from "./pages/Assessment";
+import Calls from "./pages/Calls";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ function AppContent() {
           <Route path="/" element={<ModernDashboard />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/training" element={<Training />} />
+          <Route path="/calls" element={<Calls />} />
           <Route path="/assessment/:id" element={<Assessment />} />
           <Route path="/auth" element={<Auth />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
