@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 
 interface Profile {
   id: string;
-  user_id?: string; // Optional for backward compatibility
+  user_id?: string;
   full_name: string;
   email: string;
   role: 'admin' | 'intern';
@@ -37,19 +37,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ FIXED: Fetch profile by ID (not user_id)
+  // ✅ Fetch profile with auto-create fallback
   const fetchProfile = async (userId: string) => {
     try {
       console.log('📋 Fetching profile for user ID:', userId);
       
-      // ✅ Try fetching by id first (correct way)
+      // Try fetching by id first
       let { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
 
-      // If not found, try by user_id (fallback for old data)
+      // Fallback: try by user_id
       if (error && error.code === 'PGRST116') {
         console.log('Profile not found by id, trying user_id...');
         const result = await supabase
@@ -62,16 +62,63 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         error = result.error;
       }
 
-      if (error) {
-        console.error('❌ Error fetching profile:', error);
-        toast.error('Failed to load profile');
+      // ✅ AUTO-CREATE: If still not found, create new profile
+      if (error && error.code === 'PGRST116') {
+        console.log('⚠️ Profile not found - creating new profile...');
+        
+        // Get user details from auth
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        
+        if (!authUser) {
+          throw new Error('No authenticated user found');
+        }
+
+        console.log('Creating profile with:', {
+          id: userId,
+          email: authUser.email,
+          full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User'
+        });
+
+        // Create new profile
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            id: userId,
+            full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
+            email: authUser.email || '',
+            role: (authUser.user_metadata?.role as 'admin' | 'intern') || 'intern',
+            avatar_url: authUser.user_metadata?.avatar_url || null,
+            total_coins: 0,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+
+        if (createError) {
+          console.error('❌ Error creating profile:', createError);
+          toast.error('Failed to create profile. Please contact support.');
+          throw createError;
+        }
+
+        console.log('✅ Profile created successfully:', newProfile.id);
+        setProfile(newProfile);
+        toast.success('Welcome! Your profile has been created.');
         return;
       }
 
+      // Handle other errors
+      if (error) {
+        console.error('❌ Error fetching profile:', error);
+        toast.error('Failed to load profile');
+        throw error;
+      }
+
+      // Profile found successfully
       if (data) {
         console.log('✅ Profile loaded:', data.id, data.full_name);
         
-        // ✅ Verify profile ID matches auth ID
+        // Verify profile ID matches auth ID
         if (data.id !== userId) {
           console.error('❌ Profile ID mismatch!');
           console.error('Auth ID:', userId);
@@ -82,8 +129,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         setProfile(data);
       }
-    } catch (error) {
-      console.error('❌ Error fetching profile:', error);
+    } catch (error: any) {
+      console.error('❌ Error in fetchProfile:', error);
+      toast.error(`Profile error: ${error.message}`);
     }
   };
 
@@ -94,7 +142,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // ✅ NEW: Refresh session
   const refreshSession = async () => {
     try {
       console.log('🔄 Refreshing session...');
@@ -118,7 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         toast.success('Session refreshed', { duration: 2000 });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Unexpected session refresh error:', error);
     }
   };
@@ -126,7 +173,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    // ✅ Check existing session first
     const initializeAuth = async () => {
       try {
         console.log('🔐 Initializing auth...');
@@ -162,7 +208,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initializeAuth();
 
-    // ✅ Set up auth state listener
+    // Auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         console.log('🔐 Auth state changed:', event);
@@ -231,21 +277,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     console.log('✅ Sign in successful');
     
-    // Wait for profile to load
+    // Wait for profile to load (will auto-create if missing)
     if (data.user) {
       await fetchProfile(data.user.id);
-    }
-    
-    // Set user as online after successful sign in
-    if (data.user && profile?.id) {
-      try {
-        await supabase.rpc('update_user_presence', {
-          p_user_id: profile.id,
-          p_is_online: true
-        });
-        console.log('✅ User presence updated to online');
-      } catch (presenceError) {
-        console.warn('⚠️ Failed to update presence:', presenceError);
+      
+      // Set user as online after profile is loaded
+      if (profile?.id) {
+        try {
+          await supabase.rpc('update_user_presence', {
+            p_user_id: profile.id,
+            p_is_online: true
+          });
+          console.log('✅ User presence updated to online');
+        } catch (presenceError) {
+          console.warn('⚠️ Failed to update presence:', presenceError);
+        }
       }
     }
     
@@ -309,7 +355,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signIn,
     signOut,
     refreshProfile,
-    refreshSession, // ✅ NEW: Expose refresh function
+    refreshSession,
   };
 
   return (
