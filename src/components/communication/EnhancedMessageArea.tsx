@@ -13,7 +13,7 @@ import {
   Smile,
   Paperclip,
   Mic,
-  MicOff,
+  MicOff, // Voice recording icon
   Send,
   MoreHorizontal,
   Circle,
