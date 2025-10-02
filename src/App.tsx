@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,6 +13,8 @@ import Training from "./pages/Training";
 import Assessment from "./pages/Assessment";
 import Calls from "./pages/Calls";
 import NotFound from "./pages/NotFound";
+// ✅ ADD THIS IMPORT
+import IncomingCallHandler from "@/components/communication/IncomingCallHandler";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,9 @@ function AppContent() {
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        
+        {/* ✅ ADD THIS - Global incoming call handler */}
+        <IncomingCallHandler />
       </BrowserRouter>
     </TooltipProvider>
   );
