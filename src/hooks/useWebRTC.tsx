@@ -342,20 +342,20 @@ export function useWebRTC() {
       console.log('=== Starting Voice Call ===');
       console.log('User ID:', userId);
       console.log('User Name:', userName);
-      console.log('Current user:', user?.id);
+      console.log('Current profile ID:', profile?.id);
       console.log('Profile:', profile?.full_name);
 
-      const callId = `call_${Date.now()}_${user?.id}_${userId}`;
+      const callId = `call_${Date.now()}_${profile?.id}_${userId}`;
       currentCallId.current = callId;
       console.log('Generated Call ID:', callId);
       
-      // Create call record in database
+      // Create call record in database using profile IDs
       console.log('Creating call record...');
       const { error: callError } = await supabase
         .from('call_history')
         .insert({
           id: callId,
-          caller_id: user?.id,
+          caller_id: profile?.id,
           receiver_id: userId,
           caller_name: profile?.full_name || 'Unknown',
           receiver_name: userName,
@@ -459,15 +459,15 @@ export function useWebRTC() {
   const startVideoCall = useCallback(async (userId: string, userName: string) => {
     try {
       console.log('=== Starting Video Call ===');
-      const callId = `call_${Date.now()}_${user?.id}_${userId}`;
+      const callId = `call_${Date.now()}_${profile?.id}_${userId}`;
       currentCallId.current = callId;
       
-      // Create call record in database
+      // Create call record in database using profile IDs
       const { error } = await supabase
         .from('call_history')
         .insert({
           id: callId,
-          caller_id: user?.id,
+          caller_id: profile?.id,
           receiver_id: userId,
           caller_name: profile?.full_name || 'Unknown',
           receiver_name: userName,
@@ -879,7 +879,7 @@ export function useWebRTC() {
 
   // Listen for incoming calls via Supabase realtime
   useEffect(() => {
-    if (!user?.id) return;
+    if (!profile?.id) return;
 
     const channel = supabase
       .channel('incoming_calls')
@@ -889,7 +889,7 @@ export function useWebRTC() {
           event: 'INSERT',
           schema: 'public',
           table: 'call_history',
-          filter: `receiver_id=eq.${user.id}`
+          filter: `receiver_id=eq.${profile.id}`
         },
         (payload) => {
           const call = payload.new as any;
@@ -916,11 +916,11 @@ export function useWebRTC() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id]);
+  }, [profile?.id]);
 
   // Listen for WebRTC signaling messages
   useEffect(() => {
-    if (!user?.id) return;
+    if (!profile?.id) return;
 
     const channel = supabase
       .channel('webrtc_signals')
@@ -930,7 +930,7 @@ export function useWebRTC() {
           event: 'INSERT',
           schema: 'public',
           table: 'webrtc_signals',
-          filter: `receiver_id=eq.${user.id}`
+          filter: `receiver_id=eq.${profile.id}`
         },
         async (payload) => {
           const signal = payload.new as any;
@@ -964,7 +964,7 @@ export function useWebRTC() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id, sendSignalingMessage, initializePeerConnection]);
+  }, [profile?.id, sendSignalingMessage, initializePeerConnection]);
 
   // Meeting room functions (simplified for now)
   const createMeetingRoom = useCallback(async (title: string, description?: string) => {

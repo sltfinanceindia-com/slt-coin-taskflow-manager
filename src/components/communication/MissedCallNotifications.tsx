@@ -33,8 +33,12 @@ export default function MissedCallNotifications() {
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    const missed = getMissedCalls().filter(call => !dismissed.has(call.id));
-    setMissedCalls(missed as MissedCall[]);
+    const loadMissedCalls = async () => {
+      const missed = await getMissedCalls();
+      const filteredMissed = (missed || []).filter(call => !dismissed.has(call.id));
+      setMissedCalls(filteredMissed as MissedCall[]);
+    };
+    loadMissedCalls();
   }, [callHistory, dismissed]);
 
   const handleCallBack = async (call: MissedCall) => {

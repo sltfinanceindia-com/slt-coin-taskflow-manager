@@ -26,10 +26,23 @@ export function useCallHistory() {
 
     try {
       setIsLoading(true);
+      
+      // First get the profile id
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!profile) {
+        setIsLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('call_history')
         .select('*')
-        .or(`caller_id.eq.${user.id},receiver_id.eq.${user.id}`)
+        .or(`caller_id.eq.${profile.id},receiver_id.eq.${profile.id}`)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -69,9 +82,20 @@ export function useCallHistory() {
     };
   }, [user]);
 
-  const getMissedCalls = () => {
+  const getMissedCalls = async () => {
+    if (!user) return [];
+    
+    // Get profile id first
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('user_id', user.id)
+      .single();
+
+    if (!profile) return [];
+
     return callHistory.filter(
-      (call) => call.status === 'no_answer' && call.receiver_id === user?.id
+      (call) => call.status === 'no_answer' && call.receiver_id === profile.id
     );
   };
 

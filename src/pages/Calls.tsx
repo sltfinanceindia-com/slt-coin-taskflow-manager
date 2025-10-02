@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +27,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import IncomingCallModal from '@/components/communication/IncomingCallModal';
+import CalendarIntegration from '@/components/CalendarIntegration';
 import { cn } from '@/lib/utils';
 
 export default function Calls() {
@@ -48,6 +49,16 @@ export default function Calls() {
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [missedCalls, setMissedCalls] = useState<any[]>([]);
+
+  // Load missed calls
+  useEffect(() => {
+    const loadMissedCalls = async () => {
+      const missed = await getMissedCalls();
+      setMissedCalls(missed || []);
+    };
+    loadMissedCalls();
+  }, [callHistory]);
 
   const filteredUsers = chatUsers.filter(user => 
     user.profile.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) &&
@@ -206,7 +217,7 @@ export default function Calls() {
 
       {/* Main Tabs */}
       <Tabs defaultValue="contacts" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="contacts">
             <Users className="h-4 w-4 mr-2" />
             Contacts
@@ -217,7 +228,11 @@ export default function Calls() {
           </TabsTrigger>
           <TabsTrigger value="missed">
             <PhoneMissed className="h-4 w-4 mr-2" />
-            Missed ({getMissedCalls().length})
+            Missed ({missedCalls.length})
+          </TabsTrigger>
+          <TabsTrigger value="calendar">
+            <Clock className="h-4 w-4 mr-2" />
+            Calendar
           </TabsTrigger>
         </TabsList>
 
@@ -367,7 +382,7 @@ export default function Calls() {
             <CardContent>
               <ScrollArea className="h-[500px]">
                 <div className="space-y-2">
-                  {getMissedCalls().map((call) => (
+                  {missedCalls.map((call) => (
                     <div
                       key={call.id}
                       className="flex items-center justify-between p-3 rounded-lg border border-red-200 bg-red-50/50 dark:bg-red-950/20"
@@ -403,7 +418,7 @@ export default function Calls() {
                       </Button>
                     </div>
                   ))}
-                  {getMissedCalls().length === 0 && (
+                  {missedCalls.length === 0 && (
                     <div className="text-center py-12 text-muted-foreground">
                       <PhoneMissed className="h-12 w-12 mx-auto mb-4 opacity-50" />
                       <p>No missed calls</p>
@@ -413,6 +428,11 @@ export default function Calls() {
               </ScrollArea>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Calendar Tab */}
+        <TabsContent value="calendar" className="space-y-4">
+          <CalendarIntegration />
         </TabsContent>
       </Tabs>
     </div>
