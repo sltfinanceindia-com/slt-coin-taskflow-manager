@@ -13,6 +13,7 @@ import {
   Smile,
   Paperclip,
   Mic,
+  MicOff,
   Send,
   MoreHorizontal,
   Circle,
@@ -32,7 +33,6 @@ import TypingIndicator from './TypingIndicator';
 import EmojiPicker from './EmojiPicker';
 import AttachmentUpload from './AttachmentUpload';
 import VoiceRecorder from './VoiceRecorder';
-import CallModal from './CallModal';
 import { usePresence } from '@/hooks/usePresence';
 import { useMessageStates } from '@/hooks/useMessageStates';
 import { useFileUpload } from '@/hooks/useFileUpload';
@@ -825,28 +825,6 @@ export default function EnhancedMessageArea({
             setShowProfileModal(false);
             inputRef.current?.focus();
           }}
-        />
-      )}
-
-      {/* Call Modal - Show when call is active or incoming */}
-      {(callState.isActive || callState.isIncoming) && (
-        <CallModal
-          isOpen={true}
-          onClose={handleEndCall}
-          callState={callState}
-          localStream={localStream}
-          remoteStreams={remoteStreams}
-          localVideoRef={localVideoRef}
-          recipientName={channelUser?.full_name || callState.incomingCallData?.callerName || 'Unknown'}
-          recipientAvatar={channelUser?.avatar_url || callState.incomingCallData?.callerAvatar}
-          onAnswer={handleAnswerCall}
-          onDecline={handleDeclineCall}
-          onEndCall={handleEndCall}
-          onToggleMute={toggleMute}
-          onToggleVideo={toggleVideo}
-          onToggleSpeaker={toggleSpeaker}
-          onStartScreenShare={startScreenShare}
-          onStopScreenShare={stopScreenShare}
         />
       )}
     </div>
