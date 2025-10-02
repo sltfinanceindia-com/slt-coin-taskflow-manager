@@ -548,7 +548,7 @@ if (err) {
   console.error('Error type:', typeof err);
   console.error('Error keys:', Object.keys(err));
   console.error('Error message:', err.message);
-  console.error('Error code:', err.code);
+  console.error('Error code:', (err as any).code);
   console.error('Full error:', JSON.stringify(err, null, 2));
   
   // More detailed error messages
@@ -639,7 +639,7 @@ if (err) {
       console.log('✅ Subscription cleaned up');
     }
   };
-}, [profile?.id, answerCall]);
+}, [profile?.id]);
   
   // Initialize media devices with comprehensive error handling
   const initializeMedia = useCallback(async (video: boolean = false, audio: boolean = true) => {
