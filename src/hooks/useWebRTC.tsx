@@ -97,6 +97,48 @@ export function useWebRTC() {
   const signalChannel = useRef<any>(null);
   const pendingCandidates = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
 
+  // ✅ Verify profile on mount
+  useEffect(() => {
+    const verifyProfile = async () => {
+      if (!profile?.id) {
+        console.warn('⚠️ Profile not loaded');
+        return;
+      }
+
+      try {
+        const { data: { user: authUser }, error } = await supabase.auth.getUser();
+        
+        if (error) {
+          console.error('Auth check failed:', error);
+          toast.error('Authentication check failed. Please log in again.');
+          return;
+        }
+
+        if (!authUser) {
+          console.error('No authenticated user found');
+          toast.error('Not authenticated. Please log in.');
+          return;
+        }
+
+        console.log('=== Profile Verification ===');
+        console.log('Auth User ID:', authUser.id);
+        console.log('Profile ID:', profile.id);
+        console.log('Match:', authUser.id === profile.id ? '✅' : '❌');
+
+        if (authUser.id !== profile.id) {
+          console.error('❌ CRITICAL: Profile ID does not match Auth ID!');
+          toast.error('Profile authentication mismatch. Please log out and log back in.');
+        } else {
+          console.log('✅ Profile verified successfully');
+        }
+      } catch (error) {
+        console.error('Profile verification error:', error);
+      }
+    };
+
+    verifyProfile();
+  }, [profile]);
+
   // Check WebRTC support and permissions
   const checkWebRTCSupport = useCallback(() => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -139,7 +181,6 @@ export function useWebRTC() {
               return false;
             }
           } catch (e) {
-            // Camera permission query not supported on all browsers
             console.log('Camera permission query not supported');
           }
         }
@@ -148,13 +189,12 @@ export function useWebRTC() {
       return true;
     } catch (error) {
       console.log('Permission check not supported:', error);
-      return true; // Continue anyway for browsers that don't support permissions query
+      return true;
     }
   }, []);
 
   // Initialize WebRTC Peer Connection with proper error handling
   const initializePeerConnection = useCallback((userId: string) => {
-    // Check if connection already exists and is usable
     const existingConnection = peerConnections.current.get(userId);
     if (existingConnection && 
         existingConnection.connectionState !== 'failed' && 
@@ -163,7 +203,6 @@ export function useWebRTC() {
       return existingConnection;
     }
 
-    // Close existing connection if it's in a bad state
     if (existingConnection) {
       console.log('Closing existing connection in state:', existingConnection.connectionState);
       existingConnection.close();
@@ -173,7 +212,6 @@ export function useWebRTC() {
     console.log('Creating new peer connection for:', userId);
     const peerConnection = new RTCPeerConnection(RTC_CONFIG);
 
-    // Handle ICE candidates
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
         console.log('Sending ICE candidate to:', userId);
@@ -185,12 +223,10 @@ export function useWebRTC() {
       }
     };
 
-    // Handle ICE gathering state changes
     peerConnection.onicegatheringstatechange = () => {
       console.log(`ICE gathering state for ${userId}:`, peerConnection.iceGatheringState);
     };
 
-    // Handle remote stream
     peerConnection.ontrack = (event) => {
       const [remoteStream] = event.streams;
       console.log('Received remote stream from:', userId, 'tracks:', remoteStream.getTracks().length);
@@ -201,7 +237,6 @@ export function useWebRTC() {
         return newMap;
       });
       
-      // Update participant with stream
       setCallState(prev => ({
         ...prev,
         participants: prev.participants.map(p => 
@@ -210,7 +245,6 @@ export function useWebRTC() {
       }));
     };
 
-    // Handle connection state changes
     peerConnection.onconnectionstatechange = () => {
       const state = peerConnection.connectionState;
       console.log(`Connection state for ${userId}:`, state);
@@ -241,7 +275,6 @@ export function useWebRTC() {
           break;
       }
 
-      // Update participant connection quality
       setCallState(prev => ({
         ...prev,
         participants: prev.participants.map(p => 
@@ -250,7 +283,6 @@ export function useWebRTC() {
       }));
     };
 
-    // Handle ICE connection state
     peerConnection.oniceconnectionstatechange = () => {
       console.log(`ICE connection state for ${userId}:`, peerConnection.iceConnectionState);
       
@@ -260,10 +292,8 @@ export function useWebRTC() {
       }
     };
 
-    // Handle negotiation needed
     peerConnection.onnegotiationneeded = async () => {
       console.log('Negotiation needed for:', userId);
-      // Only create offer if we're the caller
       if (callState.isOutgoing) {
         try {
           const offer = await peerConnection.createOffer();
@@ -283,24 +313,20 @@ export function useWebRTC() {
   const handlePeerConnectionFailure = useCallback(async (userId: string) => {
     console.log(`Handling connection failure for ${userId}`);
     
-    // Remove failed connection
     const oldConnection = peerConnections.current.get(userId);
     if (oldConnection) {
       oldConnection.close();
       peerConnections.current.delete(userId);
     }
 
-    // Clear pending candidates
     pendingCandidates.current.delete(userId);
 
-    // Attempt reconnection after delay if call is still active
     setTimeout(() => {
       if (callState.isActive) {
         console.log(`Attempting to reconnect to ${userId}`);
         toast.info('Reconnecting...');
         const newConnection = initializePeerConnection(userId);
         
-        // Re-add local stream if available
         if (localStream) {
           localStream.getTracks().forEach((track) => {
             newConnection.addTrack(track, localStream);
@@ -310,13 +336,24 @@ export function useWebRTC() {
     }, 2000);
   }, [callState.isActive, localStream, initializePeerConnection]);
 
-  // Send signaling message via Supabase with retry
+  // ✅ Send signaling message with validation and retry
   const sendSignalingMessage = useCallback(async (
     type: string, 
     data: any, 
     targetUserId?: string,
     retries = 3
   ) => {
+    // ✅ Validate profile before sending
+    if (!profile?.id) {
+      throw new Error('Profile not loaded - cannot send signal');
+    }
+
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    
+    if (!authUser || authUser.id !== profile.id) {
+      throw new Error('Authentication mismatch - cannot send signal');
+    }
+
     for (let attempt = 0; attempt < retries; attempt++) {
       try {
         console.log(`Sending signaling message (attempt ${attempt + 1}):`, type, 'to:', targetUserId);
@@ -325,7 +362,7 @@ export function useWebRTC() {
           .from('webrtc_signals')
           .insert({
             call_id: currentCallId.current,
-            sender_id: profile?.id,
+            sender_id: profile.id,      // ✅ Must match auth.uid()
             receiver_id: targetUserId,
             signal_type: type,
             signal_data: data,
@@ -334,20 +371,19 @@ export function useWebRTC() {
 
         if (error) throw error;
         
-        console.log('Signaling message sent successfully');
+        console.log('✅ Signaling message sent successfully');
         return;
-      } catch (error) {
+      } catch (error: any) {
         console.error(`Error sending signaling message (attempt ${attempt + 1}):`, error);
         
         if (attempt === retries - 1) {
-          throw error;
+          throw new Error(`Failed to send signal after ${retries} attempts: ${error.message}`);
         }
         
-        // Wait before retry
-        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt)));
       }
     }
-  }, [profile?.id]);
+  }, [profile]);
 
   // Initialize media devices with comprehensive error handling
   const initializeMedia = useCallback(async (video: boolean = false, audio: boolean = true) => {
@@ -365,7 +401,6 @@ export function useWebRTC() {
         throw new Error('Media permissions denied');
       }
 
-      // Enhanced constraints for better quality
       const constraints: MediaStreamConstraints = {
         audio: audio ? {
           echoCancellation: true,
@@ -387,7 +422,6 @@ export function useWebRTC() {
       console.log('Audio tracks:', stream.getAudioTracks().length);
       console.log('Video tracks:', stream.getVideoTracks().length);
 
-      // Log track details
       stream.getTracks().forEach((track, index) => {
         console.log(`Track ${index}:`, {
           kind: track.kind,
@@ -403,10 +437,9 @@ export function useWebRTC() {
       
       if (localVideoRef.current && video) {
         localVideoRef.current.srcObject = stream;
-        localVideoRef.current.muted = true; // Prevent echo
+        localVideoRef.current.muted = true;
       }
 
-      // Start audio level monitoring for voice activity detection
       if (audio && stream.getAudioTracks().length > 0) {
         startAudioLevelMonitoring(stream);
       }
@@ -456,7 +489,6 @@ export function useWebRTC() {
         analyser.getByteFrequencyData(dataArray);
         const average = dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length;
         
-        // Update speaking status based on audio level (threshold for voice activity)
         const isSpeaking = average > 30;
         
         setCallState(prev => ({
@@ -475,267 +507,260 @@ export function useWebRTC() {
     }
   }, [profile?.id]);
 
-  // Start voice call with comprehensive error handling and profile verification
-const startVoiceCall = useCallback(async (userId: string, userName: string) => {
-  try {
-    console.log('=== Starting Voice Call ===');
-    console.log('Target User ID:', userId);
-    console.log('Target User Name:', userName);
-    console.log('Caller Profile ID:', profile?.id);
-    console.log('Caller Profile Name:', profile?.full_name);
+  // ✅ Start voice call with complete validation and error handling
+  const startVoiceCall = useCallback(async (userId: string, userName: string) => {
+    try {
+      console.log('=== Starting Voice Call ===');
+      console.log('Target User ID:', userId);
+      console.log('Target User Name:', userName);
+      console.log('Caller Profile ID:', profile?.id);
+      console.log('Caller Profile Name:', profile?.full_name);
 
-    // ✅ Critical validation checks
-    if (!profile?.id) {
-      console.error('Profile not loaded');
-      throw new Error('User profile not loaded. Please refresh the page.');
-    }
+      if (!profile?.id) {
+        console.error('Profile not loaded');
+        throw new Error('User profile not loaded. Please refresh the page.');
+      }
 
-    // ✅ Verify profile ID matches authenticated user
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !authUser) {
-      console.error('Auth verification failed:', authError);
-      throw new Error('Authentication failed. Please log in again.');
-    }
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !authUser) {
+        console.error('Auth verification failed:', authError);
+        throw new Error('Authentication failed. Please log in again.');
+      }
 
-    console.log('Auth User ID:', authUser.id);
-    console.log('Profile ID:', profile.id);
-    
-    // ✅ Critical check: Profile ID must match Auth ID for RLS
-    if (authUser.id !== profile.id) {
-      console.error('❌ Profile ID mismatch!');
-      console.error('Auth ID:', authUser.id);
-      console.error('Profile ID:', profile.id);
-      throw new Error('Profile authentication mismatch. Please log out and log back in.');
-    }
+      console.log('Auth User ID:', authUser.id);
+      console.log('Profile ID:', profile.id);
+      
+      if (authUser.id !== profile.id) {
+        console.error('❌ Profile ID mismatch!');
+        console.error('Auth ID:', authUser.id);
+        console.error('Profile ID:', profile.id);
+        throw new Error('Profile authentication mismatch. Please log out and log back in.');
+      }
 
-    console.log('✅ Profile ID matches Auth ID');
+      console.log('✅ Profile ID matches Auth ID');
 
-    // ✅ Validate receiver ID
-    if (!userId || userId === profile.id) {
-      throw new Error('Invalid recipient for call');
-    }
+      if (!userId || userId === profile.id) {
+        throw new Error('Invalid recipient for call');
+      }
 
-    const callId = `call_${Date.now()}_${profile.id}_${userId}`;
-    currentCallId.current = callId;
-    console.log('Generated Call ID:', callId);
-    
-    // ✅ Create call record in database with proper error handling
-    console.log('Creating call record...');
-    console.log('Insert data:', {
-      id: callId,
-      caller_id: profile.id,
-      receiver_id: userId,
-      caller_name: profile.full_name || 'Unknown',
-      receiver_name: userName,
-      call_type: 'voice',
-      status: 'ringing'
-    });
-
-    const { data: callData, error: callError } = await supabase
-      .from('call_history')
-      .insert({
+      const callId = `call_${Date.now()}_${profile.id}_${userId}`;
+      currentCallId.current = callId;
+      console.log('Generated Call ID:', callId);
+      
+      console.log('Creating call record...');
+      console.log('Insert data:', {
         id: callId,
-        caller_id: profile.id,     // ✅ Must match auth.uid()
+        caller_id: profile.id,
         receiver_id: userId,
         caller_name: profile.full_name || 'Unknown',
         receiver_name: userName,
         call_type: 'voice',
-        status: 'ringing',
-        created_at: new Date().toISOString()
-      })
-      .select()
-      .single();
+        status: 'ringing'
+      });
 
-    if (callError) {
-      console.error('❌ Database error:', callError);
-      console.error('Error code:', callError.code);
-      console.error('Error message:', callError.message);
-      console.error('Error details:', callError.details);
-      console.error('Error hint:', callError.hint);
-      
-      // ✅ Provide specific error messages based on error type
-      if (callError.code === '42501') {
-        throw new Error('Permission denied: Please check your account permissions.');
-      } else if (callError.message?.includes('row-level security')) {
-        throw new Error('Database security error: Unable to create call record. Please contact support.');
-      } else {
-        throw new Error(`Failed to create call record: ${callError.message}`);
-      }
-    }
-
-    console.log('✅ Call record created successfully:', callData);
-
-    // ✅ Initialize media for voice call
-    console.log('Requesting media access...');
-    let stream: MediaStream;
-    
-    try {
-      stream = await initializeMedia(false, true);
-      console.log('✅ Media obtained successfully, stream ID:', stream.id);
-    } catch (mediaError: any) {
-      console.error('❌ Media access error:', mediaError);
-      
-      // Clean up call record on media error
-      await supabase
+      const { data: callData, error: callError } = await supabase
         .from('call_history')
-        .update({ status: 'failed', ended_at: new Date().toISOString() })
-        .eq('id', callId);
+        .insert({
+          id: callId,
+          caller_id: profile.id,
+          receiver_id: userId,
+          caller_name: profile.full_name || 'Unknown',
+          receiver_name: userName,
+          call_type: 'voice',
+          status: 'ringing',
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (callError) {
+        console.error('❌ Database error:', callError);
+        console.error('Error code:', callError.code);
+        console.error('Error message:', callError.message);
+        console.error('Error details:', callError.details);
+        console.error('Error hint:', callError.hint);
+        
+        if (callError.code === '42501') {
+          throw new Error('Permission denied: Please check your account permissions.');
+        } else if (callError.message?.includes('row-level security')) {
+          throw new Error('Database security error: Unable to create call record. Please contact support.');
+        } else {
+          throw new Error(`Failed to create call record: ${callError.message}`);
+        }
+      }
+
+      console.log('✅ Call record created successfully:', callData);
+
+      console.log('Requesting media access...');
+      let stream: MediaStream;
       
-      throw new Error(`Media access failed: ${mediaError.message}`);
-    }
-
-    // ✅ Initialize peer connection
-    console.log('Creating peer connection...');
-    const peerConnection = initializePeerConnection(userId);
-    
-    if (!peerConnection) {
-      throw new Error('Failed to create peer connection');
-    }
-
-    // ✅ Add stream to peer connection
-    console.log('Adding tracks to peer connection...');
-    stream.getTracks().forEach((track, index) => {
-      console.log(`Adding track ${index}:`, track.kind, track.id, track.enabled);
-      peerConnection.addTrack(track, stream);
-    });
-
-    // ✅ Create offer
-    console.log('Creating offer...');
-    const offer = await peerConnection.createOffer({
-      offerToReceiveAudio: true,
-      offerToReceiveVideo: false
-    });
-    
-    console.log('✅ Offer created:', offer.type);
-    await peerConnection.setLocalDescription(offer);
-    console.log('✅ Local description set');
-
-    // ✅ Send offer via signaling
-    console.log('Sending offer to receiver...');
-    try {
-      await sendSignalingMessage('offer', offer, userId);
-      console.log('✅ Offer sent successfully');
-    } catch (signalError: any) {
-      console.error('❌ Signaling error:', signalError);
-      throw new Error(`Failed to send call signal: ${signalError.message}`);
-    }
-    
-    // ✅ Update call state
-    setCallState(prev => ({
-      ...prev,
-      callId,
-      isActive: true,
-      isOutgoing: true,
-      callType: 'voice',
-      participants: [{
-        id: userId,
-        name: userName,
-        isMuted: false,
-        isVideoEnabled: false,
-        isScreenSharing: false,
-        isSpeaking: false,
-        connectionQuality: 'excellent',
-        audioLevel: 0
-      }]
-    }));
-
-    console.log('✅ Call state updated');
-
-    // ✅ Play outgoing call sound
-    try {
-      audioNotifications.playOutgoingCall();
-    } catch (audioError) {
-      console.warn('Audio notification failed:', audioError);
-    }
-    
-    // ✅ Start call timer
-    const startTime = Date.now();
-    callTimer.current = setInterval(() => {
-      setCallState(prev => ({
-        ...prev,
-        duration: Math.floor((Date.now() - startTime) / 1000)
-      }));
-    }, 1000);
-
-    toast.success(`Calling ${userName}...`);
-    console.log('=== Voice call started successfully ===');
-
-  } catch (error: any) {
-    console.error('=== Voice Call Error ===');
-    console.error('Error type:', error.constructor.name);
-    console.error('Error message:', error.message);
-    console.error('Error stack:', error.stack);
-    
-    // ✅ Comprehensive cleanup on error
-    try {
-      // Clean up call record if it was created
-      if (currentCallId.current) {
-        console.log('Cleaning up call record:', currentCallId.current);
+      try {
+        stream = await initializeMedia(false, true);
+        console.log('✅ Media obtained successfully, stream ID:', stream.id);
+      } catch (mediaError: any) {
+        console.error('❌ Media access error:', mediaError);
+        
         await supabase
           .from('call_history')
-          .update({ 
-            status: 'failed', 
-            ended_at: new Date().toISOString(),
-            error_message: error.message 
-          })
-          .eq('id', currentCallId.current);
-        currentCallId.current = null;
+          .update({ status: 'failed', ended_at: new Date().toISOString() })
+          .eq('id', callId);
+        
+        throw new Error(`Media access failed: ${mediaError.message}`);
       }
 
-      // Clean up media if acquired
-      if (localStream) {
-        console.log('Stopping local stream tracks');
-        localStream.getTracks().forEach(track => track.stop());
-        setLocalStream(null);
+      console.log('Creating peer connection...');
+      const peerConnection = initializePeerConnection(userId);
+      
+      if (!peerConnection) {
+        throw new Error('Failed to create peer connection');
       }
 
-      // Reset call state
+      console.log('Adding tracks to peer connection...');
+      stream.getTracks().forEach((track, index) => {
+        console.log(`Adding track ${index}:`, track.kind, track.id, track.enabled);
+        peerConnection.addTrack(track, stream);
+      });
+
+      console.log('Creating offer...');
+      const offer = await peerConnection.createOffer({
+        offerToReceiveAudio: true,
+        offerToReceiveVideo: false
+      });
+      
+      console.log('✅ Offer created:', offer.type);
+      await peerConnection.setLocalDescription(offer);
+      console.log('✅ Local description set');
+
+      console.log('Sending offer to receiver...');
+      try {
+        await sendSignalingMessage('offer', offer, userId);
+        console.log('✅ Offer sent successfully');
+      } catch (signalError: any) {
+        console.error('❌ Signaling error:', signalError);
+        throw new Error(`Failed to send call signal: ${signalError.message}`);
+      }
+      
       setCallState(prev => ({
         ...prev,
-        isActive: false,
-        isOutgoing: false,
-        participants: []
+        callId,
+        isActive: true,
+        isOutgoing: true,
+        callType: 'voice',
+        participants: [{
+          id: userId,
+          name: userName,
+          isMuted: false,
+          isVideoEnabled: false,
+          isScreenSharing: false,
+          isSpeaking: false,
+          connectionQuality: 'excellent',
+          audioLevel: 0
+        }]
       }));
-    } catch (cleanupError) {
-      console.error('Cleanup error:', cleanupError);
+
+      console.log('✅ Call state updated');
+
+      try {
+        audioNotifications.playOutgoingCall();
+      } catch (audioError) {
+        console.warn('Audio notification failed:', audioError);
+      }
+      
+      const startTime = Date.now();
+      callTimer.current = setInterval(() => {
+        setCallState(prev => ({
+          ...prev,
+          duration: Math.floor((Date.now() - startTime) / 1000)
+        }));
+      }, 1000);
+
+      toast.success(`Calling ${userName}...`);
+      console.log('=== Voice call started successfully ===');
+
+    } catch (error: any) {
+      console.error('=== Voice Call Error ===');
+      console.error('Error type:', error.constructor.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      
+      try {
+        if (currentCallId.current) {
+          console.log('Cleaning up call record:', currentCallId.current);
+          await supabase
+            .from('call_history')
+            .update({ 
+              status: 'failed', 
+              ended_at: new Date().toISOString(),
+              error_message: error.message 
+            })
+            .eq('id', currentCallId.current);
+          currentCallId.current = null;
+        }
+
+        if (localStream) {
+          console.log('Stopping local stream tracks');
+          localStream.getTracks().forEach(track => track.stop());
+          setLocalStream(null);
+        }
+
+        setCallState(prev => ({
+          ...prev,
+          isActive: false,
+          isOutgoing: false,
+          participants: []
+        }));
+      } catch (cleanupError) {
+        console.error('Cleanup error:', cleanupError);
+      }
+      
+      let userMessage = 'Failed to start call';
+      
+      if (error.message?.includes('profile not loaded')) {
+        userMessage = 'Your profile is not loaded. Please refresh the page.';
+      } else if (error.message?.includes('permission') || error.message?.includes('denied')) {
+        userMessage = 'Camera/microphone access denied. Please enable permissions in your browser settings.';
+      } else if (error.message?.includes('not found')) {
+        userMessage = 'No camera or microphone found. Please connect devices and try again.';
+      } else if (error.message?.includes('busy') || error.message?.includes('readable')) {
+        userMessage = 'Camera/microphone is busy. Please close other apps and try again.';
+      } else if (error.message?.includes('security') || error.message?.includes('RLS')) {
+        userMessage = 'Database security error. Please contact support.';
+      } else if (error.message?.includes('authentication') || error.message?.includes('mismatch')) {
+        userMessage = 'Authentication error. Please log out and log back in.';
+      } else if (error.message) {
+        userMessage = error.message;
+      }
+      
+      toast.error(userMessage);
     }
-    
-    // ✅ User-friendly error messages
-    let userMessage = 'Failed to start call';
-    
-    if (error.message?.includes('profile not loaded')) {
-      userMessage = 'Your profile is not loaded. Please refresh the page.';
-    } else if (error.message?.includes('permission') || error.message?.includes('denied')) {
-      userMessage = 'Camera/microphone access denied. Please enable permissions in your browser settings.';
-    } else if (error.message?.includes('not found')) {
-      userMessage = 'No camera or microphone found. Please connect devices and try again.';
-    } else if (error.message?.includes('busy') || error.message?.includes('readable')) {
-      userMessage = 'Camera/microphone is busy. Please close other apps and try again.';
-    } else if (error.message?.includes('security') || error.message?.includes('RLS')) {
-      userMessage = 'Database security error. Please contact support.';
-    } else if (error.message?.includes('authentication') || error.message?.includes('mismatch')) {
-      userMessage = 'Authentication error. Please log out and log back in.';
-    } else if (error.message) {
-      userMessage = error.message;
-    }
-    
-    toast.error(userMessage);
-  }
-}, [profile, initializeMedia, initializePeerConnection, sendSignalingMessage, localStream]);
-  // Start video call
+  }, [profile, initializeMedia, initializePeerConnection, sendSignalingMessage, localStream]);
+
+  // ✅ Start video call with same validation
   const startVideoCall = useCallback(async (userId: string, userName: string) => {
     try {
       console.log('=== Starting Video Call ===');
       
       if (!profile?.id) {
-        throw new Error('User profile not loaded');
+        throw new Error('User profile not loaded. Please refresh the page.');
       }
+
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !authUser) {
+        throw new Error('Authentication failed. Please log in again.');
+      }
+
+      if (authUser.id !== profile.id) {
+        console.error('Profile ID mismatch');
+        throw new Error('Profile authentication mismatch. Please log out and log back in.');
+      }
+
+      console.log('✅ Profile verified for video call');
 
       const callId = `call_${Date.now()}_${profile.id}_${userId}`;
       currentCallId.current = callId;
       
-      // Create call record in database
       const { data: callData, error } = await supabase
         .from('call_history')
         .insert({
@@ -751,20 +776,21 @@ const startVoiceCall = useCallback(async (userId: string, userName: string) => {
         .select()
         .single();
 
-      if (error) throw new Error(`Failed to create call record: ${error.message}`);
+      if (error) {
+        console.error('Database error:', error);
+        throw new Error(`Failed to create call record: ${error.message}`);
+      }
 
-      console.log('Video call record created:', callData);
+      console.log('✅ Video call record created:', callData);
 
       const stream = await initializeMedia(true, true);
       const peerConnection = initializePeerConnection(userId);
       
-      // Add stream to peer connection
       stream.getTracks().forEach(track => {
         console.log('Adding video call track:', track.kind, track.id);
         peerConnection.addTrack(track, stream);
       });
 
-      // Create offer
       const offer = await peerConnection.createOffer({
         offerToReceiveAudio: true,
         offerToReceiveVideo: true
@@ -794,7 +820,6 @@ const startVoiceCall = useCallback(async (userId: string, userName: string) => {
 
       audioNotifications.playVideoCallStart();
 
-      // Start call timer
       const startTime = Date.now();
       callTimer.current = setInterval(() => {
         setCallState(prev => ({
@@ -809,7 +834,6 @@ const startVoiceCall = useCallback(async (userId: string, userName: string) => {
     } catch (error: any) {
       console.error('Error starting video call:', error);
       
-      // Clean up
       if (currentCallId.current) {
         await supabase
           .from('call_history')
@@ -838,17 +862,14 @@ const startVoiceCall = useCallback(async (userId: string, userName: string) => {
       console.log('=== Answering Call ===');
       const isVideo = callState.incomingCallData.callType === 'video';
       
-      // Initialize media
       const stream = await initializeMedia(isVideo, true);
       const peerConnection = initializePeerConnection(callState.incomingCallData.callerId);
       
-      // Add stream to peer connection
       stream.getTracks().forEach(track => {
         console.log('Adding track to answer:', track.kind, track.id);
         peerConnection.addTrack(track, stream);
       });
 
-      // Apply any pending ICE candidates
       const pending = pendingCandidates.current.get(callState.incomingCallData.callerId);
       if (pending && pending.length > 0) {
         console.log('Applying pending ICE candidates:', pending.length);
@@ -870,7 +891,6 @@ const startVoiceCall = useCallback(async (userId: string, userName: string) => {
         duration: 0
       }));
 
-      // Update call status in database
       if (callState.callId) {
         const { error } = await supabase
           .from('call_history')
@@ -887,7 +907,6 @@ const startVoiceCall = useCallback(async (userId: string, userName: string) => {
 
       audioNotifications.playCallConnected();
 
-      // Start call timer
       const startTime = Date.now();
       callTimer.current = setInterval(() => {
         setCallState(prev => ({
@@ -903,7 +922,6 @@ const startVoiceCall = useCallback(async (userId: string, userName: string) => {
       console.error('Error answering call:', error);
       toast.error(`Failed to answer call: ${error.message}`);
       
-      // Cleanup on error
       setCallState(prev => ({
         ...prev,
         isIncoming: false,
@@ -917,7 +935,6 @@ const startVoiceCall = useCallback(async (userId: string, userName: string) => {
     console.log('=== Declining Call ===');
     audioNotifications.stopAllSounds();
     
-    // Update call status in database
     if (callState.callId) {
       const { error } = await supabase
         .from('call_history')
@@ -932,7 +949,6 @@ const startVoiceCall = useCallback(async (userId: string, userName: string) => {
       }
     }
 
-    // Send decline signal to caller
     if (callState.incomingCallData?.callerId) {
       await sendSignalingMessage('call-declined', {}, callState.incomingCallData.callerId);
     }
@@ -954,7 +970,6 @@ const startVoiceCall = useCallback(async (userId: string, userName: string) => {
     try {
       console.log('=== Ending Call ===');
       
-      // Stop all streams
       if (localStream) {
         localStream.getTracks().forEach(track => {
           console.log('Stopping track:', track.kind, track.id);
@@ -968,20 +983,16 @@ const startVoiceCall = useCallback(async (userId: string, userName: string) => {
         setScreenStream(null);
       }
 
-      // Close all peer connections
       peerConnections.current.forEach((pc, userId) => {
         console.log('Closing peer connection for:', userId);
         pc.close();
       });
       peerConnections.current.clear();
 
-      // Clear remote streams
       setRemoteStreams(new Map());
 
-      // Clear pending candidates
       pendingCandidates.current.clear();
 
-      // Stop timers
       if (callTimer.current) {
         clearInterval(callTimer.current);
         callTimer.current = null;
@@ -992,7 +1003,6 @@ const startVoiceCall = useCallback(async (userId: string, userName: string) => {
         audioLevelInterval.current = null;
       }
 
-      // Update call history
       if (callState.callId) {
         const { error } = await supabase
           .from('call_history')
@@ -1008,7 +1018,6 @@ const startVoiceCall = useCallback(async (userId: string, userName: string) => {
         }
       }
 
-      // Send end call signal to other participants
       callState.participants.forEach(participant => {
         sendSignalingMessage('call-ended', {}, participant.id).catch(err => {
           console.error('Error sending call-ended signal:', err);
@@ -1017,7 +1026,6 @@ const startVoiceCall = useCallback(async (userId: string, userName: string) => {
 
       const duration = callState.duration;
 
-      // Reset call state
       setCallState({
         isActive: false,
         isIncoming: false,
@@ -1113,7 +1121,6 @@ const startVoiceCall = useCallback(async (userId: string, userName: string) => {
       console.log('Screen share stream obtained:', screenShareStream.id);
       setScreenStream(screenShareStream);
 
-      // Replace video track in existing peer connections
       const videoTrack = screenShareStream.getVideoTracks()[0];
       
       peerConnections.current.forEach(async (pc, userId) => {
@@ -1129,7 +1136,6 @@ const startVoiceCall = useCallback(async (userId: string, userName: string) => {
       setCallState(prev => ({ ...prev, isScreenSharing: true }));
       audioNotifications.playScreenShareStart();
 
-      // Handle screen share end
       videoTrack.onended = () => {
         console.log('Screen share ended by user');
         stopScreenShare();
@@ -1161,7 +1167,6 @@ const startVoiceCall = useCallback(async (userId: string, userName: string) => {
         setScreenStream(null);
       }
 
-      // Get camera stream back if in video call
       if (callState.callType === 'video' && localStream) {
         const videoTrack = localStream.getVideoTracks()[0];
         
@@ -1368,7 +1373,6 @@ const startVoiceCall = useCallback(async (userId: string, userName: string) => {
                 console.log('Processing offer from:', signal.sender_id);
                 await peerConnection.setRemoteDescription(new RTCSessionDescription(signal.signal_data));
                 
-                // Add local stream if available
                 if (localStream) {
                   localStream.getTracks().forEach(track => {
                     peerConnection.addTrack(track, localStream);
@@ -1389,11 +1393,9 @@ const startVoiceCall = useCallback(async (userId: string, userName: string) => {
               case 'ice-candidate':
                 console.log('Processing ICE candidate from:', signal.sender_id);
                 
-                // If remote description is set, add candidate immediately
                 if (peerConnection.remoteDescription) {
                   await peerConnection.addIceCandidate(new RTCIceCandidate(signal.signal_data));
                 } else {
-                  // Otherwise, queue it for later
                   console.log('Queueing ICE candidate for later');
                   const pending = pendingCandidates.current.get(signal.sender_id) || [];
                   pending.push(signal.signal_data);
