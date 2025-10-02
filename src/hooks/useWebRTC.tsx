@@ -532,7 +532,7 @@ useEffect(() => {
       console.log('✅ Subscription cleaned up');
     }
   };
-}, [profile?.id, answerCall]);
+}, [profile?.id]);
 
   // Initialize media devices with comprehensive error handling
   const initializeMedia = useCallback(async (video: boolean = false, audio: boolean = true) => {
