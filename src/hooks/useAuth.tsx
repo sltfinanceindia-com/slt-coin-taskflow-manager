@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 
 interface Profile {
   id: string;
-  user_id?: string;
+  user_id: string;
   full_name: string;
   email: string;
   role: 'admin' | 'intern';
@@ -37,7 +37,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Fetch profile with auto-create fallback
   const fetchProfile = async (userId: string) => {
     try {
       console.log('📋 Fetching profile for user ID:', userId);
@@ -62,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         error = result.error;
       }
 
-      // ✅ AUTO-CREATE: If still not found, create new profile
+      // AUTO-CREATE: If still not found, create new profile
       if (error && error.code === 'PGRST116') {
         console.log('⚠️ Profile not found - creating new profile...');
         
@@ -75,6 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         console.log('Creating profile with:', {
           id: userId,
+          user_id: userId,
           email: authUser.email,
           full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User'
         });
@@ -84,6 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .from('profiles')
           .insert({
             id: userId,
+            user_id: userId,
             full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
             email: authUser.email || '',
             role: (authUser.user_metadata?.role as 'admin' | 'intern') || 'intern',
