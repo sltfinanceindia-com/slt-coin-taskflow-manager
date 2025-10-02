@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (userId: string): Promise<boolean> => {
     try {
       console.log('📋 Fetching profile for user ID:', userId);
       
@@ -46,30 +46,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
-      // Fallback: try by user_id
-      if (error && error.code === 'PGRST116') {
+      // Fallback: try by user_id if not found
+      if (!data && !error) {
         console.log('Profile not found by id, trying user_id...');
         const result = await supabase
           .from('profiles')
           .select('*')
           .eq('user_id', userId)
-          .single();
+          .maybeSingle();
         
         data = result.data;
         error = result.error;
       }
 
       // AUTO-CREATE: If still not found, create new profile
-      if (error && error.code === 'PGRST116') {
+      if (!data && !error) {
         console.log('⚠️ Profile not found - creating new profile...');
         
         // Get user details from auth
         const { data: { user: authUser } } = await supabase.auth.getUser();
         
         if (!authUser) {
-          throw new Error('No authenticated user found');
+          console.error('❌ No authenticated user found');
+          toast.error('Authentication error. Please log in again.');
+          return false;
         }
 
         console.log('Creating profile with:', {
@@ -89,30 +91,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             email: authUser.email || '',
             role: (authUser.user_metadata?.role as 'admin' | 'intern') || 'intern',
             avatar_url: authUser.user_metadata?.avatar_url || null,
-            total_coins: 0,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            total_coins: 0
           })
           .select()
-          .single();
+          .maybeSingle();
 
-        if (createError) {
+        if (createError || !newProfile) {
           console.error('❌ Error creating profile:', createError);
           toast.error('Failed to create profile. Please contact support.');
-          throw createError;
+          return false;
         }
 
         console.log('✅ Profile created successfully:', newProfile.id);
         setProfile(newProfile);
         toast.success('Welcome! Your profile has been created.');
-        return;
+        return true;
       }
 
-      // Handle other errors
+      // Handle errors
       if (error) {
         console.error('❌ Error fetching profile:', error);
         toast.error('Failed to load profile');
-        throw error;
+        return false;
       }
 
       // Profile found successfully
@@ -120,19 +120,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('✅ Profile loaded:', data.id, data.full_name);
         
         // Verify profile ID matches auth ID
-        if (data.id !== userId) {
+        if (data.id !== userId && data.user_id !== userId) {
           console.error('❌ Profile ID mismatch!');
           console.error('Auth ID:', userId);
           console.error('Profile ID:', data.id);
           toast.error('Profile mismatch. Please log out and log back in.');
-          return;
+          return false;
         }
         
         setProfile(data);
+        return true;
       }
+
+      return false;
     } catch (error: any) {
       console.error('❌ Error in fetchProfile:', error);
       toast.error(`Profile error: ${error.message}`);
+      return false;
     }
   };
 
@@ -221,12 +225,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (newSession?.user) {
           console.log('👤 User authenticated:', newSession.user.id);
-          await fetchProfile(newSession.user.id);
+          try {
+            await fetchProfile(newSession.user.id);
+          } catch (error) {
+            console.error('❌ Failed to fetch profile in auth listener:', error);
+          }
         } else {
           console.log('👋 User signed out');
           setProfile(null);
         }
         
+        // Always set loading to false after auth state change
         setLoading(false);
       }
     );
