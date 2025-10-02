@@ -23,7 +23,7 @@ import {
   ArrowLeft,
   PhoneOff,
   VideoOff,
-  MicOff
+  AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import UserProfileModal from './UserProfileModal';
@@ -93,6 +93,7 @@ export default function EnhancedMessageArea({
     stopScreenShare
   } = useWebRTC();
 
+  // State management
   const [messageInput, setMessageInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -102,16 +103,35 @@ export default function EnhancedMessageArea({
   const [messageReactions, setMessageReactions] = useState<{[key: string]: string[]}>({});
   const [isInitiatingCall, setIsInitiatingCall] = useState(false);
   
+  // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  
+  // Hooks
   const { getUserPresence, getStatusText, getStatusIcon } = usePresence();
   const { markAsRead } = useMessageStates();
   const { uploadFile } = useFileUpload();
 
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Mark messages as read when channel changes
+  useEffect(() => {
+    if (messages.length > 0 && channel) {
+      const unreadMessages = messages.filter(m => 
+        !m.is_read && m.sender_id !== currentUser?.id
+      );
+      unreadMessages.forEach(message => {
+        markAsRead(message.id);
+      });
+    }
+  }, [messages, channel, currentUser?.id, markAsRead]);
+
+  /**
+   * Get the other user in a direct message channel
+   */
   const getChannelUser = (): TeamMember | null => {
     if (!channel.is_direct_message || !channel.participant_ids) return null;
     const otherUserId = channel.participant_ids.find(id => id !== currentUser?.id);
@@ -120,10 +140,16 @@ export default function EnhancedMessageArea({
 
   const channelUser = getChannelUser();
 
+  /**
+   * Get initials from a name for avatar fallback
+   */
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
+  /**
+   * Send a message
+   */
   const handleSendMessage = () => {
     if (!messageInput.trim()) return;
     
@@ -133,26 +159,45 @@ export default function EnhancedMessageArea({
     setShowEmojiPicker(false);
   };
 
+  /**
+   * Handle emoji selection
+   */
   const handleEmojiSelect = (emoji: string) => {
     setMessageInput(prev => prev + emoji);
     inputRef.current?.focus();
   };
 
+  /**
+   * Handle file upload
+   */
   const handleFileUploaded = (attachment: any) => {
     console.log('File uploaded:', attachment);
+    toast.success('File uploaded successfully');
   };
 
+  /**
+   * Handle voice recording
+   */
   const handleVoiceRecorded = (audioBlob: Blob) => {
     console.log('Voice recorded:', audioBlob);
+    toast.success('Voice message recorded');
   };
 
+  /**
+   * Handle message reaction
+   */
   const handleReaction = (messageId: string, emoji: string) => {
     setMessageReactions(prev => ({
       ...prev,
       [messageId]: [...(prev[messageId] || []), emoji]
     }));
+    toast.success('Reaction added');
+    // TODO: Save reaction to database
   };
 
+  /**
+   * Handle Enter key press in message input
+   */
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -160,7 +205,9 @@ export default function EnhancedMessageArea({
     }
   };
 
-  // ✅ Enhanced call handler with proper validation and error handling
+  /**
+   * ✅ Enhanced call handler with proper validation and error handling
+   */
   const handleStartCall = async (callType: 'voice' | 'video') => {
     console.log('=== handleStartCall triggered ===');
     console.log('Call type:', callType);
@@ -189,7 +236,7 @@ export default function EnhancedMessageArea({
 
     if (!profile?.id) {
       console.error('No profile loaded');
-      toast.error('Cannot start call: Your profile is not loaded');
+      toast.error('Cannot start call: Your profile is not loaded. Please refresh the page.');
       return;
     }
 
@@ -202,6 +249,12 @@ export default function EnhancedMessageArea({
     // Check if already in a call
     if (callState.isActive) {
       toast.warning('You are already in a call');
+      return;
+    }
+
+    // Check if there's an incoming call
+    if (callState.isIncoming) {
+      toast.warning('You have an incoming call. Please answer or decline it first.');
       return;
     }
 
@@ -234,12 +287,18 @@ export default function EnhancedMessageArea({
       
       let errorMessage = 'Failed to start call';
       
-      if (error.message?.includes('permission')) {
-        errorMessage = 'Camera/microphone access denied. Please enable permissions.';
-      } else if (error.message?.includes('not found')) {
-        errorMessage = 'No camera or microphone found.';
-      } else if (error.message?.includes('busy')) {
+      if (error.message?.includes('permission') || error.message?.includes('denied')) {
+        errorMessage = 'Camera/microphone access denied. Please enable permissions in your browser settings.';
+      } else if (error.message?.includes('not found') || error.message?.includes('NotFoundError')) {
+        errorMessage = 'No camera or microphone found. Please connect devices and try again.';
+      } else if (error.message?.includes('busy') || error.message?.includes('NotReadableError')) {
         errorMessage = 'Camera/microphone is busy. Close other apps and try again.';
+      } else if (error.message?.includes('profile not loaded')) {
+        errorMessage = 'Your profile is not loaded. Please refresh the page.';
+      } else if (error.message?.includes('authentication') || error.message?.includes('mismatch')) {
+        errorMessage = 'Authentication error. Please log out and log back in.';
+      } else if (error.message?.includes('security') || error.message?.includes('RLS')) {
+        errorMessage = 'Database security error. Please contact support.';
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -250,7 +309,9 @@ export default function EnhancedMessageArea({
     }
   };
 
-  // Handle incoming call answer
+  /**
+   * Handle incoming call answer
+   */
   const handleAnswerCall = async () => {
     try {
       console.log('Answering incoming call...');
@@ -262,18 +323,23 @@ export default function EnhancedMessageArea({
     }
   };
 
-  // Handle call decline
+  /**
+   * Handle call decline
+   */
   const handleDeclineCall = async () => {
     try {
       console.log('Declining call...');
       await declineCall();
+      toast.info('Call declined');
     } catch (error: any) {
       console.error('Error declining call:', error);
       toast.error('Error declining call');
     }
   };
 
-  // Handle end call
+  /**
+   * Handle end call
+   */
   const handleEndCall = async () => {
     try {
       console.log('Ending call...');
@@ -284,6 +350,9 @@ export default function EnhancedMessageArea({
     }
   };
 
+  /**
+   * Format message timestamp
+   */
   const formatMessageTime = (timestamp: string) => {
     const date = new Date(timestamp);
     if (isToday(date)) {
@@ -295,6 +364,9 @@ export default function EnhancedMessageArea({
     }
   };
 
+  /**
+   * Group messages by date
+   */
   const groupMessagesByDate = (messages: Message[]) => {
     const grouped: { [key: string]: Message[] } = {};
     
@@ -321,12 +393,16 @@ export default function EnhancedMessageArea({
 
   const groupedMessages = groupMessagesByDate(messages);
 
+  /**
+   * Render individual message
+   */
   const renderMessage = (message: Message, isOwn: boolean) => {
     return (
       <div key={message.id} className={cn(
         "flex gap-3 group hover:bg-muted/30 p-2 -mx-2 rounded-lg transition-colors",
         isOwn && "flex-row-reverse"
       )}>
+        {/* Avatar */}
         <Avatar className="h-8 w-8 flex-shrink-0">
           <AvatarImage src={isOwn ? currentUser?.avatar_url : channelUser?.avatar_url} />
           <AvatarFallback className="text-xs">
@@ -334,7 +410,9 @@ export default function EnhancedMessageArea({
           </AvatarFallback>
         </Avatar>
 
+        {/* Message Content */}
         <div className={cn("flex-1 min-w-0", isOwn && "flex flex-col items-end")}>
+          {/* Message Header */}
           <div className={cn("flex items-center gap-2 mb-1", isOwn && "flex-row-reverse")}>
             <span className="font-medium text-sm">
               {isOwn ? 'You' : message.sender_name}
@@ -347,12 +425,14 @@ export default function EnhancedMessageArea({
             )}
           </div>
 
+          {/* Message Body */}
           <div className={cn(
             "bg-card border rounded-lg px-3 py-2 max-w-md break-words",
             isOwn ? "bg-primary text-primary-foreground" : "bg-muted"
           )}>
-            <p className="text-sm leading-relaxed">{message.content}</p>
+            <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
             
+            {/* Message Actions */}
             <div className="opacity-0 group-hover:opacity-100 transition-opacity mt-2 flex items-center gap-1">
               {reactions.map((reaction) => (
                 <Button
@@ -361,18 +441,30 @@ export default function EnhancedMessageArea({
                   size="sm"
                   className="h-6 w-6 p-0"
                   onClick={() => handleReaction(message.id, reaction.emoji)}
+                  title={`React with ${reaction.emoji}`}
                 >
                   <span className="text-xs">{reaction.emoji}</span>
                 </Button>
               ))}
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 w-6 p-0"
+                title="Reply"
+              >
                 <Reply className="h-3 w-3" />
               </Button>
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 w-6 p-0"
+                title="More options"
+              >
                 <MoreHorizontal className="h-3 w-3" />
               </Button>
             </div>
 
+            {/* Message Reactions Display */}
             {messageReactions[message.id] && messageReactions[message.id].length > 0 && (
               <div className="flex items-center gap-1 mt-2 flex-wrap">
                 {Array.from(new Set(messageReactions[message.id])).map((emoji, index) => {
@@ -393,6 +485,7 @@ export default function EnhancedMessageArea({
             )}
           </div>
 
+          {/* Message State Indicator */}
           {isOwn && (
             <div className="flex items-center gap-1 mt-1">
               <MessageStateIndicator 
@@ -413,18 +506,21 @@ export default function EnhancedMessageArea({
       {/* Channel Header */}
       <div className="p-4 border-b border-border bg-card/50 backdrop-blur-sm">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            {/* Mobile Back Button */}
             {isMobile && onBack && (
-              <Button variant="ghost" size="sm" onClick={onBack}>
+              <Button variant="ghost" size="sm" onClick={onBack} className="flex-shrink-0">
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             )}
+            
+            {/* Channel Avatar/Info */}
             {channel.is_direct_message && channelUser ? (
               <div 
-                className="flex items-center gap-3 cursor-pointer hover:bg-muted/50 rounded-lg p-2 -m-2 transition-colors"
+                className="flex items-center gap-3 cursor-pointer hover:bg-muted/50 rounded-lg p-2 -m-2 transition-colors flex-1 min-w-0"
                 onClick={() => setShowProfileModal(true)}
               >
-                <div className="relative">
+                <div className="relative flex-shrink-0">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={channelUser.avatar_url} />
                     <AvatarFallback>
@@ -435,23 +531,23 @@ export default function EnhancedMessageArea({
                     {getStatusIcon(getUserPresence(channelUser.id))}
                   </div>
                 </div>
-                <div>
-                  <h2 className="font-semibold">{channelUser.full_name}</h2>
-                  <p className="text-sm text-muted-foreground">
+                <div className="flex-1 min-w-0">
+                  <h2 className="font-semibold truncate">{channelUser.full_name}</h2>
+                  <p className="text-sm text-muted-foreground truncate">
                     {getStatusText(getUserPresence(channelUser.id))}
                   </p>
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
                   <span className="text-primary font-semibold">
                     {channel.name.charAt(0).toUpperCase()}
                   </span>
                 </div>
-                <div>
-                  <h2 className="font-semibold">{channel.name}</h2>
-                  <p className="text-sm text-muted-foreground">
+                <div className="flex-1 min-w-0">
+                  <h2 className="font-semibold truncate">{channel.name}</h2>
+                  <p className="text-sm text-muted-foreground truncate">
                     {channel.member_count} members
                   </p>
                 </div>
@@ -460,7 +556,7 @@ export default function EnhancedMessageArea({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             {channel.is_direct_message && !callState.isActive && (
               <>
                 <Button
@@ -469,13 +565,14 @@ export default function EnhancedMessageArea({
                   onClick={() => handleStartCall('voice')}
                   disabled={isInitiatingCall || !channelUser}
                   className="hover-scale"
+                  title="Start voice call"
                 >
                   {isInitiatingCall ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
                   ) : (
                     <>
-                      <Phone className="h-4 w-4 mr-2" />
-                      Call
+                      <Phone className="h-4 w-4" />
+                      {!isMobile && <span className="ml-2">Call</span>}
                     </>
                   )}
                 </Button>
@@ -485,13 +582,14 @@ export default function EnhancedMessageArea({
                   onClick={() => handleStartCall('video')}
                   disabled={isInitiatingCall || !channelUser}
                   className="hover-scale"
+                  title="Start video call"
                 >
                   {isInitiatingCall ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
                   ) : (
                     <>
-                      <Video className="h-4 w-4 mr-2" />
-                      Video
+                      <Video className="h-4 w-4" />
+                      {!isMobile && <span className="ml-2">Video</span>}
                     </>
                   )}
                 </Button>
@@ -503,9 +601,10 @@ export default function EnhancedMessageArea({
                 size="sm"
                 onClick={handleEndCall}
                 className="hover-scale"
+                title="End call"
               >
-                <PhoneOff className="h-4 w-4 mr-2" />
-                End Call
+                <PhoneOff className="h-4 w-4" />
+                {!isMobile && <span className="ml-2">End Call</span>}
               </Button>
             )}
             <Button
@@ -513,11 +612,34 @@ export default function EnhancedMessageArea({
               size="sm"
               onClick={onShowDetails}
               className="hover-scale"
+              title="Show details"
             >
               <Info className="h-4 w-4" />
             </Button>
           </div>
         </div>
+
+        {/* Active Call Indicator */}
+        {callState.isActive && (
+          <div className="mt-2 flex items-center gap-2 text-sm">
+            <Badge variant="default" className="animate-pulse">
+              <Circle className="h-2 w-2 mr-1 fill-current" />
+              Call in progress
+            </Badge>
+            {callState.isMuted && (
+              <Badge variant="secondary">
+                <MicOff className="h-3 w-3 mr-1" />
+                Muted
+              </Badge>
+            )}
+            {!callState.isVideoEnabled && callState.callType === 'video' && (
+              <Badge variant="secondary">
+                <VideoOff className="h-3 w-3 mr-1" />
+                Camera off
+              </Badge>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Messages Area */}
@@ -559,6 +681,7 @@ export default function EnhancedMessageArea({
           ) : (
             Object.entries(groupedMessages).map(([date, dateMessages]) => (
               <div key={date} className="space-y-2">
+                {/* Date Separator */}
                 <div className="flex items-center gap-4 my-6">
                   <Separator className="flex-1" />
                   <span className="text-xs font-medium text-muted-foreground px-2 py-1 bg-muted rounded">
@@ -567,6 +690,7 @@ export default function EnhancedMessageArea({
                   <Separator className="flex-1" />
                 </div>
 
+                {/* Messages for this date */}
                 <div className="space-y-2">
                   {dateMessages.map((message) => 
                     renderMessage(message, message.sender_id === currentUser?.id)
@@ -576,6 +700,7 @@ export default function EnhancedMessageArea({
             ))
           )}
           
+          {/* Typing Indicator */}
           <TypingIndicator 
             typingUsers={[]} 
             className="mb-4"
@@ -595,10 +720,11 @@ export default function EnhancedMessageArea({
               value={messageInput}
               onChange={(e) => setMessageInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              className="pr-20"
+              className="pr-32"
               disabled={callState.isActive}
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+              {/* Emoji Picker */}
               <div className="relative">
                 <Button 
                   variant="ghost" 
@@ -606,16 +732,20 @@ export default function EnhancedMessageArea({
                   className="h-6 w-6 p-0"
                   onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                   disabled={callState.isActive}
+                  title="Add emoji"
                 >
                   <Smile className="h-4 w-4 text-muted-foreground" />
                 </Button>
-                <EmojiPicker
-                  isOpen={showEmojiPicker}
-                  onClose={() => setShowEmojiPicker(false)}
-                  onEmojiSelect={handleEmojiSelect}
-                />
+                {showEmojiPicker && (
+                  <EmojiPicker
+                    isOpen={showEmojiPicker}
+                    onClose={() => setShowEmojiPicker(false)}
+                    onEmojiSelect={handleEmojiSelect}
+                  />
+                )}
               </div>
               
+              {/* Attachment Upload */}
               <div className="relative">
                 <Button 
                   variant="ghost" 
@@ -623,17 +753,21 @@ export default function EnhancedMessageArea({
                   className="h-6 w-6 p-0"
                   onClick={() => setShowAttachmentUpload(!showAttachmentUpload)}
                   disabled={callState.isActive}
+                  title="Attach file"
                 >
                   <Paperclip className="h-4 w-4 text-muted-foreground" />
                 </Button>
-                <AttachmentUpload
-                  isOpen={showAttachmentUpload}
-                  onClose={() => setShowAttachmentUpload(false)}
-                  onFileUploaded={handleFileUploaded}
-                  messageId={`temp-${Date.now()}`}
-                />
+                {showAttachmentUpload && (
+                  <AttachmentUpload
+                    isOpen={showAttachmentUpload}
+                    onClose={() => setShowAttachmentUpload(false)}
+                    onFileUploaded={handleFileUploaded}
+                    messageId={`temp-${Date.now()}`}
+                  />
+                )}
               </div>
               
+              {/* Voice Recorder */}
               <div className="relative">
                 <Button 
                   variant="ghost" 
@@ -641,43 +775,58 @@ export default function EnhancedMessageArea({
                   className="h-6 w-6 p-0"
                   onClick={() => setShowVoiceRecorder(!showVoiceRecorder)}
                   disabled={callState.isActive}
+                  title="Record voice message"
                 >
                   <Mic className="h-4 w-4 text-muted-foreground" />
                 </Button>
-                <VoiceRecorder
-                  isOpen={showVoiceRecorder}
-                  onClose={() => setShowVoiceRecorder(false)}
-                  onVoiceRecorded={handleVoiceRecorded}
-                />
+                {showVoiceRecorder && (
+                  <VoiceRecorder
+                    isOpen={showVoiceRecorder}
+                    onClose={() => setShowVoiceRecorder(false)}
+                    onVoiceRecorded={handleVoiceRecorded}
+                  />
+                )}
               </div>
             </div>
           </div>
           
+          {/* Send Button */}
           <Button 
             size="sm" 
             onClick={handleSendMessage}
             disabled={!messageInput.trim() || callState.isActive}
             className="hover-scale"
+            title="Send message"
           >
             <Send className="h-4 w-4" />
           </Button>
         </div>
+
+        {/* Call in progress warning */}
+        {callState.isActive && (
+          <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+            <AlertCircle className="h-3 w-3" />
+            <span>Messaging is disabled during calls</span>
+          </div>
+        )}
       </div>
 
       {/* User Profile Modal */}
-      <UserProfileModal
-        isOpen={showProfileModal}
-        onClose={() => setShowProfileModal(false)}
-        user={channelUser}
-        onStartCall={(callType) => {
-          setShowProfileModal(false);
-          handleStartCall(callType);
-        }}
-        onSendMessage={() => {
-          setShowProfileModal(false);
-          inputRef.current?.focus();
-        }}
-      />
+      {showProfileModal && channelUser && (
+        <UserProfileModal
+          isOpen={showProfileModal}
+          onClose={() => setShowProfileModal(false)}
+          user={channelUser}
+          onStartCall={(callType) => {
+            setShowProfileModal(false);
+            handleStartCall(callType);
+          }}
+          onSendMessage={() => {
+            setShowProfileModal(false);
+            inputRef.current?.focus();
+          }}
+        />
+      )}
 
       {/* Call Modal - Show when call is active or incoming */}
       {(callState.isActive || callState.isIncoming) && (
@@ -688,8 +837,8 @@ export default function EnhancedMessageArea({
           localStream={localStream}
           remoteStreams={remoteStreams}
           localVideoRef={localVideoRef}
-          recipientName={channelUser?.full_name || 'Unknown'}
-          recipientAvatar={channelUser?.avatar_url}
+          recipientName={channelUser?.full_name || callState.incomingCallData?.callerName || 'Unknown'}
+          recipientAvatar={channelUser?.avatar_url || callState.incomingCallData?.callerAvatar}
           onAnswer={handleAnswerCall}
           onDecline={handleDeclineCall}
           onEndCall={handleEndCall}
