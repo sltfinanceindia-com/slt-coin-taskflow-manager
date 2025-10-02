@@ -32,6 +32,7 @@ import TypingIndicator from './TypingIndicator';
 import EmojiPicker from './EmojiPicker';
 import AttachmentUpload from './AttachmentUpload';
 import VoiceRecorder from './VoiceRecorder';
+import CallModal from './CallModal';
 import { usePresence } from '@/hooks/usePresence';
 import { useMessageStates } from '@/hooks/useMessageStates';
 import { useFileUpload } from '@/hooks/useFileUpload';
@@ -74,7 +75,7 @@ export default function EnhancedMessageArea({
 }: EnhancedMessageAreaProps) {
   const { profile } = useAuth();
   
-  // WebRTC hook for call functionality
+  // ✅ WebRTC hook for call functionality
   const {
     callState,
     localStream,
@@ -138,12 +139,10 @@ export default function EnhancedMessageArea({
   };
 
   const handleFileUploaded = (attachment: any) => {
-    // Handle file upload - could send as message or add to current message
     console.log('File uploaded:', attachment);
   };
 
   const handleVoiceRecorded = (audioBlob: Blob) => {
-    // Handle voice message - could convert to file and upload
     console.log('Voice recorded:', audioBlob);
   };
 
@@ -152,7 +151,6 @@ export default function EnhancedMessageArea({
       ...prev,
       [messageId]: [...(prev[messageId] || []), emoji]
     }));
-    // TODO: Save reaction to database
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -162,7 +160,7 @@ export default function EnhancedMessageArea({
     }
   };
 
-  // Enhanced call handler with proper validation and error handling
+  // ✅ Enhanced call handler with proper validation and error handling
   const handleStartCall = async (callType: 'voice' | 'video') => {
     console.log('=== handleStartCall triggered ===');
     console.log('Call type:', callType);
@@ -329,7 +327,6 @@ export default function EnhancedMessageArea({
         "flex gap-3 group hover:bg-muted/30 p-2 -mx-2 rounded-lg transition-colors",
         isOwn && "flex-row-reverse"
       )}>
-        {/* Avatar */}
         <Avatar className="h-8 w-8 flex-shrink-0">
           <AvatarImage src={isOwn ? currentUser?.avatar_url : channelUser?.avatar_url} />
           <AvatarFallback className="text-xs">
@@ -337,9 +334,7 @@ export default function EnhancedMessageArea({
           </AvatarFallback>
         </Avatar>
 
-        {/* Message Content */}
         <div className={cn("flex-1 min-w-0", isOwn && "flex flex-col items-end")}>
-          {/* Message Header */}
           <div className={cn("flex items-center gap-2 mb-1", isOwn && "flex-row-reverse")}>
             <span className="font-medium text-sm">
               {isOwn ? 'You' : message.sender_name}
@@ -352,14 +347,12 @@ export default function EnhancedMessageArea({
             )}
           </div>
 
-          {/* Message Body */}
           <div className={cn(
             "bg-card border rounded-lg px-3 py-2 max-w-md break-words",
             isOwn ? "bg-primary text-primary-foreground" : "bg-muted"
           )}>
             <p className="text-sm leading-relaxed">{message.content}</p>
             
-            {/* Message Actions */}
             <div className="opacity-0 group-hover:opacity-100 transition-opacity mt-2 flex items-center gap-1">
               {reactions.map((reaction) => (
                 <Button
@@ -380,7 +373,6 @@ export default function EnhancedMessageArea({
               </Button>
             </div>
 
-            {/* Message Reactions Display */}
             {messageReactions[message.id] && messageReactions[message.id].length > 0 && (
               <div className="flex items-center gap-1 mt-2 flex-wrap">
                 {Array.from(new Set(messageReactions[message.id])).map((emoji, index) => {
@@ -401,7 +393,6 @@ export default function EnhancedMessageArea({
             )}
           </div>
 
-          {/* Message State Indicator */}
           {isOwn && (
             <div className="flex items-center gap-1 mt-1">
               <MessageStateIndicator 
@@ -423,13 +414,11 @@ export default function EnhancedMessageArea({
       <div className="p-4 border-b border-border bg-card/50 backdrop-blur-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {/* Mobile Back Button */}
             {isMobile && onBack && (
               <Button variant="ghost" size="sm" onClick={onBack}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             )}
-            {/* Channel Avatar/Info */}
             {channel.is_direct_message && channelUser ? (
               <div 
                 className="flex items-center gap-3 cursor-pointer hover:bg-muted/50 rounded-lg p-2 -m-2 transition-colors"
@@ -570,7 +559,6 @@ export default function EnhancedMessageArea({
           ) : (
             Object.entries(groupedMessages).map(([date, dateMessages]) => (
               <div key={date} className="space-y-2">
-                {/* Date Separator */}
                 <div className="flex items-center gap-4 my-6">
                   <Separator className="flex-1" />
                   <span className="text-xs font-medium text-muted-foreground px-2 py-1 bg-muted rounded">
@@ -579,7 +567,6 @@ export default function EnhancedMessageArea({
                   <Separator className="flex-1" />
                 </div>
 
-                {/* Messages for this date */}
                 <div className="space-y-2">
                   {dateMessages.map((message) => 
                     renderMessage(message, message.sender_id === currentUser?.id)
@@ -589,7 +576,6 @@ export default function EnhancedMessageArea({
             ))
           )}
           
-          {/* Typing Indicator */}
           <TypingIndicator 
             typingUsers={[]} 
             className="mb-4"
@@ -693,6 +679,27 @@ export default function EnhancedMessageArea({
         }}
       />
 
+      {/* Call Modal - Show when call is active or incoming */}
+      {(callState.isActive || callState.isIncoming) && (
+        <CallModal
+          isOpen={true}
+          onClose={handleEndCall}
+          callState={callState}
+          localStream={localStream}
+          remoteStreams={remoteStreams}
+          localVideoRef={localVideoRef}
+          recipientName={channelUser?.full_name || 'Unknown'}
+          recipientAvatar={channelUser?.avatar_url}
+          onAnswer={handleAnswerCall}
+          onDecline={handleDeclineCall}
+          onEndCall={handleEndCall}
+          onToggleMute={toggleMute}
+          onToggleVideo={toggleVideo}
+          onToggleSpeaker={toggleSpeaker}
+          onStartScreenShare={startScreenShare}
+          onStopScreenShare={stopScreenShare}
+        />
+      )}
     </div>
   );
 }
