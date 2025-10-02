@@ -475,137 +475,254 @@ export function useWebRTC() {
     }
   }, [profile?.id]);
 
-  // Start voice call with comprehensive error handling
-  const startVoiceCall = useCallback(async (userId: string, userName: string) => {
-    try {
-      console.log('=== Starting Voice Call ===');
-      console.log('Target User ID:', userId);
-      console.log('Target User Name:', userName);
-      console.log('Caller Profile ID:', profile?.id);
-      console.log('Caller Profile Name:', profile?.full_name);
+  // Start voice call with comprehensive error handling and profile verification
+const startVoiceCall = useCallback(async (userId: string, userName: string) => {
+  try {
+    console.log('=== Starting Voice Call ===');
+    console.log('Target User ID:', userId);
+    console.log('Target User Name:', userName);
+    console.log('Caller Profile ID:', profile?.id);
+    console.log('Caller Profile Name:', profile?.full_name);
 
-      if (!profile?.id) {
-        throw new Error('User profile not loaded');
-      }
+    // ✅ Critical validation checks
+    if (!profile?.id) {
+      console.error('Profile not loaded');
+      throw new Error('User profile not loaded. Please refresh the page.');
+    }
 
-      const callId = `call_${Date.now()}_${profile.id}_${userId}`;
-      currentCallId.current = callId;
-      console.log('Generated Call ID:', callId);
+    // ✅ Verify profile ID matches authenticated user
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !authUser) {
+      console.error('Auth verification failed:', authError);
+      throw new Error('Authentication failed. Please log in again.');
+    }
+
+    console.log('Auth User ID:', authUser.id);
+    console.log('Profile ID:', profile.id);
+    
+    // ✅ Critical check: Profile ID must match Auth ID for RLS
+    if (authUser.id !== profile.id) {
+      console.error('❌ Profile ID mismatch!');
+      console.error('Auth ID:', authUser.id);
+      console.error('Profile ID:', profile.id);
+      throw new Error('Profile authentication mismatch. Please log out and log back in.');
+    }
+
+    console.log('✅ Profile ID matches Auth ID');
+
+    // ✅ Validate receiver ID
+    if (!userId || userId === profile.id) {
+      throw new Error('Invalid recipient for call');
+    }
+
+    const callId = `call_${Date.now()}_${profile.id}_${userId}`;
+    currentCallId.current = callId;
+    console.log('Generated Call ID:', callId);
+    
+    // ✅ Create call record in database with proper error handling
+    console.log('Creating call record...');
+    console.log('Insert data:', {
+      id: callId,
+      caller_id: profile.id,
+      receiver_id: userId,
+      caller_name: profile.full_name || 'Unknown',
+      receiver_name: userName,
+      call_type: 'voice',
+      status: 'ringing'
+    });
+
+    const { data: callData, error: callError } = await supabase
+      .from('call_history')
+      .insert({
+        id: callId,
+        caller_id: profile.id,     // ✅ Must match auth.uid()
+        receiver_id: userId,
+        caller_name: profile.full_name || 'Unknown',
+        receiver_name: userName,
+        call_type: 'voice',
+        status: 'ringing',
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (callError) {
+      console.error('❌ Database error:', callError);
+      console.error('Error code:', callError.code);
+      console.error('Error message:', callError.message);
+      console.error('Error details:', callError.details);
+      console.error('Error hint:', callError.hint);
       
-      // Create call record in database
-      console.log('Creating call record...');
-      const { data: callData, error: callError } = await supabase
-        .from('call_history')
-        .insert({
-          id: callId,
-          caller_id: profile.id,
-          receiver_id: userId,
-          caller_name: profile.full_name || 'Unknown',
-          receiver_name: userName,
-          call_type: 'voice',
-          status: 'ringing',
-          created_at: new Date().toISOString()
-        })
-        .select()
-        .single();
-
-      if (callError) {
-        console.error('Database error:', callError);
+      // ✅ Provide specific error messages based on error type
+      if (callError.code === '42501') {
+        throw new Error('Permission denied: Please check your account permissions.');
+      } else if (callError.message?.includes('row-level security')) {
+        throw new Error('Database security error: Unable to create call record. Please contact support.');
+      } else {
         throw new Error(`Failed to create call record: ${callError.message}`);
       }
+    }
 
-      console.log('Call record created successfully:', callData);
+    console.log('✅ Call record created successfully:', callData);
 
-      // Initialize media for voice call
-      console.log('Requesting media access...');
-      const stream = await initializeMedia(false, true);
-      console.log('Media obtained successfully, stream ID:', stream.id);
-
-      // Initialize peer connection
-      console.log('Creating peer connection...');
-      const peerConnection = initializePeerConnection(userId);
+    // ✅ Initialize media for voice call
+    console.log('Requesting media access...');
+    let stream: MediaStream;
+    
+    try {
+      stream = await initializeMedia(false, true);
+      console.log('✅ Media obtained successfully, stream ID:', stream.id);
+    } catch (mediaError: any) {
+      console.error('❌ Media access error:', mediaError);
       
-      // Add stream to peer connection
-      console.log('Adding tracks to peer connection...');
-      stream.getTracks().forEach((track, index) => {
-        console.log(`Adding track ${index}:`, track.kind, track.id, track.enabled);
-        peerConnection.addTrack(track, stream);
-      });
-
-      // Create offer
-      console.log('Creating offer...');
-      const offer = await peerConnection.createOffer({
-        offerToReceiveAudio: true,
-        offerToReceiveVideo: false
-      });
+      // Clean up call record on media error
+      await supabase
+        .from('call_history')
+        .update({ status: 'failed', ended_at: new Date().toISOString() })
+        .eq('id', callId);
       
-      console.log('Offer created:', offer.type);
-      await peerConnection.setLocalDescription(offer);
-      console.log('Local description set');
+      throw new Error(`Media access failed: ${mediaError.message}`);
+    }
 
-      // Send offer via signaling
-      console.log('Sending offer to receiver...');
+    // ✅ Initialize peer connection
+    console.log('Creating peer connection...');
+    const peerConnection = initializePeerConnection(userId);
+    
+    if (!peerConnection) {
+      throw new Error('Failed to create peer connection');
+    }
+
+    // ✅ Add stream to peer connection
+    console.log('Adding tracks to peer connection...');
+    stream.getTracks().forEach((track, index) => {
+      console.log(`Adding track ${index}:`, track.kind, track.id, track.enabled);
+      peerConnection.addTrack(track, stream);
+    });
+
+    // ✅ Create offer
+    console.log('Creating offer...');
+    const offer = await peerConnection.createOffer({
+      offerToReceiveAudio: true,
+      offerToReceiveVideo: false
+    });
+    
+    console.log('✅ Offer created:', offer.type);
+    await peerConnection.setLocalDescription(offer);
+    console.log('✅ Local description set');
+
+    // ✅ Send offer via signaling
+    console.log('Sending offer to receiver...');
+    try {
       await sendSignalingMessage('offer', offer, userId);
-      
-      // Update call state
+      console.log('✅ Offer sent successfully');
+    } catch (signalError: any) {
+      console.error('❌ Signaling error:', signalError);
+      throw new Error(`Failed to send call signal: ${signalError.message}`);
+    }
+    
+    // ✅ Update call state
+    setCallState(prev => ({
+      ...prev,
+      callId,
+      isActive: true,
+      isOutgoing: true,
+      callType: 'voice',
+      participants: [{
+        id: userId,
+        name: userName,
+        isMuted: false,
+        isVideoEnabled: false,
+        isScreenSharing: false,
+        isSpeaking: false,
+        connectionQuality: 'excellent',
+        audioLevel: 0
+      }]
+    }));
+
+    console.log('✅ Call state updated');
+
+    // ✅ Play outgoing call sound
+    try {
+      audioNotifications.playOutgoingCall();
+    } catch (audioError) {
+      console.warn('Audio notification failed:', audioError);
+    }
+    
+    // ✅ Start call timer
+    const startTime = Date.now();
+    callTimer.current = setInterval(() => {
       setCallState(prev => ({
         ...prev,
-        callId,
-        isActive: true,
-        isOutgoing: true,
-        callType: 'voice',
-        participants: [{
-          id: userId,
-          name: userName,
-          isMuted: false,
-          isVideoEnabled: false,
-          isScreenSharing: false,
-          isSpeaking: false,
-          connectionQuality: 'excellent',
-          audioLevel: 0
-        }]
+        duration: Math.floor((Date.now() - startTime) / 1000)
       }));
+    }, 1000);
 
-      console.log('Call state updated');
+    toast.success(`Calling ${userName}...`);
+    console.log('=== Voice call started successfully ===');
 
-      // Play outgoing call sound
-      audioNotifications.playOutgoingCall();
-      
-      // Start call timer
-      const startTime = Date.now();
-      callTimer.current = setInterval(() => {
-        setCallState(prev => ({
-          ...prev,
-          duration: Math.floor((Date.now() - startTime) / 1000)
-        }));
-      }, 1000);
-
-      toast.success(`Calling ${userName}...`);
-      console.log('=== Voice call started successfully ===');
-
-    } catch (error: any) {
-      console.error('=== Voice Call Error ===');
-      console.error('Error details:', error);
-      
+  } catch (error: any) {
+    console.error('=== Voice Call Error ===');
+    console.error('Error type:', error.constructor.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    
+    // ✅ Comprehensive cleanup on error
+    try {
       // Clean up call record if it was created
       if (currentCallId.current) {
+        console.log('Cleaning up call record:', currentCallId.current);
         await supabase
           .from('call_history')
-          .update({ status: 'failed', ended_at: new Date().toISOString() })
+          .update({ 
+            status: 'failed', 
+            ended_at: new Date().toISOString(),
+            error_message: error.message 
+          })
           .eq('id', currentCallId.current);
         currentCallId.current = null;
       }
 
       // Clean up media if acquired
       if (localStream) {
+        console.log('Stopping local stream tracks');
         localStream.getTracks().forEach(track => track.stop());
         setLocalStream(null);
       }
-      
-      toast.error(`Call failed: ${error.message}`);
-    }
-  }, [profile, initializeMedia, initializePeerConnection, sendSignalingMessage, localStream]);
 
+      // Reset call state
+      setCallState(prev => ({
+        ...prev,
+        isActive: false,
+        isOutgoing: false,
+        participants: []
+      }));
+    } catch (cleanupError) {
+      console.error('Cleanup error:', cleanupError);
+    }
+    
+    // ✅ User-friendly error messages
+    let userMessage = 'Failed to start call';
+    
+    if (error.message?.includes('profile not loaded')) {
+      userMessage = 'Your profile is not loaded. Please refresh the page.';
+    } else if (error.message?.includes('permission') || error.message?.includes('denied')) {
+      userMessage = 'Camera/microphone access denied. Please enable permissions in your browser settings.';
+    } else if (error.message?.includes('not found')) {
+      userMessage = 'No camera or microphone found. Please connect devices and try again.';
+    } else if (error.message?.includes('busy') || error.message?.includes('readable')) {
+      userMessage = 'Camera/microphone is busy. Please close other apps and try again.';
+    } else if (error.message?.includes('security') || error.message?.includes('RLS')) {
+      userMessage = 'Database security error. Please contact support.';
+    } else if (error.message?.includes('authentication') || error.message?.includes('mismatch')) {
+      userMessage = 'Authentication error. Please log out and log back in.';
+    } else if (error.message) {
+      userMessage = error.message;
+    }
+    
+    toast.error(userMessage);
+  }
+}, [profile, initializeMedia, initializePeerConnection, sendSignalingMessage, localStream]);
   // Start video call
   const startVideoCall = useCallback(async (userId: string, userName: string) => {
     try {
