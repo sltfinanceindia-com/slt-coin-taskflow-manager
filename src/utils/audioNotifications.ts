@@ -417,6 +417,10 @@ class AudioNotifications {
     return this.playSound('incomingCall', { loop: true, stopPrevious: true });
   }
 
+  stopIncomingCall(): void {
+    this.stopSound('incomingCall');
+  }
+
   async playOutgoingCall(): Promise<AudioBufferSourceNode | null> {
     this.vibrate([200, 100, 200]);
     return this.playSound('outgoingCall', { stopPrevious: true });
