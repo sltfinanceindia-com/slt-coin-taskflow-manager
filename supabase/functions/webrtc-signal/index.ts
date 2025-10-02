@@ -1,135 +1,112 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL') ?? '',
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+);
 
-interface SignalMessage {
-  type: 'offer' | 'answer' | 'ice-candidate' | 'call-init' | 'call-end';
-  fromUserId: string;
-  toUserId: string;
-  data: any;
-  callId?: string;
-}
+// Store active connections
+const connections = new Map<string, WebSocket>();
 
-serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+Deno.serve(async (req) => {
+  const upgrade = req.headers.get('upgrade') || '';
+  
+  if (upgrade.toLowerCase() !== 'websocket') {
+    return new Response("Request isn't trying to upgrade to WebSocket.", {
+      status: 400
+    });
   }
 
-  const { headers } = req;
-  const upgradeHeader = headers.get("upgrade") || "";
+  // Extract and verify JWT from query params
+  const url = new URL(req.url);
+  const jwt = url.searchParams.get('jwt');
+  const userId = url.searchParams.get('userId');
 
-  // Handle WebSocket upgrade
-  if (upgradeHeader.toLowerCase() === "websocket") {
-    const { socket, response } = Deno.upgradeWebSocket(req);
+  if (!jwt) {
+    console.error('Auth token not provided');
+    return new Response('Auth token not provided', { status: 403 });
+  }
+
+  // Verify user authentication
+  const { data, error } = await supabase.auth.getUser(jwt);
+  
+  if (error || !data.user) {
+    console.error('Authentication failed:', error);
+    return new Response('Invalid token provided', { status: 403 });
+  }
+
+  console.log(`User ${data.user.id} connected`);
+
+  const { socket, response } = Deno.upgradeWebSocket(req);
+  
+  socket.onopen = () => {
+    console.log(`Socket opened for user ${data.user.id}`);
+    connections.set(data.user.id, socket);
     
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Send connection confirmation
+    socket.send(JSON.stringify({
+      type: 'connected',
+      userId: data.user.id
+    }));
+  };
 
-    let userId: string | null = null;
-    const connectedUsers = new Map<string, WebSocket>();
-
-    socket.onopen = () => {
-      console.log("WebSocket connection opened");
-    };
-
-    socket.onmessage = async (event) => {
-      try {
-        const message: SignalMessage = JSON.parse(event.data);
-        console.log("Received message:", message.type);
-
-        // Register user connection
-        if (message.type === 'call-init') {
-          userId = message.fromUserId;
-          connectedUsers.set(userId, socket);
-          console.log(`User ${userId} connected`);
+  socket.onmessage = (e) => {
+    try {
+      const message = JSON.parse(e.data);
+      console.log(`Received message type: ${message.type}`);
+      
+      // Handle different message types
+      switch (message.type) {
+        case 'register':
+          console.log(`User ${message.userId} registered`);
+          break;
           
-          // Send acknowledgment
-          socket.send(JSON.stringify({ type: 'connected', userId }));
-          return;
-        }
-
-        // Handle call end
-        if (message.type === 'call-end') {
-          // Forward to recipient
-          const recipientSocket = connectedUsers.get(message.toUserId);
-          if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
-            recipientSocket.send(JSON.stringify(message));
-          }
-          
-          // Update call history
-          if (message.callId) {
-            await supabase
-              .from('call_history')
-              .update({
-                status: 'completed',
-                ended_at: new Date().toISOString()
-              })
-              .eq('id', message.callId);
-          }
-          return;
-        }
-
-        // Forward signaling messages (offer, answer, ice-candidate)
-        const recipientSocket = connectedUsers.get(message.toUserId);
-        if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
-          recipientSocket.send(JSON.stringify(message));
-          console.log(`Forwarded ${message.type} to ${message.toUserId}`);
-        } else {
-          console.log(`Recipient ${message.toUserId} not connected`);
-          
-          // If recipient is not online, mark call as missed
-          if (message.type === 'offer' && message.callId) {
-            await supabase
-              .from('call_history')
-              .update({
-                status: 'no_answer',
-                ended_at: new Date().toISOString()
-              })
-              .eq('id', message.callId);
-              
-            // Send error back to caller
+        case 'call-init':
+        case 'call-offer':
+        case 'call-answer':
+        case 'ice-candidate':
+          // Forward signaling messages to target user
+          const targetSocket = connections.get(message.toUserId);
+          if (targetSocket && targetSocket.readyState === WebSocket.OPEN) {
+            targetSocket.send(JSON.stringify({
+              ...message,
+              fromUserId: data.user.id
+            }));
+          } else {
             socket.send(JSON.stringify({
               type: 'error',
-              message: 'Recipient is offline',
-              callId: message.callId
+              message: 'Target user not connected'
             }));
           }
-        }
-      } catch (error) {
-        console.error("Error handling message:", error);
-        socket.send(JSON.stringify({
-          type: 'error',
-          message: error.message
-        }));
+          break;
+          
+        case 'call-end':
+          const endTargetSocket = connections.get(message.toUserId);
+          if (endTargetSocket) {
+            endTargetSocket.send(JSON.stringify(message));
+          }
+          break;
+          
+        default:
+          console.warn(`Unknown message type: ${message.type}`);
       }
-    };
-
-    socket.onclose = () => {
-      if (userId) {
-        connectedUsers.delete(userId);
-        console.log(`User ${userId} disconnected`);
-      }
-    };
-
-    socket.onerror = (error) => {
-      console.error("WebSocket error:", error);
-    };
-
-    return response;
-  }
-
-  // Handle regular HTTP requests (health check)
-  return new Response(
-    JSON.stringify({ message: "WebRTC Signaling Server", status: "running" }),
-    {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    } catch (error) {
+      console.error('Error processing message:', error);
+      socket.send(JSON.stringify({
+        type: 'error',
+        message: error.message
+      }));
     }
-  );
+  };
+
+  socket.onerror = (e) => {
+    console.error('Socket error:', e);
+  };
+
+  socket.onclose = () => {
+    console.log(`Socket closed for user ${data.user.id}`);
+    connections.delete(data.user.id);
+  };
+
+  return response;
 });
