@@ -543,9 +543,26 @@ useEffect(() => {
         console.log('Channel:', channelName);
         console.log('Time:', new Date().toISOString());
         
-        if (err) {
-          console.error('❌ Subscription Error:', err);
-          console.error('Error details:', JSON.stringify(err, null, 2));
+if (err) {
+  console.error('❌ Subscription Error:', err);
+  console.error('Error type:', typeof err);
+  console.error('Error keys:', Object.keys(err));
+  console.error('Error message:', err.message);
+  console.error('Error code:', err.code);
+  console.error('Full error:', JSON.stringify(err, null, 2));
+  
+  // More detailed error messages
+  if (err.message?.includes('JWT') || err.message?.includes('token')) {
+    console.error('🚨 AUTH TOKEN ERROR - User needs to log out and log back in');
+    toast.error('Authentication error. Please log out and log back in.');
+  } else if (err.message?.includes('permission') || err.message?.includes('RLS') || err.message?.includes('policy')) {
+    console.error('🚨 RLS POLICY ERROR - Database permissions blocking subscription');
+    toast.error('Database permission error. Please contact support.');
+  } else {
+    console.error('🚨 UNKNOWN ERROR');
+    toast.error(`Subscription error: ${err.message || 'Unknown error'}`);
+  }
+
           
           // Handle permission/RLS errors
           if (err.message?.includes('permission') || err.message?.includes('RLS') || err.message?.includes('policy')) {
