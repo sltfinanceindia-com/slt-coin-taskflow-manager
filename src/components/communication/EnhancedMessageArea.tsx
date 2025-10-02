@@ -20,17 +20,24 @@ import {
   Heart,
   ThumbsUp,
   Laugh,
-  ArrowLeft
+  ArrowLeft,
+  PhoneOff,
+  VideoOff,
+  MicOff
 } from 'lucide-react';
+import { toast } from 'sonner';
 import UserProfileModal from './UserProfileModal';
 import MessageStateIndicator from './MessageStateIndicator';
 import TypingIndicator from './TypingIndicator';
 import EmojiPicker from './EmojiPicker';
 import AttachmentUpload from './AttachmentUpload';
 import VoiceRecorder from './VoiceRecorder';
+import CallModal from './CallModal';
 import { usePresence } from '@/hooks/usePresence';
 import { useMessageStates } from '@/hooks/useMessageStates';
 import { useFileUpload } from '@/hooks/useFileUpload';
+import { useAuth } from '@/hooks/useAuth';
+import { useWebRTC } from '@/hooks/useWebRTC';
 import type { Channel, Message, TeamMember } from '@/hooks/useCommunication';
 import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
 
@@ -66,6 +73,26 @@ export default function EnhancedMessageArea({
   onBack,
   isMobile = false
 }: EnhancedMessageAreaProps) {
+  const { profile } = useAuth();
+  
+  // WebRTC hook for call functionality
+  const {
+    callState,
+    localStream,
+    remoteStreams,
+    localVideoRef,
+    startVoiceCall,
+    startVideoCall,
+    answerCall,
+    declineCall,
+    endCall,
+    toggleMute,
+    toggleVideo,
+    toggleSpeaker,
+    startScreenShare,
+    stopScreenShare
+  } = useWebRTC();
+
   const [messageInput, setMessageInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -73,6 +100,8 @@ export default function EnhancedMessageArea({
   const [showAttachmentUpload, setShowAttachmentUpload] = useState(false);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const [messageReactions, setMessageReactions] = useState<{[key: string]: string[]}>({});
+  const [isInitiatingCall, setIsInitiatingCall] = useState(false);
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { getUserPresence, getStatusText, getStatusIcon } = usePresence();
@@ -131,6 +160,130 @@ export default function EnhancedMessageArea({
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    }
+  };
+
+  // Enhanced call handler with proper validation and error handling
+  const handleStartCall = async (callType: 'voice' | 'video') => {
+    console.log('=== handleStartCall triggered ===');
+    console.log('Call type:', callType);
+    console.log('Channel:', channel);
+    console.log('Channel User:', channelUser);
+    console.log('Current Profile:', profile);
+
+    // Validation checks
+    if (!channel) {
+      console.error('No channel available');
+      toast.error('Cannot start call: No channel selected');
+      return;
+    }
+
+    if (!channel.is_direct_message) {
+      console.error('Not a direct message channel');
+      toast.error('Calls are only available in direct messages');
+      return;
+    }
+
+    if (!channelUser) {
+      console.error('No channel user found');
+      toast.error('Cannot start call: Recipient not found');
+      return;
+    }
+
+    if (!profile?.id) {
+      console.error('No profile loaded');
+      toast.error('Cannot start call: Your profile is not loaded');
+      return;
+    }
+
+    if (!channelUser.id) {
+      console.error('Channel user has no ID');
+      toast.error('Cannot start call: Invalid recipient');
+      return;
+    }
+
+    // Check if already in a call
+    if (callState.isActive) {
+      toast.warning('You are already in a call');
+      return;
+    }
+
+    try {
+      setIsInitiatingCall(true);
+      console.log('Initiating call...');
+      console.log('Caller Profile ID:', profile.id);
+      console.log('Recipient Profile ID:', channelUser.id);
+      console.log('Recipient Name:', channelUser.full_name);
+
+      // Start the appropriate call type
+      if (callType === 'voice') {
+        console.log('Starting voice call...');
+        await startVoiceCall(channelUser.id, channelUser.full_name);
+      } else {
+        console.log('Starting video call...');
+        await startVideoCall(channelUser.id, channelUser.full_name);
+      }
+
+      console.log('Call initiated successfully');
+      
+      // Call the parent handler if provided
+      if (onStartCall) {
+        onStartCall(callType);
+      }
+
+    } catch (error: any) {
+      console.error('=== Call initiation error ===');
+      console.error('Error:', error);
+      
+      let errorMessage = 'Failed to start call';
+      
+      if (error.message?.includes('permission')) {
+        errorMessage = 'Camera/microphone access denied. Please enable permissions.';
+      } else if (error.message?.includes('not found')) {
+        errorMessage = 'No camera or microphone found.';
+      } else if (error.message?.includes('busy')) {
+        errorMessage = 'Camera/microphone is busy. Close other apps and try again.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
+    } finally {
+      setIsInitiatingCall(false);
+    }
+  };
+
+  // Handle incoming call answer
+  const handleAnswerCall = async () => {
+    try {
+      console.log('Answering incoming call...');
+      await answerCall();
+      toast.success('Call connected');
+    } catch (error: any) {
+      console.error('Error answering call:', error);
+      toast.error(`Failed to answer: ${error.message}`);
+    }
+  };
+
+  // Handle call decline
+  const handleDeclineCall = async () => {
+    try {
+      console.log('Declining call...');
+      await declineCall();
+    } catch (error: any) {
+      console.error('Error declining call:', error);
+      toast.error('Error declining call');
+    }
+  };
+
+  // Handle end call
+  const handleEndCall = async () => {
+    try {
+      console.log('Ending call...');
+      await endCall();
+    } catch (error: any) {
+      console.error('Error ending call:', error);
+      toast.error('Error ending call');
     }
   };
 
@@ -249,17 +402,17 @@ export default function EnhancedMessageArea({
             )}
           </div>
 
-            {/* Message State Indicator */}
-            {isOwn && (
-              <div className="flex items-center gap-1 mt-1">
-                <MessageStateIndicator 
-                  state={message.is_read ? 'read' : 'delivered'} 
-                />
-                <span className="text-xs text-muted-foreground">
-                  {message.is_read ? 'Read' : 'Delivered'}
-                </span>
-              </div>
-            )}
+          {/* Message State Indicator */}
+          {isOwn && (
+            <div className="flex items-center gap-1 mt-1">
+              <MessageStateIndicator 
+                state={message.is_read ? 'read' : 'delivered'} 
+              />
+              <span className="text-xs text-muted-foreground">
+                {message.is_read ? 'Read' : 'Delivered'}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -320,27 +473,52 @@ export default function EnhancedMessageArea({
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2">
-            {channel.is_direct_message && (
+            {channel.is_direct_message && !callState.isActive && (
               <>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onStartCall?.('voice')}
+                  onClick={() => handleStartCall('voice')}
+                  disabled={isInitiatingCall || !channelUser}
                   className="hover-scale"
                 >
-                  <Phone className="h-4 w-4 mr-2" />
-                  Call
+                  {isInitiatingCall ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
+                  ) : (
+                    <>
+                      <Phone className="h-4 w-4 mr-2" />
+                      Call
+                    </>
+                  )}
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onStartCall?.('video')}
+                  onClick={() => handleStartCall('video')}
+                  disabled={isInitiatingCall || !channelUser}
                   className="hover-scale"
                 >
-                  <Video className="h-4 w-4 mr-2" />
-                  Video
+                  {isInitiatingCall ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
+                  ) : (
+                    <>
+                      <Video className="h-4 w-4 mr-2" />
+                      Video
+                    </>
+                  )}
                 </Button>
               </>
+            )}
+            {callState.isActive && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleEndCall}
+                className="hover-scale"
+              >
+                <PhoneOff className="h-4 w-4 mr-2" />
+                End Call
+              </Button>
             )}
             <Button
               variant="ghost"
@@ -433,6 +611,7 @@ export default function EnhancedMessageArea({
               onChange={(e) => setMessageInput(e.target.value)}
               onKeyPress={handleKeyPress}
               className="pr-20"
+              disabled={callState.isActive}
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
               <div className="relative">
@@ -441,6 +620,7 @@ export default function EnhancedMessageArea({
                   size="sm" 
                   className="h-6 w-6 p-0"
                   onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  disabled={callState.isActive}
                 >
                   <Smile className="h-4 w-4 text-muted-foreground" />
                 </Button>
@@ -457,6 +637,7 @@ export default function EnhancedMessageArea({
                   size="sm" 
                   className="h-6 w-6 p-0"
                   onClick={() => setShowAttachmentUpload(!showAttachmentUpload)}
+                  disabled={callState.isActive}
                 >
                   <Paperclip className="h-4 w-4 text-muted-foreground" />
                 </Button>
@@ -474,6 +655,7 @@ export default function EnhancedMessageArea({
                   size="sm" 
                   className="h-6 w-6 p-0"
                   onClick={() => setShowVoiceRecorder(!showVoiceRecorder)}
+                  disabled={callState.isActive}
                 >
                   <Mic className="h-4 w-4 text-muted-foreground" />
                 </Button>
@@ -489,7 +671,7 @@ export default function EnhancedMessageArea({
           <Button 
             size="sm" 
             onClick={handleSendMessage}
-            disabled={!messageInput.trim()}
+            disabled={!messageInput.trim() || callState.isActive}
             className="hover-scale"
           >
             <Send className="h-4 w-4" />
@@ -503,14 +685,36 @@ export default function EnhancedMessageArea({
         onClose={() => setShowProfileModal(false)}
         user={channelUser}
         onStartCall={(callType) => {
-          onStartCall?.(callType);
           setShowProfileModal(false);
+          handleStartCall(callType);
         }}
         onSendMessage={() => {
           setShowProfileModal(false);
           inputRef.current?.focus();
         }}
       />
+
+      {/* Call Modal - Show when call is active or incoming */}
+      {(callState.isActive || callState.isIncoming) && (
+        <CallModal
+          isOpen={true}
+          onClose={handleEndCall}
+          callState={callState}
+          localStream={localStream}
+          remoteStreams={remoteStreams}
+          localVideoRef={localVideoRef}
+          recipientName={channelUser?.full_name || 'Unknown'}
+          recipientAvatar={channelUser?.avatar_url}
+          onAnswer={handleAnswerCall}
+          onDecline={handleDeclineCall}
+          onEndCall={handleEndCall}
+          onToggleMute={toggleMute}
+          onToggleVideo={toggleVideo}
+          onToggleSpeaker={toggleSpeaker}
+          onStartScreenShare={startScreenShare}
+          onStopScreenShare={stopScreenShare}
+        />
+      )}
     </div>
   );
 }
