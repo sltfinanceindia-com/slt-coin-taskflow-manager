@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/hooks/useAuth";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { useAuthEmailNotifications } from "@/hooks/useAuthEmailNotifications";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import ModernDashboard from "./pages/ModernDashboard";
@@ -13,13 +13,26 @@ import Training from "./pages/Training";
 import Assessment from "./pages/Assessment";
 import Calls from "./pages/Calls";
 import NotFound from "./pages/NotFound";
-// ✅ ADD THIS IMPORT
 import IncomingCallHandler from "@/components/communication/IncomingCallHandler";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 
 function AppContent() {
   useAuthEmailNotifications();
+  const { refreshSession, user, profile } = useAuth();
+
+  // ✅ Auto-refresh session on mount
+  useEffect(() => {
+    const initSession = async () => {
+      if (user && !profile) {
+        console.log('🔄 Profile not loaded, refreshing session...');
+        await refreshSession();
+      }
+    };
+
+    initSession();
+  }, [user, profile, refreshSession]);
 
   return (
     <TooltipProvider>
@@ -33,11 +46,10 @@ function AppContent() {
           <Route path="/calls" element={<Calls />} />
           <Route path="/assessment/:id" element={<Assessment />} />
           <Route path="/auth" element={<Auth />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
         
-        {/* ✅ ADD THIS - Global incoming call handler */}
+        {/* ✅ Global incoming call handler */}
         <IncomingCallHandler />
       </BrowserRouter>
     </TooltipProvider>
