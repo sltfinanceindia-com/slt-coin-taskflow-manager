@@ -475,16 +475,9 @@ useEffect(() => {
 
           console.log('✅ Incoming call state updated');
 
-          // Show toast notification as backup
+          // Show toast notification as backup (modal will handle answer action)
           toast.info(`Incoming ${call.call_type} call from ${call.caller_name}`, {
-            duration: 30000,
-            action: {
-              label: 'Answer',
-              onClick: () => {
-                console.log('Toast answer button clicked');
-                answerCall();
-              }
-            }
+            duration: 30000
           });
 
           console.log('✅ Toast notification shown');
