@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 
 interface Profile {
   id: string;
-  user_id: string;
+  user_id?: string; // Optional for backward compatibility
   full_name: string;
   email: string;
   role: 'admin' | 'intern';
@@ -37,106 +37,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId: string): Promise<boolean> => {
+  // ✅ FIXED: Fetch profile by ID (not user_id)
+  const fetchProfile = async (userId: string) => {
     try {
       console.log('📋 Fetching profile for user ID:', userId);
       
-      // Try fetching by id first
+      // ✅ Try fetching by id first (correct way)
       let { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .maybeSingle();
+        .single();
 
-      // Fallback: try by user_id if not found
-      if (!data && !error) {
+      // If not found, try by user_id (fallback for old data)
+      if (error && error.code === 'PGRST116') {
         console.log('Profile not found by id, trying user_id...');
         const result = await supabase
           .from('profiles')
           .select('*')
           .eq('user_id', userId)
-          .maybeSingle();
+          .single();
         
         data = result.data;
         error = result.error;
       }
 
-      // AUTO-CREATE: If still not found, create new profile
-      if (!data && !error) {
-        console.log('⚠️ Profile not found - creating new profile...');
-        
-        // Get user details from auth
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        
-        if (!authUser) {
-          console.error('❌ No authenticated user found');
-          toast.error('Authentication error. Please log in again.');
-          return false;
-        }
-
-        console.log('Creating profile with:', {
-          id: userId,
-          user_id: userId,
-          email: authUser.email,
-          full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User'
-        });
-
-        // Create new profile
-        const { data: newProfile, error: createError } = await supabase
-          .from('profiles')
-          .insert({
-            id: userId,
-            user_id: userId,
-            full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
-            email: authUser.email || '',
-            role: (authUser.user_metadata?.role as 'admin' | 'intern') || 'intern',
-            avatar_url: authUser.user_metadata?.avatar_url || null,
-            total_coins: 0
-          })
-          .select()
-          .maybeSingle();
-
-        if (createError || !newProfile) {
-          console.error('❌ Error creating profile:', createError);
-          toast.error('Failed to create profile. Please contact support.');
-          return false;
-        }
-
-        console.log('✅ Profile created successfully:', newProfile.id);
-        setProfile(newProfile);
-        toast.success('Welcome! Your profile has been created.');
-        return true;
-      }
-
-      // Handle errors
       if (error) {
         console.error('❌ Error fetching profile:', error);
         toast.error('Failed to load profile');
-        return false;
+        return;
       }
 
-      // Profile found successfully
       if (data) {
         console.log('✅ Profile loaded:', data.id, data.full_name);
         
-        // Verify profile ID matches auth ID
-        if (data.id !== userId && data.user_id !== userId) {
+        // ✅ Verify profile ID matches auth ID
+        if (data.id !== userId) {
           console.error('❌ Profile ID mismatch!');
           console.error('Auth ID:', userId);
           console.error('Profile ID:', data.id);
           toast.error('Profile mismatch. Please log out and log back in.');
-          return false;
+          return;
         }
         
         setProfile(data);
-        return true;
       }
-
-      return false;
-    } catch (error: any) {
-      console.error('❌ Error in fetchProfile:', error);
-      toast.error(`Profile error: ${error.message}`);
-      return false;
+    } catch (error) {
+      console.error('❌ Error fetching profile:', error);
     }
   };
 
@@ -147,6 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // ✅ NEW: Refresh session
   const refreshSession = async () => {
     try {
       console.log('🔄 Refreshing session...');
@@ -170,15 +118,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         toast.success('Session refreshed', { duration: 2000 });
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('❌ Unexpected session refresh error:', error);
     }
   };
 
   useEffect(() => {
     let mounted = true;
-    let authInitialized = false;
 
+    // ✅ Check existing session first
     const initializeAuth = async () => {
       try {
         console.log('🔐 Initializing auth...');
@@ -187,11 +135,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (error) {
           console.error('❌ Session error:', error);
-          if (mounted) {
-            setLoading(false);
-            authInitialized = true;
-          }
-          return;
         }
         
         if (existingSession && mounted) {
@@ -199,59 +142,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setSession(existingSession);
           setUser(existingSession.user);
           
-          // Always fetch profile - don't check token age
-          const profileLoaded = await fetchProfile(existingSession.user.id);
-          if (!profileLoaded) {
-            console.error('⚠️ Profile failed to load during init');
+          // Check if session is old (> 1 hour)
+          const tokenAge = Date.now() - new Date(existingSession.user.created_at).getTime();
+          if (tokenAge > 3600000) {
+            console.log('⏰ Session is old, refreshing...');
+            await refreshSession();
+          } else {
+            await fetchProfile(existingSession.user.id);
           }
         }
       } catch (error) {
         console.error('❌ Auth initialization error:', error);
       } finally {
-        if (mounted && !authInitialized) {
-          console.log('✅ Auth initialization complete, setting loading to false');
+        if (mounted) {
           setLoading(false);
-          authInitialized = true;
         }
       }
     };
 
     initializeAuth();
 
-    // Auth state listener
+    // ✅ Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         console.log('🔐 Auth state changed:', event);
         
-        if (!mounted || authInitialized) {
-          console.log('Skipping auth state change - already initialized or unmounted');
-          return;
-        }
+        if (!mounted) return;
 
-        try {
-          setSession(newSession);
-          setUser(newSession?.user ?? null);
-          
-          if (newSession?.user) {
-            console.log('👤 User authenticated:', newSession.user.id);
-            const profileLoaded = await fetchProfile(newSession.user.id);
-            if (!profileLoaded) {
-              console.error('⚠️ Profile failed to load in auth listener');
-            }
-          } else {
-            console.log('👋 User signed out');
-            setProfile(null);
-          }
-        } catch (error) {
-          console.error('❌ Error in auth state listener:', error);
-        } finally {
-          // Only set loading to false if not already initialized
-          if (!authInitialized) {
-            console.log('✅ Auth state change complete, setting loading to false');
-            setLoading(false);
-            authInitialized = true;
-          }
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        
+        if (newSession?.user) {
+          console.log('👤 User authenticated:', newSession.user.id);
+          await fetchProfile(newSession.user.id);
+        } else {
+          console.log('👋 User signed out');
+          setProfile(null);
         }
+        
+        setLoading(false);
       }
     );
 
@@ -302,21 +231,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     console.log('✅ Sign in successful');
     
-    // Wait for profile to load (will auto-create if missing)
+    // Wait for profile to load
     if (data.user) {
       await fetchProfile(data.user.id);
-      
-      // Set user as online after profile is loaded
-      if (profile?.id) {
-        try {
-          await supabase.rpc('update_user_presence', {
-            p_user_id: profile.id,
-            p_is_online: true
-          });
-          console.log('✅ User presence updated to online');
-        } catch (presenceError) {
-          console.warn('⚠️ Failed to update presence:', presenceError);
-        }
+    }
+    
+    // Set user as online after successful sign in
+    if (data.user && profile?.id) {
+      try {
+        await supabase.rpc('update_user_presence', {
+          p_user_id: profile.id,
+          p_is_online: true
+        });
+        console.log('✅ User presence updated to online');
+      } catch (presenceError) {
+        console.warn('⚠️ Failed to update presence:', presenceError);
       }
     }
     
@@ -380,7 +309,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signIn,
     signOut,
     refreshProfile,
-    refreshSession,
+    refreshSession, // ✅ NEW: Expose refresh function
   };
 
   return (

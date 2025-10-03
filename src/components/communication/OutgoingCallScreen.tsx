@@ -8,29 +8,35 @@ import {
   PhoneOff, 
   Video, 
   VideoOff,
+  Users, 
+  Loader2,
   Mic,
   MicOff,
   Wifi,
-  WifiOff,
-  Loader2
+  WifiOff
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useWebRTC } from '@/hooks/useWebRTC';
-import { toast } from 'sonner';
 
 interface OutgoingCallScreenProps {
+  recipientId?: string;
   recipientName: string;
   recipientAvatar?: string;
   callType: 'voice' | 'video';
   onCancel: () => void;
+  onSwitchToVideo?: () => void;
+  onAddParticipant?: () => void;
   className?: string;
 }
 
 export default function OutgoingCallScreen({
+  recipientId,
   recipientName,
   recipientAvatar,
   callType,
   onCancel,
+  onSwitchToVideo,
+  onAddParticipant,
   className
 }: OutgoingCallScreenProps) {
   const { 
@@ -38,21 +44,13 @@ export default function OutgoingCallScreen({
     toggleMute, 
     toggleVideo, 
     endCall,
+    localStream,
     localVideoRef
   } = useWebRTC();
   
   const [ringingWaves, setRingingWaves] = useState(0);
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'ringing' | 'failed'>('connecting');
   const [callDuration, setCallDuration] = useState(0);
-
-  // Debug: Log call state
-  useEffect(() => {
-    console.log('📞 OutgoingCallScreen - Call State:');
-    console.log('  isOutgoing:', callState.isOutgoing);
-    console.log('  isActive:', callState.isActive);
-    console.log('  isMuted:', callState.isMuted);
-    console.log('  isVideoEnabled:', callState.isVideoEnabled);
-    console.log('  callType:', callState.callType);
-  }, [callState]);
 
   // Ringing animation effect
   useEffect(() => {
@@ -63,54 +61,46 @@ export default function OutgoingCallScreen({
     return () => clearInterval(interval);
   }, []);
 
-  // Track call duration when call becomes active
+  // Connection status updates
   useEffect(() => {
-    if (callState.isActive) {
+    if (callState.isOutgoing) {
+      const statusTimer = setTimeout(() => {
+        setConnectionStatus('ringing');
+      }, 2000);
+
+      // Simulate call timeout after 45 seconds
+      const timeoutTimer = setTimeout(() => {
+        setConnectionStatus('failed');
+      }, 45000);
+
+      return () => {
+        clearTimeout(statusTimer);
+        clearTimeout(timeoutTimer);
+      };
+    }
+  }, [callState.isOutgoing]);
+
+  // Track call duration for outgoing calls
+  useEffect(() => {
+    if (callState.isOutgoing && callState.isActive) {
       const interval = setInterval(() => {
         setCallDuration(prev => prev + 1);
       }, 1000);
 
       return () => clearInterval(interval);
-    } else {
-      setCallDuration(0);
     }
-  }, [callState.isActive]);
+  }, [callState.isOutgoing, callState.isActive]);
 
   // Handle call cancellation
-  const handleCancel = async () => {
-    console.log('🚫 Cancelling outgoing call');
-    try {
-      await endCall();
-      onCancel();
-      toast.info('Call cancelled');
-    } catch (error) {
-      console.error('Error cancelling call:', error);
-      toast.error('Failed to cancel call');
-    }
+  const handleCancel = () => {
+    endCall();
+    onCancel();
   };
 
-  // Handle mute toggle
-  const handleToggleMute = async () => {
-    console.log('🎤 Toggling mute');
-    try {
-      await toggleMute();
-      toast.success(callState.isMuted ? 'Unmuted' : 'Muted');
-    } catch (error) {
-      console.error('Error toggling mute:', error);
-      toast.error('Failed to toggle mute');
-    }
-  };
-
-  // Handle video toggle
-  const handleToggleVideo = async () => {
-    console.log('📹 Toggling video');
-    try {
-      await toggleVideo();
-      toast.success(callState.isVideoEnabled ? 'Video off' : 'Video on');
-    } catch (error) {
-      console.error('Error toggling video:', error);
-      toast.error('Failed to toggle video');
-    }
+  // Handle switch to video
+  const handleSwitchToVideo = () => {
+    toggleVideo();
+    onSwitchToVideo?.();
   };
 
   const getInitials = (name: string) => {
@@ -123,28 +113,30 @@ export default function OutgoingCallScreen({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const getConnectionStatus = () => {
-    if (callState.isActive) return 'connected';
-    if (callState.isOutgoing) return 'ringing';
-    return 'connecting';
-  };
-
-  const connectionStatus = getConnectionStatus();
-
   const getConnectionStatusText = () => {
-    if (callState.isActive) return 'Connected';
-    if (callState.isOutgoing) return 'Ringing...';
-    return 'Connecting...';
+    switch (connectionStatus) {
+      case 'connecting':
+        return 'Connecting...';
+      case 'ringing':
+        return 'Ringing...';
+      case 'failed':
+        return 'Connection failed';
+      default:
+        return 'Calling...';
+    }
   };
 
   const getConnectionIcon = () => {
-    if (callState.isActive) {
-      return <Wifi className="h-4 w-4 text-green-500" />;
+    switch (connectionStatus) {
+      case 'connecting':
+        return <Loader2 className="h-4 w-4 animate-spin text-primary" />;
+      case 'ringing':
+        return <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />;
+      case 'failed':
+        return <WifiOff className="h-4 w-4 text-destructive" />;
+      default:
+        return <Wifi className="h-4 w-4 text-primary" />;
     }
-    if (callState.isOutgoing) {
-      return <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />;
-    }
-    return <Loader2 className="h-4 w-4 animate-spin text-primary" />;
   };
 
   return (
@@ -169,7 +161,7 @@ export default function OutgoingCallScreen({
               <div className="text-sm text-muted-foreground flex items-center gap-2">
                 {getConnectionIcon()}
                 {getConnectionStatusText()}
-                {callState.isActive && callDuration > 0 && (
+                {callDuration > 0 && (
                   <>
                     <span>•</span>
                     <span>{formatDuration(callDuration)}</span>
@@ -179,16 +171,9 @@ export default function OutgoingCallScreen({
             </div>
 
             <div className="flex items-center gap-2">
-              {callState.isMuted && (
-                <Badge variant="secondary" className="text-xs">
-                  <MicOff className="h-3 w-3 mr-1" />
-                  Muted
-                </Badge>
-              )}
-              {callType === 'video' && !callState.isVideoEnabled && (
-                <Badge variant="secondary" className="text-xs">
-                  <VideoOff className="h-3 w-3 mr-1" />
-                  Camera off
+              {connectionStatus === 'failed' && (
+                <Badge variant="destructive" className="text-xs">
+                  No answer
                 </Badge>
               )}
             </div>
@@ -201,7 +186,7 @@ export default function OutgoingCallScreen({
             {/* Video Preview for Video Calls */}
             {callType === 'video' && callState.isVideoEnabled && (
               <div className="relative mb-6">
-                <div className="w-64 h-48 bg-gray-900 rounded-lg overflow-hidden mx-auto shadow-2xl">
+                <div className="w-48 h-36 bg-gray-900 rounded-lg overflow-hidden mx-auto">
                   <video 
                     ref={localVideoRef}
                     className="w-full h-full object-cover"
@@ -210,8 +195,8 @@ export default function OutgoingCallScreen({
                     muted
                   />
                   {callState.isMuted && (
-                    <div className="absolute bottom-2 right-2 bg-red-500 rounded p-2">
-                      <MicOff className="h-4 w-4 text-white" />
+                    <div className="absolute bottom-2 right-2 bg-red-500 rounded p-1">
+                      <MicOff className="h-3 w-3 text-white" />
                     </div>
                   )}
                 </div>
@@ -225,8 +210,8 @@ export default function OutgoingCallScreen({
 
             {/* Recipient Avatar with Ringing Animation */}
             <div className="relative">
-              {/* Ringing waves - show when calling (not connected yet) */}
-              {!callState.isActive && callState.isOutgoing && [0, 1, 2].map((index) => (
+              {/* Ringing waves - only show when actually ringing */}
+              {connectionStatus === 'ringing' && [0, 1, 2].map((index) => (
                 <div
                   key={index}
                   className={cn(
@@ -241,20 +226,25 @@ export default function OutgoingCallScreen({
                 />
               ))}
               
-              {/* Connected pulse when active */}
-              {callState.isActive && (
-                <div className="absolute inset-0 rounded-full border-2 border-green-500/50 animate-pulse"
+              {/* Connection failed indication */}
+              {connectionStatus === 'failed' && (
+                <div className="absolute inset-0 rounded-full border-2 border-destructive/50 animate-pulse"
                      style={{ padding: '20px' }} />
               )}
               
               <Avatar className={cn(
                 "w-32 h-32 mx-auto ring-4 shadow-elegant transition-all duration-300",
-                callState.isActive 
-                  ? "ring-green-500/20" 
+                connectionStatus === 'failed' 
+                  ? "ring-destructive/20 grayscale" 
                   : "ring-primary/20"
               )}>
                 <AvatarImage src={recipientAvatar} />
-                <AvatarFallback className="text-3xl font-semibold bg-primary/10 text-primary">
+                <AvatarFallback className={cn(
+                  "text-3xl font-semibold",
+                  connectionStatus === 'failed' 
+                    ? "bg-destructive/10 text-destructive" 
+                    : "bg-primary/10 text-primary"
+                )}>
                   {getInitials(recipientName)}
                 </AvatarFallback>
               </Avatar>
@@ -265,9 +255,12 @@ export default function OutgoingCallScreen({
               <h2 className="text-2xl font-semibold text-foreground">
                 {recipientName}
               </h2>
-              <p className="text-muted-foreground">
-                {callState.isActive 
-                  ? `${callType} call in progress` 
+              <p className={cn(
+                "text-muted-foreground",
+                connectionStatus === 'failed' && "text-destructive"
+              )}>
+                {connectionStatus === 'failed' 
+                  ? 'No answer - please try again' 
                   : callType === 'video' 
                     ? 'Starting video call...' 
                     : 'Calling...'
@@ -275,17 +268,22 @@ export default function OutgoingCallScreen({
               </p>
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                 {getConnectionIcon()}
-                <span className={callState.isActive ? 'text-green-500' : ''}>
+                <span className={connectionStatus === 'failed' ? 'text-destructive' : ''}>
                   {getConnectionStatusText()}
                 </span>
               </div>
             </div>
 
             {/* Connection Status Card */}
-            <Card className="border-muted bg-muted/30">
+            <Card className={cn(
+              "border-muted transition-all duration-300",
+              connectionStatus === 'failed' 
+                ? "bg-destructive/5 border-destructive/20" 
+                : "bg-muted/30"
+            )}>
               <CardContent className="p-4">
                 <div className="flex items-center justify-center gap-3">
-                  {!callState.isActive ? (
+                  {connectionStatus !== 'failed' ? (
                     <>
                       <div className="flex space-x-1">
                         {[0, 1, 2].map((index) => (
@@ -305,15 +303,26 @@ export default function OutgoingCallScreen({
                     </>
                   ) : (
                     <>
-                      <Wifi className="h-4 w-4 text-green-500" />
-                      <span className="text-sm text-green-600">
-                        Call connected • {formatDuration(callDuration)}
+                      <WifiOff className="h-4 w-4 text-destructive" />
+                      <span className="text-sm text-destructive">
+                        Connection timed out
                       </span>
                     </>
                   )}
                 </div>
               </CardContent>
             </Card>
+
+            {/* Retry button for failed calls */}
+            {connectionStatus === 'failed' && (
+              <Button 
+                variant="outline" 
+                onClick={() => window.location.reload()}
+                className="mt-4"
+              >
+                Try Again
+              </Button>
+            )}
           </div>
         </div>
 
@@ -321,57 +330,81 @@ export default function OutgoingCallScreen({
         <div className="p-6 bg-card/95 backdrop-blur border-t">
           <div className="flex items-center justify-center gap-6">
             {/* Mute Toggle */}
-            <div className="text-center">
-              <Button
-                variant={callState.isMuted ? "destructive" : "secondary"}
-                size="lg"
-                onClick={handleToggleMute}
-                className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
-              >
-                {callState.isMuted ? (
-                  <MicOff className="h-6 w-6" />
-                ) : (
-                  <Mic className="h-6 w-6" />
-                )}
-              </Button>
-              <p className="text-xs text-muted-foreground mt-2">
-                {callState.isMuted ? 'Unmute' : 'Mute'}
-              </p>
-            </div>
+            <Button
+              variant={callState.isMuted ? "destructive" : "secondary"}
+              size="lg"
+              onClick={toggleMute}
+              className="h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+              disabled={connectionStatus === 'failed'}
+            >
+              {callState.isMuted ? (
+                <MicOff className="h-5 w-5" />
+              ) : (
+                <Mic className="h-5 w-5" />
+              )}
+            </Button>
 
             {/* Video Toggle (for video calls) */}
             {callType === 'video' && (
-              <div className="text-center">
-                <Button
-                  variant={!callState.isVideoEnabled ? "destructive" : "secondary"}
-                  size="lg"
-                  onClick={handleToggleVideo}
-                  className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
-                >
-                  {callState.isVideoEnabled ? (
-                    <Video className="h-6 w-6" />
-                  ) : (
-                    <VideoOff className="h-6 w-6" />
-                  )}
-                </Button>
-                <p className="text-xs text-muted-foreground mt-2">
-                  {callState.isVideoEnabled ? 'Stop video' : 'Start video'}
-                </p>
-              </div>
+              <Button
+                variant={!callState.isVideoEnabled ? "destructive" : "secondary"}
+                size="lg"
+                onClick={toggleVideo}
+                className="h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                disabled={connectionStatus === 'failed'}
+              >
+                {callState.isVideoEnabled ? (
+                  <Video className="h-5 w-5" />
+                ) : (
+                  <VideoOff className="h-5 w-5" />
+                )}
+              </Button>
             )}
 
-            {/* End Call */}
-            <div className="text-center">
+            {/* Switch to Video (for voice calls) */}
+            {callType === 'voice' && onSwitchToVideo && (
               <Button
-                variant="destructive"
+                variant="outline"
                 size="lg"
-                onClick={handleCancel}
-                className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 bg-red-600 hover:bg-red-700"
+                onClick={handleSwitchToVideo}
+                className="h-12 w-12 rounded-full bg-blue-50 border-blue-200 hover:bg-blue-100 text-blue-600 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                disabled={connectionStatus === 'failed'}
               >
-                <PhoneOff className="h-6 w-6" />
+                <Video className="h-5 w-5" />
               </Button>
-              <p className="text-xs text-muted-foreground mt-2">End call</p>
-            </div>
+            )}
+
+            {/* Add Participant */}
+            {onAddParticipant && (
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={onAddParticipant}
+                className="h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                disabled={connectionStatus === 'failed'}
+              >
+                <Users className="h-5 w-5" />
+              </Button>
+            )}
+
+            {/* Cancel Call */}
+            <Button
+              variant="destructive"
+              size="lg"
+              onClick={handleCancel}
+              className="h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+            >
+              <PhoneOff className="h-5 w-5" />
+            </Button>
+          </div>
+
+          {/* Action Labels */}
+          <div className="flex items-center justify-center gap-8 mt-4 text-xs text-muted-foreground">
+            <span>Mute</span>
+            {callType === 'video' && <span>Video</span>}
+            {callType === 'voice' && onSwitchToVideo && <span>Switch to Video</span>}
+            {onAddParticipant && <span>Add</span>}
+            <span>Cancel</span>
           </div>
         </div>
       </div>

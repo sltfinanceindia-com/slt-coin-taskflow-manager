@@ -265,6 +265,7 @@ export default function CommunicationLayout() {
           recipientAvatar={webrtc.callState.participants[0]?.avatar}
           callType={webrtc.callState.callType}
           onCancel={handleEndCall}
+          onSwitchToVideo={() => webrtc.toggleVideo()}
         />
       )}
 

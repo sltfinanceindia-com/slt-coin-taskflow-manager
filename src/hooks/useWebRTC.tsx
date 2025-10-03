@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { audioNotifications } from '@/utils/audioNotifications'; // WebRTC media & signaling
+import { audioNotifications } from '@/utils/audioNotifications';
 
 export interface CallState {
   isActive: boolean;
