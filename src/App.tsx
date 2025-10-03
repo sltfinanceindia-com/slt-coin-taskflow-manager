@@ -13,7 +13,8 @@ import Training from "./pages/Training";
 import Assessment from "./pages/Assessment";
 import Calls from "./pages/Calls";
 import NotFound from "./pages/NotFound";
-import IncomingCallNotification from "@/components/communication/IncomingCallNotification";
+// ✅ ADD THIS IMPORT
+import IncomingCallHandler from "@/components/communication/IncomingCallHandler";
 
 const queryClient = new QueryClient();
 
@@ -32,11 +33,12 @@ function AppContent() {
           <Route path="/calls" element={<Calls />} />
           <Route path="/assessment/:id" element={<Assessment />} />
           <Route path="/auth" element={<Auth />} />
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
         
-        {/* Global incoming call notification */}
-        <IncomingCallNotification />
+        {/* ✅ ADD THIS - Global incoming call handler */}
+        <IncomingCallHandler />
       </BrowserRouter>
     </TooltipProvider>
   );

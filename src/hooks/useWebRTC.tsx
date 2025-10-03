@@ -384,6 +384,7 @@ export function useWebRTC() {
       }
     }
   }, [profile]);
+
   // Listen for incoming calls via Supabase realtime
 useEffect(() => {
   if (!profile?.id) {
@@ -391,240 +392,139 @@ useEffect(() => {
     return;
   }
 
-  let mounted = true;
-  let retryCount = 0;
-  const MAX_RETRIES = 3;
+  console.log('=================================');
+  console.log('📡 Setting up incoming call subscription');
+  console.log('Profile ID:', profile.id);
+  console.log('Channel name:', `incoming_calls_${profile.id}`);
+  console.log('Time:', new Date().toISOString());
+  console.log('=================================');
 
-  const setupSubscription = async () => {
-    if (!mounted) return;
-
-    console.log('=================================');
-    console.log('📡 Setting up incoming call subscription');
-    console.log('Profile ID:', profile.id);
-    console.log('Attempt:', retryCount + 1);
-    console.log('Time:', new Date().toISOString());
-    console.log('=================================');
-
-    // ✅ Pre-flight check: Verify we can read before subscribing
-    try {
-      const { data: testData, error: testError } = await supabase
-        .from('call_history')
-        .select('id')
-        .eq('receiver_id', profile.id)
-        .limit(1);
-
-      if (testError) {
-        console.error('❌ Pre-flight SELECT test failed:', testError);
-        console.error('Error code:', testError.code);
-        console.error('Error message:', testError.message);
-        toast.error('Cannot access call history. Please log out and log back in.');
-        return;
-      }
-
-      console.log('✅ Pre-flight SELECT test passed');
-    } catch (error) {
-      console.error('❌ Pre-flight test error:', error);
-      return;
-    }
-
-    // ✅ Create subscription with unique channel name
-    const channelName = `incoming_calls_${profile.id}_${Date.now()}`;
-    console.log('Creating channel:', channelName);
-    
-    realtimeChannel.current = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'call_history',
-          filter: `receiver_id=eq.${profile.id}`
-        },
-        (payload) => {
-          if (!mounted) {
-            console.log('⚠️ Component unmounted, ignoring call');
-            return;
-          }
-          
-          console.log('\n');
-          console.log('=================================');
-          console.log('🔔 INCOMING CALL RECEIVED!!!');
-          console.log('=================================');
-          console.log('Timestamp:', new Date().toISOString());
-          console.log('Payload:', JSON.stringify(payload, null, 2));
-          
-          const call = payload.new as any;
-          
-          console.log('\n📞 Call Details:');
-          console.log('  - Call ID:', call.id);
-          console.log('  - Caller ID:', call.caller_id);
-          console.log('  - Caller Name:', call.caller_name);
-          console.log('  - Receiver ID:', call.receiver_id);
-          console.log('  - Call Type:', call.call_type);
-          console.log('  - Status:', call.status);
-          console.log('  - Created:', call.created_at);
-          
-          // ✅ Validate receiver ID matches profile
-          if (call.receiver_id !== profile.id) {
-            console.error('❌ Receiver ID mismatch!');
-            console.error('Expected:', profile.id);
-            console.error('Received:', call.receiver_id);
-            return;
-          }
-          
-          console.log('✅ Receiver ID matches profile ID');
-          
-          // ✅ Only show incoming call if status is ringing
-          if (call.status === 'ringing') {
-            console.log('✅ Status is ringing, showing incoming call UI');
-            
-            currentCallId.current = call.id;
-            
-            // Play incoming call sound
-            try {
-              audioNotifications.playIncomingCall();
-              console.log('✅ Playing incoming call sound');
-            } catch (error) {
-              console.error('❌ Error playing sound:', error);
-            }
-            
-            // Update state to show incoming call UI
-            console.log('📱 Updating call state...');
-            setCallState(prev => {
-              const newState = {
-                ...prev,
-                callId: call.id,
-                isIncoming: true,
-                isActive: false,
-                callType: call.call_type,
-                incomingCallData: {
-                  callerId: call.caller_id,
-                  callerName: call.caller_name || 'Unknown Caller',
-                  callerAvatar: call.caller_avatar,
-                  callType: call.call_type
-                }
-              };
-              
-              console.log('New call state:', newState);
-              return newState;
-            });
-
-            console.log('✅ Incoming call state updated');
-
-            // Show toast notification as backup (informational only)
-            toast.info(`Incoming ${call.call_type} call from ${call.caller_name}`, {
-              duration: 30000
-            });
-
-            console.log('✅ Toast notification shown');
-          } else {
-            console.log('⚠️ Call status is not ringing:', call.status);
-            console.log('Ignoring call notification');
-          }
-          
-          console.log('=================================\n');
-        }
-      )
-      .subscribe(async (status, err) => {
-        if (!mounted) return;
-
-        console.log('\n=================================');
-        console.log('📡 Subscription Status Update');
+  realtimeChannel.current = supabase
+    .channel(`incoming_calls_${profile.id}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'call_history',
+        filter: `receiver_id=eq.${profile.id}`
+      },
+      (payload) => {
+        console.log('\n');
         console.log('=================================');
-        console.log('Status:', status);
-        console.log('Channel:', channelName);
-        console.log('Time:', new Date().toISOString());
+        console.log('🔔 INCOMING CALL RECEIVED!!!');
+        console.log('=================================');
+        console.log('Timestamp:', new Date().toISOString());
+        console.log('Raw payload:', JSON.stringify(payload, null, 2));
         
-if (err) {
-  console.error('❌ Subscription Error:', err);
-  console.error('Error type:', typeof err);
-  console.error('Error keys:', Object.keys(err));
-  console.error('Error message:', err.message);
-  console.error('Error code:', (err as any).code);
-  console.error('Full error:', JSON.stringify(err, null, 2));
-  
-  // More detailed error messages
-  if (err.message?.includes('JWT') || err.message?.includes('token')) {
-    console.error('🚨 AUTH TOKEN ERROR - User needs to log out and log back in');
-    toast.error('Authentication error. Please log out and log back in.');
-  } else if (err.message?.includes('permission') || err.message?.includes('RLS') || err.message?.includes('policy')) {
-    console.error('🚨 RLS POLICY ERROR - Database permissions blocking subscription');
-    toast.error('Database permission error. Please contact support.');
-  } else {
-    console.error('🚨 UNKNOWN ERROR');
-    toast.error(`Subscription error: ${err.message || 'Unknown error'}`);
-  }
-
-          
-          // Handle permission/RLS errors
-          if (err.message?.includes('permission') || err.message?.includes('RLS') || err.message?.includes('policy')) {
-            console.error('🚨 RLS POLICY BLOCKING SUBSCRIPTION!');
-            toast.error('Call notifications blocked. Please log out and log back in.');
-            return;
-          }
-          
-          // Retry logic
-          if (retryCount < MAX_RETRIES) {
-            retryCount++;
-            console.log(`🔄 Retrying subscription... (${retryCount}/${MAX_RETRIES})`);
-            
-            // Clean up current channel
-            if (realtimeChannel.current) {
-              await supabase.removeChannel(realtimeChannel.current);
-              realtimeChannel.current = null;
-            }
-            
-            // Wait before retrying (exponential backoff)
-            const delay = 2000 * retryCount;
-            console.log(`⏳ Waiting ${delay}ms before retry...`);
-            
-            setTimeout(() => {
-              if (mounted) setupSubscription();
-            }, delay);
-          } else {
-            console.error('❌ Max retries reached. Giving up.');
-            toast.error('Failed to enable call notifications. Please refresh the page.');
-          }
+        const call = payload.new as any;
+        
+        console.log('\n📞 Call details:');
+        console.log('  - Call ID:', call.id);
+        console.log('  - Caller ID:', call.caller_id);
+        console.log('  - Caller Name:', call.caller_name);
+        console.log('  - Receiver ID:', call.receiver_id);
+        console.log('  - Call Type:', call.call_type);
+        console.log('  - Status:', call.status);
+        console.log('  - Created:', call.created_at);
+        
+        // Validate receiver ID matches profile
+        if (call.receiver_id !== profile.id) {
+          console.error('❌ Receiver ID mismatch!');
+          console.error('Expected:', profile.id);
+          console.error('Received:', call.receiver_id);
           return;
         }
         
-        if (status === 'SUBSCRIBED') {
-          console.log('✅ Successfully subscribed to incoming calls');
-          console.log('🎯 Ready to receive calls!');
-          retryCount = 0; // Reset retry count on success
-          toast.success('Ready to receive calls', { duration: 2000 });
-        } else if (status === 'CLOSED') {
-          console.log('❌ Subscription closed');
+        console.log('✅ Receiver ID matches profile ID');
+        
+        // Only show incoming call if status is ringing
+        if (call.status === 'ringing') {
+          console.log('✅ Status is ringing, showing incoming call UI');
           
-          // Auto-retry if connection closed unexpectedly
-          if (mounted && retryCount < MAX_RETRIES) {
-            retryCount++;
-            console.log(`🔄 Connection closed, retrying... (${retryCount}/${MAX_RETRIES})`);
-            setTimeout(() => {
-              if (mounted) setupSubscription();
-            }, 2000);
+          currentCallId.current = call.id;
+          
+          // Play incoming call sound
+          try {
+            audioNotifications.playIncomingCall();
+            console.log('✅ Playing incoming call sound');
+          } catch (error) {
+            console.error('❌ Error playing sound:', error);
           }
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('❌ Channel error');
-          toast.error('Call subscription error - please refresh the page');
-        } else if (status === 'TIMED_OUT') {
-          console.error('❌ Subscription timed out');
-          toast.error('Call subscription timed out - please refresh the page');
+          
+          // Update state to show incoming call UI
+          console.log('📱 Updating call state...');
+          setCallState(prev => {
+            const newState = {
+              ...prev,
+              callId: call.id,
+              isIncoming: true,
+              isActive: false,
+              callType: call.call_type,
+              incomingCallData: {
+                callerId: call.caller_id,
+                callerName: call.caller_name || 'Unknown Caller',
+                callerAvatar: call.caller_avatar,
+                callType: call.call_type
+              }
+            };
+            
+            console.log('New call state:', newState);
+            return newState;
+          });
+
+          console.log('✅ Incoming call state updated');
+
+          // Show toast notification as backup
+          toast.info(`Incoming ${call.call_type} call from ${call.caller_name}`, {
+            duration: 30000,
+            action: {
+              label: 'Answer',
+              onClick: () => {
+                console.log('Toast answer button clicked');
+                answerCall();
+              }
+            }
+          });
+
+          console.log('✅ Toast notification shown');
+        } else {
+          console.log('⚠️ Call status is not ringing:', call.status);
+          console.log('Ignoring call notification');
         }
         
         console.log('=================================\n');
-      });
-  };
+      }
+    )
+    .subscribe((status) => {
+      console.log('\n=================================');
+      console.log('📡 Subscription Status Update');
+      console.log('=================================');
+      console.log('Status:', status);
+      console.log('Channel:', `incoming_calls_${profile.id}`);
+      console.log('Time:', new Date().toISOString());
+      
+      if (status === 'SUBSCRIBED') {
+        console.log('✅ Successfully subscribed to incoming calls');
+        console.log('🎯 Ready to receive calls!');
+        toast.success('Ready to receive calls', { duration: 2000 });
+      } else if (status === 'CLOSED') {
+        console.log('❌ Subscription closed');
+        toast.warning('Call notifications disabled');
+      } else if (status === 'CHANNEL_ERROR') {
+        console.error('❌ Channel error - check RLS policies and network');
+        toast.error('Call subscription error - check permissions');
+      } else if (status === 'TIMED_OUT') {
+        console.error('❌ Subscription timed out');
+        toast.error('Call subscription timed out');
+      }
+      
+      console.log('=================================\n');
+    });
 
-  // Start subscription setup
-  setupSubscription();
-
-  // Cleanup function
   return () => {
-    mounted = false;
-    console.log('🧹 Cleaning up incoming call subscription');
-    console.log('Profile ID:', profile.id);
+    console.log('🧹 Cleaning up incoming calls subscription');
+    console.log('Channel:', `incoming_calls_${profile.id}`);
     
     if (realtimeChannel.current) {
       supabase.removeChannel(realtimeChannel.current);
@@ -632,8 +532,8 @@ if (err) {
       console.log('✅ Subscription cleaned up');
     }
   };
-}, [profile?.id]);
-  
+}, [profile?.id, answerCall]);
+
   // Initialize media devices with comprehensive error handling
   const initializeMedia = useCallback(async (video: boolean = false, audio: boolean = true) => {
     try {
