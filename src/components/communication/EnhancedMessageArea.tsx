@@ -275,29 +275,6 @@ export default function EnhancedMessageArea({
       }
 
       console.log('Call initiated successfully');
-
-      {/* Call Modal - Only show when call is ACTIVE, NOT incoming */}
-{callState.isActive && !callState.isIncoming && (
-  <CallModal
-    isOpen={true}
-    onClose={handleEndCall}
-    callState={callState}
-    localStream={localStream}
-    remoteStreams={remoteStreams}
-    localVideoRef={localVideoRef}
-    recipientName={channelUser?.full_name || callState.incomingCallData?.callerName || 'Unknown'}
-    recipientAvatar={channelUser?.avatar_url || callState.incomingCallData?.callerAvatar}
-    onAnswer={handleAnswerCall}
-    onDecline={handleDeclineCall}
-    onEndCall={handleEndCall}
-    onToggleMute={toggleMute}
-    onToggleVideo={toggleVideo}
-    onToggleSpeaker={toggleSpeaker}
-    onStartScreenShare={startScreenShare}
-    onStopScreenShare={stopScreenShare}
-  />
-)}
-
       
       // Call the parent handler if provided
       if (onStartCall) {
