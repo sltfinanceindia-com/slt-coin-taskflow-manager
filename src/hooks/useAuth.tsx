@@ -199,13 +199,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.log('⏰ Session is old, refreshing...');
             await refreshSession();
           } else {
-            await fetchProfile(existingSession.user.id);
+            const profileLoaded = await fetchProfile(existingSession.user.id);
+            if (!profileLoaded) {
+              console.error('⚠️ Profile failed to load during init');
+            }
           }
         }
       } catch (error) {
         console.error('❌ Auth initialization error:', error);
       } finally {
         if (mounted) {
+          console.log('✅ Auth initialization complete, setting loading to false');
           setLoading(false);
         }
       }
@@ -220,23 +224,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (!mounted) return;
 
-        setSession(newSession);
-        setUser(newSession?.user ?? null);
-        
-        if (newSession?.user) {
-          console.log('👤 User authenticated:', newSession.user.id);
-          try {
-            await fetchProfile(newSession.user.id);
-          } catch (error) {
-            console.error('❌ Failed to fetch profile in auth listener:', error);
+        try {
+          setSession(newSession);
+          setUser(newSession?.user ?? null);
+          
+          if (newSession?.user) {
+            console.log('👤 User authenticated:', newSession.user.id);
+            const profileLoaded = await fetchProfile(newSession.user.id);
+            if (!profileLoaded) {
+              console.error('⚠️ Profile failed to load in auth listener');
+            }
+          } else {
+            console.log('👋 User signed out');
+            setProfile(null);
           }
-        } else {
-          console.log('👋 User signed out');
-          setProfile(null);
+        } catch (error) {
+          console.error('❌ Error in auth state listener:', error);
+        } finally {
+          // CRITICAL: Always set loading to false after auth state change
+          console.log('✅ Auth state change complete, setting loading to false');
+          setLoading(false);
         }
-        
-        // Always set loading to false after auth state change
-        setLoading(false);
       }
     );
 
