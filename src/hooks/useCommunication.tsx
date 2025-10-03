@@ -71,7 +71,10 @@ export function useCommunication() {
 
   // Fetch channels
   const fetchChannels = useCallback(async () => {
-    if (!profile) return;
+    if (!profile) {
+      console.log('No profile, skipping channel fetch');
+      return;
+    }
 
     try {
       const { data: channelMembers, error: memberError } = await supabase
@@ -128,6 +131,8 @@ export function useCommunication() {
         description: "Failed to load channels",
         variant: "destructive"
       });
+      // Set empty channels on error to prevent loading state
+      setChannels([]);
     }
   }, [profile, toast]);
 
@@ -164,12 +169,17 @@ export function useCommunication() {
       setTeamMembers(teamMembersData);
     } catch (error) {
       console.error('Error fetching team members:', error);
+      // Set empty array on error to prevent loading state
+      setTeamMembers([]);
     }
   }, []);
 
   // Fetch messages for selected channel
   const fetchMessages = useCallback(async (channelId: string) => {
-    if (!channelId) return;
+    if (!channelId) {
+      setIsLoadingMessages(false);
+      return;
+    }
 
     setIsLoadingMessages(true);
     try {
@@ -407,6 +417,9 @@ export function useCommunication() {
       ]).finally(() => {
         setIsLoading(false);
       });
+    } else {
+      // If no profile, stop loading immediately
+      setIsLoading(false);
     }
   }, [profile, fetchChannels, fetchTeamMembers]);
 
