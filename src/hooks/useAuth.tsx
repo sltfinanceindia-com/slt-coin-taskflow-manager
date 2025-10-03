@@ -177,6 +177,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+    let authInitialized = false;
 
     const initializeAuth = async () => {
       try {
@@ -186,6 +187,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (error) {
           console.error('❌ Session error:', error);
+          if (mounted) {
+            setLoading(false);
+            authInitialized = true;
+          }
+          return;
         }
         
         if (existingSession && mounted) {
@@ -193,24 +199,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setSession(existingSession);
           setUser(existingSession.user);
           
-          // Check if session is old (> 1 hour)
-          const tokenAge = Date.now() - new Date(existingSession.user.created_at).getTime();
-          if (tokenAge > 3600000) {
-            console.log('⏰ Session is old, refreshing...');
-            await refreshSession();
-          } else {
-            const profileLoaded = await fetchProfile(existingSession.user.id);
-            if (!profileLoaded) {
-              console.error('⚠️ Profile failed to load during init');
-            }
+          // Always fetch profile - don't check token age
+          const profileLoaded = await fetchProfile(existingSession.user.id);
+          if (!profileLoaded) {
+            console.error('⚠️ Profile failed to load during init');
           }
         }
       } catch (error) {
         console.error('❌ Auth initialization error:', error);
       } finally {
-        if (mounted) {
+        if (mounted && !authInitialized) {
           console.log('✅ Auth initialization complete, setting loading to false');
           setLoading(false);
+          authInitialized = true;
         }
       }
     };
@@ -222,7 +223,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       async (event, newSession) => {
         console.log('🔐 Auth state changed:', event);
         
-        if (!mounted) return;
+        if (!mounted || authInitialized) {
+          console.log('Skipping auth state change - already initialized or unmounted');
+          return;
+        }
 
         try {
           setSession(newSession);
@@ -241,9 +245,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
           console.error('❌ Error in auth state listener:', error);
         } finally {
-          // CRITICAL: Always set loading to false after auth state change
-          console.log('✅ Auth state change complete, setting loading to false');
-          setLoading(false);
+          // Only set loading to false if not already initialized
+          if (!authInitialized) {
+            console.log('✅ Auth state change complete, setting loading to false');
+            setLoading(false);
+            authInitialized = true;
+          }
         }
       }
     );
