@@ -399,63 +399,6 @@ export type Database = {
         }
         Relationships: []
       }
-      call_history: {
-        Row: {
-          call_type: string | null
-          caller_id: string | null
-          caller_name: string | null
-          created_at: string | null
-          duration_seconds: number | null
-          ended_at: string | null
-          id: string
-          receiver_id: string | null
-          receiver_name: string | null
-          started_at: string | null
-          status: string | null
-        }
-        Insert: {
-          call_type?: string | null
-          caller_id?: string | null
-          caller_name?: string | null
-          created_at?: string | null
-          duration_seconds?: number | null
-          ended_at?: string | null
-          id: string
-          receiver_id?: string | null
-          receiver_name?: string | null
-          started_at?: string | null
-          status?: string | null
-        }
-        Update: {
-          call_type?: string | null
-          caller_id?: string | null
-          caller_name?: string | null
-          created_at?: string | null
-          duration_seconds?: number | null
-          ended_at?: string | null
-          id?: string
-          receiver_id?: string | null
-          receiver_name?: string | null
-          started_at?: string | null
-          status?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "call_history_caller_id_fkey"
-            columns: ["caller_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "call_history_receiver_id_fkey"
-            columns: ["receiver_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       channel_members: {
         Row: {
           channel_id: string
@@ -2082,7 +2025,22 @@ export type Database = {
           signal_data?: Json | null
           signal_type?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "webrtc_signals_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "webrtc_signals_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -2117,6 +2075,10 @@ export type Database = {
       extract_video_duration: {
         Args: { video_url: string }
         Returns: number
+      }
+      get_channel_display_name: {
+        Args: { channel_id: string; current_user_id: string }
+        Returns: string
       }
       get_chat_partner_name: {
         Args: { channel_id_param: string; current_user_id: string }

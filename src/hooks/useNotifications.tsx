@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
 import { NotificationItem } from '@/components/communication/NotificationBanner';
-import { audioNotifications } from '@/utils/audioNotifications';
 import { useAuth } from '@/hooks/useAuth';
 
 interface NotificationSettings {
@@ -42,10 +41,6 @@ export function useNotifications() {
     }
   }, []);
 
-  // Initialize audio notifications
-  useEffect(() => {
-    audioNotifications.initialize();
-  }, []);
 
   // Update unread count
   useEffect(() => {
@@ -74,24 +69,6 @@ export function useNotifications() {
 
     setNotifications(prev => [newNotification, ...prev]);
 
-    // Play sound if enabled and not in DND
-    if (settings.soundEnabled && !isDNDActive()) {
-      switch (notification.type) {
-        case 'message':
-        case 'mention':
-          audioNotifications.playMessageReceived();
-          break;
-        case 'call':
-          audioNotifications.playIncomingCall();
-          break;
-        case 'missed_call':
-          audioNotifications.playMissedCall();
-          break;
-        case 'system':
-          audioNotifications.playSuccess();
-          break;
-      }
-    }
 
     // Show desktop push notification if enabled and permission granted
     if (pushPermission === 'granted' && !isDNDActive() && settings.showBanners) {
@@ -319,11 +296,6 @@ export function useNotifications() {
     }));
 
     setNotifications(prev => [...newNotifications, ...prev]);
-    
-    // Play sound only once for batch
-    if (settings.soundEnabled && !isDNDActive() && newNotifications.length > 0) {
-      audioNotifications.playMessageReceived();
-    }
 
     return newNotifications.map(n => n.id);
   }, [settings.soundEnabled, isDNDActive]);

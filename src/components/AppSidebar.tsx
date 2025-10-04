@@ -13,8 +13,7 @@ import {
   Settings,
   Activity,
   Monitor,
-  MessageSquare,
-  Phone
+  MessageSquare
 } from "lucide-react"
 
 import {
@@ -40,7 +39,6 @@ const adminItems = [
   { title: "Time Logs", url: "time", icon: Clock },
   { title: "Training", url: "training", icon: BookOpen },
   { title: "Communication", url: "communication", icon: MessageSquare },
-  { title: "Calls", url: "/calls", icon: Phone },
   { title: "Coins", url: "coins", icon: Coins },
   { title: "Interns", url: "interns", icon: Users },
   { title: "Productivity", url: "productivity", icon: Activity },
@@ -55,7 +53,6 @@ const internItems = [
   { title: "Training", url: "training", icon: BookOpen },
   { title: "Time Logs", url: "time", icon: Clock },
   { title: "Communication", url: "communication", icon: MessageSquare },
-  { title: "Calls", url: "/calls", icon: Phone },
   { title: "My Coins", url: "my-coins", icon: Coins },
   { title: "Analytics", url: "analytics", icon: BarChart3 },
 ]

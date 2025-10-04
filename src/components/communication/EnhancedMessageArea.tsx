@@ -7,13 +7,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { 
-  Phone,
-  Video,
   Info,
   Smile,
   Paperclip,
   Mic,
-  MicOff,
   Send,
   MoreHorizontal,
   Circle,
@@ -21,10 +18,7 @@ import {
   Heart,
   ThumbsUp,
   Laugh,
-  ArrowLeft,
-  PhoneOff,
-  VideoOff,
-  AlertCircle
+  ArrowLeft
 } from 'lucide-react';
 import { toast } from 'sonner';
 import UserProfileModal from './UserProfileModal';
@@ -37,7 +31,6 @@ import { usePresence } from '@/hooks/usePresence';
 import { useMessageStates } from '@/hooks/useMessageStates';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useAuth } from '@/hooks/useAuth';
-import { useWebRTC } from '@/hooks/useWebRTC';
 import type { Channel, Message, TeamMember } from '@/hooks/useCommunication';
 import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
 
@@ -74,24 +67,6 @@ export default function EnhancedMessageArea({
   isMobile = false
 }: EnhancedMessageAreaProps) {
   const { profile } = useAuth();
-  
-  // ✅ WebRTC hook for call functionality
-  const {
-    callState,
-    localStream,
-    remoteStreams,
-    localVideoRef,
-    startVoiceCall,
-    startVideoCall,
-    answerCall,
-    declineCall,
-    endCall,
-    toggleMute,
-    toggleVideo,
-    toggleSpeaker,
-    startScreenShare,
-    stopScreenShare
-  } = useWebRTC();
 
   // State management
   const [messageInput, setMessageInput] = useState('');
@@ -101,7 +76,6 @@ export default function EnhancedMessageArea({
   const [showAttachmentUpload, setShowAttachmentUpload] = useState(false);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const [messageReactions, setMessageReactions] = useState<{[key: string]: string[]}>({});
-  const [isInitiatingCall, setIsInitiatingCall] = useState(false);
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -205,150 +179,6 @@ export default function EnhancedMessageArea({
     }
   };
 
-  /**
-   * ✅ Enhanced call handler with proper validation and error handling
-   */
-  const handleStartCall = async (callType: 'voice' | 'video') => {
-    console.log('=== handleStartCall triggered ===');
-    console.log('Call type:', callType);
-    console.log('Channel:', channel);
-    console.log('Channel User:', channelUser);
-    console.log('Current Profile:', profile);
-
-    // Validation checks
-    if (!channel) {
-      console.error('No channel available');
-      toast.error('Cannot start call: No channel selected');
-      return;
-    }
-
-    if (!channel.is_direct_message) {
-      console.error('Not a direct message channel');
-      toast.error('Calls are only available in direct messages');
-      return;
-    }
-
-    if (!channelUser) {
-      console.error('No channel user found');
-      toast.error('Cannot start call: Recipient not found');
-      return;
-    }
-
-    if (!profile?.id) {
-      console.error('No profile loaded');
-      toast.error('Cannot start call: Your profile is not loaded. Please refresh the page.');
-      return;
-    }
-
-    if (!channelUser.id) {
-      console.error('Channel user has no ID');
-      toast.error('Cannot start call: Invalid recipient');
-      return;
-    }
-
-    // Check if already in a call
-    if (callState.isActive) {
-      toast.warning('You are already in a call');
-      return;
-    }
-
-    // Check if there's an incoming call
-    if (callState.isIncoming) {
-      toast.warning('You have an incoming call. Please answer or decline it first.');
-      return;
-    }
-
-    try {
-      setIsInitiatingCall(true);
-      console.log('Initiating call...');
-      console.log('Caller Profile ID:', profile.id);
-      console.log('Recipient Profile ID:', channelUser.id);
-      console.log('Recipient Name:', channelUser.full_name);
-
-      // Start the appropriate call type
-      if (callType === 'voice') {
-        console.log('Starting voice call...');
-        await startVoiceCall(channelUser.id, channelUser.full_name);
-      } else {
-        console.log('Starting video call...');
-        await startVideoCall(channelUser.id, channelUser.full_name);
-      }
-
-      console.log('Call initiated successfully');
-      
-      // Call the parent handler if provided
-      if (onStartCall) {
-        onStartCall(callType);
-      }
-
-    } catch (error: any) {
-      console.error('=== Call initiation error ===');
-      console.error('Error:', error);
-      
-      let errorMessage = 'Failed to start call';
-      
-      if (error.message?.includes('permission') || error.message?.includes('denied')) {
-        errorMessage = 'Camera/microphone access denied. Please enable permissions in your browser settings.';
-      } else if (error.message?.includes('not found') || error.message?.includes('NotFoundError')) {
-        errorMessage = 'No camera or microphone found. Please connect devices and try again.';
-      } else if (error.message?.includes('busy') || error.message?.includes('NotReadableError')) {
-        errorMessage = 'Camera/microphone is busy. Close other apps and try again.';
-      } else if (error.message?.includes('profile not loaded')) {
-        errorMessage = 'Your profile is not loaded. Please refresh the page.';
-      } else if (error.message?.includes('authentication') || error.message?.includes('mismatch')) {
-        errorMessage = 'Authentication error. Please log out and log back in.';
-      } else if (error.message?.includes('security') || error.message?.includes('RLS')) {
-        errorMessage = 'Database security error. Please contact support.';
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      
-      toast.error(errorMessage);
-    } finally {
-      setIsInitiatingCall(false);
-    }
-  };
-
-  /**
-   * Handle incoming call answer
-   */
-  const handleAnswerCall = async () => {
-    try {
-      console.log('Answering incoming call...');
-      await answerCall();
-      toast.success('Call connected');
-    } catch (error: any) {
-      console.error('Error answering call:', error);
-      toast.error(`Failed to answer: ${error.message}`);
-    }
-  };
-
-  /**
-   * Handle call decline
-   */
-  const handleDeclineCall = async () => {
-    try {
-      console.log('Declining call...');
-      await declineCall();
-      toast.info('Call declined');
-    } catch (error: any) {
-      console.error('Error declining call:', error);
-      toast.error('Error declining call');
-    }
-  };
-
-  /**
-   * Handle end call
-   */
-  const handleEndCall = async () => {
-    try {
-      console.log('Ending call...');
-      await endCall();
-    } catch (error: any) {
-      console.error('Error ending call:', error);
-      toast.error('Error ending call');
-    }
-  };
 
   /**
    * Format message timestamp
@@ -557,56 +387,6 @@ export default function EnhancedMessageArea({
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            {channel.is_direct_message && !callState.isActive && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleStartCall('voice')}
-                  disabled={isInitiatingCall || !channelUser}
-                  className="hover-scale"
-                  title="Start voice call"
-                >
-                  {isInitiatingCall ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
-                  ) : (
-                    <>
-                      <Phone className="h-4 w-4" />
-                      {!isMobile && <span className="ml-2">Call</span>}
-                    </>
-                  )}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleStartCall('video')}
-                  disabled={isInitiatingCall || !channelUser}
-                  className="hover-scale"
-                  title="Start video call"
-                >
-                  {isInitiatingCall ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
-                  ) : (
-                    <>
-                      <Video className="h-4 w-4" />
-                      {!isMobile && <span className="ml-2">Video</span>}
-                    </>
-                  )}
-                </Button>
-              </>
-            )}
-            {callState.isActive && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleEndCall}
-                className="hover-scale"
-                title="End call"
-              >
-                <PhoneOff className="h-4 w-4" />
-                {!isMobile && <span className="ml-2">End Call</span>}
-              </Button>
-            )}
             <Button
               variant="ghost"
               size="sm"
@@ -618,28 +398,6 @@ export default function EnhancedMessageArea({
             </Button>
           </div>
         </div>
-
-        {/* Active Call Indicator */}
-        {callState.isActive && (
-          <div className="mt-2 flex items-center gap-2 text-sm">
-            <Badge variant="default" className="animate-pulse">
-              <Circle className="h-2 w-2 mr-1 fill-current" />
-              Call in progress
-            </Badge>
-            {callState.isMuted && (
-              <Badge variant="secondary">
-                <MicOff className="h-3 w-3 mr-1" />
-                Muted
-              </Badge>
-            )}
-            {!callState.isVideoEnabled && callState.callType === 'video' && (
-              <Badge variant="secondary">
-                <VideoOff className="h-3 w-3 mr-1" />
-                Camera off
-              </Badge>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Messages Area */}
@@ -721,7 +479,6 @@ export default function EnhancedMessageArea({
               onChange={(e) => setMessageInput(e.target.value)}
               onKeyPress={handleKeyPress}
               className="pr-32"
-              disabled={callState.isActive}
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
               {/* Emoji Picker */}
@@ -731,7 +488,6 @@ export default function EnhancedMessageArea({
                   size="sm" 
                   className="h-6 w-6 p-0"
                   onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  disabled={callState.isActive}
                   title="Add emoji"
                 >
                   <Smile className="h-4 w-4 text-muted-foreground" />
@@ -752,7 +508,6 @@ export default function EnhancedMessageArea({
                   size="sm" 
                   className="h-6 w-6 p-0"
                   onClick={() => setShowAttachmentUpload(!showAttachmentUpload)}
-                  disabled={callState.isActive}
                   title="Attach file"
                 >
                   <Paperclip className="h-4 w-4 text-muted-foreground" />
@@ -774,7 +529,6 @@ export default function EnhancedMessageArea({
                   size="sm" 
                   className="h-6 w-6 p-0"
                   onClick={() => setShowVoiceRecorder(!showVoiceRecorder)}
-                  disabled={callState.isActive}
                   title="Record voice message"
                 >
                   <Mic className="h-4 w-4 text-muted-foreground" />
@@ -794,21 +548,13 @@ export default function EnhancedMessageArea({
           <Button 
             size="sm" 
             onClick={handleSendMessage}
-            disabled={!messageInput.trim() || callState.isActive}
+            disabled={!messageInput.trim()}
             className="hover-scale"
             title="Send message"
           >
             <Send className="h-4 w-4" />
           </Button>
         </div>
-
-        {/* Call in progress warning */}
-        {callState.isActive && (
-          <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-            <AlertCircle className="h-3 w-3" />
-            <span>Messaging is disabled during calls</span>
-          </div>
-        )}
       </div>
 
       {/* User Profile Modal */}
@@ -817,10 +563,6 @@ export default function EnhancedMessageArea({
           isOpen={showProfileModal}
           onClose={() => setShowProfileModal(false)}
           user={channelUser}
-          onStartCall={(callType) => {
-            setShowProfileModal(false);
-            handleStartCall(callType);
-          }}
           onSendMessage={() => {
             setShowProfileModal(false);
             inputRef.current?.focus();
