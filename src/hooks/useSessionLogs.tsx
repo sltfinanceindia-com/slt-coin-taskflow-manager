@@ -69,7 +69,8 @@ export function useSessionLogs() {
   const startSessionMutation = useMutation({
     mutationFn: async () => {
       if (!profile?.id) {
-        throw new Error('User profile not found');
+        console.log('⏭️ Skipping session start - no profile loaded yet');
+        return null;
       }
       
       const { data, error } = await supabase
@@ -81,14 +82,20 @@ export function useSessionLogs() {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Session start error:', error);
+        throw error;
+      }
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['session-logs'] });
+    onSuccess: (data) => {
+      if (data) {
+        queryClient.invalidateQueries({ queryKey: ['session-logs'] });
+      }
     },
     onError: (error) => {
-      console.error('Error starting session:', error);
+      // Silent fail - don't block app loading
+      console.warn('Session logging disabled:', error);
     },
   });
 
