@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -8,31 +7,20 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { 
   Info,
-  Smile,
-  Paperclip,
-  Mic,
-  Send,
-  MoreHorizontal,
-  Circle,
-  Reply,
-  Heart,
-  ThumbsUp,
-  Laugh,
   ArrowLeft
 } from 'lucide-react';
 import { toast } from 'sonner';
 import UserProfileModal from './UserProfileModal';
 import MessageStateIndicator from './MessageStateIndicator';
 import TypingIndicator from './TypingIndicator';
-import EmojiPicker from './EmojiPicker';
-import AttachmentUpload from './AttachmentUpload';
-import VoiceRecorder from './VoiceRecorder';
+import MessageActions from './MessageActions';
+import EnhancedMessageInput from './EnhancedMessageInput';
+import ForwardMessageDialog from './ForwardMessageDialog';
 import { usePresence } from '@/hooks/usePresence';
 import { useMessageStates } from '@/hooks/useMessageStates';
-import { useFileUpload } from '@/hooks/useFileUpload';
 import { useAuth } from '@/hooks/useAuth';
 import type { Channel, Message, TeamMember } from '@/hooks/useCommunication';
-import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
+import { format, isToday, isYesterday } from 'date-fns';
 
 interface EnhancedMessageAreaProps {
   channel: Channel;
@@ -47,12 +35,6 @@ interface EnhancedMessageAreaProps {
   isMobile?: boolean;
 }
 
-const reactions = [
-  { emoji: '❤️', icon: Heart },
-  { emoji: '👍', icon: ThumbsUp },
-  { emoji: '😄', icon: Laugh },
-  { emoji: '😮', icon: Circle },
-];
 
 export default function EnhancedMessageArea({
   channel,
@@ -69,22 +51,18 @@ export default function EnhancedMessageArea({
   const { profile } = useAuth();
 
   // State management
-  const [messageInput, setMessageInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [showAttachmentUpload, setShowAttachmentUpload] = useState(false);
-  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
+  const [showForwardDialog, setShowForwardDialog] = useState(false);
+  const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
+  const [forwardMessage, setForwardMessage] = useState<Message | null>(null);
   const [messageReactions, setMessageReactions] = useState<{[key: string]: string[]}>({});
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   
   // Hooks
   const { getUserPresence, getStatusText, getStatusIcon } = usePresence();
   const { markAsRead } = useMessageStates();
-  const { uploadFile } = useFileUpload();
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -124,37 +102,14 @@ export default function EnhancedMessageArea({
   /**
    * Send a message
    */
-  const handleSendMessage = () => {
-    if (!messageInput.trim()) return;
+  const handleSendMessage = async (content: string, attachments?: File[]) => {
+    if (replyToMessage) {
+      // TODO: Handle reply logic with backend
+      console.log('Replying to message:', replyToMessage.id);
+    }
     
-    onSendMessage(messageInput.trim());
-    setMessageInput('');
-    inputRef.current?.focus();
-    setShowEmojiPicker(false);
-  };
-
-  /**
-   * Handle emoji selection
-   */
-  const handleEmojiSelect = (emoji: string) => {
-    setMessageInput(prev => prev + emoji);
-    inputRef.current?.focus();
-  };
-
-  /**
-   * Handle file upload
-   */
-  const handleFileUploaded = (attachment: any) => {
-    console.log('File uploaded:', attachment);
-    toast.success('File uploaded successfully');
-  };
-
-  /**
-   * Handle voice recording
-   */
-  const handleVoiceRecorded = (audioBlob: Blob) => {
-    console.log('Voice recorded:', audioBlob);
-    toast.success('Voice message recorded');
+    onSendMessage(content);
+    setReplyToMessage(null);
   };
 
   /**
@@ -170,13 +125,39 @@ export default function EnhancedMessageArea({
   };
 
   /**
-   * Handle Enter key press in message input
+   * Handle message reply
    */
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
+  const handleReply = (message: Message) => {
+    setReplyToMessage({
+      id: message.id,
+      content: message.content,
+      sender_name: message.sender_name || 'Unknown',
+      attachments: message.attachments
+    });
+  };
+
+  /**
+   * Handle message forward
+   */
+  const handleForward = (message: Message) => {
+    setForwardMessage(message);
+    setShowForwardDialog(true);
+  };
+
+  /**
+   * Handle message delete
+   */
+  const handleDelete = async (messageId: string, forEveryone: boolean) => {
+    // TODO: Implement delete logic
+    toast.success(forEveryone ? 'Message deleted for everyone' : 'Message deleted for you');
+  };
+
+  /**
+   * Handle forward to targets
+   */
+  const handleForwardToTargets = async (targetIds: string[]) => {
+    // TODO: Implement forward logic
+    console.log('Forwarding to:', targetIds);
   };
 
 
@@ -257,42 +238,22 @@ export default function EnhancedMessageArea({
 
           {/* Message Body */}
           <div className={cn(
-            "bg-card border rounded-lg px-3 py-2 max-w-md break-words",
+            "bg-card border rounded-lg px-3 py-2 max-w-md break-words relative",
             isOwn ? "bg-primary text-primary-foreground" : "bg-muted"
           )}>
             <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
             
             {/* Message Actions */}
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity mt-2 flex items-center gap-1">
-              {reactions.map((reaction) => (
-                <Button
-                  key={reaction.emoji}
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0"
-                  onClick={() => handleReaction(message.id, reaction.emoji)}
-                  title={`React with ${reaction.emoji}`}
-                >
-                  <span className="text-xs">{reaction.emoji}</span>
-                </Button>
-              ))}
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-6 w-6 p-0"
-                title="Reply"
-              >
-                <Reply className="h-3 w-3" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-6 w-6 p-0"
-                title="More options"
-              >
-                <MoreHorizontal className="h-3 w-3" />
-              </Button>
-            </div>
+            <MessageActions
+              messageId={message.id}
+              messageContent={message.content}
+              isOwn={isOwn}
+              onReply={() => handleReply(message)}
+              onForward={() => handleForward(message)}
+              onDelete={(forEveryone) => handleDelete(message.id, forEveryone)}
+              onReact={(emoji) => handleReaction(message.id, emoji)}
+              className="mt-2"
+            />
 
             {/* Message Reactions Display */}
             {messageReactions[message.id] && messageReactions[message.id].length > 0 && (
@@ -470,91 +431,13 @@ export default function EnhancedMessageArea({
 
       {/* Message Input */}
       <div className="p-4 border-t border-border bg-card/50 backdrop-blur-sm">
-        <div className="flex items-center gap-2">
-          <div className="flex-1 relative">
-            <Input
-              ref={inputRef}
-              placeholder={`Message ${channel.is_direct_message && channelUser ? channelUser.full_name : `#${channel.name}`}`}
-              value={messageInput}
-              onChange={(e) => setMessageInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              className="pr-32"
-            />
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-              {/* Emoji Picker */}
-              <div className="relative">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-6 w-6 p-0"
-                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  title="Add emoji"
-                >
-                  <Smile className="h-4 w-4 text-muted-foreground" />
-                </Button>
-                {showEmojiPicker && (
-                  <EmojiPicker
-                    isOpen={showEmojiPicker}
-                    onClose={() => setShowEmojiPicker(false)}
-                    onEmojiSelect={handleEmojiSelect}
-                  />
-                )}
-              </div>
-              
-              {/* Attachment Upload */}
-              <div className="relative">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-6 w-6 p-0"
-                  onClick={() => setShowAttachmentUpload(!showAttachmentUpload)}
-                  title="Attach file"
-                >
-                  <Paperclip className="h-4 w-4 text-muted-foreground" />
-                </Button>
-                {showAttachmentUpload && (
-                  <AttachmentUpload
-                    isOpen={showAttachmentUpload}
-                    onClose={() => setShowAttachmentUpload(false)}
-                    onFileUploaded={handleFileUploaded}
-                    messageId={`temp-${Date.now()}`}
-                  />
-                )}
-              </div>
-              
-              {/* Voice Recorder */}
-              <div className="relative">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-6 w-6 p-0"
-                  onClick={() => setShowVoiceRecorder(!showVoiceRecorder)}
-                  title="Record voice message"
-                >
-                  <Mic className="h-4 w-4 text-muted-foreground" />
-                </Button>
-                {showVoiceRecorder && (
-                  <VoiceRecorder
-                    isOpen={showVoiceRecorder}
-                    onClose={() => setShowVoiceRecorder(false)}
-                    onVoiceRecorded={handleVoiceRecorded}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-          
-          {/* Send Button */}
-          <Button 
-            size="sm" 
-            onClick={handleSendMessage}
-            disabled={!messageInput.trim()}
-            className="hover-scale"
-            title="Send message"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
+        <EnhancedMessageInput
+          onSendMessage={handleSendMessage}
+          placeholder={`Message ${channel.is_direct_message && channelUser ? channelUser.full_name : `#${channel.name}`}`}
+          disabled={isLoading}
+          replyTo={replyToMessage}
+          onCancelReply={() => setReplyToMessage(null)}
+        />
       </div>
 
       {/* User Profile Modal */}
@@ -565,10 +448,23 @@ export default function EnhancedMessageArea({
           user={channelUser}
           onSendMessage={() => {
             setShowProfileModal(false);
-            inputRef.current?.focus();
           }}
         />
       )}
+
+      {/* Forward Message Dialog */}
+      <ForwardMessageDialog
+        open={showForwardDialog}
+        onOpenChange={setShowForwardDialog}
+        message={forwardMessage}
+        targets={teamMembers.map(m => ({ 
+          id: m.id, 
+          name: m.full_name, 
+          avatar_url: m.avatar_url, 
+          type: 'user' as const 
+        }))}
+        onForward={handleForwardToTargets}
+      />
     </div>
   );
 }

@@ -37,23 +37,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ FIXED: Fetch profile with timeout and better error handling
   const fetchProfile = async (userId: string) => {
     try {
       console.log('📋 Fetching profile for user ID:', userId);
       
-      // Set timeout for profile fetch to prevent infinite loading
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
-      );
-      
-      const fetchPromise = (async () => {
-        // ✅ Try fetching by id first (correct way)
-        let { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .maybeSingle();
+      let { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
 
         // If not found, try by user_id (fallback for old data)
         if (!data && !error) {
