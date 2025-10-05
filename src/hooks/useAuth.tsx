@@ -37,53 +37,60 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ FIXED: Fetch profile by ID (not user_id)
+  // ✅ FIXED: Fetch profile with timeout and better error handling
   const fetchProfile = async (userId: string) => {
     try {
       console.log('📋 Fetching profile for user ID:', userId);
       
-      // ✅ Try fetching by id first (correct way)
-      let { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      // If not found, try by user_id (fallback for old data)
-      if (error && error.code === 'PGRST116') {
-        console.log('Profile not found by id, trying user_id...');
-        const result = await supabase
+      // Set timeout for profile fetch to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
+      );
+      
+      const fetchPromise = (async () => {
+        // ✅ Try fetching by id first (correct way)
+        let { data, error } = await supabase
           .from('profiles')
           .select('*')
-          .eq('user_id', userId)
-          .single();
-        
-        data = result.data;
-        error = result.error;
-      }
+          .eq('id', userId)
+          .maybeSingle();
 
-      if (error) {
-        console.error('❌ Error fetching profile:', error);
-        toast.error('Failed to load profile');
-        return;
-      }
-
-      if (data) {
-        console.log('✅ Profile loaded:', data.id, data.full_name);
-        
-        // ✅ Verify profile ID matches auth ID
-        if (data.id !== userId) {
-          console.error('❌ Profile ID mismatch!');
-          console.error('Auth ID:', userId);
-          console.error('Profile ID:', data.id);
-          toast.error('Profile mismatch. Please log out and log back in.');
-          return;
+        // If not found, try by user_id (fallback for old data)
+        if (!data && !error) {
+          console.log('Profile not found by id, trying user_id...');
+          const result = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('user_id', userId)
+            .maybeSingle();
+          
+          data = result.data;
+          error = result.error;
         }
-        
-        setProfile(data);
-      }
+
+        if (error) {
+          console.error('❌ Error fetching profile:', error);
+          throw error;
+        }
+
+        if (!data) {
+          console.error('❌ No profile found for user:', userId);
+          throw new Error('Profile not found');
+        }
+
+        return data;
+      })();
+      
+      // Race between fetch and timeout
+      const data = await Promise.race([fetchPromise, timeoutPromise]) as Profile;
+      
+      console.log('✅ Profile loaded:', data.id, data.full_name);
+      setProfile(data);
+      
     } catch (error) {
       console.error('❌ Error fetching profile:', error);
+      // Don't show toast error on profile fetch failure to avoid blocking UI
+      console.warn('⚠️ Continuing without profile...');
     }
   };
 
@@ -125,8 +132,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+    let authInitialized = false;
 
-    // ✅ Check existing session first
+    // ✅ FIXED: Simplified auth initialization with proper loading management
     const initializeAuth = async () => {
       try {
         console.log('🔐 Initializing auth...');
@@ -135,6 +143,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (error) {
           console.error('❌ Session error:', error);
+          if (mounted) {
+            setLoading(false);
+            authInitialized = true;
+          }
+          return;
         }
         
         if (existingSession && mounted) {
@@ -142,47 +155,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setSession(existingSession);
           setUser(existingSession.user);
           
-          // Check if session is old (> 1 hour)
-          const tokenAge = Date.now() - new Date(existingSession.user.created_at).getTime();
-          if (tokenAge > 3600000) {
-            console.log('⏰ Session is old, refreshing...');
-            await refreshSession();
-          } else {
+          // Fetch profile without blocking UI
+          try {
             await fetchProfile(existingSession.user.id);
+          } catch (profileError) {
+            console.error('❌ Profile fetch error:', profileError);
           }
         }
       } catch (error) {
         console.error('❌ Auth initialization error:', error);
       } finally {
         if (mounted) {
+          console.log('✅ Auth initialization complete');
           setLoading(false);
+          authInitialized = true;
         }
       }
     };
 
-    initializeAuth();
-
-    // ✅ Set up auth state listener
+    // ✅ Set up auth state listener BEFORE initialization
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         console.log('🔐 Auth state changed:', event);
         
         if (!mounted) return;
 
+        // Only handle auth changes after initial load
+        if (!authInitialized) {
+          console.log('⏭️ Skipping auth state change - not initialized yet');
+          return;
+        }
+
         setSession(newSession);
         setUser(newSession?.user ?? null);
         
         if (newSession?.user) {
           console.log('👤 User authenticated:', newSession.user.id);
-          await fetchProfile(newSession.user.id);
+          try {
+            await fetchProfile(newSession.user.id);
+          } catch (error) {
+            console.error('❌ Profile fetch error:', error);
+          }
         } else {
           console.log('👋 User signed out');
           setProfile(null);
         }
-        
-        setLoading(false);
       }
     );
+
+    // Start initialization
+    initializeAuth();
 
     return () => {
       mounted = false;

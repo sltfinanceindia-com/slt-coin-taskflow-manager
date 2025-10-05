@@ -71,7 +71,10 @@ export function useCommunication() {
 
   // Fetch channels
   const fetchChannels = useCallback(async () => {
-    if (!profile) return;
+    if (!profile?.id) {
+      console.log('⏭️ Skipping channel fetch - no profile ID');
+      return;
+    }
 
     try {
       const { data: channelMembers, error: memberError } = await supabase
@@ -93,7 +96,10 @@ export function useCommunication() {
         `)
         .eq('user_id', profile.id);
 
-      if (memberError) throw memberError;
+      if (memberError) {
+        console.error('Error fetching channel members:', memberError);
+        throw memberError;
+      }
 
       // Get unread counts and last messages
       const channelIds = channelMembers?.map(cm => cm.channel_id) || [];
@@ -216,7 +222,10 @@ export function useCommunication() {
 
   // Send message
   const sendMessage = useCallback(async (content: string, channelId?: string, receiverId?: string) => {
-    if (!profile || (!channelId && !receiverId) || !content.trim()) return;
+    if (!profile?.id || (!channelId && !receiverId) || !content.trim()) {
+      console.warn('⚠️ Cannot send message - missing required data');
+      return;
+    }
 
     try {
       const messageData = {
@@ -240,14 +249,18 @@ export function useCommunication() {
         .from('messages')
         .insert([messageData]);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Message insert error:', error);
+        throw error;
+      }
 
+      console.log('✅ Message sent successfully');
       // Message will be added via real-time subscription
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
         title: "Error",
-        description: "Failed to send message",
+        description: "Failed to send message. Please try again.",
         variant: "destructive"
       });
     }
