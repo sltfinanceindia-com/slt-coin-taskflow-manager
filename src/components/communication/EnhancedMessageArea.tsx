@@ -28,7 +28,7 @@ interface EnhancedMessageAreaProps {
   teamMembers: TeamMember[];
   currentUser: any;
   isLoading: boolean;
-  onSendMessage: (content: string) => void;
+  onSendMessage: (content: string) => Promise<string | void>;
   onStartCall?: (callType: 'voice' | 'video') => void;
   onShowDetails?: () => void;
   onBack?: () => void;
@@ -102,14 +102,15 @@ export default function EnhancedMessageArea({
   /**
    * Send a message
    */
-  const handleSendMessage = async (content: string, attachments?: File[]) => {
+  const handleSendMessage = async (content: string, attachments?: File[], messageId?: string): Promise<string | void> => {
     if (replyToMessage) {
       // TODO: Handle reply logic with backend
       console.log('Replying to message:', replyToMessage.id);
     }
     
-    onSendMessage(content);
+    const newMessageId = await onSendMessage(content);
     setReplyToMessage(null);
+    return newMessageId;
   };
 
   /**

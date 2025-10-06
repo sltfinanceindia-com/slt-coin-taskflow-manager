@@ -221,7 +221,7 @@ export function useCommunication() {
   }, [toast]);
 
   // Send message
-  const sendMessage = useCallback(async (content: string, channelId?: string, receiverId?: string) => {
+  const sendMessage = useCallback(async (content: string, channelId?: string, receiverId?: string): Promise<string | void> => {
     if (!profile?.id || (!channelId && !receiverId) || !content.trim()) {
       console.warn('⚠️ Cannot send message - missing required data');
       return;
@@ -245,17 +245,20 @@ export function useCommunication() {
         is_pinned: false
       };
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('messages')
-        .insert([messageData]);
+        .insert([messageData])
+        .select('id')
+        .single();
 
       if (error) {
         console.error('Message insert error:', error);
         throw error;
       }
 
-      console.log('✅ Message sent successfully');
+      console.log('✅ Message sent successfully with ID:', data.id);
       // Message will be added via real-time subscription
+      return data.id;
     } catch (error) {
       console.error('Error sending message:', error);
       toast({

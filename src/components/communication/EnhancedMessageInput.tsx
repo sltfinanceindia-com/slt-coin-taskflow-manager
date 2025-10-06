@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import AttachmentPreview from './AttachmentPreview';
 import MessageReplyPreview from './MessageReplyPreview';
+import { useFileUpload } from '@/hooks/useFileUpload';
 
 interface Attachment {
   id: string;
@@ -21,7 +22,7 @@ interface Attachment {
 }
 
 interface EnhancedMessageInputProps {
-  onSendMessage: (content: string, attachments?: File[]) => Promise<void>;
+  onSendMessage: (content: string, attachments?: File[], messageId?: string) => Promise<string | void>;
   placeholder?: string;
   disabled?: boolean;
   replyTo?: {
@@ -49,19 +50,45 @@ export default function EnhancedMessageInput({
   
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { uploadFile, uploading } = useFileUpload();
 
   const handleSendMessage = async () => {
     if ((!message.trim() && attachments.length === 0) || isSending) return;
     
     setIsSending(true);
     try {
-      const files = attachments.map(att => att.file);
-      await onSendMessage(message.trim(), files);
+      // Send message first to get message ID
+      const messageId = await onSendMessage(message.trim(), [], undefined);
+      
+      // Upload attachments if any
+      if (attachments.length > 0 && messageId) {
+        for (const attachment of attachments) {
+          setAttachments(prev => 
+            prev.map(att => 
+              att.id === attachment.id 
+                ? { ...att, uploading: true, progress: 50 }
+                : att
+            )
+          );
+          
+          await uploadFile(attachment.file, messageId);
+          
+          setAttachments(prev => 
+            prev.map(att => 
+              att.id === attachment.id 
+                ? { ...att, uploading: false, progress: 100 }
+                : att
+            )
+          );
+        }
+      }
+      
       setMessage('');
       setAttachments([]);
       setShowEmojiPicker(false);
       inputRef.current?.focus();
     } catch (error) {
+      console.error('Failed to send message:', error);
       toast.error('Failed to send message');
     } finally {
       setIsSending(false);
