@@ -128,12 +128,7 @@ export default function EnhancedMessageArea({
    * Handle message reply
    */
   const handleReply = (message: Message) => {
-    setReplyToMessage({
-      id: message.id,
-      content: message.content,
-      sender_name: message.sender_name || 'Unknown',
-      attachments: message.attachments
-    });
+    setReplyToMessage(message);
   };
 
   /**
@@ -435,7 +430,12 @@ export default function EnhancedMessageArea({
           onSendMessage={handleSendMessage}
           placeholder={`Message ${channel.is_direct_message && channelUser ? channelUser.full_name : `#${channel.name}`}`}
           disabled={isLoading}
-          replyTo={replyToMessage}
+          replyTo={replyToMessage ? {
+            id: replyToMessage.id,
+            content: replyToMessage.content,
+            sender_name: replyToMessage.sender_name || 'Unknown',
+            attachments: replyToMessage.attachments || []
+          } : undefined}
           onCancelReply={() => setReplyToMessage(null)}
         />
       </div>

@@ -41,47 +41,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('📋 Fetching profile for user ID:', userId);
       
-      let { data, error } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
         .maybeSingle();
 
-        // If not found, try by user_id (fallback for old data)
-        if (!data && !error) {
-          console.log('Profile not found by id, trying user_id...');
-          const result = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('user_id', userId)
-            .maybeSingle();
-          
-          data = result.data;
-          error = result.error;
-        }
+      if (error) {
+        console.error('❌ Error fetching profile:', error);
+        throw error;
+      }
 
-        if (error) {
-          console.error('❌ Error fetching profile:', error);
-          throw error;
-        }
+      if (!data) {
+        console.error('❌ No profile found for user:', userId);
+        throw new Error('Profile not found');
+      }
 
-        if (!data) {
-          console.error('❌ No profile found for user:', userId);
-          throw new Error('Profile not found');
-        }
-
-        return data;
-      })();
-      
-      // Race between fetch and timeout
-      const data = await Promise.race([fetchPromise, timeoutPromise]) as Profile;
-      
       console.log('✅ Profile loaded:', data.id, data.full_name);
       setProfile(data);
       
     } catch (error) {
       console.error('❌ Error fetching profile:', error);
-      // Don't show toast error on profile fetch failure to avoid blocking UI
       console.warn('⚠️ Continuing without profile...');
     }
   };
