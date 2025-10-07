@@ -7,7 +7,9 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { 
   Info,
-  ArrowLeft
+  ArrowLeft,
+  Download,
+  File as FileIcon
 } from 'lucide-react';
 import { toast } from 'sonner';
 import UserProfileModal from './UserProfileModal';
@@ -238,6 +240,21 @@ export default function EnhancedMessageArea({
             isOwn ? "bg-primary text-primary-foreground" : "bg-muted"
           )}>
             <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+            
+            {/* File Attachments Display */}
+            {(message as any).file_attachments && (message as any).file_attachments.length > 0 && (
+              <div className="mt-2 space-y-2">
+                {(message as any).file_attachments.map((attachment: any) => (
+                  <div key={attachment.id} className="flex items-center gap-2 p-2 bg-background/10 rounded border">
+                    <FileIcon className="h-4 w-4" />
+                    <span className="text-xs flex-1 truncate">{attachment.file_name}</span>
+                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                      <Download className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
             
             {/* Message Actions */}
             <MessageActions

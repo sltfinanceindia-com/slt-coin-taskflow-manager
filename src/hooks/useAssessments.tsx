@@ -58,14 +58,42 @@ export interface AssessmentAnswer {
 export function useAssessments() {
   const { profile } = useAuth();
   const queryClient = useQueryClient();
+  
+  // Get assigned assessments for non-admin users
+  const { data: assignedAssessmentsData = [] } = useQuery({
+    queryKey: ['assigned-assessments-for-filter', profile?.id],
+    queryFn: async () => {
+      if (profile?.role === 'admin') return [];
+      
+      const { data, error } = await supabase
+        .from('assessment_assignments')
+        .select('assessment_id')
+        .eq('user_id', profile?.id);
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profile && profile.role !== 'admin',
+  });
 
   const assessmentsQuery = useQuery({
     queryKey: ['assessments'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('assessments')
         .select('*')
         .order('created_at', { ascending: false });
+
+      // If user is not admin, only show assigned assessments
+      if (profile?.role !== 'admin') {
+        const assignedIds = assignedAssessmentsData.map((a: any) => a.assessment_id);
+        if (assignedIds.length === 0) {
+          return []; // No assigned assessments
+        }
+        query = query.in('id', assignedIds);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data as Assessment[];

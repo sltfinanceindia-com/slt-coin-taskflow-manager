@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Plus, BookOpen, FileText, BarChart3, Users } from 'lucide-react';
 import { AssessmentManagement } from '@/components/assessment/AssessmentManagement';
+import { TrainingAnalytics } from '@/components/training/TrainingAnalytics';
+import { UserManagement } from '@/components/training/UserManagement';
 
 export function TrainingManagement() {
   const [activeTab, setActiveTab] = useState('sections');
@@ -70,37 +72,11 @@ export function TrainingManagement() {
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6">
-          <Card className="card-gradient">
-            <CardHeader>
-              <CardTitle>Training Analytics</CardTitle>
-              <CardDescription>
-                View training completion rates and learner progress statistics.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-12 text-muted-foreground">
-                <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Training analytics will be implemented here.</p>
-              </div>
-            </CardContent>
-          </Card>
+          <TrainingAnalytics />
         </TabsContent>
 
         <TabsContent value="users" className="space-y-6">
-          <Card className="card-gradient">
-            <CardHeader>
-              <CardTitle>User Management</CardTitle>
-              <CardDescription>
-                Manage user access and track individual progress.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-12 text-muted-foreground">
-                <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>User management will be implemented here.</p>
-              </div>
-            </CardContent>
-          </Card>
+          <UserManagement />
         </TabsContent>
       </Tabs>
     </div>

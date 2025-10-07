@@ -5,12 +5,14 @@ import { Button } from '@/components/ui/button';
 import { TaskCard } from '@/components/TaskCard';
 import { Task } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
-import { BarChart3, TrendingUp, Zap, Filter } from 'lucide-react';
+import { BarChart3, TrendingUp, Zap, Filter, LayoutGrid, Table } from 'lucide-react';
 import { KanbanAnalytics } from '@/components/KanbanAnalytics';
 import { KanbanFilters } from '@/components/KanbanFilters';
+import { KanbanTableView } from '@/components/KanbanTableView';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface KanbanBoardProps {
   tasks: Task[];
@@ -236,6 +238,8 @@ export function KanbanBoard({
     return filteredTasks.filter(task => task.status === status).length;
   };
 
+  const [viewMode, setViewMode] = useState<'board' | 'table'>('board');
+
   return (
     <div className="min-h-screen bg-background">
       <div className="p-2 sm:p-4 space-y-3 sm:space-y-4">
@@ -247,6 +251,18 @@ export function KanbanBoard({
               <p className="text-xs sm:text-sm text-muted-foreground mt-1">Drag and drop tasks to update their status</p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'board' | 'table')}>
+                <TabsList>
+                  <TabsTrigger value="board" className="gap-2">
+                    <LayoutGrid className="h-3 w-3" />
+                    Board
+                  </TabsTrigger>
+                  <TabsTrigger value="table" className="gap-2">
+                    <Table className="h-3 w-3" />
+                    Table
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
               <Button
                 variant="outline"
                 size="sm"
@@ -301,7 +317,14 @@ export function KanbanBoard({
           </div>
         )}
 
-        {/* Kanban Board */}
+        {/* Kanban Board or Table View */}
+        {viewMode === 'table' ? (
+          <KanbanTableView 
+            tasks={filteredTasks}
+            onUpdateStatus={onUpdateStatus}
+            onVerifyTask={onVerifyTask}
+          />
+        ) : (
         <DragDropContext onDragEnd={onDragEnd}>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-3">
             {columns.map((column) => (
@@ -369,6 +392,7 @@ export function KanbanBoard({
             ))}
           </div>
         </DragDropContext>
+        )}
       </div>
     </div>
   );
