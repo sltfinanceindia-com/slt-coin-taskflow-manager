@@ -6,5 +6,11 @@ verify_jwt = false
 [functions.webrtc-signal]
 verify_jwt = false
 
+[functions.generate-certificate]
+verify_jwt = true
+
+[functions.manage-user-credentials]
+verify_jwt = true
+
 [edge_runtime]
 policy = "per_worker"

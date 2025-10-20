@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 
 interface Profile {
   id: string;
-  user_id?: string; // Optional for backward compatibility
+  user_id?: string;
   full_name: string;
   email: string;
   role: 'admin' | 'intern';
@@ -13,6 +13,9 @@ interface Profile {
   employee_id?: string;
   avatar_url?: string;
   total_coins: number;
+  is_active?: boolean;
+  start_date?: string;
+  end_date?: string;
   created_at: string;
   updated_at: string;
 }
@@ -57,8 +60,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error('Profile not found');
       }
 
+      // Check if account is inactive
+      if ((data as any).is_active === false) {
+        console.warn('⚠️ User account is inactive');
+        toast.error('Your account has been deactivated. Please contact an administrator.');
+        await supabase.auth.signOut();
+        setProfile(null);
+        return;
+      }
+
       console.log('✅ Profile loaded:', data.id, data.full_name);
-      setProfile(data);
+      setProfile(data as any);
       
     } catch (error) {
       console.error('❌ Error fetching profile:', error);

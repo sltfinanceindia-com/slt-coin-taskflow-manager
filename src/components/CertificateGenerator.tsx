@@ -6,12 +6,13 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Download, Award, FileText, Share2 } from 'lucide-react';
+import { Download, Award, FileText, Share2, Calendar } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { format } from 'date-fns';
+import { format, differenceInMonths } from 'date-fns';
 
 interface CertificateData {
   internName: string;
@@ -38,14 +39,20 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
   const certificateRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [template, setTemplate] = useState('formal');
+  const [eligibility, setEligibility] = useState<{
+    eligible: boolean;
+    monthsCompleted: number;
+    monthsRemaining: number;
+  } | null>(null);
+  
   const [certificateData, setCertificateData] = useState<CertificateData>({
-    internName: internData?.full_name || '',
-    internId: internData?.employee_id || '',
-    department: internData?.department || '',
-    startDate: internData?.start_date || '',
-    endDate: internData?.end_date || format(new Date(), 'yyyy-MM-dd'),
+    internName: internData?.full_name || profile?.full_name || '',
+    internId: internData?.employee_id || profile?.employee_id || '',
+    department: internData?.department || profile?.department || '',
+    startDate: internData?.start_date || profile?.start_date || '',
+    endDate: internData?.end_date || profile?.end_date || format(new Date(), 'yyyy-MM-dd'),
     totalHours: 0,
-    totalCoins: internData?.total_coins || 0,
+    totalCoins: internData?.total_coins || profile?.total_coins || 0,
     completedTasks: 0,
     performance: 'Excellent',
     customText: '',
@@ -54,13 +61,130 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
   });
 
   const isAdmin = profile?.role === 'admin';
+  const isIntern = profile?.role === 'intern';
+  
+  // Check eligibility for interns
+  useState(() => {
+    if (isIntern && profile?.start_date) {
+      const startDate = new Date(profile.start_date);
+      const endDate = profile.end_date ? new Date(profile.end_date) : new Date();
+      const monthsCompleted = differenceInMonths(endDate, startDate);
+      const eligible = monthsCompleted >= 6;
+      
+      setEligibility({
+        eligible,
+        monthsCompleted,
+        monthsRemaining: eligible ? 0 : 6 - monthsCompleted
+      });
+    }
+  });
 
+  const downloadCertificate = async () => {
+    if (!profile?.id) return;
+    
+    setIsGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-certificate', {
+        body: { internId: profile.id }
+      });
+
+      if (error) throw error;
+
+      if (!data.eligible) {
+        toast({
+          title: "Not Eligible Yet",
+          description: `You need ${data.monthsRemaining} more month(s) to complete your 6-month internship.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Download the certificate
+      if (data.url) {
+        window.open(data.url, '_blank');
+        toast({
+          title: "Certificate Downloaded",
+          description: "Your certificate has been generated successfully.",
+        });
+      }
+    } catch (error: any) {
+      console.error('Error downloading certificate:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to generate certificate.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // Intern view - show eligibility and download option
+  if (isIntern) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Award className="h-5 w-5" />
+            My Certificate
+          </CardTitle>
+          <CardDescription>
+            Download your completion certificate after completing 6 months
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {eligibility && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  <span className="font-medium">Internship Duration</span>
+                </div>
+                <Badge variant={eligibility.eligible ? "default" : "secondary"}>
+                  {eligibility.monthsCompleted} / 6 months
+                </Badge>
+              </div>
+              
+              {eligibility.eligible ? (
+                <div className="text-center space-y-4">
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <p className="text-green-800 font-medium">
+                      🎉 Congratulations! You're eligible to download your certificate.
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={downloadCertificate} 
+                    disabled={isGenerating}
+                    size="lg"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    {isGenerating ? 'Generating...' : 'Download My Certificate'}
+                  </Button>
+                </div>
+              ) : (
+                <div className="text-center space-y-2 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-yellow-800 font-medium">
+                    You need {eligibility.monthsRemaining} more month(s) to be eligible.
+                  </p>
+                  <p className="text-sm text-yellow-700">
+                    Keep up the great work! Your certificate will be available after completing 6 months.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Admin view - full certificate generation UI
   if (!isAdmin) {
     return (
       <Card>
         <CardContent className="p-6 text-center">
           <Award className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">Only administrators can generate certificates.</p>
+          <p className="text-muted-foreground">Certificate generation is available for administrators and interns.</p>
         </CardContent>
       </Card>
     );

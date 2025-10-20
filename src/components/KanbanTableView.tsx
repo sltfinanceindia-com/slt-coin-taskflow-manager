@@ -8,6 +8,7 @@ import { Eye, CheckCircle, XCircle, Clock, AlertCircle, Edit, User, Calendar, Co
 import { TaskEditDialog } from '@/components/TaskEditDialog';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
 import { useSessionLogs } from '@/hooks/useSessionLogs';
+import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useState } from 'react';
 
@@ -18,8 +19,11 @@ interface KanbanTableViewProps {
 }
 
 export function KanbanTableView({ tasks, onUpdateStatus, onVerifyTask }: KanbanTableViewProps) {
+  const { profile } = useAuth();
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  
+  const isAdmin = profile?.role === 'admin';
   const { timeLogs } = useTimeLogs();
   const { getUserSessionStats } = useSessionLogs();
 

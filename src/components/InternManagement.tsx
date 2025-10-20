@@ -8,7 +8,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, Plus, Coins, Trash, Eye } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Users, Plus, Coins, Trash, Eye, UserCheck, UserX } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from '@/hooks/use-toast';
 import { InternDetailView } from '@/components/InternDetailView';
@@ -23,6 +24,9 @@ interface Profile {
   employee_id?: string;
   avatar_url?: string;
   total_coins: number;
+  is_active?: boolean;
+  start_date?: string;
+  end_date?: string;
   created_at: string;
   updated_at: string;
 }
@@ -55,7 +59,7 @@ export function InternManagement() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Profile[];
+      return (data || []) as Profile[];
     },
   });
 
@@ -91,6 +95,35 @@ export function InternManagement() {
       toast({
         title: "Error Adding Intern",
         description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Toggle user active status mutation
+  const toggleStatusMutation = useMutation({
+    mutationFn: async ({ userId, isActive }: { userId: string; isActive: boolean }) => {
+      const { data, error } = await supabase.functions.invoke('manage-user-credentials', {
+        body: { 
+          action: isActive ? 'activate' : 'deactivate',
+          userId 
+        }
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['interns'] });
+      toast({
+        title: data.isActive ? "User Activated" : "User Deactivated",
+        description: data.message,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update user status.",
         variant: "destructive",
       });
     },
@@ -255,7 +288,13 @@ export function InternManagement() {
             <Card key={intern.id} className="hover:shadow-md transition-shadow">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">{intern.full_name}</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-lg">{intern.full_name}</CardTitle>
+                    <Badge variant={intern.is_active !== false ? "default" : "secondary"}>
+                      {intern.is_active !== false ? <UserCheck className="h-3 w-3 mr-1" /> : <UserX className="h-3 w-3 mr-1" />}
+                      {intern.is_active !== false ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </div>
                   <div className="flex gap-2">
                     <Button
                       variant="ghost"
@@ -307,6 +346,25 @@ export function InternManagement() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Joined:</span>
                     <span>{new Date(intern.created_at).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between pt-2 border-t">
+                    <span className="text-sm font-medium">Account Status:</span>
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor={`status-${intern.id}`} className="text-xs">
+                        {intern.is_active !== false ? 'Active' : 'Inactive'}
+                      </Label>
+                      <Switch
+                        id={`status-${intern.id}`}
+                        checked={intern.is_active !== false}
+                        onCheckedChange={(checked) => {
+                          toggleStatusMutation.mutate({ 
+                            userId: intern.user_id, 
+                            isActive: checked 
+                          });
+                        }}
+                        disabled={toggleStatusMutation.isPending}
+                      />
+                    </div>
                   </div>
                 </div>
               </CardContent>
