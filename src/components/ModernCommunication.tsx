@@ -13,6 +13,11 @@ export default function ModernCommunication() {
   const communication = useCommunication();
   const [showSidebar, setShowSidebar] = useState(!isMobile);
 
+  // Update sidebar visibility when screen size changes
+  React.useEffect(() => {
+    setShowSidebar(!isMobile);
+  }, [isMobile]);
+
   const handleChannelSelect = (channel: any) => {
     communication.selectChannel(channel);
   };
@@ -32,37 +37,50 @@ export default function ModernCommunication() {
   return (
     <div className="h-screen flex bg-background overflow-hidden">
       {isMobile ? (
-        // Mobile: Single panel view
-        showSidebar || !communication.selectedChannel ? (
-          <EnhancedChatList
-            channels={communication.channels}
-            teamMembers={communication.teamMembers}
-            selectedChannel={communication.selectedChannel}
-            onChannelSelect={(channel) => {
-              handleChannelSelect(channel);
-              setShowSidebar(false);
-            }}
-            onMemberSelect={handleMemberSelect}
-            searchQuery={communication.searchQuery}
-            onSearchChange={communication.setSearchQuery}
-          />
-        ) : (
-          <EnhancedMessageArea
-            channel={communication.selectedChannel}
-            messages={communication.messages}
-            teamMembers={communication.teamMembers}
-            currentUser={profile}
-            isLoading={communication.isLoadingMessages}
-            onSendMessage={(content) => communication.sendMessage(content, communication.selectedChannel?.id)}
-            onBack={() => setShowSidebar(true)}
-            isMobile={true}
-          />
-        )
+        // Mobile: Single panel view with smooth transitions
+        <div className="w-full h-full relative">
+          <div
+            className={`absolute inset-0 transition-transform duration-300 ${
+              showSidebar || !communication.selectedChannel ? 'translate-x-0' : '-translate-x-full'
+            }`}
+          >
+            <EnhancedChatList
+              channels={communication.channels}
+              teamMembers={communication.teamMembers}
+              selectedChannel={communication.selectedChannel}
+              onChannelSelect={(channel) => {
+                handleChannelSelect(channel);
+                setShowSidebar(false);
+              }}
+              onMemberSelect={handleMemberSelect}
+              searchQuery={communication.searchQuery}
+              onSearchChange={communication.setSearchQuery}
+            />
+          </div>
+          <div
+            className={`absolute inset-0 transition-transform duration-300 ${
+              !showSidebar && communication.selectedChannel ? 'translate-x-0' : 'translate-x-full'
+            }`}
+          >
+            {communication.selectedChannel && (
+              <EnhancedMessageArea
+                channel={communication.selectedChannel}
+                messages={communication.messages}
+                teamMembers={communication.teamMembers}
+                currentUser={profile}
+                isLoading={communication.isLoadingMessages}
+                onSendMessage={(content) => communication.sendMessage(content, communication.selectedChannel?.id)}
+                onBack={() => setShowSidebar(true)}
+                isMobile={true}
+              />
+            )}
+          </div>
+        </div>
       ) : (
         // Desktop: Resizable panels
         <ResizablePanelGroup direction="horizontal" className="h-full">
           {/* Chat List Panel */}
-          <ResizablePanel defaultSize={30} minSize={25} maxSize={40}>
+          <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
             <EnhancedChatList
               channels={communication.channels}
               teamMembers={communication.teamMembers}
@@ -77,7 +95,7 @@ export default function ModernCommunication() {
           <ResizableHandle className="w-1 bg-border/50 hover:bg-border transition-colors" />
 
           {/* Message Area Panel */}
-          <ResizablePanel defaultSize={70} minSize={60}>
+          <ResizablePanel defaultSize={70} minSize={50}>
             {communication.selectedChannel ? (
               <EnhancedMessageArea
                 channel={communication.selectedChannel}
@@ -90,7 +108,9 @@ export default function ModernCommunication() {
             ) : (
               <div className="h-full flex items-center justify-center bg-background">
                 <div className="text-center space-y-6 max-w-md mx-auto p-6">
-                  <MessageCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <div className="p-4 rounded-full bg-primary/10 w-fit mx-auto">
+                    <MessageCircle className="h-12 w-12 text-primary" />
+                  </div>
                   <h3 className="text-2xl font-semibold">Welcome to Chat</h3>
                   <p className="text-muted-foreground">
                     Select a conversation from the left panel to start chatting, or create a new conversation with a team member.

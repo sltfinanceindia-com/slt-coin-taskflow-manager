@@ -89,10 +89,21 @@ serve(async (req) => {
       case 'activate':
         if (!userId) throw new Error('userId is required for activate action');
         
+        // Get the admin's profile id who is reactivating
+        const { data: adminProfile } = await supabaseClient
+          .from('profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+
         // Update profile to active (using id column, not user_id)
         const { error: activateError } = await supabaseClient
           .from('profiles')
-          .update({ is_active: true })
+          .update({ 
+            is_active: true,
+            reactivated_at: new Date().toISOString(),
+            reactivated_by: adminProfile?.id
+          })
           .eq('id', userId);
 
         if (activateError) {
@@ -100,17 +111,59 @@ serve(async (req) => {
           throw new Error(`Failed to activate user: ${activateError.message}`);
         }
 
+        // Ensure chat_users entry exists and is active
+        const { error: chatUserError } = await supabaseClient
+          .from('chat_users')
+          .upsert({
+            user_id: userId,
+            status: 'offline',
+            is_active: true,
+            last_seen: new Date().toISOString()
+          }, {
+            onConflict: 'user_id'
+          });
+
+        if (chatUserError) {
+          console.warn('⚠️ Chat user update warning:', chatUserError);
+        }
+
+        // Update user_presence
+        const { error: presenceError } = await supabaseClient
+          .rpc('update_user_presence', {
+            p_user_id: userId,
+            p_is_online: false
+          });
+
+        if (presenceError) {
+          console.warn('⚠️ Presence update warning:', presenceError);
+        }
+
         console.log(`✅ User ${userId} activated successfully`);
-        result = { success: true, message: 'User activated successfully', userId, isActive: true };
+        result = { success: true, message: 'User activated and chat access restored', userId, isActive: true };
         break;
 
       case 'deactivate':
         if (!userId) throw new Error('userId is required for deactivate action');
         
+        // Get reason from body if provided
+        const { reason } = body;
+
+        // Get the admin's profile id who is deactivating
+        const { data: adminProfileDe } = await supabaseClient
+          .from('profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+        
         // Update profile to inactive (using id column, not user_id)
         const { error: deactivateError } = await supabaseClient
           .from('profiles')
-          .update({ is_active: false })
+          .update({ 
+            is_active: false,
+            deactivated_at: new Date().toISOString(),
+            deactivated_by: adminProfileDe?.id,
+            deactivation_reason: reason || 'Deactivated by admin'
+          })
           .eq('id', userId);
 
         if (deactivateError) {

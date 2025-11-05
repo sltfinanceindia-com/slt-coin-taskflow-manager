@@ -264,15 +264,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (data.user) {
       await fetchProfile(data.user.id);
       
-      // Get the loaded profile
-      const { data: profileData } = await supabase
+      // Get the loaded profile with full info
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, is_active')
         .eq('user_id', data.user.id)
         .single();
       
+      if (profileError) {
+        console.error('❌ Failed to fetch profile:', profileError);
+        return { error: profileError };
+      }
+
+      // Check if user account is active
+      if (!profileData.is_active) {
+        console.warn('⚠️ User account is deactivated');
+        // Sign out the user immediately
+        await supabase.auth.signOut();
+        return { 
+          error: new Error('Your account has been deactivated. Please contact your administrator to reactivate your account.') 
+        };
+      }
+      
       if (profileData) {
-        // Create session log entry for attendance tracking
+        // Create session log entry for attendance tracking (only for active users)
         try {
           const { error: sessionError } = await supabase
             .from('session_logs')

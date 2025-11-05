@@ -60,7 +60,7 @@ export function EnhancedAttendanceTracker() {
     fetchUsers();
   }, [isAdmin]);
 
-  // Fetch attendance records
+  // Fetch attendance records with realtime subscription
   useEffect(() => {
     const fetchAttendance = async () => {
       const endDate = new Date();
@@ -72,6 +72,27 @@ export function EnhancedAttendanceTracker() {
     };
 
     fetchAttendance();
+
+    // Set up realtime subscription for session logs
+    const channel = supabase
+      .channel('attendance-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'session_logs'
+        },
+        () => {
+          console.log('Session log changed, refetching attendance...');
+          fetchAttendance();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [viewMode, selectedUser, isAdmin, getAttendanceByDateRange]);
 
   // Filter records

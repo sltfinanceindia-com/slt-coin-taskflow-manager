@@ -1330,6 +1330,9 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           created_at: string
+          deactivated_at: string | null
+          deactivated_by: string | null
+          deactivation_reason: string | null
           department: string | null
           email: string
           employee_id: string | null
@@ -1337,6 +1340,8 @@ export type Database = {
           full_name: string
           id: string
           is_active: boolean | null
+          reactivated_at: string | null
+          reactivated_by: string | null
           role: Database["public"]["Enums"]["user_role"]
           start_date: string | null
           total_coins: number | null
@@ -1347,6 +1352,9 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          deactivated_at?: string | null
+          deactivated_by?: string | null
+          deactivation_reason?: string | null
           department?: string | null
           email: string
           employee_id?: string | null
@@ -1354,6 +1362,8 @@ export type Database = {
           full_name: string
           id?: string
           is_active?: boolean | null
+          reactivated_at?: string | null
+          reactivated_by?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           start_date?: string | null
           total_coins?: number | null
@@ -1364,6 +1374,9 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          deactivated_at?: string | null
+          deactivated_by?: string | null
+          deactivation_reason?: string | null
           department?: string | null
           email?: string
           employee_id?: string | null
@@ -1371,13 +1384,30 @@ export type Database = {
           full_name?: string
           id?: string
           is_active?: boolean | null
+          reactivated_at?: string | null
+          reactivated_by?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           start_date?: string | null
           total_coins?: number | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_deactivated_by_fkey"
+            columns: ["deactivated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_reactivated_by_fkey"
+            columns: ["reactivated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       projects: {
         Row: {

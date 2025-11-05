@@ -29,6 +29,9 @@ interface Profile {
   end_date?: string;
   created_at: string;
   updated_at: string;
+  deactivated_at?: string;
+  deactivation_reason?: string;
+  reactivated_at?: string;
 }
 
 interface InternFormData {
@@ -48,7 +51,7 @@ export function InternManagement() {
   
   const { register, handleSubmit, reset, formState: { errors } } = useForm<InternFormData>();
 
-  // Fetch all interns
+  // Fetch all interns (including inactive for admin management)
   const { data: interns = [], isLoading } = useQuery({
     queryKey: ['interns'],
     queryFn: async () => {
@@ -56,6 +59,7 @@ export function InternManagement() {
         .from('profiles')
         .select('*')
         .eq('role', 'intern')
+        .order('is_active', { ascending: false })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -105,7 +109,7 @@ export function InternManagement() {
     mutationFn: async ({ userId, isActive }: { userId: string; isActive: boolean }) => {
       const { data, error } = await supabase.functions.invoke('manage-user-credentials', {
         body: { 
-          action: isActive ? 'activate' : 'deactivate',
+          action: isActive ? 'deactivate' : 'activate',
           userId 
         }
       });
@@ -113,10 +117,10 @@ export function InternManagement() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['interns'] });
       toast({
-        title: data.isActive ? "User Activated" : "User Deactivated",
+        title: variables.isActive ? "User Deactivated" : "User Reactivated",
         description: data.message,
       });
     },
@@ -285,12 +289,12 @@ export function InternManagement() {
           ))
         ) : interns.length > 0 ? (
           interns.map((intern) => (
-            <Card key={intern.id} className="hover:shadow-md transition-shadow">
+            <Card key={intern.id} className={`hover:shadow-md transition-shadow ${!intern.is_active ? 'opacity-70 border-destructive/50' : ''}`}>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <CardTitle className="text-lg">{intern.full_name}</CardTitle>
-                    <Badge variant={intern.is_active !== false ? "default" : "secondary"}>
+                    <Badge variant={intern.is_active !== false ? "default" : "destructive"}>
                       {intern.is_active !== false ? <UserCheck className="h-3 w-3 mr-1" /> : <UserX className="h-3 w-3 mr-1" />}
                       {intern.is_active !== false ? 'Active' : 'Inactive'}
                     </Badge>
@@ -321,6 +325,11 @@ export function InternManagement() {
                   </div>
                 </div>
                 <CardDescription>{intern.email}</CardDescription>
+                {!intern.is_active && intern.deactivation_reason && (
+                  <div className="text-xs text-destructive italic mt-2 p-2 bg-destructive/5 rounded">
+                    <strong>Reason:</strong> {intern.deactivation_reason}
+                  </div>
+                )}
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
@@ -358,8 +367,8 @@ export function InternManagement() {
                         checked={intern.is_active !== false}
                         onCheckedChange={(checked) => {
                           toggleStatusMutation.mutate({ 
-                            userId: intern.user_id, 
-                            isActive: checked 
+                            userId: intern.id, 
+                            isActive: intern.is_active !== false
                           });
                         }}
                         disabled={toggleStatusMutation.isPending}
