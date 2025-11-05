@@ -1984,6 +1984,30 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       webhook_deliveries: {
         Row: {
           delivered_at: string
@@ -2184,6 +2208,7 @@ export type Database = {
       }
     }
     Enums: {
+      app_role: "admin" | "intern" | "employee"
       task_priority: "low" | "medium" | "high" | "urgent"
       task_status:
         | "assigned"
@@ -2319,6 +2344,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "intern", "employee"],
       task_priority: ["low", "medium", "high", "urgent"],
       task_status: [
         "assigned",
