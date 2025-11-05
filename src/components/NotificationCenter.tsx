@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Bell, Check, X, LogIn, LogOut, UserPlus, MessageSquare, Coins, Clock, Play, Pause, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Notification {
   id: string;
@@ -23,6 +26,7 @@ export function NotificationCenter() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   // Simulate real-time notifications
   useEffect(() => {
@@ -258,123 +262,156 @@ export function NotificationCenter() {
     return 'Just now';
   };
 
-  return (
-    <div className="relative">
-      {/* Notification Bell */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => setIsOpen(!isOpen)}
-        className="relative"
-      >
-        <Bell className="h-5 w-5" />
-        {unreadCount > 0 && (
-          <Badge 
-            variant="destructive" 
-            className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs flex items-center justify-center animate-pulse"
+  const NotificationList = () => (
+    <div className="space-y-1">
+      {notifications.length === 0 ? (
+        <div className="p-8 text-center text-muted-foreground">
+          <Bell className="h-12 w-12 mx-auto mb-3 opacity-50" />
+          <p className="text-sm">No notifications yet</p>
+        </div>
+      ) : (
+        notifications.map((notification) => (
+          <div
+            key={notification.id}
+            className={`p-3 border-b hover:bg-muted/50 transition-colors ${
+              !notification.read ? 'bg-primary/5' : ''
+            }`}
           >
-            {unreadCount > 99 ? '99+' : unreadCount}
-          </Badge>
-        )}
-      </Button>
+            <div className="flex items-start gap-3">
+              <div className={`mt-1 ${getNotificationColor(notification.type)}`}>
+                {getNotificationIcon(notification.type)}
+              </div>
+              
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="font-medium text-sm truncate">{notification.title}</p>
+                  {!notification.read && (
+                    <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 ml-2" />
+                  )}
+                </div>
+                
+                <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                  {notification.message}
+                </p>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">
+                    {formatTimestamp(notification.timestamp)}
+                  </span>
+                  
+                  <div className="flex items-center gap-1">
+                    {!notification.read && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => markAsRead(notification.id)}
+                        className="h-6 w-6 p-0"
+                      >
+                        <Check className="h-3 w-3" />
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deleteNotification(notification.id)}
+                      className="h-6 w-6 p-0"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  );
 
-      {/* Notification Panel */}
-      {isOpen && (
-        <Card className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-hidden z-50 shadow-lg">
-          <CardHeader className="pb-3">
+  const TriggerButton = (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="relative"
+    >
+      <Bell className="h-5 w-5" />
+      {unreadCount > 0 && (
+        <Badge 
+          variant="destructive" 
+          className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs flex items-center justify-center animate-pulse"
+        >
+          {unreadCount > 99 ? '99+' : unreadCount}
+        </Badge>
+      )}
+    </Button>
+  );
+
+  // Mobile: Use Sheet (bottom drawer)
+  if (isMobile) {
+    return (
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+        <SheetTrigger asChild>
+          {TriggerButton}
+        </SheetTrigger>
+        <SheetContent side="bottom" className="h-[80vh] p-0">
+          <SheetHeader className="p-4 border-b">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Notifications</CardTitle>
-              <div className="flex items-center gap-2">
-                {unreadCount > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={markAllAsRead}
-                    className="text-xs"
-                  >
-                    Mark all read
-                  </Button>
-                )}
+              <SheetTitle>Notifications</SheetTitle>
+              {unreadCount > 0 && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setIsOpen(false)}
+                  onClick={markAllAsRead}
+                  className="text-xs"
                 >
-                  <X className="h-4 w-4" />
+                  Mark all read
                 </Button>
-              </div>
+              )}
             </div>
-          </CardHeader>
-          
-          <CardContent className="p-0 max-h-80 overflow-y-auto">
-            {notifications.length === 0 ? (
-              <div className="p-4 text-center text-muted-foreground">
-                <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p>No notifications yet</p>
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {notifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className={`p-3 border-b hover:bg-muted/50 transition-colors ${
-                      !notification.read ? 'bg-primary/5' : ''
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={`mt-1 ${getNotificationColor(notification.type)}`}>
-                        {getNotificationIcon(notification.type)}
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="font-medium text-sm truncate">
-                            {notification.title}
-                          </p>
-                          {!notification.read && (
-                            <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
-                          )}
-                        </div>
-                        
-                        <p className="text-xs text-muted-foreground mb-2">
-                          {notification.message}
-                        </p>
-                        
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-muted-foreground">
-                            {formatTimestamp(notification.timestamp)}
-                          </span>
-                          
-                          <div className="flex items-center gap-1">
-                            {!notification.read && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => markAsRead(notification.id)}
-                                className="h-6 w-6 p-0"
-                              >
-                                <Check className="h-3 w-3" />
-                              </Button>
-                            )}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => deleteNotification(notification.id)}
-                              className="h-6 w-6 p-0"
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-    </div>
+          </SheetHeader>
+          <div className="overflow-y-auto h-[calc(80vh-4rem)]">
+            <NotificationList />
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  // Desktop: Use Popover
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        {TriggerButton}
+      </PopoverTrigger>
+      <PopoverContent className="w-80 md:w-96 p-0" align="end">
+        <div className="border-b p-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-lg">Notifications</h3>
+            <div className="flex items-center gap-2">
+              {unreadCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={markAllAsRead}
+                  className="text-xs"
+                >
+                  Mark all read
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsOpen(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+        <div className="max-h-[32rem] overflow-y-auto">
+          <NotificationList />
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

@@ -137,35 +137,39 @@ export function useCommunication() {
     }
   }, [profile, toast]);
 
-  // Fetch team members
+  // Fetch team members - now fetches directly from profiles (includes new users)
   const fetchTeamMembers = useCallback(async () => {
     try {
-      const { data: members, error } = await supabase
+      const result = await (supabase as any)
         .from('profiles')
-        .select(`
-          id,
-          full_name,
-          email,
-          role,
-          avatar_url,
-          department,
-          user_presence (
-            is_online,
-            activity_status,
-            status_message,
-            last_seen
-          )
-        `);
+        .select('id, full_name, email, avatar_url, department')
+        .eq('is_active', true);
+      
+      const members = result?.data;
+      const error = result?.error;
 
       if (error) throw error;
 
-      const teamMembersData = members?.map(member => ({
-        ...member,
-        is_online: member.user_presence?.[0]?.is_online || false,
-        activity_status: member.user_presence?.[0]?.activity_status || 'offline',
-        status_message: member.user_presence?.[0]?.status_message,
-        last_seen: member.user_presence?.[0]?.last_seen
-      })) || [];
+      // Fetch presence data separately
+      const { data: presenceData } = await supabase
+        .from('user_presence')
+        .select('*');
+
+      const teamMembersData: TeamMember[] = (members || []).map(member => {
+        const presence = presenceData?.find((p: any) => p.user_id === member.id);
+        return {
+          id: member.id,
+          full_name: member.full_name,
+          email: member.email,
+          role: 'intern',
+          avatar_url: member.avatar_url,
+          department: member.department,
+          is_online: presence?.is_online || false,
+          activity_status: (presence?.activity_status as any) || 'offline',
+          status_message: presence?.status_message,
+          last_seen: presence?.last_seen
+        };
+      });
 
       setTeamMembers(teamMembersData);
     } catch (error) {

@@ -20,6 +20,7 @@ import { DashboardWidgets } from '@/components/DashboardWidgets';
 import { EnhancedOverview } from '@/components/EnhancedOverview';
 import { useSessionLogs } from '@/hooks/useSessionLogs';
 import { ProjectManagement } from '@/components/ProjectManagement';
+import { AttendanceTracker } from '@/components/attendance/AttendanceTracker';
 import { Coins, LogOut, User, Clock, CheckCircle, BarChart3, Users, Plus, UserCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
@@ -143,11 +144,11 @@ export default function Dashboard() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="w-full overflow-x-auto">
-            <TabsList className={`grid w-full min-w-max ${profile?.role === 'admin' ? 'grid-cols-7' : 'grid-cols-5'} ${profile?.role === 'admin' ? 'max-w-4xl' : 'max-w-2xl'} mx-auto`}>
+            <TabsList className={`grid w-full min-w-max ${profile?.role === 'admin' ? 'grid-cols-8' : 'grid-cols-6'} ${profile?.role === 'admin' ? 'max-w-5xl' : 'max-w-3xl'} mx-auto`}>
               <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 sm:px-4">Overview</TabsTrigger>
               <TabsTrigger value="tasks" className="text-xs sm:text-sm px-2 sm:px-4">Tasks</TabsTrigger>
               <TabsTrigger value="projects" className="text-xs sm:text-sm px-2 sm:px-4">Projects</TabsTrigger>
-              <TabsTrigger value="time" className="text-xs sm:text-sm px-2 sm:px-4">Time</TabsTrigger>
+              <TabsTrigger value="attendance" className="text-xs sm:text-sm px-2 sm:px-4">Attendance</TabsTrigger>
               {profile?.role === 'admin' && (
                 <>
                   <TabsTrigger value="coins" className="text-xs sm:text-sm px-2 sm:px-4">Coins</TabsTrigger>
@@ -210,6 +211,10 @@ export default function Dashboard() {
 
           <TabsContent value="projects">
             <ProjectManagement />
+          </TabsContent>
+
+          <TabsContent value="attendance">
+            <AttendanceTracker />
           </TabsContent>
 
           <TabsContent value="time">

@@ -33,10 +33,10 @@ export function usePresence() {
     // Set initial online status
     updatePresenceStatus(true);
 
-    // Set up heartbeat to maintain online status
+    // Set up heartbeat to maintain online status (reduced to 15 seconds for faster updates)
     heartbeatInterval.current = setInterval(() => {
       updatePresenceStatus(true);
-    }, 30000); // Update every 30 seconds
+    }, 15000); // Update every 15 seconds
 
     // Set up status checker for away/offline detection
     statusCheckInterval.current = setInterval(() => {

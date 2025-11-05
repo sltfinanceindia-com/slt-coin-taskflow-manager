@@ -23,11 +23,14 @@ export function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Fetch total interns
-        const { data: profiles, error: profilesError } = await supabase
+        // Fetch total interns - count from profiles with active status
+        const profilesResult = await (supabase as any)
           .from('profiles')
           .select('id')
-          .eq('role', 'intern');
+          .eq('is_active', true);
+        
+        const internCount = profilesResult?.data?.length || 0;
+        const profilesError = profilesResult?.error;
         
         if (profilesError) {
           console.error('Error fetching profiles:', profilesError);
@@ -64,7 +67,7 @@ export function AdminDashboard() {
         }
 
         setStats({
-          totalInterns: profiles?.length || 0,
+          totalInterns: internCount || 0,
           activeTasks: tasks?.length || 0,
           coinsDistributed: coins?.reduce((sum, coin) => sum + (coin.coins_earned || 0), 0) || 0,
           trainingModules: videos?.length || 0
