@@ -41,8 +41,7 @@ const adminItems = [
   { title: "Communication", url: "communication", icon: MessageSquare },
   { title: "Coins", url: "coins", icon: Coins },
   { title: "Interns", url: "interns", icon: Users },
-  { title: "Productivity", url: "productivity", icon: Activity },
-  { title: "Time Tracking", url: "time-tracking", icon: Monitor },
+  { title: "Attendance", url: "attendance", icon: Clock },
   { title: "Analytics", url: "analytics", icon: BarChart3 },
 ]
 

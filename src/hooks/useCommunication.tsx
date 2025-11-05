@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useNotifications } from '@/hooks/useNotifications';
 
 export interface Channel {
   id: string;
@@ -59,6 +60,7 @@ export interface TeamMember {
 export function useCommunication() {
   const { profile } = useAuth();
   const { toast } = useToast();
+  const { notifyMessage } = useNotifications();
   
   const [channels, setChannels] = useState<Channel[]>([]);
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
@@ -144,11 +146,12 @@ export function useCommunication() {
     try {
       console.log('🔍 Fetching team members...');
       
-      // Fetch profiles
+      // Fetch only active profiles
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, full_name, email, avatar_url, department, is_active')
-        .eq('is_active', true);
+        .eq('is_active', true)
+        .order('full_name');
 
       if (profilesError) {
         console.error('Error fetching profiles:', profilesError);
@@ -407,6 +410,19 @@ export function useCommunication() {
           setMessages(prev => [...prev, newMessage]);
         }
         
+        // Show desktop notification for new messages (not from current user, not in current channel)
+        if (newMessage.sender_id !== profile?.id && 
+            (!selectedChannel || newMessage.channel_id !== selectedChannel.id)) {
+          notifyMessage(
+            {
+              name: newMessage.sender_name || 'Unknown User',
+              avatar: undefined
+            },
+            newMessage.content,
+            !newMessage.channel_id // isDirect
+          );
+        }
+        
         // Update channel last message and unread count
         setChannels(prev => prev.map(channel => {
           if (channel.id === newMessage.channel_id) {
@@ -437,11 +453,29 @@ export function useCommunication() {
       })
       .subscribe();
 
+    // Subscribe to profile changes (new users or deactivations)
+    const profilesChannel = supabase
+      .channel('profiles_changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'profiles'
+      }, (payload) => {
+        console.log('Profile changed:', payload);
+        fetchTeamMembers();
+        // Refresh channels to remove deactivated users
+        if (payload.eventType === 'UPDATE') {
+          fetchChannels();
+        }
+      })
+      .subscribe();
+
     return () => {
       messagesChannel.unsubscribe();
       presenceChannel.unsubscribe();
+      profilesChannel.unsubscribe();
     };
-  }, [profile, selectedChannel, fetchTeamMembers]);
+  }, [profile, selectedChannel, fetchTeamMembers, fetchChannels]);
 
   // Initial data fetch
   useEffect(() => {

@@ -15,8 +15,7 @@ import { MyCoins } from '@/components/MyCoins';
 import { EnhancedDashboardWidgets } from '@/components/EnhancedDashboardWidgets';
 import { ProjectManagement } from '@/components/ProjectManagement';
 import { KanbanBoard } from '@/components/KanbanBoard';
-import { ProductivityDashboard } from '@/components/ProductivityDashboard';
-import { AdvancedTimeTracking } from '@/components/AdvancedTimeTracking';
+import { EnhancedAttendanceTracker } from '@/components/attendance/EnhancedAttendanceTracker';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AppHeader } from '@/components/AppHeader';
@@ -180,13 +179,10 @@ export default function ModernDashboard() {
       case 'analytics':
         return <AnalyticsPage />;
       
-      case 'productivity':
-        return profile?.role === 'admin' ? <ProductivityDashboard /> : null;
+      case 'attendance':
+        return profile?.role === 'admin' ? <EnhancedAttendanceTracker /> : null;
       
-      case 'time-tracking':
-        return profile?.role === 'admin' ? <AdvancedTimeTracking userId={profile.id} /> : null;
-      
-        case 'communication':
+      case 'communication':
           return <ModernCommunication />;
       
       default:

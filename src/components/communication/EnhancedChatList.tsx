@@ -16,8 +16,6 @@ import {
   Pin,
   MoreHorizontal,
   Circle,
-  Phone,
-  Video,
   Archive
 } from 'lucide-react';
 import type { Channel, TeamMember } from '@/hooks/useCommunication';
@@ -32,7 +30,6 @@ interface EnhancedChatListProps {
   selectedChannel: Channel | null;
   onChannelSelect: (channel: Channel) => void;
   onMemberSelect: (member: TeamMember) => void;
-  onStartCall?: (memberId: string, callType: 'voice' | 'video') => void;
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
 }
@@ -43,7 +40,6 @@ export default function EnhancedChatList({
   selectedChannel,
   onChannelSelect,
   onMemberSelect,
-  onStartCall,
   searchQuery = '',
   onSearchChange
 }: EnhancedChatListProps) {
@@ -211,33 +207,6 @@ export default function EnhancedChatList({
 
             {/* Action Buttons */}
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              {channel.is_direct_message && user && (
-                <>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onStartCall?.(user.id, 'voice');
-                    }}
-                  >
-                    <Phone className="h-3 w-3 text-green-600" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onStartCall?.(user.id, 'video');
-                    }}
-                  >
-                    <Video className="h-3 w-3 text-blue-600" />
-                  </Button>
-                </>
-              )}
-              
               <Button
                 variant="ghost"
                 size="sm"
