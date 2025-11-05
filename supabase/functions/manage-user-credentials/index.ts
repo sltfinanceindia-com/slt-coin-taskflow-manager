@@ -7,11 +7,14 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    console.log('🔐 Starting user credentials management request');
+    
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -23,9 +26,10 @@ serve(async (req) => {
       }
     );
 
-    // Get admin user from JWT
+    // Validate authorization header
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
+      console.error('❌ No authorization header provided');
       throw new Error('No authorization header');
     }
 
@@ -33,36 +37,55 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
 
     if (userError || !user) {
+      console.error('❌ User authentication failed:', userError?.message);
       throw new Error('Unauthorized');
     }
 
-    // Check if user is admin using the has_role function
-    const { data: isAdmin, error: roleError } = await supabaseClient
-      .rpc('has_role', { _user_id: user.id, _role: 'admin' });
+    console.log('✅ User authenticated:', user.id);
 
-    if (roleError || !isAdmin) {
+    // Check if user has admin role using user_roles table
+    const { data: adminRole, error: roleError } = await supabaseClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .single();
+
+    if (roleError || !adminRole) {
+      console.error('❌ Admin role check failed:', roleError?.message);
       throw new Error('Unauthorized: Admin access required');
     }
 
-    const { action, userId } = await req.json();
+    console.log('✅ Admin role verified');
 
-    if (!action || !userId) {
-      throw new Error('Missing required parameters: action and userId');
+    // Parse request body
+    const body = await req.json();
+    const { action, userId, userIds } = body;
+    
+    if (!action) {
+      throw new Error('Missing required parameter: action');
     }
 
-    console.log(`🔐 Admin ${user.id} attempting to ${action} user ${userId}`);
+    if (!userId && !userIds) {
+      throw new Error('Missing required parameter: userId or userIds');
+    }
+
+    console.log(`🔐 Admin ${user.id} attempting to ${action} user ${userId || 'multiple users'}`);
 
     let result;
 
     switch (action) {
       case 'activate':
-        // Update profile to active
+        if (!userId) throw new Error('userId is required for activate action');
+        
+        // Update profile to active (using id column, not user_id)
         const { error: activateError } = await supabaseClient
           .from('profiles')
           .update({ is_active: true })
-          .eq('user_id', userId);
+          .eq('id', userId);
 
         if (activateError) {
+          console.error('❌ Activate error:', activateError);
           throw new Error(`Failed to activate user: ${activateError.message}`);
         }
 
@@ -71,20 +94,29 @@ serve(async (req) => {
         break;
 
       case 'deactivate':
-        // Update profile to inactive
+        if (!userId) throw new Error('userId is required for deactivate action');
+        
+        // Update profile to inactive (using id column, not user_id)
         const { error: deactivateError } = await supabaseClient
           .from('profiles')
           .update({ is_active: false })
-          .eq('user_id', userId);
+          .eq('id', userId);
 
         if (deactivateError) {
+          console.error('❌ Deactivate error:', deactivateError);
           throw new Error(`Failed to deactivate user: ${deactivateError.message}`);
         }
 
         // Sign out the user (this will invalidate their session)
-        const { error: signOutError } = await supabaseClient.auth.admin.signOut(userId);
-        if (signOutError) {
-          console.warn(`⚠️ Failed to sign out user ${userId}:`, signOutError);
+        try {
+          const { error: signOutError } = await supabaseClient.auth.admin.signOut(userId);
+          if (signOutError) {
+            console.warn(`⚠️ Failed to sign out user ${userId}:`, signOutError);
+          } else {
+            console.log(`✅ User ${userId} signed out successfully`);
+          }
+        } catch (signOutErr) {
+          console.warn(`⚠️ Sign out exception:`, signOutErr);
         }
 
         console.log(`✅ User ${userId} deactivated successfully`);
@@ -93,7 +125,6 @@ serve(async (req) => {
 
       case 'bulk_activate':
       case 'bulk_deactivate':
-        const { userIds } = await req.json();
         if (!userIds || !Array.isArray(userIds)) {
           throw new Error('userIds array is required for bulk operations');
         }
@@ -102,18 +133,22 @@ serve(async (req) => {
         const { error: bulkError } = await supabaseClient
           .from('profiles')
           .update({ is_active: isActive })
-          .in('user_id', userIds);
+          .in('id', userIds);
 
         if (bulkError) {
+          console.error('❌ Bulk operation error:', bulkError);
           throw new Error(`Bulk operation failed: ${bulkError.message}`);
         }
 
         // Sign out deactivated users
         if (!isActive) {
           for (const uid of userIds) {
-            await supabaseClient.auth.admin.signOut(uid).catch(err => 
-              console.warn(`⚠️ Failed to sign out user ${uid}:`, err)
-            );
+            try {
+              await supabaseClient.auth.admin.signOut(uid);
+              console.log(`✅ Signed out user ${uid}`);
+            } catch (err) {
+              console.warn(`⚠️ Failed to sign out user ${uid}:`, err);
+            }
           }
         }
 

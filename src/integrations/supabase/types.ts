@@ -20,7 +20,7 @@ export type Database = {
           created_at: string
           duration_minutes: number | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           metadata: Json | null
           task_id: string | null
           timestamp: string
@@ -32,7 +32,7 @@ export type Database = {
           created_at?: string
           duration_minutes?: number | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           task_id?: string | null
           timestamp?: string
@@ -44,7 +44,7 @@ export type Database = {
           created_at?: string
           duration_minutes?: number | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           task_id?: string | null
           timestamp?: string
@@ -371,7 +371,7 @@ export type Database = {
         Row: {
           action: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           new_values: Json | null
           old_values: Json | null
           performed_by: string
@@ -384,7 +384,7 @@ export type Database = {
         Insert: {
           action: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           performed_by: string
@@ -397,7 +397,7 @@ export type Database = {
         Update: {
           action?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           performed_by?: string
@@ -1336,6 +1336,7 @@ export type Database = {
           end_date: string | null
           full_name: string
           id: string
+          is_active: boolean | null
           role: Database["public"]["Enums"]["user_role"]
           start_date: string | null
           total_coins: number | null
@@ -1352,6 +1353,7 @@ export type Database = {
           end_date?: string | null
           full_name: string
           id?: string
+          is_active?: boolean | null
           role?: Database["public"]["Enums"]["user_role"]
           start_date?: string | null
           total_coins?: number | null
@@ -1368,6 +1370,7 @@ export type Database = {
           end_date?: string | null
           full_name?: string
           id?: string
+          is_active?: boolean | null
           role?: Database["public"]["Enums"]["user_role"]
           start_date?: string | null
           total_coins?: number | null
@@ -2122,18 +2125,12 @@ export type Database = {
         Args: { p_email_type: string; p_user_id: string }
         Returns: boolean
       }
-      cleanup_expired_typing_indicators: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      cleanup_expired_typing_indicators: { Args: never; Returns: undefined }
       create_direct_message_channel: {
         Args: { user1_id: string; user2_id: string }
         Returns: string
       }
-      extract_video_duration: {
-        Args: { video_url: string }
-        Returns: number
-      }
+      extract_video_duration: { Args: { video_url: string }; Returns: number }
       get_channel_display_name: {
         Args: { channel_id: string; current_user_id: string }
         Returns: string
@@ -2146,10 +2143,7 @@ export type Database = {
           partner_role: string
         }[]
       }
-      get_current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      get_current_user_role: { Args: never; Returns: string }
       get_user_productivity_metrics: {
         Args: { p_end_date?: string; p_start_date?: string; p_user_id: string }
         Returns: {

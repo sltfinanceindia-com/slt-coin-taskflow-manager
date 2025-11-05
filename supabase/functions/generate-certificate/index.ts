@@ -13,6 +13,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log('📜 Starting certificate generation');
+    
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -24,9 +26,10 @@ serve(async (req) => {
       }
     );
 
-    // Get user from JWT
+    // Validate authorization
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
+      console.error('❌ No authorization header');
       throw new Error('No authorization header');
     }
 
@@ -34,10 +37,21 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
 
     if (userError || !user) {
+      console.error('❌ User authentication failed:', userError?.message);
       throw new Error('Unauthorized');
     }
 
-    const { internId } = await req.json();
+    console.log('✅ User authenticated:', user.id);
+
+    // Parse request body
+    const body = await req.json();
+    const { internId } = body;
+    
+    if (!internId) {
+      throw new Error('Missing required parameter: internId');
+    }
+    
+    console.log('🔍 Fetching intern profile:', internId);
 
     // Fetch intern profile
     const { data: profile, error: profileError } = await supabaseClient

@@ -137,45 +137,70 @@ export function useCommunication() {
     }
   }, [profile, toast]);
 
-  // Fetch team members - now fetches directly from profiles (includes new users)
+  // Fetch team members - now fetches directly from profiles with roles from user_roles
   const fetchTeamMembers = useCallback(async () => {
+    if (!profile) return;
+    
     try {
-      const result = await (supabase as any)
-        .from('profiles')
-        .select('id, full_name, email, avatar_url, department')
-        .eq('is_active', true);
+      console.log('🔍 Fetching team members...');
       
-      const members = result?.data;
-      const error = result?.error;
+      // Fetch profiles
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, avatar_url, department, is_active')
+        .eq('is_active', true);
 
-      if (error) throw error;
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        throw profilesError;
+      }
 
-      // Fetch presence data separately
-      const { data: presenceData } = await supabase
+      // Fetch roles from user_roles table using type assertion
+      const rolesResult = await (supabase as any)
+        .from('user_roles')
+        .select('user_id, role');
+
+      const roles = rolesResult?.data;
+      const rolesError = rolesResult?.error;
+
+      if (rolesError) {
+        console.error('Error fetching roles:', rolesError);
+      }
+
+      // Fetch presence data
+      const { data: presenceData, error: presenceError } = await supabase
         .from('user_presence')
         .select('*');
 
-      const teamMembersData: TeamMember[] = (members || []).map(member => {
-        const presence = presenceData?.find((p: any) => p.user_id === member.id);
+      if (presenceError) {
+        console.error('Error fetching presence:', presenceError);
+      }
+
+      // Combine all data
+      const teamMembersData: TeamMember[] = (profiles || []).map(profile => {
+        const roleData = roles?.find((r: any) => r.user_id === profile.id);
+        const presence = presenceData?.find(p => p.user_id === profile.id);
+        
         return {
-          id: member.id,
-          full_name: member.full_name,
-          email: member.email,
-          role: 'intern',
-          avatar_url: member.avatar_url,
-          department: member.department,
+          id: profile.id,
+          full_name: profile.full_name,
+          email: profile.email,
+          role: roleData?.role || 'intern',
+          avatar_url: profile.avatar_url,
+          department: profile.department,
           is_online: presence?.is_online || false,
-          activity_status: (presence?.activity_status as any) || 'offline',
-          status_message: presence?.status_message,
-          last_seen: presence?.last_seen
+          activity_status: (presence?.activity_status as 'online' | 'away' | 'busy' | 'offline') || 'offline',
+          status_message: presence?.status_message || undefined,
+          last_seen: presence?.last_seen || undefined
         };
       });
 
+      console.log(`✅ Fetched ${teamMembersData.length} team members`);
       setTeamMembers(teamMembersData);
     } catch (error) {
       console.error('Error fetching team members:', error);
     }
-  }, []);
+  }, [profile]);
 
   // Fetch messages for selected channel
   const fetchMessages = useCallback(async (channelId: string) => {

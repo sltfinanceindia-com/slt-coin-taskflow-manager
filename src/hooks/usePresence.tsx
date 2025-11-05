@@ -30,38 +30,23 @@ export function usePresence() {
   useEffect(() => {
     if (!profile?.id) return;
 
+    console.log('🔄 Setting up presence for user:', profile.id);
+
     // Set initial online status
     updatePresenceStatus(true);
 
-    // Set up heartbeat to maintain online status (reduced to 15 seconds for faster updates)
+    // Fetch all user presence
+    fetchPresenceList();
+
+    // Set up heartbeat to maintain online status (reduced to 10 seconds for faster updates)
     heartbeatInterval.current = setInterval(() => {
       updatePresenceStatus(true);
-    }, 15000); // Update every 15 seconds
+    }, 10000); // Update every 10 seconds
 
     // Set up status checker for away/offline detection
     statusCheckInterval.current = setInterval(() => {
       checkAndUpdateAwayStatus();
     }, 60000); // Check every minute
-
-    // Handle page visibility changes
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        updatePresenceStatus(false);
-      } else {
-        updatePresenceStatus(true);
-      }
-    };
-
-    // Handle beforeunload to set offline
-    const handleBeforeUnload = () => {
-      updatePresenceStatus(false);
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    // Fetch all user presence
-    fetchPresenceList();
 
     // Set up real-time listener for presence changes
     const presenceChannel = supabase
@@ -73,11 +58,30 @@ export function usePresence() {
           schema: 'public',
           table: 'user_presence'
         },
-        () => {
+        (payload) => {
+          console.log('🔄 Presence change detected:', payload);
           fetchPresenceList();
         }
       )
       .subscribe();
+
+    // Handle page visibility changes
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        updatePresenceStatus(false);
+      } else {
+        updatePresenceStatus(true);
+        fetchPresenceList();
+      }
+    };
+
+    // Handle beforeunload to set offline
+    const handleBeforeUnload = () => {
+      updatePresenceStatus(false);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
       if (heartbeatInterval.current) {
@@ -88,8 +92,12 @@ export function usePresence() {
       }
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      updatePresenceStatus(false);
+      
+      // Clean up Supabase subscription
       supabase.removeChannel(presenceChannel);
+      
+      // Set offline when unmounting
+      updatePresenceStatus(false);
     };
   }, [profile?.id]);
 
