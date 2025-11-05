@@ -44,24 +44,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('📋 Fetching profile for user ID:', userId);
       
-      const { data, error } = await supabase
+      // Fetch profile data
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
         .maybeSingle();
 
-      if (error) {
-        console.error('❌ Error fetching profile:', error);
-        throw error;
+      if (profileError) {
+        console.error('❌ Error fetching profile:', profileError);
+        throw profileError;
       }
 
-      if (!data) {
+      if (!profileData) {
         console.error('❌ No profile found for user:', userId);
         throw new Error('Profile not found');
       }
 
       // Check if account is inactive
-      if ((data as any).is_active === false) {
+      if (profileData.is_active === false) {
         console.warn('⚠️ User account is inactive');
         toast.error('Your account has been deactivated. Please contact an administrator.');
         await supabase.auth.signOut();
@@ -69,8 +70,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      console.log('✅ Profile loaded:', data.id, data.full_name);
-      setProfile(data as any);
+      // Fetch role from secure user_roles table
+      const { data: roleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (roleError) {
+        console.error('❌ Error fetching role:', roleError);
+        throw roleError;
+      }
+
+      // Combine profile data with role from user_roles table
+      const profile = {
+        ...profileData,
+        role: roleData?.role || 'intern' // Default to intern if no role found
+      } as Profile;
+
+      console.log('✅ Profile loaded with secure role:', profile.id, profile.full_name, profile.role);
+      setProfile(profile);
       
     } catch (error) {
       console.error('❌ Error fetching profile:', error);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -643,9 +644,15 @@ export default function SearchAndFilters({
                       <p className="text-sm text-muted-foreground truncate">
                         {result.highlight ? (
                           <span dangerouslySetInnerHTML={{ 
-                            __html: result.content.replace(
-                              new RegExp(`(${result.highlight})`, 'gi'),
-                              '<mark>$1</mark>'
+                            __html: DOMPurify.sanitize(
+                              result.content.replace(
+                                new RegExp(`(${result.highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'),
+                                '<mark>$1</mark>'
+                              ),
+                              {
+                                ALLOWED_TAGS: ['mark'],
+                                ALLOWED_ATTR: []
+                              }
                             )
                           }} />
                         ) : (

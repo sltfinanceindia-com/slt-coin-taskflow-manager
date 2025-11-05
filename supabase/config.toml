@@ -1,7 +1,7 @@
 project_id = "orybzmkhccrqmjuvioln"
 
 [functions.send-email]
-verify_jwt = false
+verify_jwt = true
 
 [functions.webrtc-signal]
 verify_jwt = false
@@ -13,10 +13,10 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.cleanup-old-messages]
-verify_jwt = false
+verify_jwt = true
 
 [functions.cleanup-stale-sessions]
-verify_jwt = false
+verify_jwt = true
 
 [edge_runtime]
 policy = "per_worker"
