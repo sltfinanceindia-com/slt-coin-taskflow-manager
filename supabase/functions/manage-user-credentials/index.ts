@@ -43,16 +43,15 @@ serve(async (req) => {
 
     console.log('✅ User authenticated:', user.id);
 
-    // Check if user has admin role using user_roles table
-    const { data: adminRole, error: roleError } = await supabaseClient
-      .from('user_roles')
+    // Check if user has admin role using profiles table
+    const { data: profile, error: roleError } = await supabaseClient
+      .from('profiles')
       .select('role')
       .eq('user_id', user.id)
-      .eq('role', 'admin')
       .single();
 
-    if (roleError || !adminRole) {
-      console.error('❌ Admin role check failed:', roleError?.message);
+    if (roleError || !profile || profile.role !== 'admin') {
+      console.error('❌ Admin role check failed:', roleError?.message || 'User is not an admin');
       throw new Error('Unauthorized: Admin access required');
     }
 
