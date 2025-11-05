@@ -56,13 +56,13 @@ Deno.serve(async (req) => {
     const closurePromises = staleSessions.map(async (session) => {
       const loginTime = new Date(session.login_time);
       const logoutTime = new Date(loginTime.getTime() + 24 * 60 * 60 * 1000); // Add 24 hours
-      const durationMinutes = 1440; // 24 hours in minutes
 
+      // Note: session_duration_minutes is a GENERATED column, so we only update logout_time
+      // The duration will be automatically calculated by the database
       const { error: updateError } = await supabase
         .from('session_logs')
         .update({
           logout_time: logoutTime.toISOString(),
-          session_duration_minutes: durationMinutes,
           closure_type: 'auto',
           closure_note: 'Auto-closed by system: Session exceeded 24 hours without logout'
         })

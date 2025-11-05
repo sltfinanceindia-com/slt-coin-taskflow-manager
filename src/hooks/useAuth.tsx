@@ -345,9 +345,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           } else if (sessions && sessions.length > 0) {
             const { error: updateError } = await supabase
               .from('session_logs')
-              .update({ logout_time: new Date().toISOString() })
+              .update({ 
+                logout_time: new Date().toISOString(),
+                closure_type: 'manual'
+              })
               .eq('id', sessions[0].id)
-              .eq('user_id', profile.id); // ✅ CRITICAL: Must include user_id for RLS
+              .eq('user_id', profile.id);
             
             if (updateError) {
               console.error('❌ Error updating logout time:', updateError);
@@ -368,15 +371,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
       
+      // Sign out from Supabase
       const { error } = await supabase.auth.signOut();
       
       if (error) {
         console.error('❌ Sign out error:', error);
-      } else {
-        console.log('✅ Sign out successful');
+        return { error };
       }
       
-      return { error };
+      // ✅ CRITICAL: Explicitly clear all auth state after signout
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      
+      console.log('✅ Sign out successful, state cleared');
+      return { error: null };
     } catch (error) {
       console.error('❌ Sign out error:', error);
       return { error };
