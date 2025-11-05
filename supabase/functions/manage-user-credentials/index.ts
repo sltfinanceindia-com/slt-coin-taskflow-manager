@@ -48,10 +48,22 @@ serve(async (req) => {
       .from('profiles')
       .select('role')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
-    if (roleError || !profile || profile.role !== 'admin') {
-      console.error('❌ Admin role check failed:', roleError?.message || 'User is not an admin');
+    console.log('Profile lookup result:', { profile, roleError: roleError?.message });
+
+    if (roleError) {
+      console.error('❌ Database error checking admin role:', roleError);
+      throw new Error('Unauthorized: Admin access required');
+    }
+
+    if (!profile) {
+      console.error('❌ No profile found for user:', user.id);
+      throw new Error('Unauthorized: Admin access required');
+    }
+
+    if (profile.role !== 'admin') {
+      console.error('❌ User is not an admin. Role:', profile.role);
       throw new Error('Unauthorized: Admin access required');
     }
 
