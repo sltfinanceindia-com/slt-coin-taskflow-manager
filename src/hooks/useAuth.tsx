@@ -191,22 +191,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initializeAuth();
 
     // Add beforeunload handler to end session when tab closes
-    const handleBeforeUnload = async () => {
+    const handleBeforeUnload = () => {
       if (profile?.id) {
-        // End current session on tab close
-        const { data: sessions } = await supabase
+        // Use sendBeacon for reliable logout on page close
+        const logoutData = JSON.stringify({
+          user_id: profile.id,
+          logout_time: new Date().toISOString()
+        });
+        
+        // Try to update session log (may not complete in beforeunload)
+        supabase
           .from('session_logs')
-          .select('id')
+          .update({ logout_time: new Date().toISOString() })
           .eq('user_id', profile.id)
           .is('logout_time', null)
-          .limit(1);
-        
-        if (sessions && sessions.length > 0) {
-          await supabase
-            .from('session_logs')
-            .update({ logout_time: new Date().toISOString() })
-            .eq('id', sessions[0].id);
-        }
+          .then(({ error }) => {
+            if (error) {
+              console.error('❌ beforeunload session update failed:', error);
+            }
+          });
       }
     };
     
@@ -328,29 +331,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Set user as offline before signing out
       if (profile?.id) {
         try {
+          // End current session FIRST (before setting offline)
+          const { data: sessions, error: fetchError } = await supabase
+            .from('session_logs')
+            .select('id')
+            .eq('user_id', profile.id)
+            .is('logout_time', null)
+            .order('login_time', { ascending: false })
+            .limit(1);
+          
+          if (fetchError) {
+            console.error('❌ Error fetching session for logout:', fetchError);
+          } else if (sessions && sessions.length > 0) {
+            const { error: updateError } = await supabase
+              .from('session_logs')
+              .update({ logout_time: new Date().toISOString() })
+              .eq('id', sessions[0].id)
+              .eq('user_id', profile.id); // ✅ CRITICAL: Must include user_id for RLS
+            
+            if (updateError) {
+              console.error('❌ Error updating logout time:', updateError);
+            } else {
+              console.log('✅ Session logout time recorded');
+            }
+          }
+          
+          // Set user as offline
           await supabase.rpc('update_user_presence', {
             p_user_id: profile.id,
             p_is_online: false
           });
           
-          // End current session
-          const { data: sessions } = await supabase
-            .from('session_logs')
-            .select('id')
-            .eq('user_id', profile.id)
-            .is('logout_time', null)
-            .limit(1);
-          
-          if (sessions && sessions.length > 0) {
-            await supabase
-              .from('session_logs')
-              .update({ logout_time: new Date().toISOString() })
-              .eq('id', sessions[0].id);
-          }
-          
           console.log('✅ User presence updated to offline');
         } catch (presenceError) {
-          console.warn('⚠️ Failed to update presence on signout:', presenceError);
+          console.error('❌ Failed to update presence on signout:', presenceError);
         }
       }
       
