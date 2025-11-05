@@ -190,11 +190,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Start initialization
     initializeAuth();
 
+    // Add beforeunload handler to end session when tab closes
+    const handleBeforeUnload = async () => {
+      if (profile?.id) {
+        // End current session on tab close
+        const { data: sessions } = await supabase
+          .from('session_logs')
+          .select('id')
+          .eq('user_id', profile.id)
+          .is('logout_time', null)
+          .limit(1);
+        
+        if (sessions && sessions.length > 0) {
+          await supabase
+            .from('session_logs')
+            .update({ logout_time: new Date().toISOString() })
+            .eq('id', sessions[0].id);
+        }
+      }
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     return () => {
       mounted = false;
       subscription.unsubscribe();
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, []);
+  }, [profile]);
 
   const signUp = async (email: string, password: string, fullName: string, role: 'admin' | 'intern' = 'intern') => {
     const redirectUrl = `${window.location.origin}/`;
@@ -240,18 +263,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Wait for profile to load
     if (data.user) {
       await fetchProfile(data.user.id);
-    }
-    
-    // Set user as online after successful sign in
-    if (data.user && profile?.id) {
-      try {
-        await supabase.rpc('update_user_presence', {
-          p_user_id: profile.id,
-          p_is_online: true
-        });
-        console.log('✅ User presence updated to online');
-      } catch (presenceError) {
-        console.warn('⚠️ Failed to update presence:', presenceError);
+      
+      // Get the loaded profile
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', data.user.id)
+        .single();
+      
+      if (profileData) {
+        // Create session log entry for attendance tracking
+        try {
+          const { error: sessionError } = await supabase
+            .from('session_logs')
+            .insert({
+              user_id: profileData.id,
+              login_time: new Date().toISOString()
+            });
+          
+          if (sessionError) {
+            console.error('❌ Failed to create session log:', sessionError);
+          } else {
+            console.log('✅ Session log created for attendance tracking');
+          }
+        } catch (sessionError) {
+          console.warn('⚠️ Failed to create session log:', sessionError);
+        }
+        
+        // Set user as online after successful sign in
+        try {
+          await supabase.rpc('update_user_presence', {
+            p_user_id: profileData.id,
+            p_is_online: true
+          });
+          console.log('✅ User presence updated to online');
+        } catch (presenceError) {
+          console.warn('⚠️ Failed to update presence:', presenceError);
+        }
       }
     }
     
