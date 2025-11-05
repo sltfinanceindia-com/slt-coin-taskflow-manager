@@ -12,6 +12,9 @@ export interface AttendanceRecord {
   attendance_status: 'on-time' | 'late' | 'very-late' | 'absent';
   full_name: string;
   email: string;
+  is_active: boolean;
+  closure_type?: string;
+  closure_note?: string;
 }
 
 export function useAttendance() {
@@ -36,8 +39,7 @@ export function useAttendance() {
           profiles!inner(full_name, email)
         `)
         .gte('login_time', startDateStr)
-        .lte('login_time', endDateStr)
-        .not('logout_time', 'is', null);
+        .lte('login_time', endDateStr);
 
       if (userId) {
         query = query.eq('user_id', userId);
@@ -54,16 +56,38 @@ export function useAttendance() {
         const date = new Date(session.login_time).toISOString().split('T')[0];
         const key = `${session.user_id}-${date}`;
         
+        // Calculate duration for sessions without logout_time
+        let sessionDuration = session.session_duration_minutes || 0;
+        let isActive = false;
+        
+        if (!session.logout_time) {
+          const loginTime = new Date(session.login_time);
+          const now = new Date();
+          const isToday = loginTime.toDateString() === now.toDateString();
+          
+          if (isToday) {
+            // Calculate current duration for active sessions
+            sessionDuration = Math.floor((now.getTime() - loginTime.getTime()) / (1000 * 60));
+            isActive = true;
+          } else {
+            // Stale session - don't count duration until background job closes it
+            sessionDuration = 0;
+          }
+        }
+        
         if (!attendanceMap.has(key)) {
           attendanceMap.set(key, {
             user_id: session.user_id,
             session_date: date,
             first_login: session.login_time,
             last_logout: session.logout_time,
-            total_minutes: session.session_duration_minutes || 0,
+            total_minutes: sessionDuration,
             session_count: 1,
             full_name: session.profiles?.full_name || '',
-            email: session.profiles?.email || ''
+            email: session.profiles?.email || '',
+            is_active: isActive,
+            closure_type: session.closure_type,
+            closure_note: session.closure_note
           });
         } else {
           const existing = attendanceMap.get(key);
@@ -73,8 +97,10 @@ export function useAttendance() {
           existing.last_logout = new Date(existing.last_logout || 0) > new Date(session.logout_time || 0)
             ? existing.last_logout
             : session.logout_time;
-          existing.total_minutes += session.session_duration_minutes || 0;
+          existing.total_minutes += sessionDuration;
           existing.session_count += 1;
+          existing.is_active = existing.is_active || isActive;
+          if (session.closure_note) existing.closure_note = session.closure_note;
         }
       });
 

@@ -8,13 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { 
   Clock, LogIn, LogOut, TrendingUp, Calendar as CalendarIcon, 
   Download, Search, Users, CheckCircle, FileText, BarChart3,
-  PieChart, Activity
+  PieChart, Activity, X, AlertCircle
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useAttendance, AttendanceRecord } from '@/hooks/useAttendance';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { SimpleBarChart, SimpleLineChart } from '@/components/SimpleChart';
+import { toast } from '@/hooks/use-toast';
 
 interface Profile {
   id: string;
@@ -40,6 +41,7 @@ export function EnhancedAttendanceTracker() {
   const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<'overview' | 'details' | 'charts'>('overview');
+  const [isClosingStaleSessions, setIsClosingStaleSessions] = useState(false);
 
   const isAdmin = profile?.role === 'admin';
 
@@ -214,6 +216,35 @@ export function EnhancedAttendanceTracker() {
     URL.revokeObjectURL(url);
   };
 
+  const closeAllStaleSessions = async () => {
+    setIsClosingStaleSessions(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('cleanup-stale-sessions');
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Stale Sessions Closed",
+        description: `Successfully closed ${data.closedCount} stale session(s)`,
+      });
+      
+      // Refresh attendance data
+      const endDate = new Date();
+      const startDate = new Date(endDate.getTime() - (viewMode === 'week' ? 7 : 30) * 24 * 60 * 60 * 1000);
+      const userId = isAdmin && selectedUser !== 'all' ? selectedUser : undefined;
+      const newRecords = await getAttendanceByDateRange(userId, startDate, endDate);
+      setAttendanceRecords(newRecords);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to close stale sessions",
+        variant: "destructive",
+      });
+    } finally {
+      setIsClosingStaleSessions(false);
+    }
+  };
+
   const exportDetailedReport = () => {
     const report = `
 ATTENDANCE DETAILED REPORT
@@ -234,10 +265,11 @@ ${filteredRecords.map(r => `
 Date: ${format(new Date(r.session_date), 'EEEE, MMMM dd, yyyy')}
 Employee: ${r.full_name} (${r.email})
 In Time: ${r.first_login ? format(new Date(r.first_login), 'HH:mm:ss') : 'N/A'}
-Out Time: ${r.last_logout ? format(new Date(r.last_logout), 'HH:mm:ss') : 'N/A'}
-Total Hours: ${formatDuration(r.total_minutes)}
+Out Time: ${r.last_logout ? format(new Date(r.last_logout), 'HH:mm:ss') : (r.is_active ? 'Currently Active' : 'N/A')}
+Total Hours: ${formatDuration(r.total_minutes)}${r.is_active ? ' (ongoing)' : ''}
 Sessions: ${r.session_count}
 Status: ${getAttendanceStatusText(r.attendance_status)}
+${r.closure_note ? `Note: ${r.closure_note}` : ''}
 ---`).join('\n')}
 
 ${isAdmin && selectedUser === 'all' && stats.userStats.length > 0 ? `
@@ -283,6 +315,17 @@ ${u.name}:
             <FileText className="h-4 w-4 mr-2" />
             Detailed Report
           </Button>
+          {isAdmin && (
+            <Button 
+              onClick={closeAllStaleSessions} 
+              variant="destructive"
+              size="sm"
+              disabled={isClosingStaleSessions}
+            >
+              <X className="h-4 w-4 mr-2" />
+              {isClosingStaleSessions ? 'Closing...' : 'Close Stale Sessions'}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -521,49 +564,73 @@ ${u.name}:
                   {filteredRecords.map((record) => (
                     <div
                       key={`${record.user_id}-${record.session_date}`}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                      className="flex flex-col p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                     >
-                      <div className="flex items-center gap-4 flex-1">
-                        <div className={`w-3 h-3 rounded-full flex-shrink-0 ${getAttendanceStatusColor(record.attendance_status)}`} />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <p className="font-semibold text-base">
-                              {format(new Date(record.session_date), 'EEEE, MMM dd, yyyy')}
-                            </p>
-                            <Badge 
-                              variant="outline" 
-                              className={`${getAttendanceStatusColor(record.attendance_status)} text-white border-0`}
-                            >
-                              {getAttendanceStatusText(record.attendance_status)}
-                            </Badge>
-                          </div>
-                          {isAdmin && (
-                            <p className="text-sm text-muted-foreground mb-1">{record.full_name}</p>
-                          )}
-                          <div className="flex items-center gap-4 text-sm">
-                            <div className="flex items-center gap-1">
-                              <LogIn className="h-3 w-3 text-green-600" />
-                              <span className="font-medium">In Time:</span>
-                              <span className="text-muted-foreground">
-                                {record.first_login ? format(new Date(record.first_login), 'HH:mm:ss') : 'N/A'}
-                              </span>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-3 h-3 rounded-full flex-shrink-0 ${getAttendanceStatusColor(record.attendance_status)}`} />
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold text-base">
+                                {format(new Date(record.session_date), 'EEEE, MMM dd, yyyy')}
+                              </p>
+                              {record.is_active && (
+                                <Badge className="bg-blue-500 hover:bg-blue-600">
+                                  <Activity className="h-3 w-3 mr-1" />
+                                  Active
+                                </Badge>
+                              )}
+                              {record.closure_type === 'auto' && (
+                                <Badge variant="outline" className="bg-yellow-500/10 text-yellow-700 border-yellow-500/20">
+                                  Auto-closed
+                                </Badge>
+                              )}
+                              <Badge 
+                                variant="outline" 
+                                className={`${getAttendanceStatusColor(record.attendance_status)} text-white border-0`}
+                              >
+                                {getAttendanceStatusText(record.attendance_status)}
+                              </Badge>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <LogOut className="h-3 w-3 text-blue-600" />
-                              <span className="font-medium">Out Time:</span>
-                              <span className="text-muted-foreground">
-                                {record.last_logout ? format(new Date(record.last_logout), 'HH:mm:ss') : 'N/A'}
-                              </span>
-                            </div>
+                            {isAdmin && (
+                              <p className="text-sm text-muted-foreground mt-1">{record.full_name}</p>
+                            )}
                           </div>
                         </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="font-bold text-lg text-primary">
+                            {formatDuration(record.total_minutes)}
+                            {record.is_active && <span className="text-blue-600 text-sm ml-1">(ongoing)</span>}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {record.session_count} session{record.session_count > 1 ? 's' : ''}
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-right flex-shrink-0 ml-4">
-                        <p className="font-bold text-lg text-primary">{formatDuration(record.total_minutes)}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {record.session_count} session{record.session_count > 1 ? 's' : ''}
-                        </p>
+                      <div className="flex items-center gap-6 text-sm pl-6">
+                        <div className="flex items-center gap-1">
+                          <LogIn className="h-3 w-3 text-green-600" />
+                          <span className="font-medium">In Time:</span>
+                          <span className="text-muted-foreground">
+                            {record.first_login ? format(new Date(record.first_login), 'HH:mm:ss') : 'N/A'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <LogOut className="h-3 w-3 text-blue-600" />
+                          <span className="font-medium">Out Time:</span>
+                          <span className="text-muted-foreground">
+                            {record.last_logout ? format(new Date(record.last_logout), 'HH:mm:ss') : (
+                              <span className="text-blue-600">Currently Active</span>
+                            )}
+                          </span>
+                        </div>
                       </div>
+                      {record.closure_note && (
+                        <div className="mt-3 ml-6 p-2 bg-yellow-500/10 border border-yellow-500/20 rounded text-xs text-yellow-700">
+                          <AlertCircle className="h-3 w-3 inline mr-1" />
+                          {record.closure_note}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

@@ -1449,8 +1449,11 @@ export type Database = {
       }
       session_logs: {
         Row: {
+          closure_note: string | null
+          closure_type: string | null
           created_at: string
           id: string
+          last_heartbeat: string | null
           login_time: string
           logout_time: string | null
           session_duration_minutes: number | null
@@ -1458,8 +1461,11 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          closure_note?: string | null
+          closure_type?: string | null
           created_at?: string
           id?: string
+          last_heartbeat?: string | null
           login_time?: string
           logout_time?: string | null
           session_duration_minutes?: number | null
@@ -1467,8 +1473,11 @@ export type Database = {
           user_id: string
         }
         Update: {
+          closure_note?: string | null
+          closure_type?: string | null
           created_at?: string
           id?: string
+          last_heartbeat?: string | null
           login_time?: string
           logout_time?: string | null
           session_duration_minutes?: number | null
