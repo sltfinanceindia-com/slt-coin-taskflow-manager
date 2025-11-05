@@ -28,83 +28,13 @@ export function NotificationCenter() {
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = useIsMobile();
 
-  // Simulate real-time notifications
+  // Initialize notifications count
   useEffect(() => {
     if (!profile) return;
-
-    // Initial notifications
-    const initialNotifications: Notification[] = [
-      {
-        id: '1',
-        type: 'login',
-        title: 'Welcome Back!',
-        message: 'You have successfully logged in.',
-        timestamp: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
-        read: false,
-        userId: profile.id,
-      },
-      {
-        id: '2',
-        type: 'task_assigned',
-        title: 'New Task Assigned',
-        message: 'You have been assigned a new task: "Complete Project Documentation"',
-        timestamp: new Date(Date.now() - 15 * 60 * 1000), // 15 minutes ago
-        read: false,
-        userId: profile.id,
-      },
-      {
-        id: '3',
-        type: 'coins',
-        title: 'SLT Coins Earned!',
-        message: 'You earned 50 SLT coins for completing a task.',
-        timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
-        read: true,
-        userId: profile.id,
-      },
-    ];
-
-    setNotifications(initialNotifications);
-    setUnreadCount(initialNotifications.filter(n => !n.read).length);
-
-    // Simulate periodic notifications (less frequent)
-    const interval = setInterval(() => {
-      if (Math.random() > 0.7) { // 30% chance every 2 minutes
-        const notificationTypes = [
-          'task_updated', 'comment', 'coins', 'time_log', 'task_progress'
-        ];
-        
-        const messages = {
-          task_updated: 'A task status has been updated.',
-          comment: 'Someone commented on your task.',
-          coins: 'You earned SLT coins!',
-          time_log: 'Time log has been submitted.',
-          task_progress: 'Task progress updated.',
-        };
-
-        const randomType = notificationTypes[Math.floor(Math.random() * notificationTypes.length)] as keyof typeof messages;
-        
-        const newNotification: Notification = {
-          id: Date.now().toString(),
-          type: randomType,
-          title: randomType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
-          message: messages[randomType],
-          timestamp: new Date(),
-          read: false,
-          userId: profile.id,
-        };
-
-        setNotifications(prev => [newNotification, ...prev].slice(0, 50));
-        setUnreadCount(prev => prev + 1);
-
-        // Show toast for new notification
-        toast({
-          title: newNotification.title,
-          description: newNotification.message,
-        });
-      }
-    }, 120000); // Every 2 minutes
-
-    return () => clearInterval(interval);
+    
+    // Start with empty notifications - they will be populated by real-time events
+    setNotifications([]);
+    setUnreadCount(0);
   }, [profile]);
 
   // Listen for real-time updates from multiple tables

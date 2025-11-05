@@ -139,35 +139,23 @@ export function useCommunication() {
     }
   }, [profile, toast]);
 
-  // Fetch team members - now fetches directly from profiles with roles from user_roles
+  // Fetch team members - fetch from profiles table (which has role column)
   const fetchTeamMembers = useCallback(async () => {
     if (!profile) return;
     
     try {
       console.log('🔍 Fetching team members...');
       
-      // Fetch only active profiles
+      // Fetch only active profiles with their role from profiles table
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, full_name, email, avatar_url, department, is_active')
+        .select('id, full_name, email, avatar_url, department, role, is_active')
         .eq('is_active', true)
         .order('full_name');
 
       if (profilesError) {
         console.error('Error fetching profiles:', profilesError);
         throw profilesError;
-      }
-
-      // Fetch roles from user_roles table using type assertion
-      const rolesResult = await (supabase as any)
-        .from('user_roles')
-        .select('user_id, role');
-
-      const roles = rolesResult?.data;
-      const rolesError = rolesResult?.error;
-
-      if (rolesError) {
-        console.error('Error fetching roles:', rolesError);
       }
 
       // Fetch presence data
@@ -180,17 +168,16 @@ export function useCommunication() {
       }
 
       // Combine all data
-      const teamMembersData: TeamMember[] = (profiles || []).map(profile => {
-        const roleData = roles?.find((r: any) => r.user_id === profile.id);
-        const presence = presenceData?.find(p => p.user_id === profile.id);
+      const teamMembersData: TeamMember[] = (profiles || []).map(profileData => {
+        const presence = presenceData?.find(p => p.user_id === profileData.id);
         
         return {
-          id: profile.id,
-          full_name: profile.full_name,
-          email: profile.email,
-          role: roleData?.role || 'intern',
-          avatar_url: profile.avatar_url,
-          department: profile.department,
+          id: profileData.id,
+          full_name: profileData.full_name,
+          email: profileData.email,
+          role: profileData.role || 'intern',
+          avatar_url: profileData.avatar_url,
+          department: profileData.department,
           is_online: presence?.is_online || false,
           activity_status: (presence?.activity_status as 'online' | 'away' | 'busy' | 'offline') || 'offline',
           status_message: presence?.status_message || undefined,
@@ -198,7 +185,7 @@ export function useCommunication() {
         };
       });
 
-      console.log(`✅ Fetched ${teamMembersData.length} team members`);
+      console.log(`✅ Fetched ${teamMembersData.length} team members (including admins)`);
       setTeamMembers(teamMembersData);
     } catch (error) {
       console.error('Error fetching team members:', error);
@@ -441,14 +428,15 @@ export function useCommunication() {
       })
       .subscribe();
 
-    // Subscribe to presence changes
+  // Subscribe to presence changes to update team member statuses in real-time
     const presenceChannel = supabase
-      .channel('user_presence')
+      .channel('user_presence_updates')
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
         table: 'user_presence'
-      }, () => {
+      }, (payload) => {
+        console.log('🔄 Presence change detected:', payload);
         fetchTeamMembers();
       })
       .subscribe();
