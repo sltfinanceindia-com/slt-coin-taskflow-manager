@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -46,6 +46,13 @@ export default function EnhancedChatList({
   const { profile } = useAuth();
   const { presenceList, getStatusText, getStatusBadgeColor } = usePresence();
   const [pinnedChats, setPinnedChats] = useState<Set<string>>(new Set());
+
+  // Debug log to see team members
+  useEffect(() => {
+    console.log('📋 EnhancedChatList - Team Members:', teamMembers.length, teamMembers);
+    console.log('📋 EnhancedChatList - Channels:', channels.length);
+    console.log('📋 EnhancedChatList - Current Profile:', profile?.id);
+  }, [teamMembers, channels, profile]);
 
   const getChannelIcon = (channel: Channel) => {
     if (channel.is_direct_message) {
@@ -230,6 +237,17 @@ export default function EnhancedChatList({
     );
   };
 
+  // Filter team members based on search and exclude current user
+  const filteredTeamMembers = useMemo(() => {
+    return teamMembers
+      .filter(member => member.id !== profile?.id) // Exclude current user
+      .filter(member => 
+        member.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        member.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        member.role.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+  }, [teamMembers, searchQuery, profile]);
+
   return (
     <div className="h-full bg-background flex flex-col">
       {/* Search Header */}
@@ -262,26 +280,89 @@ export default function EnhancedChatList({
           )}
 
           {/* Recent Section */}
-          <div className="space-y-1">
-            <div className="px-2 py-1">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Recent ({recentChannels.length})
-              </span>
+          {recentChannels.length > 0 && (
+            <div className="space-y-1">
+              <div className="px-2 py-1">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Recent ({recentChannels.length})
+                </span>
+              </div>
+              {recentChannels.map(renderChannelRow)}
+              <Separator className="my-2" />
             </div>
-            {recentChannels.map(renderChannelRow)}
-          </div>
+          )}
+
+          {/* Team Members Section */}
+          {filteredTeamMembers.length > 0 && (
+            <div className="space-y-1">
+              <div className="px-2 py-1">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Team Members ({filteredTeamMembers.length})
+                </span>
+              </div>
+              {filteredTeamMembers.map(member => {
+                const presence = presenceList.find(p => p.user_id === member.id);
+                const statusColor = getStatusBadgeColor(presence);
+                
+                return (
+                  <div key={member.id} className="group">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start h-auto py-3 px-3 group-hover:bg-muted/50 transition-colors"
+                      onClick={() => onMemberSelect(member)}
+                    >
+                      <div className="flex items-center gap-3 w-full">
+                        {/* Avatar with status */}
+                        <div className="relative flex-shrink-0">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={member.avatar_url} />
+                            <AvatarFallback className="text-sm">
+                              {getInitials(member.full_name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className={cn(
+                            "w-3 h-3 rounded-full border-2 border-background absolute -bottom-0.5 -right-0.5",
+                            statusColor
+                          )} />
+                        </div>
+
+                        {/* Member Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-medium text-sm truncate">
+                              {member.full_name}
+                            </h4>
+                            <Badge 
+                              variant={member.role === 'admin' ? 'default' : 'secondary'} 
+                              className="text-xs h-5"
+                            >
+                              {member.role}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {getStatusText(presence)}
+                          </p>
+                        </div>
+
+                        {/* Message Icon */}
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                          <MessageCircle className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      </div>
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           {/* Empty State */}
-          {processedChannels.length === 0 && (
+          {processedChannels.length === 0 && filteredTeamMembers.length === 0 && (
             <div className="text-center py-12 px-4">
               <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <p className="text-muted-foreground">
-                {searchQuery ? 'No conversations found' : 'No conversations yet'}
+                {searchQuery ? 'No team members found' : 'No team members available'}
               </p>
-              <Button variant="outline" size="sm" className="mt-2">
-                <Plus className="h-4 w-4 mr-2" />
-                Start a conversation
-              </Button>
             </div>
           )}
         </div>
