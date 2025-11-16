@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   Info,
   ArrowLeft,
@@ -266,7 +267,31 @@ export default function EnhancedMessageArea({
                   <div key={attachment.id} className="flex items-center gap-2 p-2 bg-background/10 rounded border">
                     <FileIcon className="h-4 w-4" />
                     <span className="text-xs flex-1 truncate">{attachment.file_name}</span>
-                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      className="h-6 w-6 p-0"
+                      onClick={async () => {
+                        try {
+                          const { data, error } = await supabase.storage
+                            .from('attachments')
+                            .download(attachment.storage_path);
+                          
+                          if (error) throw error;
+                          
+                          const url = URL.createObjectURL(data);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = attachment.file_name;
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          URL.revokeObjectURL(url);
+                        } catch (error) {
+                          console.error('Download error:', error);
+                        }
+                      }}
+                    >
                       <Download className="h-3 w-3" />
                     </Button>
                   </div>

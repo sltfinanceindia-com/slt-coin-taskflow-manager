@@ -201,24 +201,16 @@ export function useCommunication() {
       const { data: messagesData, error } = await supabase
         .from('messages')
         .select(`
-          id,
-          content,
-          sender_id,
-          sender_name,
-          sender_role,
-          channel_id,
-          receiver_id,
-          message_type,
-          attachments,
-          reactions,
-          mentions,
-          reply_to,
-          thread_count,
-          is_read,
-          is_edited,
-          is_pinned,
-          created_at,
-          edited_at
+          *,
+          file_attachments (
+            id,
+            file_name,
+            file_size,
+            file_type,
+            storage_path,
+            uploaded_by,
+            created_at
+          )
         `)
         .eq('channel_id', channelId)
         .order('created_at', { ascending: true })
