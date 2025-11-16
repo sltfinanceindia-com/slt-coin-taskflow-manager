@@ -43,11 +43,38 @@ export function useSessionLogs() {
     return data?.[0] || null;
   }, [profile?.id]);
   
-  // Auto-start session on app load - disabled to prevent RLS errors
+  // Heartbeat system to keep sessions alive
   useEffect(() => {
-    // Commenting out auto session creation to prevent RLS errors
-    // This functionality should be handled by manual session management
-  }, [profile?.id]);
+    if (!profile?.id) return;
+
+    let heartbeatInterval: NodeJS.Timeout;
+
+    const updateHeartbeat = async () => {
+      const currentSession = await getCurrentSession();
+      if (!currentSession) return;
+
+      try {
+        await supabase
+          .from('session_logs')
+          .update({ last_heartbeat: new Date().toISOString() })
+          .eq('id', currentSession.id);
+        
+        console.log('💓 Heartbeat updated');
+      } catch (error) {
+        console.error('Failed to update heartbeat:', error);
+      }
+    };
+
+    // Update heartbeat every 5 minutes
+    heartbeatInterval = setInterval(updateHeartbeat, 5 * 60 * 1000);
+
+    // Initial heartbeat
+    updateHeartbeat();
+
+    return () => {
+      if (heartbeatInterval) clearInterval(heartbeatInterval);
+    };
+  }, [profile?.id, getCurrentSession]);
 
   const sessionLogsQuery = useQuery({
     queryKey: ['session-logs'],

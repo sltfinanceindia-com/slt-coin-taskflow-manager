@@ -445,24 +445,26 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                   <div className="w-full h-full border-l-4 border-t-4 border-green-500 rounded-tl-3xl bg-gradient-to-tl from-green-50 to-green-100"></div>
                 </div>
 
-                {/* Header Section with Green Theme */}
-                <div className="relative z-20 px-16 py-8 rounded-lg border-2 border-green-600">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center">
+                {/* Header Section with Green Theme - FIXED ALIGNMENT */}
+                <div className="relative z-20 px-16 py-8">
+                  <div className="grid grid-cols-3 items-start gap-4 mb-6">
+                    {/* Left: Logo */}
+                    <div className="flex items-center justify-start">
                       <img 
                         src="/lovable-uploads/eff44302-96f7-4db7-8e46-3633f8bb8a1e.png" 
                         alt="SLT Finance India Logo" 
-                        className="h-16 w-auto mr-6"
+                        className="h-16 w-auto"
                       />
                     </div>
                     
-                    {/* Centered Company Name and Tagline */}
-                    <div className="absolute left-1/2 transform -translate-x-1/2 text-center">
-                      <h1 className="text-2xl font-bold text-green-700 tracking-wider">SLT FINANCE INDIA</h1>
+                    {/* Center: Company Name - FIXED WITHOUT TRANSFORM */}
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <h1 className="text-2xl font-bold text-green-700 tracking-wider whitespace-nowrap">SLT FINANCE INDIA</h1>
                       <p className="text-sm text-gray-600 tracking-wide mt-1">Your Wealth Is Our Future</p>
                     </div>
                     
-                    <div className="text-right">
+                    {/* Right: Certificate Number */}
+                    <div className="flex items-center justify-end">
                       <div className="bg-green-50 px-4 py-2 rounded-lg border-2 border-green-300">
                         <p className="text-xs text-green-700 font-semibold">Certificate No.</p>
                         <p className="text-sm font-bold text-gray-800">SLT-{new Date().getFullYear()}-{String(Math.floor(Math.random() * 1000)).padStart(3, '0')}</p>
