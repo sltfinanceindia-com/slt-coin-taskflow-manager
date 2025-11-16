@@ -467,15 +467,19 @@ export function useCommunication() {
 
   // Initial data fetch
   useEffect(() => {
-    if (profile) {
+    if (profile?.id) {
+      console.log('🔄 Fetching communication data for profile:', profile.id);
+      setIsLoading(true);
       Promise.all([
         fetchChannels(),
         fetchTeamMembers()
       ]).finally(() => {
+        console.log('✅ Communication data loaded');
         setIsLoading(false);
       });
     }
-  }, [profile, fetchChannels, fetchTeamMembers]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.id]);
 
   return {
     channels,
