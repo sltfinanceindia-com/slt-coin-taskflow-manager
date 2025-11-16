@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { 
   Clock, LogIn, LogOut, TrendingUp, Calendar as CalendarIcon, 
   Download, Search, Users, CheckCircle, FileText, BarChart3,
-  PieChart, Activity, X, AlertCircle
+  PieChart, Activity, X, AlertCircle, RefreshCw
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useAttendance, AttendanceRecord } from '@/hooks/useAttendance';

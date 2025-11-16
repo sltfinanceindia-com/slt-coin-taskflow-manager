@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -9,7 +9,14 @@ import {
   Info,
   ArrowLeft,
   Download,
-  File as FileIcon
+  File as FileIcon,
+  Phone,
+  Video,
+  ChevronLeft,
+  Smile,
+  Reply,
+  Forward,
+  Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import UserProfileModal from './UserProfileModal';
@@ -18,6 +25,8 @@ import TypingIndicator from './TypingIndicator';
 import MessageActions from './MessageActions';
 import EnhancedMessageInput from './EnhancedMessageInput';
 import ForwardMessageDialog from './ForwardMessageDialog';
+import AttachmentPreview from './AttachmentPreview';
+import MessageReplyPreview from './MessageReplyPreview';
 import { usePresence } from '@/hooks/usePresence';
 import { useMessageStates } from '@/hooks/useMessageStates';
 import { useAuth } from '@/hooks/useAuth';
@@ -57,14 +66,23 @@ export default function EnhancedMessageArea({
   const [showForwardDialog, setShowForwardDialog] = useState(false);
   const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
   const [forwardMessage, setForwardMessage] = useState<Message | null>(null);
-  const [messageReactions, setMessageReactions] = useState<{[key: string]: string[]}>({});
+  const [messageReactions, setMessageReactions] = useState<{[key: string]: any[]}>({});
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   // Hooks
-  const { getUserPresence, getStatusText, getStatusIcon } = usePresence();
+  const { presenceList, getStatusText, getStatusIcon } = usePresence();
   const { markAsRead } = useMessageStates();
+  
+  // Track online users
+  const onlineUsers = useMemo(() => {
+    return new Set(
+      presenceList
+        .filter(p => p.status === 'online' || p.status === 'active')
+        .map(p => p.user_id)
+    );
+  }, [presenceList]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -145,9 +163,9 @@ export default function EnhancedMessageArea({
   /**
    * Handle message delete
    */
-  const handleDelete = async (messageId: string, forEveryone: boolean) => {
+  const handleDelete = async (messageId: string) => {
     // TODO: Implement delete logic
-    toast.success(forEveryone ? 'Message deleted for everyone' : 'Message deleted for you');
+    toast.success('Message deleted');
   };
 
   /**
@@ -263,7 +281,7 @@ export default function EnhancedMessageArea({
               isOwn={isOwn}
               onReply={() => handleReply(message)}
               onForward={() => handleForward(message)}
-              onDelete={(forEveryone) => handleDelete(message.id, forEveryone)}
+              onDelete={() => handleDelete(message.id)}
               onReact={(emoji) => handleReaction(message.id, emoji)}
               className="mt-2"
             />
@@ -307,70 +325,49 @@ export default function EnhancedMessageArea({
 
   return (
     <div className="h-full flex flex-col bg-background">
-      {/* Channel Header */}
-      <div className="p-4 border-b border-border bg-card/50 backdrop-blur-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            {/* Mobile Back Button */}
-            {isMobile && onBack && (
-              <Button variant="ghost" size="sm" onClick={onBack} className="flex-shrink-0">
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            )}
-            
-            {/* Channel Avatar/Info */}
-            {channel.is_direct_message && channelUser ? (
-              <div 
-                className="flex items-center gap-3 cursor-pointer hover:bg-muted/50 rounded-lg p-2 -m-2 transition-colors flex-1 min-w-0"
-                onClick={() => setShowProfileModal(true)}
-              >
-                <div className="relative flex-shrink-0">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={channelUser.avatar_url} />
-                    <AvatarFallback>
-                      {getInitials(channelUser.full_name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="absolute -bottom-0.5 -right-0.5 text-sm">
-                    {getStatusIcon(getUserPresence(channelUser.id))}
-                  </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h2 className="font-semibold truncate">{channelUser.full_name}</h2>
-                  <p className="text-sm text-muted-foreground truncate">
-                    {getStatusText(getUserPresence(channelUser.id))}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <span className="text-primary font-semibold">
-                    {channel.name.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h2 className="font-semibold truncate">{channel.name}</h2>
-                  <p className="text-sm text-muted-foreground truncate">
-                    {channel.member_count} members
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onShowDetails}
-              className="hover-scale"
-              title="Show details"
-            >
-              <Info className="h-4 w-4" />
+      {/* Header */}
+      <div className="border-b border-border px-6 py-4 flex items-center justify-between sticky top-0 bg-card z-10 shadow-sm">
+        <div className="flex items-center gap-4">
+          {isMobile && onBack && (
+            <Button variant="ghost" size="icon" onClick={onBack}>
+              <ChevronLeft className="h-5 w-5" />
             </Button>
+          )}
+          
+          <div className="flex items-center gap-3">
+            <Avatar className="h-10 w-10 border-2 border-border">
+              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                {getInitials(
+                  channel.is_direct_message
+                    ? (getChannelUser()?.full_name || 'Unknown')
+                    : channel.name
+                )}
+              </AvatarFallback>
+            </Avatar>
+            
+            <div>
+              <h3 className="font-semibold text-foreground">
+                {channel.is_direct_message ? getChannelUser()?.full_name : channel.name}
+              </h3>
+              {channel.is_direct_message && getChannelUser() && (
+                <p className="text-xs text-muted-foreground">
+                  {onlineUsers.has(getChannelUser()!.id) ? '🟢 Online' : '⚫ Offline'}
+                </p>
+              )}
+            </div>
           </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" className="h-9 w-9">
+            <Phone className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-9 w-9">
+            <Video className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setShowProfileModal(true)}>
+            <Info className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 

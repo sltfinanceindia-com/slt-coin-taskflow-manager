@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
 
 export interface AttendanceRecord {
   user_id: string;
@@ -51,27 +52,29 @@ export function useAttendance() {
 
       // Group by date and calculate attendance
       const attendanceMap = new Map<string, any>();
+      const now = new Date();
+      const today = format(now, 'yyyy-MM-dd');
       
       sessions?.forEach((session: any) => {
         const date = new Date(session.login_time).toISOString().split('T')[0];
         const key = `${session.user_id}-${date}`;
         
-        // Calculate duration for sessions without logout_time
+        // Calculate duration intelligently
         let sessionDuration = session.session_duration_minutes || 0;
         let isActive = false;
         
         if (!session.logout_time) {
           const loginTime = new Date(session.login_time);
-          const now = new Date();
-          const isToday = loginTime.toDateString() === now.toDateString();
+          const isToday = date === today;
           
           if (isToday) {
-            // Calculate current duration for active sessions
+            // Active session today - calculate real-time duration
             sessionDuration = Math.floor((now.getTime() - loginTime.getTime()) / (1000 * 60));
             isActive = true;
           } else {
-            // Stale session - don't count duration until background job closes it
+            // Stale old session - skip duration calculation
             sessionDuration = 0;
+            console.warn(`⚠️ Stale session found for ${date}: ${session.id}`);
           }
         }
         
