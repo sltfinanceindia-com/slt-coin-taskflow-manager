@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Coins, CheckCircle, XCircle, Clock, TrendingUp } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from '@/hooks/use-toast';
@@ -139,7 +140,23 @@ export function CoinManagement() {
 
         <TabsContent value="pending">
           <div className="space-y-4">
-            {pendingTasks.length > 0 ? (
+            {isLoading ? (
+              // Loading skeleton
+              <>
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} className="border-orange-200 bg-orange-50/50">
+                    <CardHeader>
+                      <Skeleton className="h-6 w-2/3 mb-2" />
+                      <Skeleton className="h-4 w-1/3" />
+                    </CardHeader>
+                    <CardContent>
+                      <Skeleton className="h-20 w-full mb-4" />
+                      <Skeleton className="h-10 w-full" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </>
+            ) : pendingTasks.length > 0 ? (
               pendingTasks.map((task) => (
                 <Card key={task.id} className="border-orange-200 bg-orange-50/50">
                   <CardHeader>

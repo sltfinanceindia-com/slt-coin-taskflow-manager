@@ -2,10 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { TaskCard } from '@/components/TaskCard';
 import { Task } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
-import { BarChart3, TrendingUp, Zap, Filter, LayoutGrid, Table } from 'lucide-react';
+import { BarChart3, TrendingUp, Zap, Filter, LayoutGrid, Table, Plus, Inbox } from 'lucide-react';
 import { KanbanAnalytics } from '@/components/KanbanAnalytics';
 import { KanbanFilters } from '@/components/KanbanFilters';
 import { KanbanTableView } from '@/components/KanbanTableView';
@@ -383,6 +384,18 @@ export function KanbanBoard({
                               )}
                             </Draggable>
                           ))}
+                        
+                        {/* Empty state for columns with no tasks */}
+                        {filteredTasks.filter(task => task.status === column.status).length === 0 && (
+                          <div className="py-8">
+                            <EmptyState
+                              icon={Inbox}
+                              title="No tasks"
+                              description={`No ${column.title.toLowerCase()} tasks yet`}
+                              className="py-4"
+                            />
+                          </div>
+                        )}
                       </div>
                       {provided.placeholder}
                     </div>
