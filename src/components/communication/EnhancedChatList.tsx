@@ -95,7 +95,11 @@ export default function EnhancedChatList({
   const getChannelDisplayName = (channel: Channel, currentUserId: string) => {
     if (channel.is_direct_message) {
       const user = getDirectMessageUser(channel, currentUserId);
-      return user ? user.full_name : 'Direct Message';
+      // Fallback to channel name if user not found in team members
+      if (!user && channel.name && channel.name !== 'Direct Message') {
+        return channel.name;
+      }
+      return user ? user.full_name : 'Unknown User';
     }
     return channel.name;
   };

@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, BookOpen, FileText, BarChart3, Users } from 'lucide-react';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Plus, BookOpen, FileText, BarChart3, Users, Sparkles } from 'lucide-react';
 import { AssessmentManagement } from '@/components/assessment/AssessmentManagement';
 import { TrainingAnalytics } from '@/components/training/TrainingAnalytics';
 import { UserManagement } from '@/components/training/UserManagement';
@@ -59,10 +60,15 @@ export function TrainingManagement() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-12 text-muted-foreground">
-                <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Training section management will be implemented here.</p>
-              </div>
+              <EmptyState
+                icon={Sparkles}
+                title="Coming Soon"
+                description="Training section management is under development. You'll be able to create and manage training sections, upload videos, and assign courses to interns."
+                actionLabel="Notify Me"
+                onAction={() => {
+                  // Placeholder for notification feature
+                }}
+              />
             </CardContent>
           </Card>
         </TabsContent>
