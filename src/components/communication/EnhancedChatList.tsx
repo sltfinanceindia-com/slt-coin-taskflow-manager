@@ -89,13 +89,28 @@ export default function EnhancedChatList({
     if (!channel.is_direct_message || !channel.participant_ids) return null;
     
     const otherUserId = channel.participant_ids.find(id => id !== currentUserId);
-    return teamMembers.find(member => member.id === otherUserId) || null;
+    if (!otherUserId) return null;
+    
+    // Find the user in teamMembers
+    const user = teamMembers.find(member => member.id === otherUserId);
+    
+    // Debug log
+    if (!user) {
+      console.log('⚠️ User not found in teamMembers:', otherUserId);
+      console.log('Available teamMembers:', teamMembers.map(m => m.id));
+    }
+    
+    return user || null;
   };
 
   const getChannelDisplayName = (channel: Channel, currentUserId: string) => {
     if (channel.is_direct_message) {
       const user = getDirectMessageUser(channel, currentUserId);
-      return user ? user.full_name : 'Direct Message';
+      if (user) {
+        return user.full_name;
+      }
+      // Fallback: if user not found, show loading or "User"
+      return teamMembers.length === 0 ? 'Loading...' : 'User';
     }
     return channel.name;
   };
