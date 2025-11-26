@@ -177,13 +177,9 @@ All colors MUST be HSL.
     min-height: 100vh;
   }
 
-  /* Enhanced hover effects for cards */
-  .card-hover {
-    @apply transition-all duration-200 hover:scale-[1.02] hover:shadow-lg cursor-pointer;
-  }
-  
+  /* Enhanced Animation utilities with colorful effects */
   .hover-scale {
-    @apply transition-all duration-300 ease-out cursor-pointer;
+    @apply transition-all duration-300 ease-out hover:scale-105;
     box-shadow: var(--shadow-card);
   }
   
@@ -356,46 +352,5 @@ All colors MUST be HSL.
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-  }
-
-  /* Landing page animations */
-  .animate-gradient {
-    background-size: 200% auto;
-    animation: gradient 3s linear infinite;
-  }
-
-  @keyframes gradient {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-
-  .bg-grid-pattern {
-    background-image: 
-      linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
-      linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px);
-    background-size: 24px 24px;
-  }
-
-  /* Focus visible for accessibility */
-  *:focus-visible {
-    outline: 2px solid hsl(var(--ring));
-    outline-offset: 2px;
-  }
-
-  /* Smooth page transitions */
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .animate-fade-in {
-    animation: fadeIn 0.3s ease-out;
   }
 }

@@ -83,11 +83,11 @@ export function AdminDashboard() {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
-          SLT WorkHub
+        <h1 className="text-3xl font-bold text-foreground mb-2">
+          Admin Dashboard
         </h1>
         <p className="text-muted-foreground">
-          Manage your team, tasks, training, and reward system all in one place.
+          Manage interns, tasks, and system settings.
         </p>
       </div>
 
@@ -104,65 +104,54 @@ export function AdminDashboard() {
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Card 
-              className="card-gradient hover-scale cursor-pointer transition-all"
-              onClick={() => setActiveTab('interns')}
-            >
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Interns</CardTitle>
-                <Users className="h-4 w-4 text-blue-500" />
+                <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-blue-600">{stats.totalInterns}</div>
+                <div className="text-2xl font-bold">{stats.totalInterns}</div>
                 <p className="text-xs text-muted-foreground">
-                  Click to manage team
+                  Active interns in system
                 </p>
               </CardContent>
             </Card>
 
-            <Card 
-              className="card-gradient hover-scale cursor-pointer transition-all"
-              onClick={() => setActiveTab('tasks')}
-            >
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Active Tasks</CardTitle>
-                <CheckSquare className="h-4 w-4 text-yellow-500" />
+                <CheckSquare className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-yellow-600">{stats.activeTasks}</div>
+                <div className="text-2xl font-bold">{stats.activeTasks}</div>
                 <p className="text-xs text-muted-foreground">
-                  Click to view Kanban
+                  Currently assigned
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="card-gradient hover-scale">
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">SLT Coins Awarded</CardTitle>
-                <Trophy className="h-4 w-4 text-coin-gold" />
+                <CardTitle className="text-sm font-medium">Coins Distributed</CardTitle>
+                <Trophy className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-coin-gold coin-glow inline-block px-2 py-1 rounded">
-                  {stats.coinsDistributed}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Total rewards distributed
+                <div className="text-2xl font-bold">{stats.coinsDistributed}</div>
+                <p className="text-xs text-muted-foreground">
+                  Total rewards given
                 </p>
               </CardContent>
             </Card>
 
-            <Card 
-              className="card-gradient hover-scale cursor-pointer transition-all"
-              onClick={() => setActiveTab('training')}
-            >
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Training Modules</CardTitle>
-                <BookOpen className="h-4 w-4 text-purple-500" />
+                <BookOpen className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-purple-600">{stats.trainingModules}</div>
+                <div className="text-2xl font-bold">{stats.trainingModules}</div>
                 <p className="text-xs text-muted-foreground">
-                  Click to manage training
+                  Available modules
                 </p>
               </CardContent>
             </Card>

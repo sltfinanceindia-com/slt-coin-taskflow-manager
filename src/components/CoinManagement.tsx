@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useCoinTransactions } from '@/hooks/useCoinTransactions';
 import { useTasks } from '@/hooks/useTasks';
-import { CoinManagementSkeleton } from '@/components/ui/loading-skeletons';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,8 +19,8 @@ interface VerifyTaskFormData {
 }
 
 export function CoinManagement() {
-  const { transactions, isLoading: transactionsLoading } = useCoinTransactions();
-  const { tasks, isLoading: tasksLoading, verifyTask } = useTasks();
+  const { transactions, isLoading } = useCoinTransactions();
+  const { tasks, verifyTask } = useTasks();
   const [selectedTask, setSelectedTask] = useState<any>(null);
   const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
   const [approveAction, setApproveAction] = useState<boolean>(true);
@@ -68,10 +67,6 @@ export function CoinManagement() {
       minimumFractionDigits: 0,
     }).format(amount);
   };
-
-  if (transactionsLoading || tasksLoading) {
-    return <CoinManagementSkeleton />;
-  }
 
   return (
     <div className="space-y-6">

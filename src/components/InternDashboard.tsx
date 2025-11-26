@@ -15,11 +15,11 @@ export function InternDashboard() {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
-          Welcome to SLT WorkHub, {profile?.full_name || 'Team Member'}!
+        <h1 className="text-3xl font-bold text-foreground mb-2">
+          Welcome back, {profile?.full_name || 'Intern'}!
         </h1>
         <p className="text-muted-foreground">
-          Track your progress, earn SLT coins, and excel in your role.
+          Track your progress and manage your tasks.
         </p>
       </div>
 
@@ -33,38 +33,36 @@ export function InternDashboard() {
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="card-gradient hover-scale">
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">SLT Coins</CardTitle>
-                <Trophy className="h-4 w-4 text-coin-gold" />
+                <CardTitle className="text-sm font-medium">Total Coins</CardTitle>
+                <Trophy className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-coin-gold coin-glow inline-block px-2 py-1 rounded">
-                  {profile?.total_coins || 0}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Total coins earned
+                <div className="text-2xl font-bold">{profile?.total_coins || 0}</div>
+                <p className="text-xs text-muted-foreground">
+                  Earned through completed tasks
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="card-gradient hover-scale" onClick={() => setActiveTab('tasks')}>
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Active Tasks</CardTitle>
-                <Calendar className="h-4 w-4 text-blue-500" />
+                <Calendar className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">-</div>
                 <p className="text-xs text-muted-foreground">
-                  Click to view tasks
+                  Currently assigned
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="card-gradient hover-scale">
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Hours Logged</CardTitle>
-                <Clock className="h-4 w-4 text-green-500" />
+                <Clock className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">-</div>
@@ -74,15 +72,15 @@ export function InternDashboard() {
               </CardContent>
             </Card>
 
-            <Card className="card-gradient hover-scale" onClick={() => setActiveTab('training')}>
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Training Progress</CardTitle>
-                <BookOpen className="h-4 w-4 text-purple-500" />
+                <BookOpen className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">-</div>
                 <p className="text-xs text-muted-foreground">
-                  Click to start learning
+                  Modules completed
                 </p>
               </CardContent>
             </Card>
