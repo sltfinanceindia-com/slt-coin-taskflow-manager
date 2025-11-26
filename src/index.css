@@ -177,9 +177,13 @@ All colors MUST be HSL.
     min-height: 100vh;
   }
 
-  /* Enhanced Animation utilities with colorful effects */
+  /* Enhanced hover effects for cards */
+  .card-hover {
+    @apply transition-all duration-200 hover:scale-[1.02] hover:shadow-lg cursor-pointer;
+  }
+  
   .hover-scale {
-    @apply transition-all duration-300 ease-out hover:scale-105;
+    @apply transition-all duration-300 ease-out cursor-pointer;
     box-shadow: var(--shadow-card);
   }
   
