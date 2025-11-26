@@ -1,6 +1,6 @@
-
 import { InternDashboard } from "@/components/InternDashboard";
 import { AdminDashboard } from "@/components/AdminDashboard";
+import { LandingPage } from "@/components/LandingPage";
 import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
@@ -14,15 +14,9 @@ const Index = () => {
     );
   }
 
+  // Show landing page if not logged in
   if (!profile) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Please log in to access the system</h1>
-          <p className="text-muted-foreground">You need to authenticate to use this application.</p>
-        </div>
-      </div>
-    );
+    return <LandingPage />;
   }
 
   return (
