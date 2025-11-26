@@ -72,18 +72,16 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
               <Coins className="h-2 w-2 text-primary mr-0.5" />
               <span className="font-bold text-primary text-xs">{task.slt_coin_value}</span>
             </div>
-            {isAdmin && (
-              <div className="flex gap-0.5">
-                <TaskDetailDialog task={task} />
-                {onUpdateTask && (
-                  <TaskEditDialog 
-                    task={task} 
-                    onUpdateTask={onUpdateTask} 
-                    isUpdating={isUpdating || false} 
-                  />
-                )}
-              </div>
-            )}
+            <div className="flex gap-0.5">
+              <TaskDetailDialog task={task} />
+              {isAdmin && onUpdateTask && (
+                <TaskEditDialog 
+                  task={task} 
+                  onUpdateTask={onUpdateTask} 
+                  isUpdating={isUpdating || false} 
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>

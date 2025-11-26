@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +6,7 @@ import { Plus, BookOpen, FileText, BarChart3, Users } from 'lucide-react';
 import { AssessmentManagement } from '@/components/assessment/AssessmentManagement';
 import { TrainingAnalytics } from '@/components/training/TrainingAnalytics';
 import { UserManagement } from '@/components/training/UserManagement';
+import { TrainingSectionsCRUD } from '@/components/training/TrainingSectionsCRUD';
 
 export function TrainingManagement() {
   const [activeTab, setActiveTab] = useState('sections');
@@ -43,28 +43,7 @@ export function TrainingManagement() {
         </TabsList>
 
         <TabsContent value="sections" className="space-y-6">
-          <Card className="card-gradient">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Training Sections</CardTitle>
-                  <CardDescription>
-                    Create and manage training sections with videos and assignments.
-                  </CardDescription>
-                </div>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Section
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-12 text-muted-foreground">
-                <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Training section management will be implemented here.</p>
-              </div>
-            </CardContent>
-          </Card>
+          <TrainingSectionsCRUD />
         </TabsContent>
 
         <TabsContent value="assessments" className="space-y-6">

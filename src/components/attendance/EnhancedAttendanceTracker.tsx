@@ -107,16 +107,20 @@ export function EnhancedAttendanceTracker() {
 
   // Calculate comprehensive stats
   const stats = useMemo(() => {
-    const totalHours = filteredRecords.reduce((sum, r) => sum + (r.total_minutes || 0), 0);
+    // Group by unique user+date combination to avoid counting multiple sessions per day
+    const uniqueDays = new Set(filteredRecords.map(r => `${r.user_id}-${r.session_date}`));
+    const totalMinutes = filteredRecords.reduce((sum, r) => sum + (r.total_minutes || 0), 0);
     const onTimeCount = filteredRecords.filter(r => r.attendance_status === 'on-time').length;
     const lateCount = filteredRecords.filter(r => r.attendance_status === 'late').length;
     const veryLateCount = filteredRecords.filter(r => r.attendance_status === 'very-late').length;
-    const totalDays = filteredRecords.length;
+    const uniqueDayCount = uniqueDays.size;
     
-    const avgHoursPerDay = totalDays > 0 ? totalHours / totalDays : 0;
-    const onTimePercentage = totalDays > 0 ? (onTimeCount / totalDays) * 100 : 0;
-    const latePercentage = totalDays > 0 ? (lateCount / totalDays) * 100 : 0;
-    const veryLatePercentage = totalDays > 0 ? (veryLateCount / totalDays) * 100 : 0;
+    const avgHoursPerDay = uniqueDayCount > 0 ? totalMinutes / uniqueDayCount : 0;
+    const totalHours = totalMinutes;
+    const onTimePercentage = uniqueDayCount > 0 ? (onTimeCount / uniqueDayCount) * 100 : 0;
+    const latePercentage = uniqueDayCount > 0 ? (lateCount / uniqueDayCount) * 100 : 0;
+    const veryLatePercentage = uniqueDayCount > 0 ? (veryLateCount / uniqueDayCount) * 100 : 0;
+    const totalDays = uniqueDayCount;
 
     // Group by user for admin view
     const userStats = isAdmin && selectedUser === 'all' ? 
