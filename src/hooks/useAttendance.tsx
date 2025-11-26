@@ -59,11 +59,9 @@ export function useAttendance() {
         const date = new Date(session.login_time).toISOString().split('T')[0];
         const key = `${session.user_id}-${date}`;
         
-        // Calculate duration intelligently with 12-hour cap
+        // Calculate duration intelligently
         let sessionDuration = session.session_duration_minutes || 0;
         let isActive = false;
-        const MAX_SESSION_HOURS = 12;
-        const MAX_SESSION_MINUTES = MAX_SESSION_HOURS * 60;
         
         if (!session.logout_time) {
           const loginTime = new Date(session.login_time);
@@ -72,17 +70,12 @@ export function useAttendance() {
           if (isToday) {
             // Active session today - calculate real-time duration
             sessionDuration = Math.floor((now.getTime() - loginTime.getTime()) / (1000 * 60));
-            // Cap at max session duration
-            sessionDuration = Math.min(sessionDuration, MAX_SESSION_MINUTES);
             isActive = true;
           } else {
             // Stale old session - skip duration calculation
             sessionDuration = 0;
             console.warn(`⚠️ Stale session found for ${date}: ${session.id}`);
           }
-        } else {
-          // Cap recorded session duration at max hours
-          sessionDuration = Math.min(sessionDuration, MAX_SESSION_MINUTES);
         }
         
         if (!attendanceMap.has(key)) {
