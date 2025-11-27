@@ -129,12 +129,13 @@ export default function Dashboard() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">
-            Welcome back, {profile?.full_name}!
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-50 mb-2">
+            <span className="font-normal text-gray-600 dark:text-gray-400">Welcome back, </span>
+            <span className="font-bold">{profile?.full_name}</span>!
           </h2>
-          <p className="text-muted-foreground">
+          <p className="text-base text-gray-600 dark:text-gray-400">
             {profile?.role === 'admin' 
               ? 'Manage tasks, track progress, and assign SLT Coins to your team.'
               : 'View your assigned tasks, log your hours, and earn SLT Coins.'

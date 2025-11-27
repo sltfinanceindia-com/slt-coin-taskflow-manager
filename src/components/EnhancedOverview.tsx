@@ -154,29 +154,29 @@ export function EnhancedOverview() {
       {/* Main Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {mainStats.map((stat, index) => (
-          <Card key={index} className="hover-scale card-gradient">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
+          <Card key={index} className="hover-scale card-gradient min-h-[180px]">
+            <CardContent className="p-6 h-full">
+              <div className="flex items-center justify-between h-full">
+                <div className="space-y-2 flex-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{stat.title}</p>
                   <div className="flex items-center gap-2">
-                    <p className="text-3xl font-bold">{stat.value}</p>
+                    <p className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-50">{stat.value}</p>
                     {stat.pending && stat.pending > 0 && (
                       <Badge variant="outline" className="text-xs animate-pulse">
                         +{stat.pending}
                       </Badge>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    {stat.trending && <TrendingUp className="h-3 w-3 text-success" />}
+                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                    {stat.trending && <TrendingUp className="h-3 w-3 text-emerald-500" />}
                     {stat.change}
                   </p>
                   {stat.progress !== undefined && (
-                    <Progress value={stat.progress} className="h-2" />
+                    <Progress value={stat.progress} className="h-2 max-w-full" />
                   )}
                 </div>
-                <div className={`p-3 rounded-full ${stat.bgColor} hover-glow`}>
-                  <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                <div className="p-3 rounded-full bg-emerald-100 dark:bg-emerald-900 hover-glow flex items-center justify-center flex-shrink-0 ml-3">
+                  <stat.icon className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
               </div>
             </CardContent>
@@ -185,14 +185,14 @@ export function EnhancedOverview() {
       </div>
 
       {/* Quick Action Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {quickActions.map((action, index) => (
-          <Card key={index} className="hover-scale">
-            <CardContent className="p-4">
+          <Card key={index} className="hover-scale min-h-[100px]">
+            <CardContent className="p-4 flex items-center justify-center h-full">
               <div className="flex items-center gap-3">
                 <action.icon className={`h-5 w-5 ${action.color}`} />
                 <div>
-                  <p className="text-sm font-medium">{action.title}</p>
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{action.title}</p>
                   <p className={`text-lg font-bold ${action.color}`}>{action.count}</p>
                 </div>
               </div>
@@ -204,14 +204,14 @@ export function EnhancedOverview() {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Weekly Activity Chart */}
-        <Card className="card-gradient">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <Card className="card-gradient min-h-[400px]">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-50 flex items-center gap-2">
               <Activity className="h-5 w-5" />
               Weekly Activity
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             <SimpleLineChart 
               data={weeklyData}
               dataKey="hours"
@@ -222,14 +222,14 @@ export function EnhancedOverview() {
         </Card>
 
         {/* Task Status Distribution */}
-        <Card className="card-gradient">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <Card className="card-gradient min-h-[400px]">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-50 flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
               Task Distribution
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             <div className="space-y-4">
               {taskStatusData.map((entry, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
@@ -238,9 +238,9 @@ export function EnhancedOverview() {
                       className="w-4 h-4 rounded-full" 
                       style={{ backgroundColor: entry.color }}
                     />
-                    <span className="font-medium">{entry.name}</span>
+                    <span className="font-medium text-gray-700 dark:text-gray-300">{entry.name}</span>
                   </div>
-                  <span className="font-bold text-lg">{entry.value}</span>
+                  <span className="font-bold text-lg text-gray-900 dark:text-gray-50">{entry.value}</span>
                 </div>
               ))}
             </div>
