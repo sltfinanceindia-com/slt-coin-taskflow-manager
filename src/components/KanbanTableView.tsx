@@ -70,83 +70,124 @@ export function KanbanTableView({ tasks, onUpdateStatus, onVerifyTask }: KanbanT
 
   return (
     <>
-      <div className="rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Priority</TableHead>
-              <TableHead>Assigned To</TableHead>
-              <TableHead>Due Date</TableHead>
-              <TableHead>Coins</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {tasks.map((task) => (
-              <TableRow key={task.id}>
-                <TableCell>
-                  <div>
-                    <div className="font-medium">{task.title}</div>
-                    {task.description && (
-                      <div className="text-sm text-muted-foreground line-clamp-1">
-                        {task.description}
-                      </div>
-                    )}
+      <div className="border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
+                <TableHead className="font-medium text-gray-700 dark:text-gray-300 text-sm px-6 py-3">
+                  <div className="flex items-center gap-2 cursor-pointer hover:text-gray-900 dark:hover:text-gray-100">
+                    Title
                   </div>
-                </TableCell>
-                <TableCell>{getStatusBadge(task.status)}</TableCell>
-                <TableCell>{getPriorityBadge(task.priority)}</TableCell>
-                <TableCell>
-                  <div className="text-sm">
-                    {task.assigned_profile?.full_name || 'Unassigned'}
+                </TableHead>
+                <TableHead className="font-medium text-gray-700 dark:text-gray-300 text-sm px-6 py-3">
+                  <div className="flex items-center gap-2 cursor-pointer hover:text-gray-900 dark:hover:text-gray-100">
+                    Status
                   </div>
-                </TableCell>
-                <TableCell>
-                  {task.end_date ? (
-                    <div className="text-sm">
-                      {format(new Date(task.end_date), 'MMM dd, yyyy')}
-                    </div>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">No due date</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="font-mono">
-                    {task.slt_coin_value || 0} 🪙
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        setSelectedTask(task);
-                        setDetailsOpen(true);
-                      }}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      View
-                    </Button>
-                    <TaskEditDialog 
-                      task={task} 
-                      onUpdateTask={handleUpdateTask}
-                      isUpdating={false}
-                    />
+                </TableHead>
+                <TableHead className="font-medium text-gray-700 dark:text-gray-300 text-sm px-6 py-3">
+                  <div className="flex items-center gap-2 cursor-pointer hover:text-gray-900 dark:hover:text-gray-100">
+                    Priority
                   </div>
-                </TableCell>
+                </TableHead>
+                <TableHead className="font-medium text-gray-700 dark:text-gray-300 text-sm px-6 py-3">
+                  <div className="flex items-center gap-2 cursor-pointer hover:text-gray-900 dark:hover:text-gray-100">
+                    Assigned To
+                  </div>
+                </TableHead>
+                <TableHead className="font-medium text-gray-700 dark:text-gray-300 text-sm px-6 py-3">
+                  <div className="flex items-center gap-2 cursor-pointer hover:text-gray-900 dark:hover:text-gray-100">
+                    Due Date
+                  </div>
+                </TableHead>
+                <TableHead className="font-medium text-gray-700 dark:text-gray-300 text-sm px-6 py-3 text-right">
+                  Coins
+                </TableHead>
+                <TableHead className="font-medium text-gray-700 dark:text-gray-300 text-sm px-6 py-3 text-right">
+                  Actions
+                </TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-
-        {tasks.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            No tasks found.
-          </div>
-        )}
+            </TableHeader>
+            <TableBody>
+              {tasks.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-48">
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <AlertCircle className="h-12 w-12 text-gray-400 dark:text-gray-600 mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50 mb-2">No tasks found</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        There are no tasks matching your current filters.
+                      </p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                tasks.map((task, index) => (
+                  <TableRow 
+                    key={task.id}
+                    className={`
+                      border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors
+                      ${index % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-900/50'}
+                    `}
+                  >
+                    <TableCell className="px-6 py-4">
+                      <div className="max-w-md">
+                        <div className="font-semibold text-base text-gray-900 dark:text-gray-50 mb-1 truncate">{task.title}</div>
+                        {task.description && (
+                          <div className="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">
+                            {task.description}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-6 py-4">{getStatusBadge(task.status)}</TableCell>
+                    <TableCell className="px-6 py-4">{getPriorityBadge(task.priority)}</TableCell>
+                    <TableCell className="px-6 py-4">
+                      <div className="text-sm text-gray-700 dark:text-gray-300">
+                        {task.assigned_profile?.full_name || <span className="text-gray-500 dark:text-gray-500 italic">Unassigned</span>}
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-6 py-4">
+                      {task.end_date ? (
+                        <div className="text-sm text-gray-700 dark:text-gray-300">
+                          {format(new Date(task.end_date), 'MMM dd, yyyy')}
+                        </div>
+                      ) : (
+                        <span className="text-sm text-gray-500 dark:text-gray-500 italic">No due date</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="px-6 py-4 text-right">
+                      <Badge variant="outline" className="font-mono font-semibold">
+                        {task.slt_coin_value || 0} 🪙
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 font-medium"
+                          onClick={() => {
+                            setSelectedTask(task);
+                            setDetailsOpen(true);
+                          }}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                        <TaskEditDialog 
+                          task={task} 
+                          onUpdateTask={handleUpdateTask}
+                          isUpdating={false}
+                        />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
       {selectedTask && (

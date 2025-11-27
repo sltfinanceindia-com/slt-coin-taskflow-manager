@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { TaskCard } from '@/components/TaskCard';
 import { Task } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
-import { BarChart3, TrendingUp, Zap, Filter, LayoutGrid, Table } from 'lucide-react';
+import { BarChart3, TrendingUp, Zap, Filter, LayoutGrid, Table, AlertCircle, X } from 'lucide-react';
 import { KanbanAnalytics } from '@/components/KanbanAnalytics';
 import { KanbanFilters } from '@/components/KanbanFilters';
 import { KanbanTableView } from '@/components/KanbanTableView';
@@ -287,19 +287,31 @@ export function KanbanBoard({
 
         {/* Optimization suggestions */}
         {optimizationSuggestions.length > 0 && (
-          <div className="bg-card border rounded-lg p-3 shadow-sm">
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="h-4 w-4 text-primary" />
-              <h3 className="text-sm font-medium text-foreground">Optimization Suggestions</h3>
+          <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3 flex-1">
+                <Zap className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-50 mb-2">Optimization Suggestions</h3>
+                  <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                    {optimizationSuggestions.map((suggestion, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <span className="text-amber-600 dark:text-amber-400 font-bold">•</span>
+                        <span>{suggestion}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setOptimizationSuggestions([])}
+                className="flex-shrink-0 h-8 w-8 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
-            <ul className="space-y-1 text-xs text-muted-foreground">
-              {optimizationSuggestions.map((suggestion, index) => (
-                <li key={index} className="flex items-start gap-2">
-                  <span className="text-primary">•</span>
-                  {suggestion}
-                </li>
-              ))}
-            </ul>
           </div>
         )}
 
@@ -326,16 +338,16 @@ export function KanbanBoard({
           />
         ) : (
         <DragDropContext onDragEnd={onDragEnd}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
             {columns.map((column) => (
-              <div key={column.id} className="flex flex-col min-h-0">
+              <div key={column.id} className="flex flex-col min-h-[600px]">
                 {/* Column Header */}
-                <div className={`p-2 sm:p-3 rounded-t-lg border-b ${getColumnHeaderColor(column.id)} shadow-sm`}>
+                <div className={`px-4 py-3 rounded-t-lg bg-gray-100 dark:bg-gray-800 border-b-2 ${column.id === 'assigned' ? 'border-blue-500' : column.id === 'in_progress' ? 'border-yellow-500' : column.id === 'completed' ? 'border-purple-500' : column.id === 'verified' ? 'border-emerald-500' : 'border-red-500'}`}>
                   <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-xs sm:text-sm uppercase tracking-wide truncate">
+                    <h3 className="font-bold text-sm uppercase tracking-wide text-gray-900 dark:text-gray-50">
                       {column.title}
                     </h3>
-                    <Badge variant="secondary" className="text-xs font-medium ml-2 flex-shrink-0">
+                    <Badge variant="secondary" className="text-xs font-semibold px-2.5 py-0.5 ml-2 flex-shrink-0 bg-gray-200 dark:bg-gray-700">
                       {getTaskCountForColumn(column.status)}
                     </Badge>
                   </div>
@@ -347,43 +359,54 @@ export function KanbanBoard({
                       ref={provided.innerRef}
                       {...provided.droppableProps}
                       className={`
-                        flex-1 min-h-[300px] sm:min-h-[400px] p-2 border-2 border-dashed rounded-b-lg transition-all duration-200
-                        ${getColumnColor(column.id)}
-                        ${snapshot.isDraggingOver ? 'border-primary bg-primary/5 scale-[1.01]' : ''}
+                        flex-1 min-h-0 max-h-[calc(100vh-300px)] overflow-y-auto p-3 border-2 border-dashed rounded-b-lg transition-all duration-200
+                        ${snapshot.isDraggingOver ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20' : 'border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50'}
                       `}
                     >
-                      <div className="space-y-2">
-                        {filteredTasks
-                          .filter(task => task.status === column.status)
-                          .map((task, index) => (
-                            <Draggable
-                              key={task.id}
-                              draggableId={task.id}
-                              index={index}
-                            >
-                              {(provided, snapshot) => (
-                                <div
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  {...provided.dragHandleProps}
-                                  className={`
-                                    transition-all duration-200 cursor-grab active:cursor-grabbing
-                                    ${snapshot.isDragging ? 'rotate-1 scale-105 shadow-lg z-50' : 'hover:shadow-md'}
-                                  `}
-                                >
-                                  <TaskCard
-                                    task={task}
-                                    onUpdateStatus={onUpdateStatus}
-                                    onVerifyTask={onVerifyTask}
-                                    onUpdateTask={onUpdateTask}
-                                    isUpdating={isUpdating}
-                                    onAdminOverride={handleAdminOverride}
-                                  />
-                                </div>
-                              )}
-                            </Draggable>
-                          ))}
-                      </div>
+                      {filteredTasks.filter(task => task.status === column.status).length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-full min-h-[200px] text-center p-8 bg-gray-50 dark:bg-gray-900 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
+                          <AlertCircle className="h-10 w-10 text-gray-400 dark:text-gray-600 mb-3" />
+                          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">No tasks in {column.title}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Drag tasks here to update status</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {filteredTasks
+                            .filter(task => task.status === column.status)
+                            .map((task, index) => (
+                              <Draggable
+                                key={task.id}
+                                draggableId={task.id}
+                                index={index}
+                              >
+                                {(provided, snapshot) => (
+                                  <div
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    {...provided.dragHandleProps}
+                                    className={`
+                                      transition-all duration-200 cursor-grab active:cursor-grabbing
+                                      ${snapshot.isDragging ? 'rotate-1 scale-105 shadow-lg z-50' : 'hover:shadow-md'}
+                                    `}
+                                    style={{
+                                      ...provided.draggableProps.style,
+                                      borderLeft: `4px solid ${task.priority === 'urgent' ? '#ef4444' : task.priority === 'high' ? '#f59e0b' : task.priority === 'medium' ? '#3b82f6' : '#6b7280'}`,
+                                    }}
+                                  >
+                                    <TaskCard
+                                      task={task}
+                                      onUpdateStatus={onUpdateStatus}
+                                      onVerifyTask={onVerifyTask}
+                                      onUpdateTask={onUpdateTask}
+                                      isUpdating={isUpdating}
+                                      onAdminOverride={handleAdminOverride}
+                                    />
+                                  </div>
+                                )}
+                              </Draggable>
+                            ))}
+                        </div>
+                      )}
                       {provided.placeholder}
                     </div>
                   )}
