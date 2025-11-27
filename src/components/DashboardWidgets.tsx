@@ -52,33 +52,33 @@ export function DashboardWidgets() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Quick Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {widgets.map((widget, index) => (
-          <Card key={index} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">{widget.title}</p>
+          <Card key={index} className="hover-scale min-h-[180px]">
+            <CardContent className="p-6 h-full">
+              <div className="flex items-center justify-between h-full">
+                <div className="space-y-2 flex-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{widget.title}</p>
                   <div className="flex items-center gap-2">
-                    <p className="text-2xl font-bold">{widget.value}</p>
+                    <p className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-50">{widget.value}</p>
                     {widget.urgent && (
-                      <Badge variant="destructive" className="text-xs">
+                      <Badge variant="destructive" className="text-xs font-medium">
                         Urgent
                       </Badge>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    {widget.trending && <TrendingUp className="h-3 w-3" />}
+                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                    {widget.trending && <TrendingUp className="h-3 w-3 text-emerald-500" />}
                     {widget.change}
                   </p>
                   {widget.progress !== undefined && (
-                    <Progress value={widget.progress} className="h-1" />
+                    <Progress value={widget.progress} className="h-2 max-w-full" />
                   )}
                 </div>
-                <div className={`p-3 rounded-full ${widget.bgColor}`}>
-                  <widget.icon className={`h-6 w-6 ${widget.color}`} />
+                <div className="p-3 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center flex-shrink-0 ml-3">
+                  <widget.icon className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
               </div>
             </CardContent>

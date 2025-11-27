@@ -144,12 +144,12 @@ export function ProductivityDashboard({ userId }: ProductivityDashboardProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-50 mb-2">
             {isOwnDashboard ? 'Your Productivity' : 'Employee Productivity'}
           </h2>
-          <p className="text-muted-foreground">
+          <p className="text-base text-gray-600 dark:text-gray-400">
             Track productivity metrics and performance insights
           </p>
         </div>
@@ -164,72 +164,72 @@ export function ProductivityDashboard({ userId }: ProductivityDashboardProps) {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="hover-scale">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">Today's Focus Time</p>
-                <p className="text-2xl font-bold">{activityStats.focusTime}h</p>
-                <p className="text-xs text-muted-foreground">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="hover-scale min-h-[180px]">
+          <CardContent className="p-6 h-full">
+            <div className="flex items-center justify-between h-full">
+              <div className="space-y-2 flex-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Today's Focus Time</p>
+                <p className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-50">{activityStats.focusTime}h</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   {activityStats.focusTime > 6 ? 'Excellent focus!' : 'Could be better'}
                 </p>
               </div>
-              <div className="p-3 rounded-full bg-green-100">
-                <Focus className="h-6 w-6 text-green-600" />
+              <div className="p-3 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center flex-shrink-0 ml-3">
+                <Focus className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="hover-scale">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">Session Hours</p>
-                <p className="text-2xl font-bold">{sessionStats.todayHours}h</p>
-                <p className="text-xs text-muted-foreground">
+        <Card className="hover-scale min-h-[180px]">
+          <CardContent className="p-6 h-full">
+            <div className="flex items-center justify-between h-full">
+              <div className="space-y-2 flex-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Session Hours</p>
+                <p className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-50">{sessionStats.todayHours}h</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Target: 8h
                 </p>
-                <Progress value={Math.min((sessionStats.todayHours / 8) * 100, 100)} className="h-1" />
+                <Progress value={Math.min((sessionStats.todayHours / 8) * 100, 100)} className="h-2 max-w-full" />
               </div>
-              <div className="p-3 rounded-full bg-blue-100">
-                <Clock className="h-6 w-6 text-blue-600" />
+              <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center flex-shrink-0 ml-3">
+                <Clock className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="hover-scale">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">Task Completion</p>
-                <p className="text-2xl font-bold">{Math.round(completionRate)}%</p>
-                <p className="text-xs text-muted-foreground">
+        <Card className="hover-scale min-h-[180px]">
+          <CardContent className="p-6 h-full">
+            <div className="flex items-center justify-between h-full">
+              <div className="space-y-2 flex-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Task Completion</p>
+                <p className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-50">{Math.round(completionRate)}%</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   {userTasks.filter(t => t.status === 'verified').length} completed
                 </p>
-                <Progress value={completionRate} className="h-1" />
+                <Progress value={completionRate} className="h-2 max-w-full" />
               </div>
-              <div className="p-3 rounded-full bg-purple-100">
-                <CheckCircle className="h-6 w-6 text-purple-600" />
+              <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center flex-shrink-0 ml-3">
+                <CheckCircle className="h-6 w-6 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="hover-scale">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">Idle Time</p>
-                <p className="text-2xl font-bold">{activityStats.idleTime}h</p>
-                <p className="text-xs text-muted-foreground">
+        <Card className="hover-scale min-h-[180px]">
+          <CardContent className="p-6 h-full">
+            <div className="flex items-center justify-between h-full">
+              <div className="space-y-2 flex-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Idle Time</p>
+                <p className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-50">{activityStats.idleTime}h</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   {activityStats.idleTime > 2 ? 'High idle time' : 'Good activity'}
                 </p>
               </div>
-              <div className="p-3 rounded-full bg-orange-100">
-                <Coffee className="h-6 w-6 text-orange-600" />
+              <div className="p-3 rounded-full bg-amber-100 dark:bg-amber-900 flex items-center justify-center flex-shrink-0 ml-3">
+                <Coffee className="h-6 w-6 text-amber-600 dark:text-amber-400" />
               </div>
             </div>
           </CardContent>
@@ -239,14 +239,14 @@ export function ProductivityDashboard({ userId }: ProductivityDashboardProps) {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Weekly Productivity Trend */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <Card className="min-h-[400px]">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-50 flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
               Weekly Productivity Trend
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             <SimpleLineChart 
               data={weeklyData}
               dataKey="productivity"
@@ -258,14 +258,14 @@ export function ProductivityDashboard({ userId }: ProductivityDashboardProps) {
         </Card>
 
         {/* Time Distribution */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <Card className="min-h-[400px]">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-50 flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
               Time Distribution
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             <div className="space-y-4">
               {productivityDistribution.map((entry, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
@@ -274,9 +274,9 @@ export function ProductivityDashboard({ userId }: ProductivityDashboardProps) {
                       className="w-4 h-4 rounded-full" 
                       style={{ backgroundColor: entry.color }}
                     />
-                    <span className="font-medium">{entry.name}</span>
+                    <span className="font-medium text-gray-700 dark:text-gray-300">{entry.name}</span>
                   </div>
-                  <span className="font-bold text-lg">{entry.value.toFixed(1)}h</span>
+                  <span className="font-bold text-lg text-gray-900 dark:text-gray-50">{entry.value.toFixed(1)}h</span>
                 </div>
               ))}
             </div>

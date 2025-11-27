@@ -81,12 +81,12 @@ export function AdminDashboard() {
   }, []);
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-50 mb-2">
           Admin Dashboard
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-base text-gray-600 dark:text-gray-400">
           Manage interns, tasks, and system settings.
         </p>
       </div>
@@ -102,55 +102,55 @@ export function AdminDashboard() {
           <TabsTrigger value="profile">Profile</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-6">
+        <TabsContent value="overview" className="space-y-8">
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
+            <Card className="min-h-[140px]">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Interns</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Interns</CardTitle>
+                <Users className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalInterns}</div>
-                <p className="text-xs text-muted-foreground">
+                <div className="text-3xl font-bold text-gray-900 dark:text-gray-50">{stats.totalInterns}</div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Active interns in system
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="min-h-[140px]">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Tasks</CardTitle>
-                <CheckSquare className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Tasks</CardTitle>
+                <CheckSquare className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.activeTasks}</div>
-                <p className="text-xs text-muted-foreground">
+                <div className="text-3xl font-bold text-gray-900 dark:text-gray-50">{stats.activeTasks}</div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Currently assigned
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="min-h-[140px]">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Coins Distributed</CardTitle>
-                <Trophy className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Coins Distributed</CardTitle>
+                <Trophy className="h-5 w-5 text-amber-600 dark:text-amber-400" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.coinsDistributed}</div>
-                <p className="text-xs text-muted-foreground">
+                <div className="text-3xl font-bold text-gray-900 dark:text-gray-50">{stats.coinsDistributed}</div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Total rewards given
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="min-h-[140px]">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Training Modules</CardTitle>
-                <BookOpen className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Training Modules</CardTitle>
+                <BookOpen className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.trainingModules}</div>
-                <p className="text-xs text-muted-foreground">
+                <div className="text-3xl font-bold text-gray-900 dark:text-gray-50">{stats.trainingModules}</div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Available modules
                 </p>
               </CardContent>
