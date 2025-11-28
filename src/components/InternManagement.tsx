@@ -13,6 +13,7 @@ import { Users, Plus, Coins, Trash, Eye, UserCheck, UserX } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from '@/hooks/use-toast';
 import { InternDetailView } from '@/components/InternDetailView';
+import { SkeletonCard } from '@/components/ui/skeleton';
 
 interface Profile {
   id: string;
@@ -199,7 +200,7 @@ export function InternManagement() {
                   placeholder="Enter full name"
                 />
                 {errors.full_name && (
-                  <p className="text-sm text-destructive">{errors.full_name.message}</p>
+                  <p className="error-message">{errors.full_name.message}</p>
                 )}
               </div>
 
@@ -218,7 +219,7 @@ export function InternManagement() {
                   placeholder="intern@company.com"
                 />
                 {errors.email && (
-                  <p className="text-sm text-destructive">{errors.email.message}</p>
+                  <p className="error-message">{errors.email.message}</p>
                 )}
               </div>
 
@@ -237,7 +238,7 @@ export function InternManagement() {
                   placeholder="Enter secure password"
                 />
                 {errors.password && (
-                  <p className="text-sm text-destructive">{errors.password.message}</p>
+                  <p className="error-message">{errors.password.message}</p>
                 )}
               </div>
 
@@ -276,25 +277,16 @@ export function InternManagement() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {isLoading ? (
           Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader>
-                <div className="h-4 bg-muted rounded w-3/4"></div>
-                <div className="h-3 bg-muted rounded w-1/2"></div>
-              </CardHeader>
-              <CardContent>
-                <div className="h-3 bg-muted rounded w-full mb-2"></div>
-                <div className="h-3 bg-muted rounded w-2/3"></div>
-              </CardContent>
-            </Card>
+            <SkeletonCard key={i} />
           ))
         ) : interns.length > 0 ? (
           interns.map((intern) => (
-            <Card key={intern.id} className={`hover:shadow-md transition-shadow ${!intern.is_active ? 'opacity-70 border-destructive/50' : ''}`}>
+            <Card key={intern.id} className={`${!intern.is_active ? 'opacity-70 border-red-200 dark:border-red-900' : ''}`}>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 flex-wrap">
                     <CardTitle className="text-lg">{intern.full_name}</CardTitle>
-                    <Badge variant={intern.is_active !== false ? "default" : "destructive"}>
+                    <Badge variant={intern.is_active !== false ? "success" : "rejected"}>
                       {intern.is_active !== false ? <UserCheck className="h-3 w-3 mr-1" /> : <UserX className="h-3 w-3 mr-1" />}
                       {intern.is_active !== false ? 'Active' : 'Inactive'}
                     </Badge>
@@ -326,7 +318,7 @@ export function InternManagement() {
                 </div>
                 <CardDescription>{intern.email}</CardDescription>
                 {!intern.is_active && intern.deactivation_reason && (
-                  <div className="text-xs text-destructive italic mt-2 p-2 bg-destructive/5 rounded">
+                  <div className="text-xs text-red-700 dark:text-red-400 italic mt-2 p-2 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
                     <strong>Reason:</strong> {intern.deactivation_reason}
                   </div>
                 )}

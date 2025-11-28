@@ -9,6 +9,7 @@ import { toast } from '@/hooks/use-toast';
 import { Coins, AlertCircle, Lock } from 'lucide-react';
 import { validateEmail, rateLimiter } from '@/utils/security';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { PageSpinner, ButtonSpinner } from '@/components/ui/spinner';
 
 export default function Auth() {
   const { user, signIn, loading } = useAuth();
@@ -94,14 +95,7 @@ export default function Auth() {
 
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <Coins className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
+    return <PageSpinner />;
   }
 
   return (
@@ -175,10 +169,17 @@ export default function Auth() {
               </div>
               <Button 
                 type="submit" 
-                className="w-full min-h-[44px]" 
+                className="w-full" 
                 disabled={isLoading || isRateLimited}
               >
-                {isLoading ? "Signing In..." : "Sign In"}
+                {isLoading ? (
+                  <>
+                    <ButtonSpinner />
+                    <span className="ml-2">Signing In...</span>
+                  </>
+                ) : (
+                  "Sign In"
+                )}
               </Button>
             </form>
           </CardContent>
