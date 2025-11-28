@@ -5,26 +5,26 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-95 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-gradient-primary text-primary-foreground shadow-elegant hover:shadow-green hover:scale-105 hover:-translate-y-0.5",
+        default: "bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 hover:shadow-md",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-elegant hover:bg-destructive/90 hover:shadow-lg hover:scale-105",
+          "bg-red-600 text-white shadow-sm hover:bg-red-700 hover:shadow-md",
         outline:
-          "border border-input bg-gradient-card hover:bg-gradient-glass hover:text-accent-foreground shadow-card hover:shadow-green hover:scale-105",
+          "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800",
         secondary:
-          "bg-gradient-secondary text-secondary-foreground shadow-green hover:shadow-glow hover:scale-105 hover:-translate-y-0.5",
-        ghost: "hover:bg-gradient-glass hover:text-accent-foreground hover:shadow-card",
-        link: "text-primary underline-offset-4 hover:underline hover:text-secondary",
+          "bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700",
+        ghost: "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800",
+        link: "text-emerald-600 underline-offset-4 hover:underline dark:text-emerald-400",
         coin: "bg-gradient-coin text-coin-gold-foreground shadow-glow hover:shadow-glow hover:scale-110 coin-shimmer",
       },
       size: {
         default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
-        icon: "h-10 w-10",
+        sm: "h-9 px-3 py-1.5 text-sm rounded-md",
+        lg: "h-12 px-6 py-3 text-lg rounded-lg",
+        icon: "h-10 w-10 rounded-lg",
       },
     },
     defaultVariants: {

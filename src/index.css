@@ -353,4 +353,50 @@ All colors MUST be HSL.
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+
+  /* File upload dashed border */
+  .file-upload-area {
+    border: 2px dashed hsl(var(--border));
+    transition: all 0.2s ease;
+  }
+
+  .file-upload-area:hover {
+    border-color: hsl(142 76% 36%);
+    background: hsl(142 76% 36% / 0.05);
+  }
+
+  .file-upload-area.drag-over {
+    border-color: hsl(142 76% 36%);
+    background: hsl(142 76% 36% / 0.1);
+  }
+
+  /* Form error states */
+  .input-error {
+    border-color: hsl(0 84% 60%);
+  }
+
+  .error-message {
+    color: hsl(0 84% 60%);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+  }
+
+  /* Loading state for buttons */
+  @keyframes spinner {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .btn-loading::before {
+    content: '';
+    box-sizing: border-box;
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    animation: spinner 0.6s linear infinite;
+  }
 }
