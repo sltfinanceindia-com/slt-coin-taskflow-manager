@@ -2,8 +2,9 @@
 import { useTasks } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
 import { TaskCard } from '@/components/TaskCard';
-import { Card, CardContent } from '@/components/ui/card';
-import { CheckCircle } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Clipboard } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 
 export function TaskList() {
   const { tasks, updateTaskStatus, verifyTask, updateTask, isUpdating } = useTasks();
@@ -32,13 +33,11 @@ export function TaskList() {
           ))
         ) : (
           <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <CheckCircle className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No tasks assigned</h3>
-              <p className="text-muted-foreground text-center max-w-md">
-                No tasks have been assigned to you yet. Check back later!
-              </p>
-            </CardContent>
+            <EmptyState
+              icon={Clipboard}
+              title="No tasks assigned yet"
+              description="Your assigned tasks will appear here. Check back soon!"
+            />
           </Card>
         )}
       </div>

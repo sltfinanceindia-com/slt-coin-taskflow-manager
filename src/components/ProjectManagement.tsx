@@ -12,6 +12,7 @@ import { useTasks } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { format } from 'date-fns';
+import { EmptyState } from '@/components/ui/empty-state';
 
 export function ProjectManagement() {
   const { profile } = useAuth();
@@ -80,7 +81,7 @@ export function ProjectManagement() {
                   Start a new project to organize related tasks together.
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4">
+              <div className="space-y-6 px-6 py-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
                 <div className="space-y-2">
                   <Label htmlFor="project-name">Project Name</Label>
                   <Input
@@ -100,21 +101,21 @@ export function ProjectManagement() {
                     rows={3}
                   />
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={handleCreateProject}
-                    disabled={!newProject.name.trim() || isCreating}
-                    className="flex-1"
-                  >
-                    {isCreating ? 'Creating...' : 'Create Project'}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowCreateDialog(false)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
+              </div>
+              <div className="flex gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-800/50">
+                <Button
+                  onClick={handleCreateProject}
+                  disabled={!newProject.name.trim() || isCreating}
+                  className="flex-1"
+                >
+                  {isCreating ? 'Creating...' : 'Create Project'}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCreateDialog(false)}
+                >
+                  Cancel
+                </Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -125,22 +126,17 @@ export function ProjectManagement() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {projects.length === 0 ? (
           <Card className="col-span-full">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <FolderOpen className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No Projects Yet</h3>
-              <p className="text-muted-foreground text-center mb-4">
-                {isAdmin 
+            <EmptyState
+              icon={FolderOpen}
+              title="No Projects Yet"
+              description={
+                isAdmin 
                   ? "Create your first project to start organizing tasks."
                   : "Projects will appear here when admins create them."
-                }
-              </p>
-              {isAdmin && (
-                <Button onClick={() => setShowCreateDialog(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create First Project
-                </Button>
-              )}
-            </CardContent>
+              }
+              actionLabel={isAdmin ? "Create First Project" : undefined}
+              onAction={isAdmin ? () => setShowCreateDialog(true) : undefined}
+            />
           </Card>
         ) : (
           projects.map((project) => {

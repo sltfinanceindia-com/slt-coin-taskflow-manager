@@ -15,6 +15,7 @@ import {
   Monitor,
   MessageSquare
 } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 import {
   Sidebar,
@@ -72,22 +73,25 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
 
   return (
     <Sidebar
-      className={collapsed ? "w-12 sm:w-14" : "w-56 sm:w-64"}
+      className={cn(
+        "transition-all duration-300 ease-in-out border-r border-gray-200 dark:border-gray-800 shadow-sm",
+        collapsed ? "w-16" : "w-64"
+      )}
       collapsible="icon"
     >
-      <SidebarContent className="bg-sidebar">
+      <SidebarContent className="bg-sidebar h-screen flex flex-col">
         {/* Logo Section */}
-        <div className="p-2 sm:p-4 border-b border-sidebar-border">
-          <div className="flex items-center justify-between gap-2 sm:gap-3">
-            <div className="flex items-center gap-2 sm:gap-3">
+        <div className="p-6 border-b border-sidebar-border">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
               <img 
                 src="/lovable-uploads/56d5dd03-2808-4b88-9f9c-cc8932c46fe8.png" 
                 alt="SLT Finance India"
-                className="h-6 w-6 sm:h-8 sm:w-8 object-contain shrink-0"
+                className="h-10 w-auto object-contain shrink-0"
               />
               {!collapsed && (
                 <div className="min-w-0 flex-1">
-                  <h2 className="font-semibold text-sidebar-foreground text-sm sm:text-base truncate">SLT Finance</h2>
+                  <h2 className="font-bold text-sidebar-foreground text-xl truncate">SLT Finance</h2>
                   <p className="text-xs text-sidebar-foreground/60 truncate">Task Management</p>
                 </div>
               )}
@@ -98,24 +102,24 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
 
         {/* User Info */}
         {!collapsed && (
-          <div className="p-2 sm:p-4 border-b border-sidebar-border">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="h-6 w-6 sm:h-8 sm:w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                <User className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
+          <div className="p-6 border-b border-sidebar-border">
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center shrink-0">
+                <User className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm font-medium text-sidebar-foreground truncate">
+                <p className="text-base font-medium text-sidebar-foreground truncate">
                   {profile?.full_name}
                 </p>
-                <div className="flex items-center gap-1 sm:gap-2 mt-1">
+                <div className="flex items-center gap-2 mt-1">
                   <Badge 
                     variant={profile?.role === 'admin' ? 'default' : 'secondary'} 
-                    className="text-xs px-1.5 py-0.5"
+                    className="text-xs px-2 py-0.5"
                   >
                     {profile?.role === 'admin' ? 'Admin' : 'Intern'}
                   </Badge>
                   <div className="flex items-center gap-1 min-w-0">
-                    <Coins className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-coin-gold shrink-0" />
+                    <Coins className="h-3 w-3 text-coin-gold shrink-0" />
                     <span className="text-xs text-coin-gold font-medium truncate">
                       {profile?.total_coins || 0}
                     </span>
@@ -127,8 +131,8 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
         )}
 
         {/* Navigation */}
-        <SidebarGroup className="flex-1">
-          <SidebarGroupLabel className="px-2 sm:px-4 text-xs">Navigation</SidebarGroupLabel>
+        <SidebarGroup className="flex-1 px-3 py-4">
+          <SidebarGroupLabel className="px-4 text-xs mb-2">Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
               {items.map((item) => (
@@ -137,24 +141,30 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
                     <NavLink to={item.url} className="w-full">
                       {({ isActive: navIsActive }) => (
                         <SidebarMenuButton 
-                          className={`${navIsActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""} h-8 sm:h-10 w-full`}
+                          className={cn(
+                            "h-10 w-full px-4 py-2.5 rounded-lg gap-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors",
+                            navIsActive && "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400 font-medium"
+                          )}
                         >
-                          <item.icon className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-                          {!collapsed && <span className="text-xs sm:text-sm truncate">{item.title}</span>}
+                          <item.icon className="h-5 w-5 shrink-0" />
+                          {!collapsed && <span className="text-sm truncate">{item.title}</span>}
                         </SidebarMenuButton>
                       )}
                     </NavLink>
                   ) : (
                     <SidebarMenuButton 
                       asChild
-                      className={`${isActive(item.url) ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""} h-8 sm:h-10`}
+                      className={cn(
+                        "h-10 w-full px-4 py-2.5 rounded-lg gap-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors",
+                        isActive(item.url) && "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400 font-medium"
+                      )}
                     >
                       <button
                         onClick={() => onTabChange(item.url)}
-                        className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3"
+                        className="w-full flex items-center gap-3"
                       >
-                        <item.icon className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-                        {!collapsed && <span className="text-xs sm:text-sm truncate">{item.title}</span>}
+                        <item.icon className="h-5 w-5 shrink-0" />
+                        {!collapsed && <span className="text-sm truncate">{item.title}</span>}
                       </button>
                     </SidebarMenuButton>
                   )}
@@ -165,13 +175,13 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
         </SidebarGroup>
 
         {/* Settings */}
-        <div className="mt-auto p-2 sm:p-4 border-t border-sidebar-border">
+        <div className="mt-auto p-3 pt-4 border-t border-sidebar-border">
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild className="h-8 sm:h-10">
-                <NavLink to="/profile" className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3">
-                  <Settings className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-                  {!collapsed && <span className="text-xs sm:text-sm truncate">Settings</span>}
+              <SidebarMenuButton asChild className="h-10 px-4 py-2.5 rounded-lg gap-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <NavLink to="/profile" className="flex items-center gap-3">
+                  <Settings className="h-5 w-5 shrink-0" />
+                  {!collapsed && <span className="text-sm truncate">Settings</span>}
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>

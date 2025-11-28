@@ -14,7 +14,7 @@ const AlertDialogOverlay = React.forwardRef<
   <AlertDialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-50 bg-black/50 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-200",
       className
     )}
     {...props}
@@ -31,7 +31,7 @@ const AlertDialogContent = React.forwardRef<
     <AlertDialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 grid gap-4 border bg-background p-6 shadow-lg sm:rounded-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+        "fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 grid gap-4 border border-gray-200 bg-white text-gray-900 p-6 shadow-2xl rounded-xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100",
         className
       )}
       {...props}
@@ -46,7 +46,7 @@ const AlertDialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDiv
 AlertDialogHeader.displayName = "AlertDialogHeader"
 
 const AlertDialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className)} {...props} />
+  <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end gap-3", className)} {...props} />
 )
 AlertDialogFooter.displayName = "AlertDialogFooter"
 
