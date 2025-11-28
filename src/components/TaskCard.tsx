@@ -49,7 +49,7 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
   };
 
   return (
-    <div className="bg-card border rounded-lg p-2 sm:p-3 shadow-sm hover:shadow-md transition-all duration-200 space-y-2 sm:space-y-3">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow duration-200 space-y-3">
       {/* Header with Task Title - Always Visible */}
       <div className="space-y-2">
         <div className="flex items-start justify-between gap-2">
