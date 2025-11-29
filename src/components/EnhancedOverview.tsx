@@ -22,6 +22,8 @@ import { useTimeLogs } from '@/hooks/useTimeLogs';
 import { useCoinTransactions } from '@/hooks/useCoinTransactions';
 import { useSessionLogs } from '@/hooks/useSessionLogs';
 import { SimpleLineChart } from '@/components/SimpleChart';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 export function EnhancedOverview() {
   const { profile } = useAuth();
@@ -52,6 +54,22 @@ export function EnhancedOverview() {
   const totalEarned = getTotalEarned();
   const pendingCoins = getPendingCoins();
   const sessionStats = getUserSessionStats();
+
+  // Fetch latest coin rate
+  const { data: latestCoinRate } = useQuery({
+    queryKey: ['latest-coin-rate'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('coin_rates')
+        .select('*')
+        .order('rate_date', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+  });
 
   // Generate weekly activity data
   const generateWeeklyData = () => {
@@ -101,8 +119,11 @@ export function EnhancedOverview() {
       icon: Coins,
       color: 'text-coin-gold',
       bgColor: 'bg-coin-gold/10',
-      change: pendingCoins > 0 ? `+${pendingCoins} pending` : 'All verified',
+      change: latestCoinRate 
+        ? `Rate: $${Number(latestCoinRate.rate).toFixed(4)}` 
+        : pendingCoins > 0 ? `+${pendingCoins} pending` : 'All verified',
       pending: pendingCoins,
+      subtitle: latestCoinRate && `Value: $${(Number(latestCoinRate.rate) * (profile?.total_coins || 0)).toFixed(2)}`,
     },
     {
       title: 'Completion Rate',
@@ -171,6 +192,11 @@ export function EnhancedOverview() {
                     {stat.trending && <TrendingUp className="h-3 w-3 text-emerald-500" />}
                     {stat.change}
                   </p>
+                  {(stat as any).subtitle && (
+                    <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                      {(stat as any).subtitle}
+                    </p>
+                  )}
                   {stat.progress !== undefined && (
                     <Progress value={stat.progress} className="h-2 max-w-full" />
                   )}

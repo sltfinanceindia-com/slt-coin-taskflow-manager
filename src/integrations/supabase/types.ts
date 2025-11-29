@@ -570,6 +570,53 @@ export type Database = {
           },
         ]
       }
+      coin_rates: {
+        Row: {
+          change_percentage: number | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          market_cap: number | null
+          notes: string | null
+          rate: number
+          rate_date: string
+          updated_at: string | null
+          volume_24h: number | null
+        }
+        Insert: {
+          change_percentage?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          market_cap?: number | null
+          notes?: string | null
+          rate: number
+          rate_date?: string
+          updated_at?: string | null
+          volume_24h?: number | null
+        }
+        Update: {
+          change_percentage?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          market_cap?: number | null
+          notes?: string | null
+          rate?: number
+          rate_date?: string
+          updated_at?: string | null
+          volume_24h?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coin_rates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coin_transactions: {
         Row: {
           bonus_coins: number | null
