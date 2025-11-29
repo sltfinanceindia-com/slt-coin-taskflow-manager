@@ -8,6 +8,7 @@ import { InternManager } from '@/components/InternManager';
 import { ProfileSettings } from '@/components/ProfileSettings';
 import { TrainingAdmin } from '@/components/TrainingAdmin';
 import { CertificateGenerator } from '@/components/CertificateGenerator';
+import { CoinRateManagement } from '@/components/CoinRateManagement';
 import Calendar from '@/components/Calendar';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -92,10 +93,11 @@ export function AdminDashboard() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="interns">Interns</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
+          <TabsTrigger value="coin-rate">Coin Rate</TabsTrigger>
           <TabsTrigger value="training">Training</TabsTrigger>
           <TabsTrigger value="certificates">Certificates</TabsTrigger>
           <TabsTrigger value="calendar">Calendar</TabsTrigger>
@@ -214,6 +216,10 @@ export function AdminDashboard() {
 
         <TabsContent value="tasks">
           <TaskManager />
+        </TabsContent>
+
+        <TabsContent value="coin-rate">
+          <CoinRateManagement />
         </TabsContent>
 
         <TabsContent value="training">
