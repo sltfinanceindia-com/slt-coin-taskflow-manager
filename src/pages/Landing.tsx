@@ -86,7 +86,7 @@ export default function Landing() {
             </div>
             <div className="flex items-center gap-3">
               <Link to="/auth">
-                <Button variant="ghost" className="text-gray-700 transition-all duration-200 hover-lift focus-ring">
+                <Button variant="ghost" className="transition-all duration-200 hover-lift focus-ring text-muted">
                   Sign In
                 </Button>
               </Link>
@@ -102,7 +102,7 @@ export default function Landing() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 sm:py-32" aria-labelledby="hero-heading">
+      <section aria-labelledby="hero-heading" className="relative overflow-hidden py-20 sm:py-32 bg-primary">
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-white to-blue-50 opacity-50" aria-hidden="true" />
         <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
