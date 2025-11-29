@@ -1,95 +1,79 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Coins, 
-  TrendingUp, 
-  Shield, 
-  Users, 
-  BarChart3, 
-  MessageSquare,
-  BookOpen,
-  Award,
-  ArrowRight,
-  CheckCircle,
-  LineChart
-} from 'lucide-react';
+import { Coins, TrendingUp, Shield, Users, BarChart3, MessageSquare, BookOpen, Award, ArrowRight, CheckCircle, LineChart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { CoinRateChart } from '@/components/CoinRateChart';
-
 export default function Landing() {
   // Fetch latest coin rate
-  const { data: latestRate } = useQuery({
+  const {
+    data: latestRate
+  } = useQuery({
     queryKey: ['latest-coin-rate'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('coin_rates')
-        .select('*')
-        .order('rate_date', { ascending: false })
-        .limit(1)
-        .single();
-      
+      const {
+        data,
+        error
+      } = await supabase.from('coin_rates').select('*').order('rate_date', {
+        ascending: false
+      }).limit(1).single();
       if (error) throw error;
       return data;
-    },
+    }
   });
-
-  const features = [
-    {
-      icon: Coins,
-      title: 'SLT Coin Rewards',
-      description: 'Earn valuable SLT coins for completing tasks and achieving goals',
-      color: 'text-amber-600',
-      bgColor: 'bg-amber-50',
-    },
-    {
-      icon: BarChart3,
-      title: 'Task Management',
-      description: 'Track and manage tasks with our intuitive Kanban board system',
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
-    },
-    {
-      icon: MessageSquare,
-      title: 'Team Communication',
-      description: 'Real-time messaging and collaboration tools for your team',
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
-    },
-    {
-      icon: BookOpen,
-      title: 'Training Center',
-      description: 'Access comprehensive training modules and resources',
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
-    },
-    {
-      icon: Shield,
-      title: 'Secure & Reliable',
-      description: 'Enterprise-grade security with role-based access control',
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
-    },
-    {
-      icon: Award,
-      title: 'Certificates',
-      description: 'Generate professional certificates for completed training',
-      color: 'text-indigo-600',
-      bgColor: 'bg-indigo-50',
-    },
-  ];
-
-  const stats = [
-    { value: '1000+', label: 'Active Users' },
-    { value: '50K+', label: 'Tasks Completed' },
-    { value: '100K+', label: 'Coins Distributed' },
-    { value: '99.9%', label: 'Uptime' },
-  ];
-
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+  const features = [{
+    icon: Coins,
+    title: 'SLT Coin Rewards',
+    description: 'Earn valuable SLT coins for completing tasks and achieving goals',
+    color: 'text-amber-600',
+    bgColor: 'bg-amber-50'
+  }, {
+    icon: BarChart3,
+    title: 'Task Management',
+    description: 'Track and manage tasks with our intuitive Kanban board system',
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-50'
+  }, {
+    icon: MessageSquare,
+    title: 'Team Communication',
+    description: 'Real-time messaging and collaboration tools for your team',
+    color: 'text-green-600',
+    bgColor: 'bg-green-50'
+  }, {
+    icon: BookOpen,
+    title: 'Training Center',
+    description: 'Access comprehensive training modules and resources',
+    color: 'text-purple-600',
+    bgColor: 'bg-purple-50'
+  }, {
+    icon: Shield,
+    title: 'Secure & Reliable',
+    description: 'Enterprise-grade security with role-based access control',
+    color: 'text-red-600',
+    bgColor: 'bg-red-50'
+  }, {
+    icon: Award,
+    title: 'Certificates',
+    description: 'Generate professional certificates for completed training',
+    color: 'text-indigo-600',
+    bgColor: 'bg-indigo-50'
+  }];
+  const stats = [{
+    value: '1000+',
+    label: 'Active Users'
+  }, {
+    value: '50K+',
+    label: 'Tasks Completed'
+  }, {
+    value: '100K+',
+    label: 'Coins Distributed'
+  }, {
+    value: '99.9%',
+    label: 'Uptime'
+  }];
+  return <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       {/* Header */}
       <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white/80 backdrop-blur-sm" role="banner">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -130,12 +114,16 @@ export default function Landing() {
               The Complete Workplace
               <span className="block text-emerald-600">Management Platform</span>
             </h1>
-            <p className="mb-8 text-lg text-gray-600 sm:text-xl max-w-2xl mx-auto leading-relaxed animate-fade-in" style={{ animationDelay: '100ms' }}>
+            <p className="mb-8 text-lg text-gray-600 sm:text-xl max-w-2xl mx-auto leading-relaxed animate-fade-in" style={{
+            animationDelay: '100ms'
+          }}>
               Streamline your workflow with task management, team collaboration, 
               and a revolutionary coin rewards system. Track progress, earn rewards, 
               and boost productivity.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style={{ animationDelay: '200ms' }}>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style={{
+            animationDelay: '200ms'
+          }}>
               <Link to="/auth">
                 <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 h-12 px-8 transition-all duration-200 hover-grow focus-ring">
                   Start Free Trial
@@ -150,7 +138,9 @@ export default function Landing() {
           </div>
 
           {/* Coin Rate Display */}
-          <div className="mt-16 mx-auto max-w-5xl animate-fade-in" style={{ animationDelay: '300ms' }}>
+          <div className="mt-16 mx-auto max-w-5xl animate-fade-in" style={{
+          animationDelay: '300ms'
+        }}>
             <Card className="border-2 border-emerald-200 shadow-2xl overflow-hidden hover-lift" role="region" aria-label="Live SLT coin rate information">
               <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 p-4 text-white">
                 <div className="flex items-center justify-between">
@@ -158,21 +148,15 @@ export default function Landing() {
                     <Coins className="h-6 w-6" aria-hidden="true" />
                     <h3 className="text-lg font-semibold">SLT Coin Live Rate</h3>
                   </div>
-                  {latestRate && (
-                    <div className="text-right">
+                  {latestRate && <div className="text-right">
                       <div className="text-2xl font-bold" aria-label={`Current rate: ${Number(latestRate.rate).toFixed(4)} dollars`}>
                         ${Number(latestRate.rate).toFixed(4)}
                       </div>
-                      <Badge 
-                        variant={Number(latestRate.change_percentage) >= 0 ? 'success' : 'destructive'}
-                        className="mt-1"
-                        aria-label={`24 hour change: ${Number(latestRate.change_percentage) >= 0 ? 'increased' : 'decreased'} by ${Math.abs(Number(latestRate.change_percentage)).toFixed(2)} percent`}
-                      >
+                      <Badge variant={Number(latestRate.change_percentage) >= 0 ? 'success' : 'destructive'} className="mt-1" aria-label={`24 hour change: ${Number(latestRate.change_percentage) >= 0 ? 'increased' : 'decreased'} by ${Math.abs(Number(latestRate.change_percentage)).toFixed(2)} percent`}>
                         {Number(latestRate.change_percentage) >= 0 ? '+' : ''}
                         {Number(latestRate.change_percentage).toFixed(2)}%
                       </Badge>
-                    </div>
-                  )}
+                    </div>}
                 </div>
               </div>
               <CardContent className="p-6">
@@ -195,14 +179,10 @@ export default function Landing() {
             </p>
           </header>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" role="list">
-            {features.map((feature, index) => (
-              <Card 
-                key={index} 
-                className="hover-scale border-gray-200 transition-all duration-200 animate-fade-in" 
-                style={{ animationDelay: `${index * 100}ms` }}
-                role="listitem"
-              >
-                <CardContent className="p-6">
+            {features.map((feature, index) => <Card key={index} className="hover-scale border-gray-200 transition-all duration-200 animate-fade-in" style={{
+            animationDelay: `${index * 100}ms`
+          }} role="listitem">
+                <CardContent className="p-6 bg-muted-foreground">
                   <div className={`h-12 w-12 rounded-lg ${feature.bgColor} flex items-center justify-center mb-4 transition-transform duration-200`} aria-hidden="true">
                     <feature.icon className={`h-6 w-6 ${feature.color}`} />
                   </div>
@@ -213,8 +193,7 @@ export default function Landing() {
                     {feature.description}
                   </p>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -224,16 +203,16 @@ export default function Landing() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <h2 id="stats-heading" className="sr-only">Platform statistics</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center" role="list">
-            {stats.map((stat, index) => (
-              <div key={index} className="animate-fade-in" style={{ animationDelay: `${index * 100}ms` }} role="listitem">
+            {stats.map((stat, index) => <div key={index} className="animate-fade-in" style={{
+            animationDelay: `${index * 100}ms`
+          }} role="listitem">
                 <div className="text-4xl font-bold text-white mb-2 count-up">
                   {stat.value}
                 </div>
                 <div className="text-emerald-100">
                   {stat.label}
                 </div>
-              </div>
-            ))}
+              </div>)}
           </div>
         </div>
       </section>
@@ -278,6 +257,5 @@ export default function Landing() {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 }
