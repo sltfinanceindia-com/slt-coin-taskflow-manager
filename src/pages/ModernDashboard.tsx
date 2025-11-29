@@ -198,19 +198,19 @@ export default function ModernDashboard() {
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           <AppHeader />
           
-          <main className="flex-1 overflow-auto">
+          <main id="main-content" className="flex-1 overflow-auto" role="main">
             <div className="w-full max-w-none px-2 sm:px-4 lg:px-6 xl:px-8 py-2 sm:py-4 lg:py-6">
-              <div className="mb-4 sm:mb-6 lg:mb-8">
-                <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
+              <header className="mb-4 sm:mb-6 lg:mb-8">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent leading-tight">
                   Welcome back, {profile?.full_name}!
                 </h1>
-                <p className="text-muted-foreground text-xs sm:text-sm lg:text-base">
+                <p className="text-muted-foreground text-xs sm:text-sm lg:text-base leading-relaxed">
                   {profile?.role === 'admin' 
                     ? 'Manage tasks, track progress, and assign SLT Coins to your team.'
                     : 'View your assigned tasks, log your hours, and earn SLT Coins.'
                   }
                 </p>
-              </div>
+              </header>
               
               <div className="animate-fade-in w-full">
                 {renderTabContent()}

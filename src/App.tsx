@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { useAuthEmailNotifications } from "@/hooks/useAuthEmailNotifications";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { SkipLink } from "@/components/SkipLink";
 import Landing from "./pages/Landing";
 import ModernDashboard from "./pages/ModernDashboard";
 import Auth from "./pages/Auth";
@@ -41,6 +42,7 @@ function AppContent() {
 
   return (
     <TooltipProvider>
+      <SkipLink />
       <Toaster />
       <Sonner />
       <BrowserRouter>

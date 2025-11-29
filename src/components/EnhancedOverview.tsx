@@ -171,17 +171,17 @@ export function EnhancedOverview() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" id="main-content">
       {/* Main Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {mainStats.map((stat, index) => (
-          <Card key={index} className="hover-scale card-gradient min-h-[180px]">
+          <Card key={index} className="hover-scale card-gradient min-h-[180px] animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
             <CardContent className="p-6 h-full">
               <div className="flex items-center justify-between h-full">
                 <div className="space-y-2 flex-1">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{stat.title}</p>
                   <div className="flex items-center gap-2">
-                    <p className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-50">{stat.value}</p>
+                    <p className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-50 count-up">{stat.value}</p>
                     {stat.pending && stat.pending > 0 && (
                       <Badge variant="outline" className="text-xs animate-pulse">
                         +{stat.pending}
@@ -198,11 +198,11 @@ export function EnhancedOverview() {
                     </p>
                   )}
                   {stat.progress !== undefined && (
-                    <Progress value={stat.progress} className="h-2 max-w-full" />
+                    <Progress value={stat.progress} className="h-2 max-w-full" aria-label={`${stat.title} progress: ${Math.round(stat.progress)}%`} />
                   )}
                 </div>
                 <div className="p-3 rounded-full bg-emerald-100 dark:bg-emerald-900 hover-glow flex items-center justify-center flex-shrink-0 ml-3">
-                  <stat.icon className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                  <stat.icon className="h-6 w-6 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
                 </div>
               </div>
             </CardContent>
@@ -211,12 +211,12 @@ export function EnhancedOverview() {
       </div>
 
       {/* Quick Action Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6" role="group" aria-label="Quick actions">
         {quickActions.map((action, index) => (
-          <Card key={index} className="hover-scale min-h-[100px]">
+          <Card key={index} className="hover-scale min-h-[100px] animate-fade-in" style={{ animationDelay: `${(index + 4) * 50}ms` }}>
             <CardContent className="p-4 flex items-center justify-center h-full">
               <div className="flex items-center gap-3">
-                <action.icon className={`h-5 w-5 ${action.color}`} />
+                <action.icon className={`h-5 w-5 ${action.color}`} aria-hidden="true" />
                 <div>
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{action.title}</p>
                   <p className={`text-lg font-bold ${action.color}`}>{action.count}</p>
@@ -230,14 +230,14 @@ export function EnhancedOverview() {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Weekly Activity Chart */}
-        <Card className="card-gradient min-h-[400px]">
+        <Card className="card-gradient min-h-[400px] animate-fade-in" style={{ animationDelay: '400ms' }}>
           <CardHeader className="pb-4">
             <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-50 flex items-center gap-2">
-              <Activity className="h-5 w-5" />
+              <Activity className="h-5 w-5" aria-hidden="true" />
               Weekly Activity
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-0">
+          <CardContent className="pt-0" role="img" aria-label="Weekly activity line chart">
             <SimpleLineChart 
               data={weeklyData}
               dataKey="hours"
@@ -248,21 +248,22 @@ export function EnhancedOverview() {
         </Card>
 
         {/* Task Status Distribution */}
-        <Card className="card-gradient min-h-[400px]">
+        <Card className="card-gradient min-h-[400px] animate-fade-in" style={{ animationDelay: '450ms' }}>
           <CardHeader className="pb-4">
             <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-50 flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
+              <BarChart3 className="h-5 w-5" aria-hidden="true" />
               Task Distribution
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="space-y-4">
+            <div className="space-y-4" role="list" aria-label="Task status distribution">
               {taskStatusData.map((entry, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
+                <div key={index} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg transition-smooth hover-lift" role="listitem">
                   <div className="flex items-center gap-3">
                     <div 
                       className="w-4 h-4 rounded-full" 
                       style={{ backgroundColor: entry.color }}
+                      aria-hidden="true"
                     />
                     <span className="font-medium text-gray-700 dark:text-gray-300">{entry.name}</span>
                   </div>
@@ -276,30 +277,30 @@ export function EnhancedOverview() {
 
       {/* Session Stats for Admins */}
       {profile?.role === 'admin' && (
-        <Card className="card-gradient">
+        <Card className="card-gradient animate-fade-in" style={{ animationDelay: '550ms' }}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
+              <Users className="h-5 w-5" aria-hidden="true" />
               Team Activity Overview
             </CardTitle>
             <CardDescription>Recent session and activity statistics</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-muted p-4 rounded-lg text-center">
-                <h4 className="font-semibold text-lg">{sessionStats.totalSessions}</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4" role="group" aria-label="Team activity metrics">
+              <div className="bg-muted p-4 rounded-lg text-center transition-smooth hover-lift">
+                <h4 className="font-semibold text-lg count-up">{sessionStats.totalSessions}</h4>
                 <p className="text-sm text-muted-foreground">Total Sessions</p>
               </div>
-              <div className="bg-muted p-4 rounded-lg text-center">
-                <h4 className="font-semibold text-lg">{sessionStats.totalHours}h</h4>
+              <div className="bg-muted p-4 rounded-lg text-center transition-smooth hover-lift">
+                <h4 className="font-semibold text-lg count-up">{sessionStats.totalHours}h</h4>
                 <p className="text-sm text-muted-foreground">Total Screen Time</p>
               </div>
-              <div className="bg-muted p-4 rounded-lg text-center">
-                <h4 className="font-semibold text-lg">{sessionStats.todayHours}h</h4>
+              <div className="bg-muted p-4 rounded-lg text-center transition-smooth hover-lift">
+                <h4 className="font-semibold text-lg count-up">{sessionStats.todayHours}h</h4>
                 <p className="text-sm text-muted-foreground">Today's Activity</p>
               </div>
-              <div className="bg-muted p-4 rounded-lg text-center">
-                <h4 className="font-semibold text-lg">{Math.round((sessionStats.completedSessions / sessionStats.totalSessions) * 100) || 0}%</h4>
+              <div className="bg-muted p-4 rounded-lg text-center transition-smooth hover-lift">
+                <h4 className="font-semibold text-lg count-up">{Math.round((sessionStats.completedSessions / sessionStats.totalSessions) * 100) || 0}%</h4>
                 <p className="text-sm text-muted-foreground">Session Completion</p>
               </div>
             </div>
@@ -308,17 +309,22 @@ export function EnhancedOverview() {
       )}
 
       {/* Recent Activity */}
-      <Card className="card-gradient">
+      <Card className="card-gradient animate-fade-in" style={{ animationDelay: '500ms' }}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
+            <Calendar className="h-5 w-5" aria-hidden="true" />
             Recent Tasks
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {myTasks.slice(0, 5).map((task) => (
-              <div key={task.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover-scale">
+          <div className="space-y-4" role="list" aria-label="Recent tasks">
+            {myTasks.slice(0, 5).map((task, index) => (
+              <div 
+                key={task.id} 
+                className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover-scale transition-smooth animate-fade-in"
+                style={{ animationDelay: `${550 + (index * 50)}ms` }}
+                role="listitem"
+              >
                 <div className="space-y-1">
                   <p className="text-sm font-medium">{task.title}</p>
                   <div className="flex items-center gap-2">
@@ -329,13 +335,15 @@ export function EnhancedOverview() {
                       {task.status.replace('_', ' ')}
                     </Badge>
                     <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Coins className="h-3 w-3" />
+                      <Coins className="h-3 w-3" aria-hidden="true" />
                       {task.slt_coin_value}
                     </span>
                   </div>
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {new Date(task.updated_at).toLocaleDateString()}
+                  <time dateTime={task.updated_at}>
+                    {new Date(task.updated_at).toLocaleDateString()}
+                  </time>
                 </div>
               </div>
             ))}

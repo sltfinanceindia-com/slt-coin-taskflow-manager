@@ -1,6 +1,7 @@
 import { Moon, Sun, Bell, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { OnlineIndicator } from "@/components/ui/online-indicator"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -66,7 +67,8 @@ export function AppHeader() {
             variant="ghost"
             size="icon"
             onClick={toggleTheme}
-            className="h-10 w-10 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+            aria-label="Toggle theme"
+            className="h-10 w-10 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
           >
             <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -74,47 +76,55 @@ export function AppHeader() {
           </Button>
 
           {/* Notifications */}
-          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 relative">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            aria-label={`Notifications ${pendingCoins > 0 ? `(${pendingCoins} pending)` : ''}`}
+            className="h-10 w-10 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 relative transition-all duration-200"
+          >
             <Bell className="h-5 w-5" />
             {pendingCoins > 0 && (
-              <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center font-medium">
+              <Badge 
+                variant="count"
+                className="absolute -top-1 -right-1 h-5 min-w-[1.25rem] px-1.5 py-0.5 rounded-full bg-red-500 text-white text-xs font-medium border-2 border-white dark:border-gray-900 animate-pulse-ring"
+              >
                 {pendingCoins > 9 ? '9+' : pendingCoins}
-              </span>
+              </Badge>
             )}
           </Button>
 
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-10 gap-2 px-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
-                <div className="h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center">
-                  <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
-                    {profile?.full_name?.charAt(0).toUpperCase()}
-                  </span>
+              <Button 
+                variant="ghost" 
+                className="flex items-center gap-2 h-10 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 focus-ring"
+                aria-label="Open user menu"
+              >
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-medium relative">
+                  {profile?.full_name?.charAt(0).toUpperCase()}
+                  <OnlineIndicator online={true} className="absolute bottom-0 right-0" />
                 </div>
-                <span className="hidden md:inline-block text-sm font-medium">
-                  {profile?.full_name}
-                </span>
+                <span className="text-sm font-medium hidden sm:block">{profile?.full_name}</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg rounded-lg">
+            <DropdownMenuContent align="end" className="w-56 animate-fade-in">
               <DropdownMenuLabel>
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none text-gray-900 dark:text-gray-100">
-                    {profile?.full_name}
-                  </p>
-                  <p className="text-xs leading-none text-gray-600 dark:text-gray-400">
-                    {profile?.email}
-                  </p>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">{profile?.full_name}</p>
+                  <p className="text-xs text-muted-foreground">{profile?.email}</p>
+                  <Badge variant={profile?.role === 'admin' ? 'admin' : 'intern'} className="text-xs">
+                    {profile?.role}
+                  </Badge>
                 </div>
               </DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
+              <DropdownMenuSeparator />
               <DropdownMenuItem 
-                onClick={handleSignOut}
-                className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                onClick={handleSignOut} 
+                className="text-red-600 dark:text-red-400 cursor-pointer focus:bg-red-50 dark:focus:bg-red-900/20"
               >
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
+                <span>Sign Out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

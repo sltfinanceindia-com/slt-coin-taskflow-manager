@@ -49,7 +49,10 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow duration-200 space-y-3">
+    <article 
+      className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 space-y-3 hover-lift"
+      aria-label={`Task: ${task.title}`}
+    >
       {/* Header with Task Title - Always Visible */}
       <div className="space-y-2">
         <div className="flex items-start justify-between gap-2">
@@ -69,7 +72,7 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
           
           <div className="flex items-center gap-1 flex-shrink-0">
             <div className="flex items-center bg-gradient-to-r from-primary/10 to-secondary/10 px-1 py-0.5 rounded border border-primary/20">
-              <Coins className="h-2 w-2 text-primary mr-0.5" />
+              <Coins className="h-2 w-2 text-primary mr-0.5" aria-hidden="true" />
               <span className="font-bold text-primary text-xs">{task.slt_coin_value}</span>
             </div>
             {isAdmin && (
@@ -91,17 +94,19 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
       {/* Task Details */}
       <div className="space-y-2 text-xs">
         <div className="flex items-center gap-1">
-          <User className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+          <User className="h-3 w-3 text-muted-foreground flex-shrink-0" aria-hidden="true" />
           <div className="min-w-0 flex-1">
             <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Assigned to</p>
             <p className="font-medium text-foreground truncate text-xs">{task.assigned_profile?.full_name}</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <Calendar className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+          <Calendar className="h-3 w-3 text-muted-foreground flex-shrink-0" aria-hidden="true" />
           <div className="min-w-0 flex-1">
             <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Due Date</p>
-            <p className="font-medium text-foreground text-xs">{format(new Date(task.end_date), 'MMM dd, yyyy')}</p>
+            <time dateTime={task.end_date} className="font-medium text-foreground text-xs">
+              {format(new Date(task.end_date), 'MMM dd, yyyy')}
+            </time>
           </div>
         </div>
       </div>
@@ -137,15 +142,16 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
           variant="outline"
           size="sm"
           onClick={() => onAdminOverride(task)}
-          className="w-full gap-1 hover:bg-muted/50 transition-all duration-200 text-xs h-7"
+          aria-label="Override task status as admin"
+          className="w-full gap-1 hover:bg-muted/50 transition-all duration-200 text-xs h-7 focus-ring"
         >
-          <Edit className="h-3 w-3" />
+          <Edit className="h-3 w-3" aria-hidden="true" />
           Admin Override Status
         </Button>
       )}
 
       {/* Comments Section - Collapsible */}
       <TaskComments taskId={task.id} />
-    </div>
+    </article>
   );
 }
