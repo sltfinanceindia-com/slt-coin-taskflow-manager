@@ -23,25 +23,13 @@ export default function Landing() {
     }
   });
 
-  // Fetch real statistics
+  // Fetch real statistics using RPC function that bypasses RLS
   const { data: statsData } = useQuery({
     queryKey: ['landing-stats'],
     queryFn: async () => {
-      const [profiles, tasks, coins] = await Promise.all([
-        supabase.from('profiles').select('id').eq('is_active', true),
-        supabase.from('tasks').select('id').eq('status', 'verified'),
-        supabase.from('coin_transactions').select('coins_earned').eq('status', 'approved')
-      ]);
-
-      const totalUsers = profiles.data?.length || 0;
-      const completedTasks = tasks.data?.length || 0;
-      const totalCoins = coins.data?.reduce((sum, t) => sum + (t.coins_earned || 0), 0) || 0;
-
-      return {
-        totalUsers,
-        completedTasks,
-        totalCoins
-      };
+      const { data, error } = await supabase.rpc('get_public_stats');
+      if (error) throw error;
+      return data as { totalUsers: number; completedTasks: number; totalCoins: number };
     }
   });
 

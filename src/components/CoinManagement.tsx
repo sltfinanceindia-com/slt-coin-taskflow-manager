@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useCoinTransactions } from '@/hooks/useCoinTransactions';
 import { useTasks } from '@/hooks/useTasks';
+import { useCoinRates } from '@/hooks/useCoinRates';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +22,7 @@ interface VerifyTaskFormData {
 export function CoinManagement() {
   const { transactions, isLoading } = useCoinTransactions();
   const { tasks, verifyTask } = useTasks();
+  const { latestRate } = useCoinRates();
   const [selectedTask, setSelectedTask] = useState<any>(null);
   const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
   const [approveAction, setApproveAction] = useState<boolean>(true);
@@ -38,6 +40,11 @@ export function CoinManagement() {
     .reduce((sum, t) => sum + t.coins_earned, 0);
   
   const pendingCoinsValue = pendingTasks.reduce((sum, task) => sum + task.slt_coin_value, 0);
+
+  // Calculate USD values
+  const currentRate = latestRate?.rate || 0;
+  const totalUSDValue = totalCoinsAwarded * currentRate;
+  const pendingUSDValue = pendingCoinsValue * currentRate;
 
   const handleVerifyClick = (task: any, approve: boolean) => {
     setSelectedTask(task);
@@ -76,7 +83,18 @@ export function CoinManagement() {
       </div>
 
       {/* Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Current SLT Rate</CardTitle>
+            <TrendingUp className="h-4 w-4 text-emerald-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">${currentRate.toFixed(4)}</div>
+            <p className="text-xs text-muted-foreground">Per SLT coin</p>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Coins Awarded</CardTitle>
@@ -84,7 +102,7 @@ export function CoinManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-coin-gold">{totalCoinsAwarded}</div>
-            <p className="text-xs text-muted-foreground">Lifetime earnings</p>
+            <p className="text-xs text-muted-foreground">${totalUSDValue.toFixed(2)} USD</p>
           </CardContent>
         </Card>
 
@@ -95,7 +113,7 @@ export function CoinManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-500">{pendingTasks.length}</div>
-            <p className="text-xs text-muted-foreground">{pendingCoinsValue} coins waiting</p>
+            <p className="text-xs text-muted-foreground">{pendingCoinsValue} coins (${pendingUSDValue.toFixed(2)})</p>
           </CardContent>
         </Card>
 
