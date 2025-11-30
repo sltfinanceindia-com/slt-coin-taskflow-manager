@@ -2254,6 +2254,7 @@ export type Database = {
         }[]
       }
       get_current_user_role: { Args: never; Returns: string }
+      get_public_stats: { Args: never; Returns: Json }
       get_user_productivity_metrics: {
         Args: { p_end_date?: string; p_start_date?: string; p_user_id: string }
         Returns: {
