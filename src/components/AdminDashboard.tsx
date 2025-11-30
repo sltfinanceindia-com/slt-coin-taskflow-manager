@@ -2,13 +2,15 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, CheckSquare, Trophy, BookOpen, Calendar as CalendarIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Users, CheckSquare, Trophy, BookOpen, Calendar as CalendarIcon, Coins } from 'lucide-react';
 import { TaskManager } from '@/components/TaskManager';
 import { InternManager } from '@/components/InternManager';
 import { ProfileSettings } from '@/components/ProfileSettings';
 import { TrainingAdmin } from '@/components/TrainingAdmin';
 import { CertificateGenerator } from '@/components/CertificateGenerator';
 import { CoinRateManagement } from '@/components/CoinRateManagement';
+import { CompactCoinRate } from '@/components/CompactCoinRate';
 import Calendar from '@/components/Calendar';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -93,16 +95,18 @@ export function AdminDashboard() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-8">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="interns">Interns</TabsTrigger>
-          <TabsTrigger value="tasks">Tasks</TabsTrigger>
-          <TabsTrigger value="coin-rate">Coin Rate</TabsTrigger>
-          <TabsTrigger value="training">Training</TabsTrigger>
-          <TabsTrigger value="certificates">Certificates</TabsTrigger>
-          <TabsTrigger value="calendar">Calendar</TabsTrigger>
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto">
+          <TabsList className="inline-flex w-auto min-w-full">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="interns">Interns</TabsTrigger>
+            <TabsTrigger value="tasks">Tasks</TabsTrigger>
+            <TabsTrigger value="coin-rate">Coin Rate</TabsTrigger>
+            <TabsTrigger value="training">Training</TabsTrigger>
+            <TabsTrigger value="certificates">Certificates</TabsTrigger>
+            <TabsTrigger value="calendar">Calendar</TabsTrigger>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="overview" className="space-y-8">
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -155,6 +159,23 @@ export function AdminDashboard() {
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   Available modules
                 </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Quick Coin Rate Widget */}
+          <div className="grid gap-6 md:grid-cols-2">
+            <CompactCoinRate className="md:col-span-1" />
+            <Card>
+              <CardContent className="p-6 flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold mb-1">Manage SLT Coin Rate</h3>
+                  <p className="text-sm text-muted-foreground">Update the current coin rate and view history</p>
+                </div>
+                <Button onClick={() => setActiveTab('coin-rate')} className="bg-emerald-600 hover:bg-emerald-700">
+                  <Coins className="h-4 w-4 mr-2" />
+                  Update Rate
+                </Button>
               </CardContent>
             </Card>
           </div>

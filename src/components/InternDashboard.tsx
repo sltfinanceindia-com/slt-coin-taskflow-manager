@@ -7,10 +7,16 @@ import { TaskList } from '@/components/TaskList';
 import { ProfileSettings } from '@/components/ProfileSettings';
 import { useAuth } from '@/hooks/useAuth';
 import { TrainingCenter } from '@/components/TrainingCenter';
+import { useCoinRates } from '@/hooks/useCoinRates';
 
 export function InternDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const { profile } = useAuth();
+  const { latestRate } = useCoinRates();
+
+  const currentRate = latestRate ? Number(latestRate.rate) : 1.0;
+  const totalCoins = profile?.total_coins || 0;
+  const totalUsdValue = totalCoins * currentRate;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -34,15 +40,15 @@ export function InternDashboard() {
 
         <TabsContent value="overview" className="space-y-8">
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="min-h-[140px]">
+            <Card className="min-h-[140px] bg-gradient-to-br from-coin-gold/10 to-coin-gold/5 border-coin-gold/20">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Coins</CardTitle>
-                <Trophy className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                <Trophy className="h-5 w-5 text-coin-gold" />
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-gray-900 dark:text-gray-50">{profile?.total_coins || 0}</div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Earned through completed tasks
+                <div className="text-3xl font-bold text-coin-gold">{totalCoins} coins</div>
+                <p className="text-xs text-muted-foreground">
+                  ${totalUsdValue.toFixed(2)} @ ${currentRate.toFixed(4)}/coin
                 </p>
               </CardContent>
             </Card>
