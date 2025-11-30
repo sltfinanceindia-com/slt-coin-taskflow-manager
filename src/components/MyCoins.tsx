@@ -1,6 +1,7 @@
 import { useCoinTransactions } from '@/hooks/useCoinTransactions';
 import { useTasks } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
+import { useCoinRates } from '@/hooks/useCoinRates';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,6 +13,7 @@ export function MyCoins() {
   const { profile } = useAuth();
   const { transactions, getUserTransactions, getTotalEarned, getPendingCoins } = useCoinTransactions();
   const { tasks } = useTasks();
+  const { latestRate } = useCoinRates();
 
   // Get user's transactions
   const myTransactions = getUserTransactions(profile?.id);
@@ -49,6 +51,11 @@ export function MyCoins() {
   // Calculate average coins per task
   const avgCoinsPerTask = completedTasks.length > 0 ? totalEarned / completedTasks.length : 0;
 
+  // Calculate USD values
+  const currentRate = latestRate ? Number(latestRate.rate) : 1.0;
+  const totalUsdValue = totalEarned * currentRate;
+  const pendingUsdValue = pendingCoins * currentRate;
+
   return (
     <div className="space-y-6">
       <div>
@@ -64,8 +71,10 @@ export function MyCoins() {
             <Coins className="h-4 w-4 text-coin-gold" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-coin-gold">{totalEarned}</div>
-            <p className="text-xs text-muted-foreground">Lifetime earnings</p>
+            <div className="text-2xl font-bold text-coin-gold">{totalEarned} coins</div>
+            <p className="text-xs text-muted-foreground">
+              ${totalUsdValue.toFixed(2)} @ ${currentRate.toFixed(4)}/coin
+            </p>
           </CardContent>
         </Card>
 
@@ -75,8 +84,10 @@ export function MyCoins() {
             <Clock className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-500">{pendingCoins}</div>
-            <p className="text-xs text-muted-foreground">Awaiting approval</p>
+            <div className="text-2xl font-bold text-orange-500">{pendingCoins} coins</div>
+            <p className="text-xs text-muted-foreground">
+              ${pendingUsdValue.toFixed(2)} awaiting approval
+            </p>
           </CardContent>
         </Card>
 
@@ -178,13 +189,16 @@ export function MyCoins() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="flex items-center space-x-1">
+                        <div className="flex items-center space-x-1 mb-1">
                           <Coins className="h-4 w-4 text-coin-gold" />
                           <span className="font-bold text-coin-gold">
                             {transaction.coins_earned}
                           </span>
                         </div>
-                        <Badge 
+                        <p className="text-xs text-muted-foreground mb-1">
+                          ${(transaction.coins_earned * currentRate).toFixed(2)}
+                        </p>
+                        <Badge
                           variant={
                             transaction.status === 'approved' ? 'default' :
                             transaction.status === 'pending' ? 'secondary' : 'destructive'

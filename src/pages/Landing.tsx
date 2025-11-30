@@ -1,28 +1,50 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Coins, TrendingUp, Shield, Users, BarChart3, MessageSquare, BookOpen, Award, ArrowRight, CheckCircle, LineChart } from 'lucide-react';
+import { Coins, TrendingUp, TrendingDown, Shield, Users, BarChart3, MessageSquare, BookOpen, Award, ArrowRight, CheckCircle, LineChart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { CoinRateChart } from '@/components/CoinRateChart';
 export default function Landing() {
   // Fetch latest coin rate
-  const {
-    data: latestRate
-  } = useQuery({
+  // Fetch latest coin rate
+  const { data: latestRate } = useQuery({
     queryKey: ['latest-coin-rate'],
     queryFn: async () => {
-      const {
-        data,
-        error
-      } = await supabase.from('coin_rates').select('*').order('rate_date', {
-        ascending: false
-      }).limit(1).single();
+      const { data, error } = await supabase
+        .from('coin_rates')
+        .select('*')
+        .order('rate_date', { ascending: false })
+        .limit(1)
+        .single();
       if (error) throw error;
       return data;
     }
   });
+
+  // Fetch real statistics
+  const { data: statsData } = useQuery({
+    queryKey: ['landing-stats'],
+    queryFn: async () => {
+      const [profiles, tasks, coins] = await Promise.all([
+        supabase.from('profiles').select('id').eq('is_active', true),
+        supabase.from('tasks').select('id').eq('status', 'verified'),
+        supabase.from('coin_transactions').select('coins_earned').eq('status', 'approved')
+      ]);
+
+      const totalUsers = profiles.data?.length || 0;
+      const completedTasks = tasks.data?.length || 0;
+      const totalCoins = coins.data?.reduce((sum, t) => sum + (t.coins_earned || 0), 0) || 0;
+
+      return {
+        totalUsers,
+        completedTasks,
+        totalCoins
+      };
+    }
+  });
+
   const features = [{
     icon: Coins,
     title: 'SLT Coin Rewards',
@@ -60,19 +82,24 @@ export default function Landing() {
     color: 'text-indigo-600',
     bgColor: 'bg-indigo-50'
   }];
-  const stats = [{
-    value: '1000+',
-    label: 'Active Users'
-  }, {
-    value: '50K+',
-    label: 'Tasks Completed'
-  }, {
-    value: '100K+',
-    label: 'Coins Distributed'
-  }, {
-    value: '99.9%',
-    label: 'Uptime'
-  }];
+  const stats = [
+    {
+      value: statsData?.totalUsers.toString() || '0',
+      label: 'Active Users'
+    },
+    {
+      value: statsData?.completedTasks.toString() || '0',
+      label: 'Tasks Completed'
+    },
+    {
+      value: statsData?.totalCoins.toLocaleString() || '0',
+      label: 'Coins Distributed'
+    },
+    {
+      value: '99.9%',
+      label: 'Uptime'
+    }
+  ];
   return <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       {/* Header */}
       <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white/80 backdrop-blur-sm" role="banner">
@@ -137,31 +164,37 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* Coin Rate Display */}
-          <div className="mt-16 mx-auto max-w-5xl animate-fade-in" style={{
-          animationDelay: '300ms'
-        }}>
-            <Card className="border-2 border-emerald-200 shadow-2xl overflow-hidden hover-lift" role="region" aria-label="Live SLT coin rate information">
-              <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 p-4 text-white">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Coins className="h-6 w-6" aria-hidden="true" />
-                    <h3 className="text-lg font-semibold">SLT Coin Live Rate</h3>
-                  </div>
-                  {latestRate && <div className="text-right">
-                      <div className="text-2xl font-bold" aria-label={`Current rate: ${Number(latestRate.rate).toFixed(4)} dollars`}>
-                        ${Number(latestRate.rate).toFixed(4)}
-                      </div>
-                      <Badge variant={Number(latestRate.change_percentage) >= 0 ? 'success' : 'destructive'} className="mt-1" aria-label={`24 hour change: ${Number(latestRate.change_percentage) >= 0 ? 'increased' : 'decreased'} by ${Math.abs(Number(latestRate.change_percentage)).toFixed(2)} percent`}>
-                        {Number(latestRate.change_percentage) >= 0 ? '+' : ''}
-                        {Number(latestRate.change_percentage).toFixed(2)}%
-                      </Badge>
-                    </div>}
+          {/* Compact Coin Rate Display */}
+          <div className="mt-16 mx-auto max-w-md animate-fade-in" style={{
+            animationDelay: '300ms'
+          }}>
+            <Card className="border-2 border-emerald-200 shadow-xl overflow-hidden hover-lift" role="region" aria-label="Current SLT coin rate">
+              <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 p-6 text-white text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Coins className="h-6 w-6" aria-hidden="true" />
+                  <h3 className="text-lg font-semibold">SLT Coin Rate</h3>
                 </div>
+                {latestRate && (
+                  <div>
+                    <div className="text-4xl font-bold mb-2" aria-label={`Current rate: ${Number(latestRate.rate).toFixed(4)} dollars`}>
+                      ${Number(latestRate.rate).toFixed(4)}
+                    </div>
+                    <Badge 
+                      variant={Number(latestRate.change_percentage) >= 0 ? 'success' : 'destructive'} 
+                      className="text-sm"
+                      aria-label={`24 hour change: ${Number(latestRate.change_percentage) >= 0 ? 'increased' : 'decreased'} by ${Math.abs(Number(latestRate.change_percentage)).toFixed(2)} percent`}
+                    >
+                      {Number(latestRate.change_percentage) >= 0 ? (
+                        <TrendingUp className="h-3 w-3 mr-1 inline" />
+                      ) : (
+                        <></>
+                      )}
+                      {Number(latestRate.change_percentage) >= 0 ? '+' : ''}
+                      {Number(latestRate.change_percentage).toFixed(2)}% (24h)
+                    </Badge>
+                  </div>
+                )}
               </div>
-              <CardContent className="p-6">
-                <CoinRateChart />
-              </CardContent>
             </Card>
           </div>
         </div>
