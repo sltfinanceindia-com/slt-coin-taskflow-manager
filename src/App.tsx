@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { useAuthEmailNotifications } from "@/hooks/useAuthEmailNotifications";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { SkipLink } from "@/components/SkipLink";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import Landing from "./pages/Landing";
 import ModernDashboard from "./pages/ModernDashboard";
 import Auth from "./pages/Auth";
@@ -45,6 +46,7 @@ function AppContent() {
       <SkipLink />
       <Toaster />
       <Sonner />
+      <PWAInstallPrompt />
       <BrowserRouter>
         <Routes>
           {/* Public Routes */}

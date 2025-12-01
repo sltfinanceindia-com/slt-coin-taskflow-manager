@@ -24,13 +24,20 @@ export default function Landing() {
   });
 
   // Fetch real statistics using RPC function that bypasses RLS
-  const { data: statsData } = useQuery({
+  const { data: statsData, isLoading: statsLoading, error: statsError } = useQuery({
     queryKey: ['landing-stats'],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_public_stats');
-      if (error) throw error;
+      if (error) {
+        console.error('Stats fetch error:', error);
+        throw error;
+      }
       return data as { totalUsers: number; completedTasks: number; totalCoins: number };
-    }
+    },
+    staleTime: 30000, // 30 seconds
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    retry: 3,
   });
 
   const features = [{
@@ -72,15 +79,15 @@ export default function Landing() {
   }];
   const stats = [
     {
-      value: statsData?.totalUsers.toString() || '0',
+      value: statsLoading ? "..." : (statsError ? "N/A" : statsData?.totalUsers?.toString() || '0'),
       label: 'Active Users'
     },
     {
-      value: statsData?.completedTasks.toString() || '0',
+      value: statsLoading ? "..." : (statsError ? "N/A" : `${statsData?.completedTasks || 0}+`),
       label: 'Tasks Completed'
     },
     {
-      value: statsData?.totalCoins.toLocaleString() || '0',
+      value: statsLoading ? "..." : (statsError ? "N/A" : `${statsData?.totalCoins?.toLocaleString() || '0'}`),
       label: 'Coins Distributed'
     },
     {

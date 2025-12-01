@@ -138,43 +138,63 @@ export function TrainingCourses({ sections: propSections, isLoading: propIsLoadi
                         <div className="space-y-3">
                           {/* Videos */}
                           {sectionVideos.map((video: any) => (
-                            <div key={video.id} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-accent/50 transition-colors">
-                              <Play className="h-4 w-4 text-primary" />
-                              <div className="flex-1">
-                                <h4 className="font-medium">{video.title}</h4>
-                                {video.description && (
-                                  <p className="text-sm text-muted-foreground">{video.description}</p>
-                                )}
-                                {video.duration_minutes && (
-                                  <p className="text-xs text-muted-foreground mt-1">
-                                    Duration: {video.duration_minutes} minutes
-                                  </p>
-                                )}
+                            <button
+                              key={video.id}
+                              className="w-full flex items-center gap-3 p-3 sm:p-4 border rounded-lg hover:bg-accent/50 hover:border-primary/50 transition-all text-left group"
+                            >
+                              <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                                <Play className="h-4 w-4 text-primary" />
                               </div>
-                              <CheckCircle className="h-4 w-4 text-green-500" />
-                            </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-medium truncate">{video.title}</h4>
+                                {video.description && (
+                                  <p className="text-sm text-muted-foreground line-clamp-1">{video.description}</p>
+                                )}
+                                <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                                  {video.duration_minutes && (
+                                    <span className="flex items-center gap-1">
+                                      <Clock className="h-3 w-3" />
+                                      {video.duration_minutes} min
+                                    </span>
+                                  )}
+                                  <Badge variant="outline" className="text-xs">Video</Badge>
+                                </div>
+                              </div>
+                              <CheckCircle className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+                            </button>
                           ))}
                           
                           {/* Assignments */}
                           {sectionAssignments.map((assignment: any) => (
-                            <div key={assignment.id} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-accent/50 transition-colors">
-                              <FileText className="h-4 w-4 text-primary" />
-                              <div className="flex-1">
-                                <h4 className="font-medium">{assignment.title}</h4>
+                            <button
+                              key={assignment.id}
+                              className="w-full flex items-center gap-3 p-3 sm:p-4 border rounded-lg hover:bg-accent/50 hover:border-primary/50 transition-all text-left group"
+                            >
+                              <div className="p-2 rounded-lg bg-amber-500/10 group-hover:bg-amber-500/20 transition-colors">
+                                <FileText className="h-4 w-4 text-amber-600" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-medium truncate">{assignment.title}</h4>
                                 {assignment.description && (
-                                  <p className="text-sm text-muted-foreground">{assignment.description}</p>
+                                  <p className="text-sm text-muted-foreground line-clamp-1">{assignment.description}</p>
                                 )}
-                                <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+                                <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
                                   {assignment.due_days && (
-                                    <span>Due in {assignment.due_days} days</span>
+                                    <span className="flex items-center gap-1">
+                                      <Clock className="h-3 w-3" />
+                                      Due in {assignment.due_days} days
+                                    </span>
                                   )}
                                   {assignment.max_points && (
-                                    <span>Max points: {assignment.max_points}</span>
+                                    <span className="flex items-center gap-1">
+                                      <Award className="h-3 w-3" />
+                                      {assignment.max_points} pts
+                                    </span>
                                   )}
                                 </div>
                               </div>
-                              <Badge variant="outline">Assignment</Badge>
-                            </div>
+                              <Badge variant="outline" className="flex-shrink-0">Assignment</Badge>
+                            </button>
                           ))}
                         </div>
                       </AccordionContent>
