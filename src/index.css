@@ -588,5 +588,71 @@ All colors MUST be HSL.
   .count-up {
     animation: countUp 1s ease-out;
   }
+
+  /* Mobile Responsive Enhancements */
+  @media (max-width: 768px) {
+    /* Better touch targets */
+    button, a, [role="button"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    /* Improve mobile readability */
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-size-adjust: 100%;
+    }
+
+    /* Better mobile spacing */
+    .container {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+
+    /* Mobile-optimized cards */
+    .card {
+      border-radius: 0.5rem;
+    }
+
+    /* Fix for iOS Safari 100vh issue */
+    .min-h-screen, .h-screen {
+      min-height: -webkit-fill-available;
+      min-height: 100dvh;
+    }
+
+    /* Smooth scrolling for mobile */
+    html {
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Prevent text selection on buttons */
+    button {
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Better mobile input */
+    input, textarea, select {
+      font-size: 16px; /* Prevents zoom on iOS */
+    }
+
+    /* Mobile-friendly modals */
+    [role="dialog"] {
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+  }
+
+  /* PWA Display Mode Detection */
+  @media (display-mode: standalone) {
+    /* App-specific styles when installed as PWA */
+    body {
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+  }
 }
 

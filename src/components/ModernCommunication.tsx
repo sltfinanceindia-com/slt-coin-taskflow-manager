@@ -35,14 +35,15 @@ export default function ModernCommunication() {
   }
 
   return (
-    <div className="h-screen flex bg-background overflow-hidden">
+    <div className="min-h-[100dvh] flex bg-background">
       {isMobile ? (
         // Mobile: Single panel view with smooth transitions
-        <div className="w-full h-full relative">
+        <div className="w-full h-[100dvh] relative overflow-hidden">
           <div
-            className={`absolute inset-0 transition-transform duration-300 ${
+            className={`absolute inset-0 w-full h-full transition-transform duration-300 ease-in-out ${
               showSidebar || !communication.selectedChannel ? 'translate-x-0' : '-translate-x-full'
             }`}
+            style={{ willChange: 'transform' }}
           >
             <EnhancedChatList
               channels={communication.channels}
@@ -58,9 +59,10 @@ export default function ModernCommunication() {
             />
           </div>
           <div
-            className={`absolute inset-0 transition-transform duration-300 ${
+            className={`absolute inset-0 w-full h-full transition-transform duration-300 ease-in-out ${
               !showSidebar && communication.selectedChannel ? 'translate-x-0' : 'translate-x-full'
             }`}
+            style={{ willChange: 'transform' }}
           >
             {communication.selectedChannel && (
               <EnhancedMessageArea

@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useEffect } from 'react';
 
 export interface CoinRate {
   id: string;
@@ -15,6 +16,8 @@ export interface CoinRate {
 }
 
 export function useCoinRates() {
+  const queryClient = useQueryClient();
+  
   const coinRatesQuery = useQuery({
     queryKey: ['coin-rates'],
     queryFn: async () => {
@@ -26,6 +29,9 @@ export function useCoinRates() {
       if (error) throw error;
       return data as CoinRate[];
     },
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   const latestRateQuery = useQuery({
@@ -41,7 +47,35 @@ export function useCoinRates() {
       if (error) throw error;
       return data as CoinRate;
     },
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
+
+  // Set up real-time subscription for coin rate changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('coin-rates-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'coin_rates'
+        },
+        (payload) => {
+          console.log('🔄 Coin rate changed:', payload);
+          // Invalidate queries to refetch fresh data
+          queryClient.invalidateQueries({ queryKey: ['coin-rates'] });
+          queryClient.invalidateQueries({ queryKey: ['latest-coin-rate'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   return {
     rates: coinRatesQuery.data || [],
