@@ -329,7 +329,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('👋 Signing out...');
       
-      // Set user as offline before signing out
+      // Try to update session logs and presence, but don't block logout on errors
       if (profile?.id) {
         try {
           // End current session FIRST (before setting offline)
@@ -342,7 +342,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .limit(1);
           
           if (fetchError) {
-            console.error('❌ Error fetching session for logout:', fetchError);
+            console.warn('⚠️ Error fetching session for logout (expected if session expired):', fetchError.message);
           } else if (sessions && sessions.length > 0) {
             const { error: updateError } = await supabase
               .from('session_logs')
@@ -354,7 +354,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               .eq('user_id', profile.id);
             
             if (updateError) {
-              console.error('❌ Error updating logout time:', updateError);
+              console.warn('⚠️ Error updating logout time (expected if session expired):', updateError.message);
             } else {
               console.log('✅ Session logout time recorded');
             }
@@ -367,28 +367,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
           
           console.log('✅ User presence updated to offline');
-        } catch (presenceError) {
-          console.error('❌ Failed to update presence on signout:', presenceError);
+        } catch (presenceError: any) {
+          // Gracefully handle session/presence errors (session may already be invalid)
+          console.warn('⚠️ Failed to update presence on signout (expected if session expired):', presenceError?.message);
+          // Continue with logout anyway
         }
       }
       
       // Sign out from Supabase
       const { error } = await supabase.auth.signOut();
       
-      if (error) {
-        console.error('❌ Sign out error:', error);
-        return { error };
-      }
-      
-      // ✅ CRITICAL: Explicitly clear all auth state after signout
+      // Always clear local state regardless of signOut result
       setUser(null);
       setSession(null);
       setProfile(null);
       
+      if (error && !error.message.includes('session_not_found')) {
+        console.error('❌ Sign out error:', error);
+        return { error };
+      }
+      
       console.log('✅ Sign out successful, state cleared');
       return { error: null };
-    } catch (error) {
-      console.error('❌ Sign out error:', error);
+    } catch (error: any) {
+      console.error('❌ Unexpected sign out error:', error);
+      // Still clear local state on unexpected errors
+      setUser(null);
+      setSession(null);
+      setProfile(null);
       return { error };
     }
   };
