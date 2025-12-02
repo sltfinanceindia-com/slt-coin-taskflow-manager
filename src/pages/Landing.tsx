@@ -102,9 +102,13 @@ export default function Landing() {
           <nav className="flex h-16 items-center justify-between" aria-label="Main navigation">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center" aria-hidden="true">
-                <Coins className="h-6 w-6 text-white" />
+                <Coins className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900">SLTwork Hub</span>
+              <span className="text-lg font-bold text-gray-900">
+                <span className="font-black">SLT</span>
+                <span className="font-normal text-gray-600"> work </span>
+                <span className="font-black">HuB</span>
+              </span>
             </div>
             <div className="flex items-center gap-3">
               <Link to="/auth">
@@ -124,8 +128,8 @@ export default function Landing() {
       </header>
 
       {/* Hero Section */}
-      <section aria-labelledby="hero-heading" className="relative overflow-hidden py-20 sm:py-32 bg-primary">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-white to-blue-50 opacity-50" aria-hidden="true" />
+      <section aria-labelledby="hero-heading" className="relative overflow-hidden py-20 sm:py-32 bg-white">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-white to-blue-50 opacity-70" aria-hidden="true" />
         <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
             <Badge className="mb-4 bg-emerald-100 text-emerald-800 border-emerald-200 animate-bounce-subtle">
@@ -207,17 +211,17 @@ export default function Landing() {
             </p>
           </header>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" role="list">
-            {features.map((feature, index) => <Card key={index} className="hover-scale border-gray-200 transition-all duration-200 animate-fade-in" style={{
+            {features.map((feature, index) => <Card key={index} className="hover-scale border-gray-200 transition-all duration-200 animate-fade-in bg-card" style={{
             animationDelay: `${index * 100}ms`
           }} role="listitem">
-                <CardContent className="p-6 bg-muted-foreground">
+                <CardContent className="p-6">
                   <div className={`h-12 w-12 rounded-lg ${feature.bgColor} flex items-center justify-center mb-4 transition-transform duration-200`} aria-hidden="true">
                     <feature.icon className={`h-6 w-6 ${feature.color}`} />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2 leading-snug">
+                  <h3 className="text-lg font-semibold text-foreground mb-2 leading-snug">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">
+                  <p className="text-muted-foreground text-sm leading-relaxed">
                     {feature.description}
                   </p>
                 </CardContent>
@@ -275,22 +279,25 @@ export default function Landing() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center" aria-hidden="true">
-                <Coins className="h-6 w-6 text-white" />
+                <Coins className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold">SLTwork Hub</span>
+              <span className="text-lg font-bold">
+                <span className="font-black">SLT</span>
+                <span className="font-normal text-gray-400"> work </span>
+                <span className="font-black">HuB</span>
+              </span>
             </div>
             
             {/* Made in India tagline */}
-            <div className="flex flex-col items-center">
+            <div className="flex items-center">
               <span className="text-emerald-400 font-medium flex items-center gap-2">
                 <span>Made with ❤️ in</span>
                 <span className="font-bold text-lg">భారత్ 🇮🇳</span>
               </span>
-              <span className="text-sm text-gray-400 mt-1">India</span>
             </div>
             
             <div className="text-gray-400 text-sm">
-              © 2024 SLTwork Hub. All rights reserved.
+              © 2024 SLT work HuB. All rights reserved.
             </div>
           </div>
         </div>

@@ -105,11 +105,15 @@ export default function Auth() {
           <div className="flex items-center justify-center mb-4">
             <img 
               src="/lovable-uploads/56d5dd03-2808-4b88-9f9c-cc8932c46fe8.png" 
-              alt="SLT Finance India"
+              alt="SLT work HuB"
               className="h-12 w-auto object-contain"
             />
           </div>
-          <h1 className="text-xl font-semibold text-primary mb-2">SLT Finance India</h1>
+          <h1 className="text-lg font-semibold text-primary mb-2">
+            <span className="font-black">SLT</span>
+            <span className="font-normal"> work </span>
+            <span className="font-black">HuB</span>
+          </h1>
           <p className="text-muted-foreground">Coin-Based Workfront System</p>
         </div>
 

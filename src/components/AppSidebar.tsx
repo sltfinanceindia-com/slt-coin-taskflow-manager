@@ -86,12 +86,16 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
             <div className="flex items-center gap-3">
               <img 
                 src="/lovable-uploads/56d5dd03-2808-4b88-9f9c-cc8932c46fe8.png" 
-                alt="SLT Finance India"
+                alt="SLT work HuB"
                 className="h-10 w-auto object-contain shrink-0"
               />
               {!collapsed && (
                 <div className="min-w-0 flex-1">
-                  <h2 className="font-bold text-sidebar-foreground text-xl truncate">SLT Finance</h2>
+                  <h2 className="text-sidebar-foreground text-lg truncate">
+                    <span className="font-black">SLT</span>
+                    <span className="font-normal"> work </span>
+                    <span className="font-black">HuB</span>
+                  </h2>
                   <p className="text-xs text-sidebar-foreground/60 truncate">Task Management</p>
                 </div>
               )}
