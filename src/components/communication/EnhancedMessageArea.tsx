@@ -351,8 +351,8 @@ export default function EnhancedMessageArea({
   return (
     <div className="h-full flex flex-col bg-background">
       {/* Header */}
-      <div className="border-b border-border px-6 py-4 flex items-center justify-between sticky top-0 bg-card z-10 shadow-sm">
-        <div className="flex items-center gap-4">
+      <div className="border-b border-border px-4 md:px-6 py-3 md:py-4 flex items-center justify-between sticky top-0 bg-card z-10 shadow-sm safe-top">
+        <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
           {isMobile && onBack && (
             <Button variant="ghost" size="icon" onClick={onBack}>
               <ChevronLeft className="h-5 w-5" />
@@ -465,7 +465,7 @@ export default function EnhancedMessageArea({
       </ScrollArea>
 
       {/* Message Input */}
-      <div className="p-4 border-t border-border bg-card/50 backdrop-blur-sm">
+      <div className="p-3 md:p-4 border-t border-border bg-card/50 backdrop-blur-sm safe-bottom">
         <EnhancedMessageInput
           onSendMessage={handleSendMessage}
           placeholder={`Message ${channel.is_direct_message && channelUser ? channelUser.full_name : `#${channel.name}`}`}

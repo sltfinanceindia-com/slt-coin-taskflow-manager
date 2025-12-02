@@ -35,12 +35,12 @@ export default function ModernCommunication() {
   }
 
   return (
-    <div className="min-h-[100dvh] flex bg-background">
+    <div className="h-full flex bg-background">
       {isMobile ? (
-        // Mobile: Single panel view with smooth transitions
-        <div className="w-full h-[100dvh] relative overflow-hidden">
+        // Mobile: Full-screen fixed panel view with smooth transitions
+        <div className="fixed inset-0 z-50 bg-background">
           <div
-            className={`absolute inset-0 w-full h-full transition-transform duration-300 ease-in-out ${
+            className={`absolute inset-0 w-full h-full transition-transform duration-300 ease-in-out bg-background ${
               showSidebar || !communication.selectedChannel ? 'translate-x-0' : '-translate-x-full'
             }`}
             style={{ willChange: 'transform' }}
@@ -59,7 +59,7 @@ export default function ModernCommunication() {
             />
           </div>
           <div
-            className={`absolute inset-0 w-full h-full transition-transform duration-300 ease-in-out ${
+            className={`absolute inset-0 w-full h-full transition-transform duration-300 ease-in-out bg-background ${
               !showSidebar && communication.selectedChannel ? 'translate-x-0' : 'translate-x-full'
             }`}
             style={{ willChange: 'transform' }}

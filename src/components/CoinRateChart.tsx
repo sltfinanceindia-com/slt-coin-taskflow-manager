@@ -5,6 +5,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SimpleLineChart } from '@/components/SimpleChart';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { formatCoinRate } from '@/lib/currency';
 
 type TimeRange = '24h' | '7d' | '30d' | '1y';
 
@@ -143,25 +144,25 @@ export function CoinRateChart() {
         <div className="bg-muted/20 rounded-lg p-3">
           <p className="text-xs text-muted-foreground mb-1">Current Rate</p>
           <p className="text-lg font-bold text-gray-900 dark:text-gray-50">
-            ${latestRate ? Number(latestRate.rate).toFixed(4) : '0.0000'}
+            {latestRate ? formatCoinRate(Number(latestRate.rate)) : '₹0.0000'}
           </p>
         </div>
         <div className="bg-muted/20 rounded-lg p-3">
           <p className="text-xs text-muted-foreground mb-1">24h Change</p>
           <p className={`text-lg font-bold ${priceChange >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-            {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(4)}
+            {priceChange >= 0 ? '+₹' : '₹'}{Math.abs(priceChange).toFixed(4)}
           </p>
         </div>
         <div className="bg-muted/20 rounded-lg p-3">
           <p className="text-xs text-muted-foreground mb-1">High</p>
           <p className="text-lg font-bold text-gray-900 dark:text-gray-50">
-            ${highestRate ? Number(highestRate.rate).toFixed(4) : '0.0000'}
+            {highestRate ? formatCoinRate(Number(highestRate.rate)) : '₹0.0000'}
           </p>
         </div>
         <div className="bg-muted/20 rounded-lg p-3">
           <p className="text-xs text-muted-foreground mb-1">Low</p>
           <p className="text-lg font-bold text-gray-900 dark:text-gray-50">
-            ${lowestRate ? Number(lowestRate.rate).toFixed(4) : '0.0000'}
+            {lowestRate ? formatCoinRate(Number(lowestRate.rate)) : '₹0.0000'}
           </p>
         </div>
       </div>
@@ -172,13 +173,13 @@ export function CoinRateChart() {
           <div className="bg-muted/20 rounded-lg p-4">
             <p className="text-sm text-muted-foreground mb-2">24h Volume</p>
             <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">
-              ${latestRate.volume_24h ? Number(latestRate.volume_24h).toLocaleString() : '0'}
+              ₹{latestRate.volume_24h ? Number(latestRate.volume_24h).toLocaleString() : '0'}
             </p>
           </div>
           <div className="bg-muted/20 rounded-lg p-4">
             <p className="text-sm text-muted-foreground mb-2">Market Cap</p>
             <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">
-              ${latestRate.market_cap ? Number(latestRate.market_cap).toLocaleString() : '0'}
+              ₹{latestRate.market_cap ? Number(latestRate.market_cap).toLocaleString() : '0'}
             </p>
           </div>
         </div>

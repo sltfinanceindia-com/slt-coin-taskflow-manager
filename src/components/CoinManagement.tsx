@@ -22,6 +22,7 @@ import { Coins, CheckCircle, XCircle, Clock, TrendingUp, Settings, Award } from 
 import { useForm } from "react-hook-form";
 import { toast } from "@/hooks/use-toast";
 import { CoinRateManagement } from "./CoinRateManagement";
+import { formatINR, formatCoinRate } from "@/lib/currency";
 
 interface VerifyTaskFormData {
   feedback?: string;
@@ -95,7 +96,7 @@ export function CoinManagement() {
             <TrendingUp className="h-4 w-4 text-emerald-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${currentRate.toFixed(4)}</div>
+            <div className="text-2xl font-bold">{formatCoinRate(currentRate)}</div>
             <p className="text-xs text-muted-foreground">Per SLT coin</p>
           </CardContent>
         </Card>
@@ -107,7 +108,7 @@ export function CoinManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-coin-gold">{totalCoinsAwarded}</div>
-            <p className="text-xs text-muted-foreground">${totalUSDValue.toFixed(2)} USD</p>
+            <p className="text-xs text-muted-foreground">{formatINR(totalUSDValue)}</p>
           </CardContent>
         </Card>
 
@@ -119,7 +120,7 @@ export function CoinManagement() {
           <CardContent>
             <div className="text-2xl font-bold text-orange-500">{pendingTasks.length}</div>
             <p className="text-xs text-muted-foreground">
-              {pendingCoinsValue} coins (${pendingUSDValue.toFixed(2)})
+              {pendingCoinsValue} coins ({formatINR(pendingUSDValue)})
             </p>
           </CardContent>
         </Card>
