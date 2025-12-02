@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Coins, TrendingUp, Clock, CheckCircle, Trophy, Calendar, XCircle } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachMonthOfInterval, subMonths } from 'date-fns';
+import { formatINR, formatCoinRate } from '@/lib/currency';
 
 export function MyCoins() {
   const { profile } = useAuth();
@@ -73,7 +74,7 @@ export function MyCoins() {
           <CardContent>
             <div className="text-2xl font-bold text-coin-gold">{totalEarned} coins</div>
             <p className="text-xs text-muted-foreground">
-              ${totalUsdValue.toFixed(2)} @ ${currentRate.toFixed(4)}/coin
+              {formatINR(totalUsdValue)} @ {formatCoinRate(currentRate)}/coin
             </p>
           </CardContent>
         </Card>
@@ -86,7 +87,7 @@ export function MyCoins() {
           <CardContent>
             <div className="text-2xl font-bold text-orange-500">{pendingCoins} coins</div>
             <p className="text-xs text-muted-foreground">
-              ${pendingUsdValue.toFixed(2)} awaiting approval
+              {formatINR(pendingUsdValue)} awaiting approval
             </p>
           </CardContent>
         </Card>
@@ -196,7 +197,7 @@ export function MyCoins() {
                           </span>
                         </div>
                         <p className="text-xs text-muted-foreground mb-1">
-                          ${(transaction.coins_earned * currentRate).toFixed(2)}
+                          {formatINR(transaction.coins_earned * currentRate)}
                         </p>
                         <Badge
                           variant={

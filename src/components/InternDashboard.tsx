@@ -8,6 +8,7 @@ import { ProfileSettings } from '@/components/ProfileSettings';
 import { useAuth } from '@/hooks/useAuth';
 import { TrainingCenter } from '@/components/TrainingCenter';
 import { useCoinRates } from '@/hooks/useCoinRates';
+import { formatINR, formatCoinRate } from '@/lib/currency';
 
 export function InternDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -48,7 +49,7 @@ export function InternDashboard() {
               <CardContent>
                 <div className="text-3xl font-bold text-coin-gold">{totalCoins} coins</div>
                 <p className="text-xs text-muted-foreground">
-                  ${totalUsdValue.toFixed(2)} @ ${currentRate.toFixed(4)}/coin
+                  {formatINR(totalUsdValue)} @ {formatCoinRate(currentRate)}/coin
                 </p>
               </CardContent>
             </Card>

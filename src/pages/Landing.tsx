@@ -170,9 +170,9 @@ export default function Landing() {
                   <h3 className="text-lg font-semibold">SLT Coin Rate</h3>
                 </div>
                 {latestRate && (
-                  <div>
-                    <div className="text-4xl font-bold mb-2" aria-label={`Current rate: ${Number(latestRate.rate).toFixed(4)} dollars`}>
-                      ${Number(latestRate.rate).toFixed(4)}
+                   <div>
+                    <div className="text-4xl font-bold mb-2" aria-label={`Current rate: ${Number(latestRate.rate).toFixed(4)} rupees`}>
+                      ₹{Number(latestRate.rate).toFixed(4)}
                     </div>
                     <Badge 
                       variant={Number(latestRate.change_percentage) >= 0 ? 'success' : 'destructive'} 
@@ -272,13 +272,23 @@ export default function Landing() {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12" role="contentinfo">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center gap-3 mb-4 md:mb-0">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center" aria-hidden="true">
                 <Coins className="h-6 w-6 text-white" />
               </div>
               <span className="text-xl font-bold">SLTwork Hub</span>
             </div>
+            
+            {/* Made in India tagline */}
+            <div className="flex flex-col items-center">
+              <span className="text-emerald-400 font-medium flex items-center gap-2">
+                <span>Made with ❤️ in</span>
+                <span className="font-bold text-lg">భారత్ 🇮🇳</span>
+              </span>
+              <span className="text-sm text-gray-400 mt-1">India</span>
+            </div>
+            
             <div className="text-gray-400 text-sm">
               © 2024 SLTwork Hub. All rights reserved.
             </div>

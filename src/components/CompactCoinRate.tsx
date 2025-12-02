@@ -2,6 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Coins, TrendingUp, TrendingDown } from 'lucide-react';
 import { useCoinRates } from '@/hooks/useCoinRates';
+import { formatCoinRate } from '@/lib/currency';
 
 interface CompactCoinRateProps {
   showDetails?: boolean;
@@ -58,7 +59,7 @@ export function CompactCoinRate({ showDetails = true, className = '' }: CompactC
             <div>
               <p className="text-xs font-medium text-muted-foreground">SLT Coin Rate</p>
               <div className="flex items-baseline gap-2">
-                <p className="text-xl font-bold text-coin-gold">${rate.toFixed(4)}</p>
+                <p className="text-xl font-bold text-coin-gold">{formatCoinRate(rate)}</p>
                 {showDetails && (
                   <Badge 
                     variant={isPositive ? 'success' : 'destructive'} 
