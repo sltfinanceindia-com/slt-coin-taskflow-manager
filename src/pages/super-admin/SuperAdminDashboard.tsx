@@ -1,0 +1,282 @@
+import { useEffect, useState } from 'react';
+import { Navigate } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { 
+  Building2, 
+  Users, 
+  Activity, 
+  TrendingUp,
+  Plus,
+  ArrowRight,
+  Crown
+} from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useIsSuperAdmin } from '@/hooks/useUserRole';
+import { useAuth } from '@/hooks/useAuth';
+import { SuperAdminLayout } from '@/components/super-admin/SuperAdminLayout';
+import { format } from 'date-fns';
+
+interface DashboardStats {
+  totalOrganizations: number;
+  totalUsers: number;
+  activeOrganizations: number;
+  trialOrganizations: number;
+  suspendedOrganizations: number;
+}
+
+interface RecentOrganization {
+  id: string;
+  name: string;
+  subdomain: string;
+  status: string;
+  created_at: string;
+  user_count: number;
+  subscription_plan?: { name: string; code: string };
+}
+
+export default function SuperAdminDashboard() {
+  const { isSuperAdmin, isLoading: roleLoading } = useIsSuperAdmin();
+  const { loading: authLoading } = useAuth();
+  const [stats, setStats] = useState<DashboardStats>({
+    totalOrganizations: 0,
+    totalUsers: 0,
+    activeOrganizations: 0,
+    trialOrganizations: 0,
+    suspendedOrganizations: 0,
+  });
+  const [recentOrgs, setRecentOrgs] = useState<RecentOrganization[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        // Fetch organizations
+        const { data: orgs, error: orgsError } = await supabase
+          .from('organizations')
+          .select(`
+            id,
+            name,
+            subdomain,
+            status,
+            created_at,
+            subscription_plan:subscription_plans(name, code)
+          `)
+          .order('created_at', { ascending: false });
+
+        if (orgsError) throw orgsError;
+
+        // Fetch total users
+        const { count: userCount } = await supabase
+          .from('profiles')
+          .select('id', { count: 'exact', head: true })
+          .eq('is_active', true);
+
+        // Calculate stats
+        const activeCount = orgs?.filter(o => o.status === 'active').length || 0;
+        const trialCount = orgs?.filter(o => o.status === 'pending').length || 0;
+        const suspendedCount = orgs?.filter(o => o.status === 'suspended').length || 0;
+
+        setStats({
+          totalOrganizations: orgs?.length || 0,
+          totalUsers: userCount || 0,
+          activeOrganizations: activeCount,
+          trialOrganizations: trialCount,
+          suspendedOrganizations: suspendedCount,
+        });
+
+        // Get user counts for recent orgs
+        const recentOrgsWithCounts = await Promise.all(
+          (orgs?.slice(0, 5) || []).map(async (org) => {
+            const { count } = await supabase
+              .from('profiles')
+              .select('id', { count: 'exact', head: true })
+              .eq('organization_id', org.id)
+              .eq('is_active', true);
+            
+            return {
+              ...org,
+              user_count: count || 0,
+            };
+          })
+        );
+
+        setRecentOrgs(recentOrgsWithCounts);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (isSuperAdmin) {
+      fetchDashboardData();
+    }
+  }, [isSuperAdmin]);
+
+  if (authLoading || roleLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (!isSuperAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <Badge className="bg-emerald-500">Active</Badge>;
+      case 'suspended':
+        return <Badge variant="destructive">Suspended</Badge>;
+      case 'pending':
+        return <Badge variant="secondary">Trial</Badge>;
+      case 'cancelled':
+        return <Badge variant="outline">Cancelled</Badge>;
+      default:
+        return <Badge>{status}</Badge>;
+    }
+  };
+
+  return (
+    <SuperAdminLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
+              <Crown className="h-8 w-8 text-amber-500" />
+              Super Admin Dashboard
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Manage all organizations and platform settings
+            </p>
+          </div>
+          <Button asChild>
+            <a href="/super-admin/organizations/new">
+              <Plus className="h-4 w-4 mr-2" />
+              Create Organization
+            </a>
+          </Button>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Total Organizations</CardTitle>
+              <Building2 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalOrganizations}</div>
+              <p className="text-xs text-muted-foreground">
+                {stats.activeOrganizations} active
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalUsers}</div>
+              <p className="text-xs text-muted-foreground">
+                Across all organizations
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Active Organizations</CardTitle>
+              <Activity className="h-4 w-4 text-emerald-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-emerald-600">{stats.activeOrganizations}</div>
+              <p className="text-xs text-muted-foreground">
+                Currently active
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Trial Organizations</CardTitle>
+              <TrendingUp className="h-4 w-4 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-600">{stats.trialOrganizations}</div>
+              <p className="text-xs text-muted-foreground">
+                {stats.suspendedOrganizations} suspended
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Recent Organizations */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Recent Organizations</CardTitle>
+              <CardDescription>Latest organizations registered on the platform</CardDescription>
+            </div>
+            <Button variant="outline" size="sm" asChild>
+              <a href="/super-admin/organizations">
+                View All
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </a>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+              </div>
+            ) : recentOrgs.length > 0 ? (
+              <div className="space-y-4">
+                {recentOrgs.map((org) => (
+                  <div
+                    key={org.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Building2 className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium">{org.name}</h4>
+                        <p className="text-sm text-muted-foreground">{org.subdomain}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right hidden sm:block">
+                        <p className="text-sm font-medium">{org.user_count} users</p>
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(org.created_at), 'MMM dd, yyyy')}
+                        </p>
+                      </div>
+                      {getStatusBadge(org.status)}
+                      <Badge variant="outline">
+                        {org.subscription_plan?.name || 'Free'}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                No organizations found. Create your first organization to get started.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </SuperAdminLayout>
+  );
+}

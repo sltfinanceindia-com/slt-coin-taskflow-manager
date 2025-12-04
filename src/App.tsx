@@ -4,7 +4,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { OrganizationProvider } from "@/hooks/useOrganization";
 import { useAuthEmailNotifications } from "@/hooks/useAuthEmailNotifications";
+import { useUserRole } from "@/hooks/useUserRole";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { SkipLink } from "@/components/SkipLink";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
@@ -15,6 +17,10 @@ import Profile from "./pages/Profile";
 import Training from "./pages/Training";
 import Assessment from "./pages/Assessment";
 import NotFound from "./pages/NotFound";
+import SuperAdminDashboard from "./pages/super-admin/SuperAdminDashboard";
+import OrganizationsList from "./pages/super-admin/OrganizationsList";
+import CreateOrganization from "./pages/super-admin/CreateOrganization";
+import OrganizationDetail from "./pages/super-admin/OrganizationDetail";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +46,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function AppContent() {
   useAuthEmailNotifications();
   const { user } = useAuth();
+  const { isSuperAdmin } = useUserRole();
 
   return (
     <TooltipProvider>
@@ -52,6 +59,12 @@ function AppContent() {
           {/* Public Routes */}
           <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Landing />} />
           <Route path="/auth" element={user ? <Navigate to="/dashboard" replace /> : <Auth />} />
+          
+          {/* Super Admin Routes */}
+          <Route path="/super-admin" element={<ProtectedRoute><SuperAdminDashboard /></ProtectedRoute>} />
+          <Route path="/super-admin/organizations" element={<ProtectedRoute><OrganizationsList /></ProtectedRoute>} />
+          <Route path="/super-admin/organizations/new" element={<ProtectedRoute><CreateOrganization /></ProtectedRoute>} />
+          <Route path="/super-admin/organizations/:id" element={<ProtectedRoute><OrganizationDetail /></ProtectedRoute>} />
           
           {/* Protected Routes */}
           <Route 
@@ -99,7 +112,9 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider defaultTheme="system" storageKey="slt-ui-theme">
       <AuthProvider>
-        <AppContent />
+        <OrganizationProvider>
+          <AppContent />
+        </OrganizationProvider>
       </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>
