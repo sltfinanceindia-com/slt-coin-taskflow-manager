@@ -2568,6 +2568,7 @@ export type Database = {
           created_at: string
           expires_at: string
           id: string
+          organization_id: string | null
           started_at: string
           user_id: string
         }
@@ -2576,6 +2577,7 @@ export type Database = {
           created_at?: string
           expires_at?: string
           id?: string
+          organization_id?: string | null
           started_at?: string
           user_id: string
         }
@@ -2584,10 +2586,19 @@ export type Database = {
           created_at?: string
           expires_at?: string
           id?: string
+          organization_id?: string | null
           started_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "typing_indicators_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_presence: {
         Row: {
@@ -2859,6 +2870,7 @@ export type Database = {
           total_hours: number
         }[]
       }
+      get_user_profile_id: { Args: never; Returns: string }
       increment_user_coins: {
         Args: { coin_amount: number; user_profile_id: string }
         Returns: undefined
