@@ -3,12 +3,12 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-interface Profile {
+export interface Profile {
   id: string;
   user_id?: string;
   full_name: string;
   email: string;
-  role: 'admin' | 'intern';
+  role: 'super_admin' | 'org_admin' | 'admin' | 'manager' | 'intern' | 'employee';
   department?: string;
   employee_id?: string;
   avatar_url?: string;
@@ -16,6 +16,7 @@ interface Profile {
   is_active?: boolean;
   start_date?: string;
   end_date?: string;
+  organization_id?: string;
   created_at: string;
   updated_at: string;
 }
