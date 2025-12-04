@@ -13,6 +13,8 @@ import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import Landing from "./pages/Landing";
 import ModernDashboard from "./pages/ModernDashboard";
 import Auth from "./pages/Auth";
+import Signup from "./pages/Signup";
+import Pricing from "./pages/Pricing";
 import Profile from "./pages/Profile";
 import Training from "./pages/Training";
 import Assessment from "./pages/Assessment";
@@ -21,6 +23,7 @@ import SuperAdminDashboard from "./pages/super-admin/SuperAdminDashboard";
 import OrganizationsList from "./pages/super-admin/OrganizationsList";
 import CreateOrganization from "./pages/super-admin/CreateOrganization";
 import OrganizationDetail from "./pages/super-admin/OrganizationDetail";
+import OrganizationSettings from "./pages/admin/OrganizationSettings";
 
 const queryClient = new QueryClient();
 
@@ -59,12 +62,17 @@ function AppContent() {
           {/* Public Routes */}
           <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Landing />} />
           <Route path="/auth" element={user ? <Navigate to="/dashboard" replace /> : <Auth />} />
+          <Route path="/signup" element={user ? <Navigate to="/dashboard" replace /> : <Signup />} />
+          <Route path="/pricing" element={<Pricing />} />
           
           {/* Super Admin Routes */}
           <Route path="/super-admin" element={<ProtectedRoute><SuperAdminDashboard /></ProtectedRoute>} />
           <Route path="/super-admin/organizations" element={<ProtectedRoute><OrganizationsList /></ProtectedRoute>} />
           <Route path="/super-admin/organizations/new" element={<ProtectedRoute><CreateOrganization /></ProtectedRoute>} />
           <Route path="/super-admin/organizations/:id" element={<ProtectedRoute><OrganizationDetail /></ProtectedRoute>} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin/settings" element={<ProtectedRoute><OrganizationSettings /></ProtectedRoute>} />
           
           {/* Protected Routes */}
           <Route 

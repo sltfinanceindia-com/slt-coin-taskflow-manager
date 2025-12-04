@@ -116,9 +116,9 @@ export default function Landing() {
                   Sign In
                 </Button>
               </Link>
-              <Link to="/auth">
+              <Link to="/signup">
                 <Button className="bg-emerald-600 hover:bg-emerald-700 transition-all duration-200 hover-grow focus-ring">
-                  Get Started
+                  Start Free Trial
                   <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
                 </Button>
               </Link>
@@ -150,16 +150,18 @@ export default function Landing() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style={{
             animationDelay: '200ms'
           }}>
-              <Link to="/auth">
+              <Link to="/signup">
                 <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 h-12 px-8 transition-all duration-200 hover-grow focus-ring">
                   Start Free Trial
                   <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
                 </Button>
               </Link>
-              <Button size="lg" variant="outline" className="h-12 px-8 transition-all duration-200 hover-lift focus-ring">
-                Watch Demo
-                <LineChart className="ml-2 h-5 w-5" aria-hidden="true" />
-              </Button>
+              <Link to="/auth">
+                <Button size="lg" variant="outline" className="h-12 px-8 transition-all duration-200 hover-lift focus-ring">
+                  Sign In
+                  <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
+                </Button>
+              </Link>
             </div>
           </div>
 
@@ -230,6 +232,68 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Pricing Preview Section */}
+      <section className="py-20 bg-white" aria-labelledby="pricing-heading">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <header className="text-center mb-12">
+            <h2 id="pricing-heading" className="text-3xl font-bold text-gray-900 sm:text-4xl mb-4">
+              Simple, Transparent Pricing
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Start free and scale as you grow
+            </p>
+          </header>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <Card className="border-gray-200 text-center">
+              <CardContent className="p-6">
+                <h3 className="font-semibold text-lg mb-2">Free</h3>
+                <div className="text-3xl font-bold text-gray-900 mb-4">₹0<span className="text-sm font-normal text-gray-500">/month</span></div>
+                <p className="text-sm text-gray-600 mb-4">For small teams getting started</p>
+                <ul className="text-sm text-gray-600 space-y-2 mb-6">
+                  <li>Up to 5 users</li>
+                  <li>Basic features</li>
+                </ul>
+                <Link to="/signup">
+                  <Button variant="outline" className="w-full">Start Free</Button>
+                </Link>
+              </CardContent>
+            </Card>
+            <Card className="border-emerald-500 border-2 text-center relative">
+              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-600">Popular</Badge>
+              <CardContent className="p-6">
+                <h3 className="font-semibold text-lg mb-2">Professional</h3>
+                <div className="text-3xl font-bold text-gray-900 mb-4">₹7,999<span className="text-sm font-normal text-gray-500">/month</span></div>
+                <p className="text-sm text-gray-600 mb-4">For growing businesses</p>
+                <ul className="text-sm text-gray-600 space-y-2 mb-6">
+                  <li>Up to 100 users</li>
+                  <li>All features</li>
+                </ul>
+                <Link to="/signup">
+                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700">Start Trial</Button>
+                </Link>
+              </CardContent>
+            </Card>
+            <Card className="border-gray-200 text-center">
+              <CardContent className="p-6">
+                <h3 className="font-semibold text-lg mb-2">Enterprise</h3>
+                <div className="text-3xl font-bold text-gray-900 mb-4">Custom</div>
+                <p className="text-sm text-gray-600 mb-4">For large organizations</p>
+                <ul className="text-sm text-gray-600 space-y-2 mb-6">
+                  <li>Unlimited users</li>
+                  <li>Custom features</li>
+                </ul>
+                <Button variant="outline" className="w-full">Contact Sales</Button>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="text-center mt-8">
+            <Link to="/pricing" className="text-emerald-600 hover:text-emerald-700 font-medium">
+              View full pricing details →
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Stats Section */}
       <section className="py-20 bg-gradient-to-r from-emerald-600 to-emerald-500" aria-labelledby="stats-heading">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -262,9 +326,9 @@ export default function Landing() {
                 Join thousands of teams already using SLTwork Hub to manage tasks, 
                 collaborate effectively, and reward productivity.
               </p>
-              <Link to="/auth">
+              <Link to="/signup">
                 <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 h-12 px-8 transition-all duration-200 hover-grow focus-ring">
-                  Get Started Now
+                  Start Your Free Trial
                   <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
                 </Button>
               </Link>

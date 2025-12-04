@@ -1,9 +1,10 @@
-
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Users, CheckSquare, Trophy, BookOpen, Calendar as CalendarIcon, Coins } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Users, CheckSquare, Trophy, BookOpen, Calendar as CalendarIcon, Coins, Settings, Building2 } from 'lucide-react';
 import { TaskManager } from '@/components/TaskManager';
 import { InternManager } from '@/components/InternManager';
 import { ProfileSettings } from '@/components/ProfileSettings';
@@ -13,9 +14,13 @@ import { CoinRateManagement } from '@/components/CoinRateManagement';
 import { CompactCoinRate } from '@/components/CompactCoinRate';
 import Calendar from '@/components/Calendar';
 import { supabase } from '@/integrations/supabase/client';
+import { useOrganization } from '@/hooks/useOrganization';
+import { useAuth } from '@/hooks/useAuth';
 
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
+  const { organization, userCount } = useOrganization();
+  const { profile } = useAuth();
   const [stats, setStats] = useState({
     totalInterns: 0,
     activeTasks: 0,
@@ -26,48 +31,28 @@ export function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Fetch total interns - count from profiles with active status
+        // All queries are now automatically filtered by organization via RLS
         const profilesResult = await (supabase as any)
           .from('profiles')
           .select('id')
           .eq('is_active', true);
         
         const internCount = profilesResult?.data?.length || 0;
-        const profilesError = profilesResult?.error;
         
-        if (profilesError) {
-          console.error('Error fetching profiles:', profilesError);
-        }
-        
-        // Fetch active tasks
-        const { data: tasks, error: tasksError } = await supabase
+        const { data: tasks } = await supabase
           .from('tasks')
           .select('id')
           .in('status', ['assigned', 'in_progress']);
         
-        if (tasksError) {
-          console.error('Error fetching tasks:', tasksError);
-        }
-        
-        // Fetch total coins distributed
-        const { data: coins, error: coinsError } = await supabase
+        const { data: coins } = await supabase
           .from('coin_transactions')
           .select('coins_earned')
           .eq('status', 'approved');
         
-        if (coinsError) {
-          console.error('Error fetching coins:', coinsError);
-        }
-        
-        // Fetch training modules
-        const { data: videos, error: videosError } = await supabase
+        const { data: videos } = await supabase
           .from('training_videos')
           .select('id')
           .eq('is_published', true);
-
-        if (videosError) {
-          console.error('Error fetching videos:', videosError);
-        }
 
         setStats({
           totalInterns: internCount || 0,
@@ -85,13 +70,29 @@ export function AdminDashboard() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-50 mb-2">
-          Admin Dashboard
-        </h1>
-        <p className="text-base text-gray-600 dark:text-gray-400">
-          Manage interns, tasks, and system settings.
-        </p>
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+              Admin Dashboard
+            </h1>
+            {organization && (
+              <Badge variant="outline" className="text-sm">
+                <Building2 className="h-3 w-3 mr-1" />
+                {organization.name}
+              </Badge>
+            )}
+          </div>
+          <p className="text-base text-muted-foreground">
+            Manage your organization's employees, tasks, and settings.
+          </p>
+        </div>
+        <Link to="/admin/settings">
+          <Button variant="outline" size="sm">
+            <Settings className="h-4 w-4 mr-2" />
+            Organization Settings
+          </Button>
+        </Link>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
