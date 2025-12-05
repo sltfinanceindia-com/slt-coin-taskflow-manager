@@ -49,6 +49,7 @@ import { SuperAdminLayout } from '@/components/super-admin/SuperAdminLayout';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { Progress } from '@/components/ui/progress';
+import { OrganizationActivityLog } from '@/components/activity/OrganizationActivityLog';
 
 type OrganizationStatus = 'active' | 'suspended' | 'pending' | 'cancelled' | 'trial';
 
@@ -374,20 +375,7 @@ export default function OrganizationDetail() {
             </TabsContent>
 
             <TabsContent value="activity">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Activity className="h-5 w-5" />
-                    Recent Activity
-                  </CardTitle>
-                  <CardDescription>Latest actions in this organization</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8 text-muted-foreground">
-                    Activity logs coming soon...
-                  </div>
-                </CardContent>
-              </Card>
+              <OrganizationActivityLog organizationId={organization.id} />
             </TabsContent>
           </Tabs>
         ) : (
