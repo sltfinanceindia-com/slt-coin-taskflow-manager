@@ -1,15 +1,18 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useOrganization } from '@/hooks/useOrganization';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Users, Plus, Coins, Trash, Eye, UserCheck, UserX } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
+import { Users, Plus, Coins, Trash, Eye, UserCheck, UserX, AlertTriangle, Crown } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from '@/hooks/use-toast';
 import { InternDetailView } from '@/components/InternDetailView';
@@ -20,7 +23,7 @@ interface Profile {
   user_id: string;
   full_name: string;
   email: string;
-  role: 'admin' | 'intern';
+  role: 'admin' | 'intern' | 'org_admin' | 'manager' | 'employee';
   department?: string;
   employee_id?: string;
   avatar_url?: string;
@@ -33,6 +36,7 @@ interface Profile {
   deactivated_at?: string;
   deactivation_reason?: string;
   reactivated_at?: string;
+  organization_id?: string;
 }
 
 interface InternFormData {
@@ -49,28 +53,46 @@ export function InternManagement() {
   const [detailViewOpen, setDetailViewOpen] = useState(false);
   const [selectedIntern, setSelectedIntern] = useState<Profile | null>(null);
   const queryClient = useQueryClient();
+  const { profile } = useAuth();
+  const { organization, userCount } = useOrganization();
   
   const { register, handleSubmit, reset, formState: { errors } } = useForm<InternFormData>();
 
-  // Fetch all interns (including inactive for admin management)
+  // Calculate subscription limits
+  const maxUsers = organization?.max_users || 5;
+  const isUnlimited = maxUsers === -1;
+  const usagePercentage = isUnlimited ? 0 : Math.round((userCount / maxUsers) * 100);
+  const isAtLimit = !isUnlimited && userCount >= maxUsers;
+  const isNearLimit = !isUnlimited && usagePercentage >= 80;
+
+  // Fetch all users from this organization (including inactive for admin management)
   const { data: interns = [], isLoading } = useQuery({
-    queryKey: ['interns'],
+    queryKey: ['interns', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('role', 'intern')
+        .eq('organization_id', profile.organization_id)
+        .neq('role', 'admin')
         .order('is_active', { ascending: false })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       return (data || []) as Profile[];
     },
+    enabled: !!profile?.organization_id,
   });
 
   // Add new intern mutation
   const addInternMutation = useMutation({
     mutationFn: async (formData: InternFormData) => {
+      // Check subscription limit before adding
+      if (isAtLimit) {
+        throw new Error(`You've reached your plan limit of ${maxUsers} users. Please upgrade your plan to add more users.`);
+      }
+
       const { error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -81,6 +103,7 @@ export function InternManagement() {
             role: 'intern',
             department: formData.department,
             employee_id: formData.employee_id,
+            organization_id: profile?.organization_id,
           }
         }
       });
@@ -90,15 +113,15 @@ export function InternManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['interns'] });
       toast({
-        title: "Intern Added",
-        description: "New intern has been successfully added to the system.",
+        title: "Team Member Added",
+        description: "New team member has been successfully added to the system.",
       });
       setDialogOpen(false);
       reset();
     },
     onError: (error: any) => {
       toast({
-        title: "Error Adding Intern",
+        title: "Error Adding Team Member",
         description: error.message,
         variant: "destructive",
       });
@@ -143,15 +166,15 @@ export function InternManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['interns'] });
       toast({
-        title: "Intern Removed",
-        description: "Intern has been successfully removed from the system.",
+        title: "Team Member Removed",
+        description: "Team member has been successfully removed from the system.",
       });
       setDeleteDialogOpen(false);
       setSelectedIntern(null);
     },
     onError: (error: any) => {
       toast({
-        title: "Error Removing Intern",
+        title: "Error Removing Team Member",
         description: error.message,
         variant: "destructive",
       });
@@ -168,26 +191,37 @@ export function InternManagement() {
     }
   };
 
+  const getRoleBadge = (role: string) => {
+    switch (role) {
+      case 'manager':
+        return <Badge variant="secondary" className="bg-blue-100 text-blue-800"><Crown className="h-3 w-3 mr-1" />Manager</Badge>;
+      case 'employee':
+        return <Badge variant="outline">Employee</Badge>;
+      default:
+        return <Badge variant="outline">Intern</Badge>;
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Intern Management</h2>
-          <p className="text-muted-foreground">Add, edit, and manage team members</p>
+          <h2 className="text-2xl font-bold">Team Management</h2>
+          <p className="text-muted-foreground">Add, edit, and manage team members in your organization</p>
         </div>
         
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button disabled={isAtLimit}>
               <Plus className="h-4 w-4 mr-2" />
-              Add Intern
+              Add Team Member
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New Intern</DialogTitle>
+              <DialogTitle>Add New Team Member</DialogTitle>
               <DialogDescription>
-                Create a new intern account with login credentials.
+                Create a new team member account with login credentials.
               </DialogDescription>
             </DialogHeader>
             
@@ -200,7 +234,7 @@ export function InternManagement() {
                   placeholder="Enter full name"
                 />
                 {errors.full_name && (
-                  <p className="error-message">{errors.full_name.message}</p>
+                  <p className="text-sm text-destructive mt-1">{errors.full_name.message}</p>
                 )}
               </div>
 
@@ -216,10 +250,10 @@ export function InternManagement() {
                       message: 'Invalid email address'
                     }
                   })}
-                  placeholder="intern@company.com"
+                  placeholder="user@company.com"
                 />
                 {errors.email && (
-                  <p className="error-message">{errors.email.message}</p>
+                  <p className="text-sm text-destructive mt-1">{errors.email.message}</p>
                 )}
               </div>
 
@@ -238,7 +272,7 @@ export function InternManagement() {
                   placeholder="Enter secure password"
                 />
                 {errors.password && (
-                  <p className="error-message">{errors.password.message}</p>
+                  <p className="text-sm text-destructive mt-1">{errors.password.message}</p>
                 )}
               </div>
 
@@ -265,7 +299,7 @@ export function InternManagement() {
                   Cancel
                 </Button>
                 <Button type="submit" disabled={addInternMutation.isPending}>
-                  {addInternMutation.isPending ? 'Adding...' : 'Add Intern'}
+                  {addInternMutation.isPending ? 'Adding...' : 'Add Team Member'}
                 </Button>
               </DialogFooter>
             </form>
@@ -273,7 +307,38 @@ export function InternManagement() {
         </Dialog>
       </div>
 
-      {/* Interns Grid */}
+      {/* Subscription Limit Warning */}
+      {!isUnlimited && (
+        <Card className={isAtLimit ? 'border-destructive' : isNearLimit ? 'border-amber-500' : ''}>
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">Team Members</span>
+              </div>
+              <span className="text-sm text-muted-foreground">
+                {userCount} / {maxUsers} users
+              </span>
+            </div>
+            <Progress value={usagePercentage} className="h-2" />
+            {isAtLimit && (
+              <Alert variant="destructive" className="mt-3">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  You've reached your plan limit. Upgrade to add more team members.
+                </AlertDescription>
+              </Alert>
+            )}
+            {isNearLimit && !isAtLimit && (
+              <p className="text-sm text-amber-600 mt-2">
+                You're approaching your user limit. Consider upgrading your plan.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Team Members Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {isLoading ? (
           Array.from({ length: 6 }).map((_, i) => (
@@ -281,12 +346,12 @@ export function InternManagement() {
           ))
         ) : interns.length > 0 ? (
           interns.map((intern) => (
-            <Card key={intern.id} className={`${!intern.is_active ? 'opacity-70 border-red-200 dark:border-red-900' : ''}`}>
+            <Card key={intern.id} className={`${!intern.is_active ? 'opacity-70 border-destructive/50' : ''}`}>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 flex-wrap">
                     <CardTitle className="text-lg">{intern.full_name}</CardTitle>
-                    <Badge variant={intern.is_active !== false ? "success" : "rejected"}>
+                    <Badge variant={intern.is_active !== false ? "default" : "destructive"}>
                       {intern.is_active !== false ? <UserCheck className="h-3 w-3 mr-1" /> : <UserX className="h-3 w-3 mr-1" />}
                       {intern.is_active !== false ? 'Active' : 'Inactive'}
                     </Badge>
@@ -318,13 +383,17 @@ export function InternManagement() {
                 </div>
                 <CardDescription>{intern.email}</CardDescription>
                 {!intern.is_active && intern.deactivation_reason && (
-                  <div className="text-xs text-red-700 dark:text-red-400 italic mt-2 p-2 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
+                  <div className="text-xs text-destructive italic mt-2 p-2 bg-destructive/10 rounded border border-destructive/20">
                     <strong>Reason:</strong> {intern.deactivation_reason}
                   </div>
                 )}
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Role:</span>
+                    {getRoleBadge(intern.role)}
+                  </div>
                   {intern.employee_id && (
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Employee ID:</span>
@@ -340,8 +409,8 @@ export function InternManagement() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Total Coins:</span>
                     <div className="flex items-center space-x-1">
-                      <Coins className="h-3 w-3 text-coin-gold" />
-                      <span className="font-semibold text-coin-gold">{intern.total_coins}</span>
+                      <Coins className="h-3 w-3 text-amber-500" />
+                      <span className="font-semibold text-amber-500">{intern.total_coins}</span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between text-sm">
@@ -357,7 +426,7 @@ export function InternManagement() {
                       <Switch
                         id={`status-${intern.id}`}
                         checked={intern.is_active !== false}
-                        onCheckedChange={(checked) => {
+                        onCheckedChange={() => {
                           toggleStatusMutation.mutate({ 
                             userId: intern.id, 
                             isActive: intern.is_active !== false
@@ -376,13 +445,13 @@ export function InternManagement() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Users className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No interns yet</h3>
+                <h3 className="text-lg font-semibold mb-2">No team members yet</h3>
                 <p className="text-muted-foreground text-center max-w-md mb-4">
-                  Start building your team by adding intern members to the system.
+                  Start building your team by adding members to the system.
                 </p>
-                <Button onClick={() => setDialogOpen(true)}>
+                <Button onClick={() => setDialogOpen(true)} disabled={isAtLimit}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Add First Intern
+                  Add First Team Member
                 </Button>
               </CardContent>
             </Card>
@@ -394,7 +463,7 @@ export function InternManagement() {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Remove Intern</DialogTitle>
+            <DialogTitle>Remove Team Member</DialogTitle>
             <DialogDescription>
               Are you sure you want to remove {selectedIntern?.full_name} from the system? 
               This action cannot be undone and will delete all their data.
@@ -409,7 +478,7 @@ export function InternManagement() {
               onClick={handleDeleteIntern}
               disabled={deleteInternMutation.isPending}
             >
-              {deleteInternMutation.isPending ? 'Removing...' : 'Remove Intern'}
+              {deleteInternMutation.isPending ? 'Removing...' : 'Remove Team Member'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import { useTasks } from '@/hooks/useTasks';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TaskCard } from '@/components/TaskCard';
@@ -20,20 +21,26 @@ import { NotificationCenter } from '@/components/NotificationCenter';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AppHeader } from '@/components/AppHeader';
 import { SidebarProvider } from '@/components/ui/sidebar';
-// Temporarily disabled problematic communication components
-// import { TeamCommunication } from '@/components/TeamCommunication';
-// import { SimpleCommunication } from '@/components/SimpleCommunication';
 import ModernCommunication from '@/components/ModernCommunication';
 
 import { Coins, Clock, CheckCircle, Plus } from 'lucide-react';
 
 export default function ModernDashboard() {
   const { user, profile, loading } = useAuth();
+  const { role, isSuperAdmin, isAdmin, isLoading: roleLoading } = useUserRole();
   const { tasks, createTask, updateTaskStatus, verifyTask, updateTask, isCreating, isUpdating } = useTasks();
   const { timeLogs, logTime, isLogging } = useTimeLogs();
   const [activeTab, setActiveTab] = useState('overview');
+  const navigate = useNavigate();
 
-  if (loading) {
+  // Redirect super admins to super admin dashboard
+  useEffect(() => {
+    if (!roleLoading && isSuperAdmin) {
+      navigate('/super-admin', { replace: true });
+    }
+  }, [isSuperAdmin, roleLoading, navigate]);
+
+  if (loading || roleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
@@ -48,8 +55,13 @@ export default function ModernDashboard() {
     return <Navigate to="/auth" replace />;
   }
 
+  // If super admin, don't render - will be redirected
+  if (isSuperAdmin) {
+    return null;
+  }
+
   const myTasks = tasks.filter(task => 
-    profile?.role === 'admin' ? true : task.assigned_to === profile?.id
+    isAdmin ? true : task.assigned_to === profile?.id
   );
 
   const renderTabContent = () => {
@@ -58,7 +70,7 @@ export default function ModernDashboard() {
         return <EnhancedDashboardWidgets />;
       
       case 'tasks':
-        if (profile?.role === 'admin') {
+        if (isAdmin) {
           return (
             <div className="space-y-4 sm:space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -101,7 +113,6 @@ export default function ModernDashboard() {
         return <ProjectManagement />;
       
       case 'training':
-        // Redirect to training page instead of inline component
         window.location.href = '/training';
         return null;
       
@@ -113,7 +124,7 @@ export default function ModernDashboard() {
                 <h3 className="text-xl sm:text-2xl font-bold">Time Logs</h3>
                 <p className="text-muted-foreground text-sm">Track your working hours across tasks</p>
               </div>
-              {profile?.role === 'intern' && (
+              {role === 'intern' && (
                 <div className="flex-shrink-0">
                   <TimeLogDialog onLogTime={logTime} isLogging={isLogging} />
                 </div>
@@ -129,7 +140,7 @@ export default function ModernDashboard() {
                 {timeLogs.length > 0 ? (
                   <div className="space-y-4">
                     {timeLogs
-                      .filter(log => profile?.role === 'admin' || log.user_id === profile?.id)
+                      .filter(log => isAdmin || log.user_id === profile?.id)
                       .slice(0, 10)
                       .map((log) => (
                         <div key={log.id} className="flex items-center justify-between p-4 border rounded-lg hover-scale">
@@ -138,7 +149,7 @@ export default function ModernDashboard() {
                             <p className="text-sm text-muted-foreground">
                               {log.description || 'No description'}
                             </p>
-                            {profile?.role === 'admin' && (
+                            {isAdmin && (
                               <p className="text-xs text-muted-foreground">
                                 By: {log.user_profile?.full_name}
                               </p>
@@ -168,25 +179,36 @@ export default function ModernDashboard() {
         );
       
       case 'coins':
-        return profile?.role === 'admin' ? <CoinManagement /> : null;
+        return isAdmin ? <CoinManagement /> : null;
       
       case 'interns':
-        return profile?.role === 'admin' ? <InternManagement /> : null;
+        return isAdmin ? <InternManagement /> : null;
       
       case 'my-coins':
-        return profile?.role === 'intern' ? <MyCoins /> : null;
+        return role === 'intern' ? <MyCoins /> : null;
       
       case 'analytics':
         return <AnalyticsPage />;
       
       case 'attendance':
-        return profile?.role === 'admin' ? <EnhancedAttendanceTracker /> : null;
+        return isAdmin ? <EnhancedAttendanceTracker /> : null;
       
       case 'communication':
           return <ModernCommunication />;
       
       default:
         return <EnhancedDashboardWidgets />;
+    }
+  };
+
+  const getRoleDisplayName = () => {
+    switch (role) {
+      case 'org_admin': return 'Organization Admin';
+      case 'admin': return 'Admin';
+      case 'manager': return 'Manager';
+      case 'intern': return 'Team Member';
+      case 'employee': return 'Employee';
+      default: return 'User';
     }
   };
 
@@ -201,11 +223,16 @@ export default function ModernDashboard() {
           <main id="main-content" className="flex-1 overflow-auto" role="main">
             <div className="w-full max-w-none px-2 sm:px-4 lg:px-6 xl:px-8 py-2 sm:py-4 lg:py-6">
               <header className="mb-4 sm:mb-6 lg:mb-8">
-                <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent leading-tight">
-                  Welcome back, {profile?.full_name}!
-                </h1>
+                <div className="flex items-center gap-2 mb-2">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent leading-tight">
+                    Welcome back, {profile?.full_name}!
+                  </h1>
+                  <Badge variant="outline" className="hidden sm:inline-flex">
+                    {getRoleDisplayName()}
+                  </Badge>
+                </div>
                 <p className="text-muted-foreground text-xs sm:text-sm lg:text-base leading-relaxed">
-                  {profile?.role === 'admin' 
+                  {isAdmin 
                     ? 'Manage tasks, track progress, and assign SLT Coins to your team.'
                     : 'View your assigned tasks, log your hours, and earn SLT Coins.'
                   }
