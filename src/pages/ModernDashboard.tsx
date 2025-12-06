@@ -203,9 +203,9 @@ export default function ModernDashboard() {
 
   const getRoleDisplayName = () => {
     switch (role) {
+      case 'super_admin': return 'Super Admin';
       case 'org_admin': return 'Organization Admin';
       case 'admin': return 'Admin';
-      case 'manager': return 'Manager';
       case 'intern': return 'Team Member';
       case 'employee': return 'Employee';
       default: return 'User';

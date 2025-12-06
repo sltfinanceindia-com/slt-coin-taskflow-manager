@@ -2858,6 +2858,10 @@ export type Database = {
       get_current_user_role: { Args: never; Returns: string }
       get_org_user_count: { Args: { _org_id: string }; Returns: number }
       get_public_stats: { Args: never; Returns: Json }
+      get_user_highest_role: {
+        Args: { p_user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
       get_user_organization_id: { Args: never; Returns: string }
       get_user_productivity_metrics: {
         Args: { p_end_date?: string; p_start_date?: string; p_user_id: string }
@@ -2875,6 +2879,7 @@ export type Database = {
         Args: { coin_amount: number; user_profile_id: string }
         Returns: undefined
       }
+      is_any_admin: { Args: { p_user_id?: string }; Returns: boolean }
       is_org_admin: { Args: { _org_id?: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
       track_user_activity: {

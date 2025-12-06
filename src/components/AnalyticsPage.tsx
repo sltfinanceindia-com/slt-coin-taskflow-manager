@@ -17,13 +17,27 @@ export function AnalyticsPage() {
   const { timeLogs } = useTimeLogs();
   const { transactions } = useCoinTransactions();
 
-  // Get all profiles for team overview
+  // Get organization-filtered profiles for team overview
   const { data: profiles } = useQuery({
-    queryKey: ['all-profiles'],
+    queryKey: ['org-profiles'],
     queryFn: async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) return [];
+
+      // Get user's organization
+      const { data: userProfile } = await supabase
+        .from('profiles')
+        .select('organization_id')
+        .eq('user_id', sessionData.session.user.id)
+        .single();
+
+      if (!userProfile?.organization_id) return [];
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
+        .eq('organization_id', userProfile.organization_id)
+        .eq('is_active', true)
         .order('total_coins', { ascending: false });
 
       if (error) throw error;

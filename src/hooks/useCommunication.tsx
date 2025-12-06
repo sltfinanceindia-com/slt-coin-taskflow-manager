@@ -16,6 +16,7 @@ export interface Channel {
   created_by: string;
   created_at: string;
   updated_at: string;
+  organization_id?: string | null;
   last_message?: {
     content: string;
     sender_name: string;
@@ -51,6 +52,7 @@ export interface TeamMember {
   role: string;
   avatar_url?: string;
   department?: string;
+  organization_id?: string;
   is_online: boolean;
   activity_status: 'online' | 'away' | 'busy' | 'offline';
   status_message?: string;
@@ -71,10 +73,10 @@ export function useCommunication() {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Fetch channels
+  // Fetch channels - filtered by organization
   const fetchChannels = useCallback(async () => {
-    if (!profile?.id) {
-      console.log('⏭️ Skipping channel fetch - no profile ID');
+    if (!profile?.id || !profile?.organization_id) {
+      console.log('⏭️ Skipping channel fetch - no profile ID or organization');
       return;
     }
 
@@ -93,7 +95,8 @@ export function useCommunication() {
             participant_ids,
             created_by,
             created_at,
-            updated_at
+            updated_at,
+            organization_id
           )
         `)
         .eq('user_id', profile.id);
@@ -103,8 +106,14 @@ export function useCommunication() {
         throw memberError;
       }
 
+      // Filter channels by organization
+      const orgChannels = channelMembers?.filter(cm => 
+        cm.communication_channels?.organization_id === profile.organization_id ||
+        cm.communication_channels?.organization_id === null // Include global channels
+      ) || [];
+
       // Get unread counts and last messages
-      const channelIds = channelMembers?.map(cm => cm.channel_id) || [];
+      const channelIds = orgChannels.map(cm => cm.channel_id);
       
       const { data: lastMessages } = await supabase
         .from('messages')
@@ -113,20 +122,20 @@ export function useCommunication() {
         .order('created_at', { ascending: false })
         .limit(1);
 
-      const channelsWithMetadata = channelMembers?.map(cm => {
+      const channelsWithMetadata = orgChannels.map(cm => {
         const channel = cm.communication_channels;
         const lastMessage = lastMessages?.find(m => m.channel_id === channel.id);
         
         return {
           ...channel,
-          unread_count: 0, // Will be updated by real-time subscription
+          unread_count: 0,
           last_message: lastMessage ? {
             content: lastMessage.content,
             sender_name: lastMessage.sender_name || 'Unknown',
             timestamp: lastMessage.created_at
           } : undefined
         } as Channel;
-      }) || [];
+      });
 
       setChannels(channelsWithMetadata);
     } catch (error) {
@@ -139,18 +148,19 @@ export function useCommunication() {
     }
   }, [profile, toast]);
 
-  // Fetch team members - fetch from profiles table (which has role column)
+  // Fetch team members - filtered by organization
   const fetchTeamMembers = useCallback(async () => {
-    if (!profile) return;
+    if (!profile || !profile.organization_id) return;
     
     try {
-      console.log('🔍 Fetching team members...');
+      console.log('🔍 Fetching team members for organization:', profile.organization_id);
       
-      // Fetch only active profiles with their role from profiles table
+      // Fetch only active profiles from the same organization
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, full_name, email, avatar_url, department, role, is_active')
+        .select('id, full_name, email, avatar_url, department, role, is_active, organization_id')
         .eq('is_active', true)
+        .eq('organization_id', profile.organization_id)
         .order('full_name');
 
       if (profilesError) {
@@ -178,6 +188,7 @@ export function useCommunication() {
           role: profileData.role || 'intern',
           avatar_url: profileData.avatar_url,
           department: profileData.department,
+          organization_id: profileData.organization_id,
           is_online: presence?.is_online || false,
           activity_status: (presence?.activity_status as 'online' | 'away' | 'busy' | 'offline') || 'offline',
           status_message: presence?.status_message || undefined,
@@ -185,7 +196,7 @@ export function useCommunication() {
         };
       });
 
-      console.log(`✅ Fetched ${teamMembersData.length} team members (including admins)`);
+      console.log(`✅ Fetched ${teamMembersData.length} team members from organization`);
       setTeamMembers(teamMembersData);
     } catch (error) {
       console.error('Error fetching team members:', error);
@@ -246,6 +257,7 @@ export function useCommunication() {
         sender_role: profile.role,
         channel_id: channelId,
         receiver_id: receiverId,
+        organization_id: profile.organization_id,
         message_type: 'text' as const,
         attachments: [],
         reactions: [],
@@ -268,7 +280,6 @@ export function useCommunication() {
       }
 
       console.log('✅ Message sent successfully with ID:', data.id);
-      // Message will be added via real-time subscription
       return data.id;
     } catch (error) {
       console.error('Error sending message:', error);
@@ -360,7 +371,7 @@ export function useCommunication() {
           channel_id: channel.id,
           user_id: profile?.id,
           last_read_at: new Date().toISOString(),
-          unread_count: 0
+          organization_id: profile?.organization_id
         })
         .then(() => {
           setChannels(prev => prev.map(c => 
@@ -398,7 +409,7 @@ export function useCommunication() {
               avatar: undefined
             },
             newMessage.content,
-            !newMessage.channel_id // isDirect
+            !newMessage.channel_id
           );
         }
         
@@ -420,7 +431,7 @@ export function useCommunication() {
       })
       .subscribe();
 
-  // Subscribe to presence changes to update team member statuses in real-time
+    // Subscribe to presence changes
     const presenceChannel = supabase
       .channel('user_presence_updates')
       .on('postgres_changes', {
@@ -433,7 +444,7 @@ export function useCommunication() {
       })
       .subscribe();
 
-    // Subscribe to profile changes (new users or deactivations)
+    // Subscribe to profile changes
     const profilesChannel = supabase
       .channel('profiles_changes')
       .on('postgres_changes', {
@@ -443,7 +454,6 @@ export function useCommunication() {
       }, (payload) => {
         console.log('Profile changed:', payload);
         fetchTeamMembers();
-        // Refresh channels to remove deactivated users
         if (payload.eventType === 'UPDATE') {
           fetchChannels();
         }
@@ -455,11 +465,11 @@ export function useCommunication() {
       presenceChannel.unsubscribe();
       profilesChannel.unsubscribe();
     };
-  }, [profile, selectedChannel, fetchTeamMembers, fetchChannels]);
+  }, [profile, selectedChannel, fetchTeamMembers, fetchChannels, notifyMessage]);
 
   // Initial data fetch
   useEffect(() => {
-    if (profile?.id) {
+    if (profile?.id && profile?.organization_id) {
       console.log('🔄 Fetching communication data for profile:', profile.id);
       setIsLoading(true);
       Promise.all([
@@ -470,8 +480,7 @@ export function useCommunication() {
         setIsLoading(false);
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile?.id]);
+  }, [profile?.id, profile?.organization_id, fetchChannels, fetchTeamMembers]);
 
   return {
     channels,

@@ -1,5 +1,4 @@
-import { useState } from "react"
-import { NavLink, useLocation } from "react-router-dom"
+import { NavLink } from "react-router-dom"
 import { 
   LayoutDashboard, 
   CheckSquare, 
@@ -11,9 +10,10 @@ import {
   BookOpen,
   User,
   Settings,
-  Activity,
-  Monitor,
-  MessageSquare
+  MessageSquare,
+  Building2,
+  Shield,
+  Crown
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -26,13 +26,14 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/hooks/useAuth"
+import { useUserRole } from "@/hooks/useUserRole"
 import { Badge } from "@/components/ui/badge"
 import { NotificationCenter } from "@/components/NotificationCenter"
 
+// Admin navigation items (for org_admin and admin roles)
 const adminItems = [
   { title: "Overview", url: "overview", icon: LayoutDashboard },
   { title: "Kanban Board", url: "tasks", icon: CheckSquare },
@@ -46,6 +47,7 @@ const adminItems = [
   { title: "Analytics", url: "analytics", icon: BarChart3 },
 ]
 
+// Intern/Employee navigation items
 const internItems = [
   { title: "Overview", url: "overview", icon: LayoutDashboard },
   { title: "My Tasks", url: "tasks", icon: CheckSquare },
@@ -65,11 +67,33 @@ interface AppSidebarProps {
 export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
   const { state } = useSidebar()
   const { profile } = useAuth()
+  const { isSuperAdmin, isAdmin, role, isLoading: roleLoading } = useUserRole()
   
-  const items = profile?.role === 'admin' ? adminItems : internItems
+  // Use role from useUserRole hook for determining navigation items
+  const items = isAdmin ? adminItems : internItems
   const collapsed = state === "collapsed"
 
   const isActive = (tab: string) => activeTab === tab
+
+  // Role display logic
+  const getRoleBadge = () => {
+    if (isSuperAdmin) {
+      return { label: 'Super Admin', variant: 'default' as const, icon: Crown }
+    }
+    if (role === 'org_admin') {
+      return { label: 'Org Admin', variant: 'default' as const, icon: Building2 }
+    }
+    if (role === 'admin') {
+      return { label: 'Admin', variant: 'default' as const, icon: Shield }
+    }
+    if (role === 'employee') {
+      return { label: 'Employee', variant: 'secondary' as const, icon: User }
+    }
+    return { label: 'Intern', variant: 'secondary' as const, icon: User }
+  }
+
+  const roleBadge = getRoleBadge()
+  const RoleIcon = roleBadge.icon
 
   return (
     <Sidebar
@@ -108,8 +132,14 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
         {!collapsed && (
           <div className="p-6 border-b border-sidebar-border">
             <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center shrink-0">
-                <User className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+              <div className={cn(
+                "h-12 w-12 rounded-full flex items-center justify-center shrink-0",
+                isSuperAdmin ? "bg-purple-100 dark:bg-purple-900" : "bg-emerald-100 dark:bg-emerald-900"
+              )}>
+                <RoleIcon className={cn(
+                  "h-6 w-6",
+                  isSuperAdmin ? "text-purple-600 dark:text-purple-400" : "text-emerald-600 dark:text-emerald-400"
+                )} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-base font-medium text-sidebar-foreground truncate">
@@ -117,10 +147,13 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
                 </p>
                 <div className="flex items-center gap-2 mt-1">
                   <Badge 
-                    variant={profile?.role === 'admin' ? 'default' : 'secondary'} 
-                    className="text-xs px-2 py-0.5"
+                    variant={roleBadge.variant}
+                    className={cn(
+                      "text-xs px-2 py-0.5",
+                      isSuperAdmin && "bg-purple-600 hover:bg-purple-700"
+                    )}
                   >
-                    {profile?.role === 'admin' ? 'Admin' : 'Intern'}
+                    {roleBadge.label}
                   </Badge>
                   <div className="flex items-center gap-1 min-w-0">
                     <Coins className="h-3 w-3 text-coin-gold shrink-0" />
@@ -131,6 +164,31 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Super Admin Quick Access */}
+        {isSuperAdmin && !collapsed && (
+          <div className="px-3 py-2 border-b border-sidebar-border">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <NavLink to="/super-admin" className="w-full">
+                  {({ isActive: navIsActive }) => (
+                    <SidebarMenuButton 
+                      className={cn(
+                        "h-10 w-full px-4 py-2.5 rounded-lg gap-3 transition-colors",
+                        navIsActive 
+                          ? "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-400 font-medium"
+                          : "hover:bg-purple-50 dark:hover:bg-purple-900/30 text-purple-600 dark:text-purple-400"
+                      )}
+                    >
+                      <Crown className="h-5 w-5 shrink-0" />
+                      <span className="text-sm truncate">Super Admin Panel</span>
+                    </SidebarMenuButton>
+                  )}
+                </NavLink>
+              </SidebarMenuItem>
+            </SidebarMenu>
           </div>
         )}
 
@@ -181,6 +239,24 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
         {/* Settings */}
         <div className="mt-auto p-3 pt-4 border-t border-sidebar-border">
           <SidebarMenu>
+            {/* Organization Settings for admins */}
+            {isAdmin && !isSuperAdmin && !collapsed && (
+              <SidebarMenuItem>
+                <NavLink to="/admin/settings" className="w-full">
+                  {({ isActive: navIsActive }) => (
+                    <SidebarMenuButton 
+                      className={cn(
+                        "h-10 w-full px-4 py-2.5 rounded-lg gap-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors",
+                        navIsActive && "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400 font-medium"
+                      )}
+                    >
+                      <Building2 className="h-5 w-5 shrink-0" />
+                      <span className="text-sm truncate">Organization</span>
+                    </SidebarMenuButton>
+                  )}
+                </NavLink>
+              </SidebarMenuItem>
+            )}
             <SidebarMenuItem>
               <SidebarMenuButton asChild className="h-10 px-4 py-2.5 rounded-lg gap-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                 <NavLink to="/profile" className="flex items-center gap-3">
