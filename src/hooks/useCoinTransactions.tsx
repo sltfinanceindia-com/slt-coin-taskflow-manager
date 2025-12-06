@@ -9,6 +9,7 @@ export interface CoinTransaction {
   coins_earned: number;
   transaction_date: string;
   status: 'pending' | 'approved' | 'rejected';
+  organization_id?: string;
   task?: {
     id: string;
     title: string;
@@ -23,8 +24,12 @@ export function useCoinTransactions() {
   const { profile } = useAuth();
 
   const coinTransactionsQuery = useQuery({
-    queryKey: ['coin-transactions'],
+    queryKey: ['coin-transactions', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) {
+        return [];
+      }
+
       const { data, error } = await supabase
         .from('coin_transactions')
         .select(`
@@ -32,12 +37,13 @@ export function useCoinTransactions() {
           task:tasks(id, title),
           user_profile:profiles(id, full_name)
         `)
+        .eq('organization_id', profile.organization_id)
         .order('transaction_date', { ascending: false });
 
       if (error) throw error;
       return data as CoinTransaction[];
     },
-    enabled: !!profile,
+    enabled: !!profile?.organization_id,
   });
 
   const getUserTransactions = (userId?: string) => {

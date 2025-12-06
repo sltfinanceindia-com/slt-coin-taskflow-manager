@@ -11,6 +11,7 @@ export interface TimeLog {
   date_logged: string;
   description?: string;
   created_at: string;
+  organization_id?: string;
   task?: {
     id: string;
     title: string;
@@ -26,8 +27,12 @@ export function useTimeLogs() {
   const queryClient = useQueryClient();
 
   const timeLogsQuery = useQuery({
-    queryKey: ['time-logs'],
+    queryKey: ['time-logs', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) {
+        return [];
+      }
+
       const { data, error } = await supabase
         .from('time_logs')
         .select(`
@@ -35,12 +40,13 @@ export function useTimeLogs() {
           task:tasks(id, title),
           user_profile:profiles(id, full_name)
         `)
+        .eq('organization_id', profile.organization_id)
         .order('date_logged', { ascending: false });
 
       if (error) throw error;
       return data as TimeLog[];
     },
-    enabled: !!profile,
+    enabled: !!profile?.organization_id,
   });
 
   const logTimeMutation = useMutation({
@@ -55,6 +61,7 @@ export function useTimeLogs() {
         .insert([{
           ...logData,
           user_id: profile?.id,
+          organization_id: profile?.organization_id,
         }])
         .select()
         .single();

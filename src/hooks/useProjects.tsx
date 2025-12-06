@@ -9,6 +9,7 @@ export interface Project {
   description?: string;
   created_by: string;
   status: 'active' | 'completed' | 'archived';
+  organization_id?: string;
   created_at: string;
   updated_at: string;
   creator_profile?: {
@@ -23,14 +24,19 @@ export function useProjects() {
   const queryClient = useQueryClient();
 
   const projectsQuery = useQuery({
-    queryKey: ['projects'],
+    queryKey: ['projects', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) {
+        return [];
+      }
+
       const { data, error } = await supabase
         .from('projects')
         .select(`
           *,
           creator_profile:profiles!projects_created_by_fkey(id, full_name)
         `)
+        .eq('organization_id', profile.organization_id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -41,7 +47,7 @@ export function useProjects() {
           : project.creator_profile
       })) as Project[];
     },
-    enabled: !!profile,
+    enabled: !!profile?.organization_id,
   });
 
   const createProjectMutation = useMutation({
@@ -54,6 +60,7 @@ export function useProjects() {
         .insert([{
           ...projectData,
           created_by: profile?.id,
+          organization_id: profile?.organization_id,
         }])
         .select()
         .single();

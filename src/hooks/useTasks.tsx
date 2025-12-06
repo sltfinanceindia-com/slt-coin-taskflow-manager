@@ -15,8 +15,12 @@ export function useTasks() {
   const { verifyTask, isVerifying } = useVerifyTask();
 
   const tasksQuery = useQuery({
-    queryKey: ['tasks'],
+    queryKey: ['tasks', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) {
+        return [];
+      }
+
       const { data, error } = await supabase
         .from('tasks')
         .select(`
@@ -24,12 +28,13 @@ export function useTasks() {
           assigned_profile:profiles!tasks_assigned_to_fkey(id, full_name, email),
           creator_profile:profiles!tasks_created_by_fkey(id, full_name, email)
         `)
+        .eq('organization_id', profile.organization_id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data as Task[];
     },
-    enabled: !!profile,
+    enabled: !!profile?.organization_id,
   });
 
   const updateTaskMutation = useMutation({
