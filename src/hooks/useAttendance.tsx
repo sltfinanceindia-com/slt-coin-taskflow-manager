@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
 
 export interface AttendanceRecord {
@@ -20,6 +21,7 @@ export interface AttendanceRecord {
 
 export function useAttendance() {
   const { toast } = useToast();
+  const { profile } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const getAttendanceByDateRange = useCallback(async (
@@ -27,6 +29,8 @@ export function useAttendance() {
     startDate?: Date,
     endDate?: Date
   ): Promise<AttendanceRecord[]> => {
+    if (!profile?.organization_id) return [];
+    
     setLoading(true);
     try {
       // Fetch from session_logs and calculate attendance
@@ -37,8 +41,9 @@ export function useAttendance() {
         .from('session_logs')
         .select(`
           *,
-          profiles!inner(full_name, email)
+          profiles!inner(full_name, email, organization_id)
         `)
+        .eq('organization_id', profile.organization_id)
         .gte('login_time', startDateStr)
         .lte('login_time', endDateStr);
 
@@ -143,7 +148,7 @@ export function useAttendance() {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [toast, profile?.organization_id]);
 
   const getDailyAttendance = useCallback(async (userId: string, date: Date): Promise<AttendanceRecord | null> => {
     const records = await getAttendanceByDateRange(userId, date, date);
