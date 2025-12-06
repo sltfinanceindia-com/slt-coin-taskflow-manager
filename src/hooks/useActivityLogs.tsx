@@ -48,21 +48,24 @@ export function useActivityLogs() {
   const FOCUS_THRESHOLD = 2 * 60 * 1000; // 2 minutes
 
   const activityLogsQuery = useQuery({
-    queryKey: ['activity-logs'],
+    queryKey: ['activity-logs', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
+
       const { data, error } = await supabase
         .from('activity_logs')
         .select(`
           *,
           task:tasks(id, title),
-          user_profile:profiles(id, full_name, email)
+          user_profile:profiles!inner(id, full_name, email, organization_id)
         `)
+        .eq('organization_id', profile.organization_id)
         .order('timestamp', { ascending: false });
 
       if (error) throw error;
       return data as ActivityLog[];
     },
-    enabled: !!profile,
+    enabled: !!profile?.organization_id,
   });
 
   const productivityQuery = useQuery({

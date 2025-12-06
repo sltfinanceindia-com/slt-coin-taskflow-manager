@@ -1,7 +1,7 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import { toast } from '@/hooks/use-toast';
 
 export interface Assessment {
@@ -16,6 +16,7 @@ export interface Assessment {
   created_by: string;
   created_at: string;
   updated_at: string;
+  organization_id?: string;
 }
 
 export interface AssessmentQuestion {
@@ -57,13 +58,14 @@ export interface AssessmentAnswer {
 
 export function useAssessments() {
   const { profile } = useAuth();
+  const { isAdmin } = useUserRole();
   const queryClient = useQueryClient();
   
   // Get assigned assessments for non-admin users
   const { data: assignedAssessmentsData = [] } = useQuery({
     queryKey: ['assigned-assessments-for-filter', profile?.id],
     queryFn: async () => {
-      if (profile?.role === 'admin') return [];
+      if (isAdmin) return [];
       
       const { data, error } = await supabase
         .from('assessment_assignments')
@@ -73,19 +75,22 @@ export function useAssessments() {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!profile && profile.role !== 'admin',
+    enabled: !!profile && !isAdmin,
   });
 
   const assessmentsQuery = useQuery({
-    queryKey: ['assessments'],
+    queryKey: ['assessments', profile?.organization_id, isAdmin],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
+
       let query = supabase
         .from('assessments')
         .select('*')
+        .eq('organization_id', profile.organization_id)
         .order('created_at', { ascending: false });
 
       // If user is not admin, only show assigned assessments
-      if (profile?.role !== 'admin') {
+      if (!isAdmin) {
         const assignedIds = assignedAssessmentsData.map((a: any) => a.assessment_id);
         if (assignedIds.length === 0) {
           return []; // No assigned assessments
@@ -98,7 +103,7 @@ export function useAssessments() {
       if (error) throw error;
       return data as Assessment[];
     },
-    enabled: !!profile,
+    enabled: !!profile?.organization_id,
   });
 
   const getAssessmentQuestions = async (assessmentId: string) => {
@@ -119,6 +124,7 @@ export function useAssessments() {
         .insert({
           assessment_id: assessmentId,
           user_id: profile!.id,
+          organization_id: profile!.organization_id,
           status: 'in_progress',
           time_remaining_seconds: null,
         })
@@ -156,6 +162,7 @@ export function useAssessments() {
           attempt_id: attemptId,
           question_id: questionId,
           selected_answer: selectedAnswer,
+          organization_id: profile?.organization_id,
         })
         .select()
         .single();

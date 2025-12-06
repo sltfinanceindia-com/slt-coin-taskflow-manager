@@ -25,6 +25,7 @@ export function useCreateTask() {
             ...taskData,
             assigned_to: userId,
             created_by: profile?.id,
+            organization_id: profile?.organization_id,
           }])
           .select()
           .single();

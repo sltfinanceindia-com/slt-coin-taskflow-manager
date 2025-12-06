@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { useOrganization } from '@/hooks/useOrganization';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { 
@@ -19,29 +20,29 @@ import {
   CreditCard, 
   Save,
   ArrowLeft,
-  Upload,
   Sparkles
 } from 'lucide-react';
 
 export default function OrganizationSettings() {
   const navigate = useNavigate();
-  const { organization, userCount, refreshOrganization, isLoading } = useOrganization();
-  const { profile } = useAuth();
+  const { organization, userCount, refreshOrganization, isLoading: orgLoading } = useOrganization();
+  const { profile, loading: authLoading } = useAuth();
+  const { isAdmin, isSuperAdmin, isLoading: roleLoading } = useUserRole();
   
   const [formData, setFormData] = useState({
-    name: organization?.name || '',
-    description: organization?.description || '',
-    contact_email: organization?.contact_email || '',
-    contact_phone: organization?.contact_phone || '',
-    address: organization?.address || '',
-    primary_color: organization?.primary_color || '#10b981',
-    secondary_color: organization?.secondary_color || '#059669',
+    name: '',
+    description: '',
+    contact_email: '',
+    contact_phone: '',
+    address: '',
+    primary_color: '#10b981',
+    secondary_color: '#059669',
   });
   
   const [isSaving, setIsSaving] = useState(false);
 
   // Update form data when organization loads
-  useState(() => {
+  useEffect(() => {
     if (organization) {
       setFormData({
         name: organization.name || '',
@@ -53,7 +54,7 @@ export default function OrganizationSettings() {
         secondary_color: organization.secondary_color || '#059669',
       });
     }
-  });
+  }, [organization]);
 
   const handleSave = async () => {
     if (!organization?.id) return;
@@ -106,12 +107,19 @@ export default function OrganizationSettings() {
     }
   };
 
+  const isLoading = orgLoading || authLoading || roleLoading;
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full" />
       </div>
     );
+  }
+
+  // Only admins can access this page (but not super admins - they use the super admin panel)
+  if (!isAdmin || isSuperAdmin) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   if (!organization) {

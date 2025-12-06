@@ -1,7 +1,7 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 
 interface AssessmentAttemptWithDetails {
   id: string;
@@ -28,10 +28,13 @@ interface AssessmentAttemptWithDetails {
 
 export function useAssessmentAttempts(assessmentId?: string) {
   const { profile } = useAuth();
+  const { isAdmin } = useUserRole();
 
   const attemptsQuery = useQuery({
-    queryKey: ['assessment-attempts', assessmentId],
+    queryKey: ['assessment-attempts', assessmentId, profile?.organization_id, isAdmin],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
+
       let query = supabase
         .from('assessment_attempts')
         .select(`
@@ -39,6 +42,7 @@ export function useAssessmentAttempts(assessmentId?: string) {
           assessments!assessment_attempts_assessment_id_fkey(title, passing_score),
           profiles!assessment_attempts_user_id_fkey(full_name, email)
         `)
+        .eq('organization_id', profile.organization_id)
         .order('created_at', { ascending: false });
 
       if (assessmentId) {
@@ -46,8 +50,8 @@ export function useAssessmentAttempts(assessmentId?: string) {
       }
 
       // If not admin, only show own attempts
-      if (profile?.role !== 'admin') {
-        query = query.eq('user_id', profile?.id);
+      if (!isAdmin) {
+        query = query.eq('user_id', profile.id);
       }
 
       const { data, error } = await query;
@@ -55,7 +59,7 @@ export function useAssessmentAttempts(assessmentId?: string) {
       if (error) throw error;
       return data as AssessmentAttemptWithDetails[];
     },
-    enabled: !!profile,
+    enabled: !!profile?.organization_id,
   });
 
   const getAttemptAnswers = async (attemptId: string) => {

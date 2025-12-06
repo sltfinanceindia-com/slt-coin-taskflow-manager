@@ -82,7 +82,7 @@ export function useUserRole(): UserRoleData {
         // Get organization_id (prefer from user_roles, fallback to profile)
         const organizationId = roleRecords?.[0]?.organization_id || profile?.organization_id || null;
 
-        // Determine role flags based on highest role
+        // Determine role flags based on highest role AND allRoles
         const isSuperAdmin = highestRole === 'super_admin' || allRoles.includes('super_admin');
         const isOrgAdmin = isSuperAdmin || highestRole === 'org_admin' || allRoles.includes('org_admin');
         const isAdmin = isOrgAdmin || highestRole === 'admin' || allRoles.includes('admin');
@@ -100,7 +100,18 @@ export function useUserRole(): UserRoleData {
         });
       } catch (error) {
         console.error('Error in useUserRole:', error);
-        setRoleData(prev => ({ ...prev, isLoading: false }));
+        // Fallback to profile role if user_roles fails
+        const fallbackRole = (profile?.role as AppRole) || 'intern';
+        setRoleData({
+          role: fallbackRole,
+          allRoles: [fallbackRole],
+          organizationId: profile?.organization_id || null,
+          isSuperAdmin: fallbackRole === 'super_admin',
+          isOrgAdmin: fallbackRole === 'super_admin' || fallbackRole === 'org_admin',
+          isAdmin: ['super_admin', 'org_admin', 'admin'].includes(fallbackRole),
+          isEmployee: fallbackRole === 'employee',
+          isLoading: false,
+        });
       }
     };
 

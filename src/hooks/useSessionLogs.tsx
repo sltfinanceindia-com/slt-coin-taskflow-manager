@@ -77,20 +77,23 @@ export function useSessionLogs() {
   }, [profile?.id, getCurrentSession]);
 
   const sessionLogsQuery = useQuery({
-    queryKey: ['session-logs'],
+    queryKey: ['session-logs', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
+
       const { data, error } = await supabase
         .from('session_logs')
         .select(`
           *,
-          user_profile:profiles(id, full_name, email)
+          user_profile:profiles!inner(id, full_name, email, organization_id)
         `)
+        .eq('organization_id', profile.organization_id)
         .order('login_time', { ascending: false });
 
       if (error) throw error;
       return data as SessionLog[];
     },
-    enabled: !!profile,
+    enabled: !!profile?.organization_id,
   });
 
   const startSessionMutation = useMutation({
@@ -104,6 +107,7 @@ export function useSessionLogs() {
         .from('session_logs')
         .insert([{
           user_id: profile.id,
+          organization_id: profile.organization_id,
           login_time: new Date().toISOString(),
         }])
         .select()
