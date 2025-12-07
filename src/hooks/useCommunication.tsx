@@ -383,15 +383,16 @@ export function useCommunication() {
 
   // Set up real-time subscriptions
   useEffect(() => {
-    if (!profile) return;
+    if (!profile || !profile.organization_id) return;
 
-    // Subscribe to new messages
+    // Subscribe to new messages - filter by organization
     const messagesChannel = supabase
-      .channel('messages')
+      .channel('messages-org-' + profile.organization_id)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
-        table: 'messages'
+        table: 'messages',
+        filter: `organization_id=eq.${profile.organization_id}`
       }, (payload) => {
         const newMessage = payload.new as Message;
         
@@ -431,28 +432,28 @@ export function useCommunication() {
       })
       .subscribe();
 
-    // Subscribe to presence changes
+    // Subscribe to presence changes for org members only
     const presenceChannel = supabase
-      .channel('user_presence_updates')
+      .channel('user_presence_org_' + profile.organization_id)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
         table: 'user_presence'
       }, (payload) => {
-        console.log('🔄 Presence change detected:', payload);
+        // Only refetch if the presence change is for someone in our org
         fetchTeamMembers();
       })
       .subscribe();
 
-    // Subscribe to profile changes
+    // Subscribe to profile changes for org only
     const profilesChannel = supabase
-      .channel('profiles_changes')
+      .channel('profiles_org_' + profile.organization_id)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'profiles'
+        table: 'profiles',
+        filter: `organization_id=eq.${profile.organization_id}`
       }, (payload) => {
-        console.log('Profile changed:', payload);
         fetchTeamMembers();
         if (payload.eventType === 'UPDATE') {
           fetchChannels();
@@ -461,11 +462,11 @@ export function useCommunication() {
       .subscribe();
 
     return () => {
-      messagesChannel.unsubscribe();
-      presenceChannel.unsubscribe();
-      profilesChannel.unsubscribe();
+      supabase.removeChannel(messagesChannel);
+      supabase.removeChannel(presenceChannel);
+      supabase.removeChannel(profilesChannel);
     };
-  }, [profile, selectedChannel, fetchTeamMembers, fetchChannels, notifyMessage]);
+  }, [profile?.id, profile?.organization_id, selectedChannel?.id, fetchTeamMembers, fetchChannels, notifyMessage]);
 
   // Initial data fetch
   useEffect(() => {
