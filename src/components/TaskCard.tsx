@@ -1,9 +1,9 @@
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Coins, User, Calendar, Edit, MessageSquare } from 'lucide-react';
 import { Task } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import { format } from 'date-fns';
 import { TaskComments } from '@/components/TaskComments';
 import { TaskEditDialog } from '@/components/TaskEditDialog';
@@ -23,9 +23,9 @@ interface TaskCardProps {
 
 export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isUpdating, onAdminOverride }: TaskCardProps) {
   const { profile } = useAuth();
+  const { isAdmin } = useUserRole();
 
   const isAssignedToMe = task.assigned_to === profile?.id;
-  const isAdmin = profile?.role === 'admin';
 
   const getStatusColor = (status: Task['status']) => {
     switch (status) {

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import { useTasks } from '@/hooks/useTasks';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
 import { useCoinTransactions } from '@/hooks/useCoinTransactions';
@@ -26,9 +27,10 @@ export function EnhancedDashboardWidgets() {
   const { tasks } = useTasks();
   const { getWeeklyHours } = useTimeLogs();
   const { getTotalEarned, getPendingCoins } = useCoinTransactions();
+  const { isAdmin } = useUserRole();
 
   const myTasks = tasks.filter(task => 
-    profile?.role === 'admin' ? true : task.assigned_to === profile?.id
+    isAdmin ? true : task.assigned_to === profile?.id
   );
   
   const pendingTasks = myTasks.filter(task => 

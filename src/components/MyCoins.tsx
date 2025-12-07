@@ -58,22 +58,22 @@ export function MyCoins() {
   const pendingUsdValue = pendingCoins * currentRate;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">My SLT Coins</h2>
-        <p className="text-muted-foreground">Track your earnings and performance</p>
+        <h2 className="text-xl sm:text-2xl font-bold">My SLT Coins</h2>
+        <p className="text-muted-foreground text-sm">Track your earnings and performance</p>
       </div>
 
       {/* Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
         <Card className="bg-gradient-to-br from-coin-gold/20 to-coin-gold/5 border-coin-gold/20">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Coins Earned</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Total Coins Earned</CardTitle>
             <Coins className="h-4 w-4 text-coin-gold" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-coin-gold">{totalEarned} coins</div>
-            <p className="text-xs text-muted-foreground">
+          <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+            <div className="text-xl sm:text-2xl font-bold text-coin-gold">{totalEarned} coins</div>
+            <p className="text-xs text-muted-foreground truncate">
               {formatINR(totalUsdValue)} @ {formatCoinRate(currentRate)}/coin
             </p>
           </CardContent>
