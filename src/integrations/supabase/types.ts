@@ -2923,7 +2923,7 @@ export type Database = {
         | "completed"
         | "verified"
         | "rejected"
-      user_role: "admin" | "intern" | "super_admin" | "org_admin"
+      user_role: "admin" | "intern" | "super_admin" | "org_admin" | "employee"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3068,7 +3068,7 @@ export const Constants = {
         "verified",
         "rejected",
       ],
-      user_role: ["admin", "intern", "super_admin", "org_admin"],
+      user_role: ["admin", "intern", "super_admin", "org_admin", "employee"],
     },
   },
 } as const

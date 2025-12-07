@@ -10,12 +10,14 @@ import { Plus, FolderOpen, Users, Calendar } from 'lucide-react';
 import { useProjects } from '@/hooks/useProjects';
 import { useTasks } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { format } from 'date-fns';
 import { EmptyState } from '@/components/ui/empty-state';
 
 export function ProjectManagement() {
   const { profile } = useAuth();
+  const { isAdmin } = useUserRole();
   const { projects, createProject, isCreating } = useProjects();
   const { tasks } = useTasks();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -23,8 +25,6 @@ export function ProjectManagement() {
     name: '',
     description: '',
   });
-
-  const isAdmin = profile?.role === 'admin';
 
   const getProjectTasks = (projectId: string) => {
     return tasks.filter(task => task.project_id === projectId);
@@ -57,19 +57,19 @@ export function ProjectManagement() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold">Projects</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-xl sm:text-2xl font-bold">Projects</h2>
+          <p className="text-muted-foreground text-sm">
             Organize and track your tasks within projects
           </p>
         </div>
         {isAdmin && (
           <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
             <DialogTrigger asChild>
-              <Button>
+              <Button size="sm" className="w-full sm:w-auto">
                 <Plus className="h-4 w-4 mr-2" />
                 New Project
               </Button>

@@ -203,16 +203,16 @@ export function InternManagement() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Team Management</h2>
-          <p className="text-muted-foreground">Add, edit, and manage team members in your organization</p>
+          <h2 className="text-xl sm:text-2xl font-bold">Team Management</h2>
+          <p className="text-muted-foreground text-sm sm:text-base">Add, edit, and manage team members</p>
         </div>
         
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button disabled={isAtLimit}>
+            <Button disabled={isAtLimit} size="sm" className="sm:size-default w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />
               Add Team Member
             </Button>

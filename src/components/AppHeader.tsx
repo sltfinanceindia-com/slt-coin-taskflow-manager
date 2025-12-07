@@ -55,23 +55,23 @@ export function AppHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 h-16 w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
-      <div className="flex h-full items-center justify-between px-6">
+    <header className="sticky top-0 z-40 h-14 sm:h-16 w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
+      <div className="flex h-full items-center justify-between px-3 sm:px-4 lg:px-6">
         <div className="flex items-center">
-          <SidebarTrigger className="h-10 w-10 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800" />
+          <SidebarTrigger className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800" />
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3">
           {/* Theme Toggle */}
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleTheme}
             aria-label="Toggle theme"
-            className="h-10 w-10 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+            className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
           >
-            <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <Sun className="h-4 w-4 sm:h-5 sm:w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-4 w-4 sm:h-5 sm:w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             <span className="sr-only">Toggle theme</span>
           </Button>
 
@@ -80,13 +80,13 @@ export function AppHeader() {
             variant="ghost" 
             size="icon" 
             aria-label={`Notifications ${pendingCoins > 0 ? `(${pendingCoins} pending)` : ''}`}
-            className="h-10 w-10 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 relative transition-all duration-200"
+            className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 relative transition-all duration-200"
           >
-            <Bell className="h-5 w-5" />
+            <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
             {pendingCoins > 0 && (
               <Badge 
                 variant="count"
-                className="absolute -top-1 -right-1 h-5 min-w-[1.25rem] px-1.5 py-0.5 rounded-full bg-red-500 text-white text-xs font-medium border-2 border-white dark:border-gray-900 animate-pulse-ring"
+                className="absolute -top-1 -right-1 h-4 sm:h-5 min-w-[1rem] sm:min-w-[1.25rem] px-1 sm:px-1.5 py-0 sm:py-0.5 rounded-full bg-red-500 text-white text-[10px] sm:text-xs font-medium border-2 border-white dark:border-gray-900 animate-pulse-ring"
               >
                 {pendingCoins > 9 ? '9+' : pendingCoins}
               </Badge>
@@ -98,21 +98,21 @@ export function AppHeader() {
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="ghost" 
-                className="flex items-center gap-2 h-10 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 focus-ring"
+                className="flex items-center gap-2 h-9 sm:h-10 px-2 sm:px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 focus-ring"
                 aria-label="Open user menu"
               >
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-medium relative">
+                <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white text-sm sm:text-base font-medium relative">
                   {profile?.full_name?.charAt(0).toUpperCase()}
                   <OnlineIndicator online={true} className="absolute bottom-0 right-0" />
                 </div>
-                <span className="text-sm font-medium hidden sm:block">{profile?.full_name}</span>
+                <span className="text-sm font-medium hidden md:block max-w-24 lg:max-w-32 truncate">{profile?.full_name}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 animate-fade-in">
               <DropdownMenuLabel>
                 <div className="space-y-1">
-                  <p className="text-sm font-medium">{profile?.full_name}</p>
-                  <p className="text-xs text-muted-foreground">{profile?.email}</p>
+                  <p className="text-sm font-medium truncate">{profile?.full_name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{profile?.email}</p>
                   <Badge variant={profile?.role === 'admin' ? 'admin' : 'intern'} className="text-xs">
                     {profile?.role}
                   </Badge>

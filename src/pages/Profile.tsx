@@ -1,10 +1,9 @@
-
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AvatarUpload } from '@/components/AvatarUpload';
-import { Coins, User, Calendar, Mail, Briefcase, Settings } from 'lucide-react';
+import { Coins, User, Calendar, Mail, Briefcase, Settings, ArrowLeft } from 'lucide-react';
 import { UserAssessmentResults } from '@/components/assessment/UserAssessmentResults';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
@@ -31,23 +30,26 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-gradient-background">
-      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
-        <div className="flex items-center justify-between mb-6">
+      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
           <Button 
             variant="ghost" 
+            size="sm"
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 self-start"
           >
-            ← Back to Dashboard
+            <ArrowLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Back to Dashboard</span>
+            <span className="sm:hidden">Back</span>
           </Button>
-          <h1 className="text-2xl font-bold">Profile Settings</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">Profile Settings</h1>
         </div>
         
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
+        <div className="mb-4 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
             Profile
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-sm sm:text-base">
             Manage your account information and view your progress.
           </p>
         </div>
