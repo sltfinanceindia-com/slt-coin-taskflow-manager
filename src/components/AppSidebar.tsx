@@ -168,7 +168,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
         )}
 
         {/* Super Admin Quick Access */}
-        {isSuperAdmin && !collapsed && (
+        {isSuperAdmin && (
           <div className="px-3 py-2 border-b border-sidebar-border">
             <SidebarMenu>
               <SidebarMenuItem>
@@ -183,7 +183,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
                       )}
                     >
                       <Crown className="h-5 w-5 shrink-0" />
-                      <span className="text-sm truncate">Super Admin Panel</span>
+                      {!collapsed && <span className="text-sm truncate">Super Admin Panel</span>}
                     </SidebarMenuButton>
                   )}
                 </NavLink>

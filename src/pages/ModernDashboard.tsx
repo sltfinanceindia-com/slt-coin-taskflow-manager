@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useTasks } from '@/hooks/useTasks';
@@ -22,23 +22,17 @@ import { AppSidebar } from '@/components/AppSidebar';
 import { AppHeader } from '@/components/AppHeader';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import ModernCommunication from '@/components/ModernCommunication';
+import { Button } from '@/components/ui/button';
 
-import { Coins, Clock, CheckCircle, Plus } from 'lucide-react';
+import { Coins, Clock, CheckCircle, Plus, Crown, ArrowRight } from 'lucide-react';
 
 export default function ModernDashboard() {
   const { user, profile, loading } = useAuth();
-  const { role, isSuperAdmin, isAdmin, isLoading: roleLoading } = useUserRole();
+  const { role, isSuperAdmin, isAdmin, isLoading: roleLoading, organizationId } = useUserRole();
   const { tasks, createTask, updateTaskStatus, verifyTask, updateTask, isCreating, isUpdating } = useTasks();
   const { timeLogs, logTime, isLogging } = useTimeLogs();
   const [activeTab, setActiveTab] = useState('overview');
   const navigate = useNavigate();
-
-  // Redirect super admins to super admin dashboard
-  useEffect(() => {
-    if (!roleLoading && isSuperAdmin) {
-      navigate('/super-admin', { replace: true });
-    }
-  }, [isSuperAdmin, roleLoading, navigate]);
 
   if (loading || roleLoading) {
     return (
@@ -55,10 +49,8 @@ export default function ModernDashboard() {
     return <Navigate to="/auth" replace />;
   }
 
-  // If super admin, don't render - will be redirected
-  if (isSuperAdmin) {
-    return null;
-  }
+  // Super admins can access org dashboard if they have an organization
+  // Show a banner to go to super admin panel instead of auto-redirect
 
   const myTasks = tasks.filter(task => 
     isAdmin ? true : task.assigned_to === profile?.id
@@ -222,8 +214,30 @@ export default function ModernDashboard() {
           
           <main id="main-content" className="flex-1 overflow-auto" role="main">
             <div className="w-full max-w-none px-2 sm:px-4 lg:px-6 xl:px-8 py-2 sm:py-4 lg:py-6">
+              {/* Super Admin Banner */}
+              {isSuperAdmin && (
+                <div className="mb-4 p-3 sm:p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <Crown className="h-5 w-5 text-purple-600 dark:text-purple-400 shrink-0" />
+                    <span className="text-sm text-purple-800 dark:text-purple-200">
+                      You're viewing as Organization Admin. Go to Super Admin Panel for platform management.
+                    </span>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate('/super-admin')}
+                    className="border-purple-300 text-purple-700 hover:bg-purple-100 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-900/50 w-full sm:w-auto"
+                  >
+                    <Crown className="h-4 w-4 mr-2" />
+                    Super Admin Panel
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </div>
+              )}
+
               <header className="mb-4 sm:mb-6 lg:mb-8">
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex flex-wrap items-center gap-2 mb-2">
                   <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent leading-tight">
                     Welcome back, {profile?.full_name}!
                   </h1>
