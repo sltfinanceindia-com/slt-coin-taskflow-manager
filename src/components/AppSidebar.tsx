@@ -39,6 +39,7 @@ const adminItems = [
   { title: "Overview", url: "overview", icon: LayoutDashboard },
   { title: "Kanban Board", url: "tasks", icon: CheckSquare },
   { title: "Projects", url: "projects", icon: FolderOpen },
+  { title: "Shifts", url: "shifts", icon: Clock },
   { title: "Time Logs", url: "time", icon: Clock },
   { title: "Training", url: "training", icon: BookOpen },
   { title: "Communication", url: "communication", icon: MessageSquare },
