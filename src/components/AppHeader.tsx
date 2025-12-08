@@ -1,4 +1,4 @@
-import { Moon, Sun, Bell, LogOut } from "lucide-react"
+import { Moon, Sun, Bell, LogOut, Shield, Building2, ArrowRightLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { OnlineIndicator } from "@/components/ui/online-indicator"
@@ -15,11 +15,14 @@ import { useAuth } from "@/hooks/useAuth"
 import { useTheme } from "@/components/ThemeProvider"
 import { toast } from "@/hooks/use-toast"
 import { useCoinTransactions } from "@/hooks/useCoinTransactions"
+import { useViewMode } from "@/hooks/useViewMode"
+import { cn } from "@/lib/utils"
 
 export function AppHeader() {
   const { profile, signOut } = useAuth()
   const { theme, setTheme } = useTheme()
   const { getPendingCoins } = useCoinTransactions()
+  const { viewMode, toggleViewMode, canSwitchView, isViewingSuperAdmin } = useViewMode()
   
   const pendingCoins = getPendingCoins()
 
@@ -62,6 +65,31 @@ export function AppHeader() {
         </div>
         
         <div className="flex items-center gap-1.5 sm:gap-3">
+          {/* View Mode Toggle for Super Admins */}
+          {canSwitchView && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleViewMode}
+              className={cn(
+                "h-8 sm:h-9 px-2 sm:px-3 rounded-lg transition-all duration-200 gap-1.5",
+                isViewingSuperAdmin 
+                  ? "bg-primary/10 border-primary/30 text-primary" 
+                  : "bg-secondary/10 border-secondary/30 text-secondary-foreground"
+              )}
+            >
+              {isViewingSuperAdmin ? (
+                <Shield className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              ) : (
+                <Building2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              )}
+              <span className="hidden sm:inline text-xs font-medium">
+                {isViewingSuperAdmin ? 'Super Admin' : 'Org View'}
+              </span>
+              <ArrowRightLeft className="h-3 w-3 opacity-60" />
+            </Button>
+          )}
+
           {/* Theme Toggle */}
           <Button
             variant="ghost"

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -192,37 +192,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Start initialization
     initializeAuth();
 
-    // Add beforeunload handler to end session when tab closes
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []); // Empty dependency - one-time initialization
+
+  // Use ref to track profile for beforeunload handler without causing re-renders
+  const profileRef = useRef<Profile | null>(null);
+  
+  useEffect(() => {
+    profileRef.current = profile;
+  }, [profile]);
+
+  // Separate effect for beforeunload handler
+  useEffect(() => {
     const handleBeforeUnload = () => {
-      if (profile?.id) {
-        // Use sendBeacon for reliable logout on page close
-        const logoutData = JSON.stringify({
-          user_id: profile.id,
-          logout_time: new Date().toISOString()
-        });
-        
+      const currentProfile = profileRef.current;
+      if (currentProfile?.id) {
         // Try to update session log (may not complete in beforeunload)
         supabase
           .from('session_logs')
           .update({ logout_time: new Date().toISOString() })
-          .eq('user_id', profile.id)
-          .is('logout_time', null)
-          .then(({ error }) => {
-            if (error) {
-              console.error('❌ beforeunload session update failed:', error);
-            }
-          });
+          .eq('user_id', currentProfile.id)
+          .is('logout_time', null);
       }
     };
     
     window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [profile]);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
 
   const signUp = async (email: string, password: string, fullName: string, role: 'admin' | 'intern' = 'intern') => {
     const redirectUrl = `${window.location.origin}/`;
