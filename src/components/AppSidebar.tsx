@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/hooks/useAuth"
 import { useUserRole } from "@/hooks/useUserRole"
+import { useViewMode } from "@/hooks/useViewMode"
 import { Badge } from "@/components/ui/badge"
 import { NotificationCenter } from "@/components/NotificationCenter"
 
@@ -68,6 +69,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
   const { state } = useSidebar()
   const { profile } = useAuth()
   const { isSuperAdmin, isAdmin, role, isLoading: roleLoading } = useUserRole()
+  const { isViewingSuperAdmin, isViewingOrgAdmin } = useViewMode()
   
   // Use role from useUserRole hook for determining navigation items
   const items = isAdmin ? adminItems : internItems
@@ -75,10 +77,13 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
 
   const isActive = (tab: string) => activeTab === tab
 
-  // Role display logic
+  // Role display logic - show current view context
   const getRoleBadge = () => {
-    if (isSuperAdmin) {
+    if (isSuperAdmin && isViewingSuperAdmin) {
       return { label: 'Super Admin', variant: 'default' as const, icon: Crown }
+    }
+    if (isSuperAdmin && isViewingOrgAdmin) {
+      return { label: 'Org View', variant: 'default' as const, icon: Building2 }
     }
     if (role === 'org_admin') {
       return { label: 'Org Admin', variant: 'default' as const, icon: Building2 }

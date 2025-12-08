@@ -146,26 +146,26 @@ export default function EnhancedChatList({
         <Button
           variant={isSelected ? "secondary" : "ghost"}
           className={cn(
-            "w-full justify-start h-auto py-3 px-3 group-hover:bg-muted/50 transition-colors",
+            "w-full justify-start h-auto py-2.5 sm:py-3 px-2.5 sm:px-3 group-hover:bg-muted/50 transition-colors touch-manipulation",
             isSelected && "bg-primary/10 border-l-2 border-primary"
           )}
           onClick={() => onChannelSelect(channel)}
         >
-          <div className="flex items-center gap-3 w-full">
+          <div className="flex items-center gap-2.5 sm:gap-3 w-full">
             {/* Avatar/Icon */}
             <div className="relative flex-shrink-0">
               {channel.is_direct_message && user ? (
                 <>
-                  <Avatar className="h-10 w-10">
+                  <Avatar className="h-9 w-9 sm:h-10 sm:w-10">
                     <AvatarImage src={user.avatar_url} />
-                    <AvatarFallback className="text-sm">
+                    <AvatarFallback className="text-xs sm:text-sm">
                       {getInitials(user.full_name)}
                     </AvatarFallback>
                    </Avatar>
                    {getStatusIndicator(user.id)}
                 </>
               ) : (
-                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-muted flex items-center justify-center">
                   {getChannelIcon(channel)}
                 </div>
               )}
@@ -212,8 +212,8 @@ export default function EnhancedChatList({
               )}
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {/* Action Buttons - hidden on mobile, visible on hover for desktop */}
+            <div className="hidden sm:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <Button
                 variant="ghost"
                 size="sm"
@@ -251,12 +251,12 @@ export default function EnhancedChatList({
   return (
     <div className="h-full bg-background flex flex-col">
       {/* Search Header */}
-      <div className="p-4 border-b border-border">
+      <div className="p-3 sm:p-4 border-b border-border safe-top">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 text-muted-foreground transform -translate-y-1/2" />
           <Input
-            placeholder="Search or type a command"
-            className="pl-10 bg-muted/50"
+            placeholder="Search chats..."
+            className="pl-10 bg-muted/50 h-10"
             value={searchQuery}
             onChange={(e) => onSearchChange?.(e.target.value)}
           />
@@ -264,8 +264,8 @@ export default function EnhancedChatList({
       </div>
 
       {/* Chat List */}
-      <ScrollArea className="flex-1">
-        <div className="space-y-2 p-2">
+      <ScrollArea className="flex-1 safe-bottom">
+        <div className="space-y-1 p-2">
           {/* Pinned Section */}
           {pinnedChannels.length > 0 && (
             <div className="space-y-1">

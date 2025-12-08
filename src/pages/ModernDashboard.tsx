@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useViewMode } from '@/hooks/useViewMode';
 import { useTasks } from '@/hooks/useTasks';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
 import { Navigate, useNavigate } from 'react-router-dom';
@@ -24,11 +25,12 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import ModernCommunication from '@/components/ModernCommunication';
 import { Button } from '@/components/ui/button';
 
-import { Coins, Clock, CheckCircle, Plus, Crown, ArrowRight } from 'lucide-react';
+import { Coins, Clock, CheckCircle, Plus, Crown, ArrowRight, Shield, Building2 } from 'lucide-react';
 
 export default function ModernDashboard() {
   const { user, profile, loading } = useAuth();
   const { role, isSuperAdmin, isAdmin, isLoading: roleLoading, organizationId } = useUserRole();
+  const { isViewingSuperAdmin, isViewingOrgAdmin, canSwitchView } = useViewMode();
   const { tasks, createTask, updateTaskStatus, verifyTask, updateTask, isCreating, isUpdating } = useTasks();
   const { timeLogs, logTime, isLogging } = useTimeLogs();
   const [activeTab, setActiveTab] = useState('overview');
@@ -214,13 +216,18 @@ export default function ModernDashboard() {
           
           <main id="main-content" className="flex-1 overflow-auto" role="main">
             <div className="w-full max-w-none px-2 sm:px-4 lg:px-6 xl:px-8 py-2 sm:py-4 lg:py-6">
-              {/* Super Admin Banner */}
-              {isSuperAdmin && (
-                <div className="mb-4 p-3 sm:p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              {/* Super Admin Banner - only show when viewing as org admin */}
+              {isSuperAdmin && isViewingOrgAdmin && (
+                <div className="mb-4 p-3 sm:p-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-200 dark:border-purple-800 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <Crown className="h-5 w-5 text-purple-600 dark:text-purple-400 shrink-0" />
+                    <div className="flex items-center gap-1.5">
+                      <Building2 className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                      <span className="text-xs font-medium text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-800/50 px-2 py-0.5 rounded">
+                        Organization View
+                      </span>
+                    </div>
                     <span className="text-sm text-purple-800 dark:text-purple-200">
-                      You're viewing as Organization Admin. Go to Super Admin Panel for platform management.
+                      Switch to Super Admin for platform management.
                     </span>
                   </div>
                   <Button 
@@ -229,7 +236,7 @@ export default function ModernDashboard() {
                     onClick={() => navigate('/super-admin')}
                     className="border-purple-300 text-purple-700 hover:bg-purple-100 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-900/50 w-full sm:w-auto"
                   >
-                    <Crown className="h-4 w-4 mr-2" />
+                    <Shield className="h-4 w-4 mr-2" />
                     Super Admin Panel
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
