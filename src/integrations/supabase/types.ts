@@ -437,6 +437,137 @@ export type Database = {
           },
         ]
       }
+      attendance_records: {
+        Row: {
+          attendance_date: string
+          clock_in_latitude: number | null
+          clock_in_longitude: number | null
+          clock_in_time: string | null
+          clock_in_within_geofence: boolean | null
+          clock_out_latitude: number | null
+          clock_out_longitude: number | null
+          clock_out_time: string | null
+          clock_out_within_geofence: boolean | null
+          created_at: string
+          employee_id: string
+          id: string
+          notes: string | null
+          organization_id: string | null
+          overtime_hours: number | null
+          status: string | null
+          total_hours: number | null
+          updated_at: string
+        }
+        Insert: {
+          attendance_date: string
+          clock_in_latitude?: number | null
+          clock_in_longitude?: number | null
+          clock_in_time?: string | null
+          clock_in_within_geofence?: boolean | null
+          clock_out_latitude?: number | null
+          clock_out_longitude?: number | null
+          clock_out_time?: string | null
+          clock_out_within_geofence?: boolean | null
+          created_at?: string
+          employee_id: string
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          overtime_hours?: number | null
+          status?: string | null
+          total_hours?: number | null
+          updated_at?: string
+        }
+        Update: {
+          attendance_date?: string
+          clock_in_latitude?: number | null
+          clock_in_longitude?: number | null
+          clock_in_time?: string | null
+          clock_in_within_geofence?: boolean | null
+          clock_out_latitude?: number | null
+          clock_out_longitude?: number | null
+          clock_out_time?: string | null
+          clock_out_within_geofence?: boolean | null
+          created_at?: string
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          overtime_hours?: number | null
+          status?: string | null
+          total_hours?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_records_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_records_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      attendance_settings: {
+        Row: {
+          created_at: string
+          early_leave_threshold_minutes: number | null
+          enable_geo_fencing: boolean | null
+          geo_fence_radius_meters: number | null
+          id: string
+          late_threshold_minutes: number | null
+          office_latitude: number | null
+          office_longitude: number | null
+          organization_id: string | null
+          updated_at: string
+          work_end_time: string | null
+          work_start_time: string | null
+        }
+        Insert: {
+          created_at?: string
+          early_leave_threshold_minutes?: number | null
+          enable_geo_fencing?: boolean | null
+          geo_fence_radius_meters?: number | null
+          id?: string
+          late_threshold_minutes?: number | null
+          office_latitude?: number | null
+          office_longitude?: number | null
+          organization_id?: string | null
+          updated_at?: string
+          work_end_time?: string | null
+          work_start_time?: string | null
+        }
+        Update: {
+          created_at?: string
+          early_leave_threshold_minutes?: number | null
+          enable_geo_fencing?: boolean | null
+          geo_fence_radius_meters?: number | null
+          id?: string
+          late_threshold_minutes?: number | null
+          office_latitude?: number | null
+          office_longitude?: number | null
+          organization_id?: string | null
+          updated_at?: string
+          work_end_time?: string | null
+          work_start_time?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -1263,6 +1394,209 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "kanban_metrics_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_balances: {
+        Row: {
+          carried_forward: number
+          created_at: string
+          employee_id: string
+          id: string
+          leave_type_id: string
+          organization_id: string | null
+          pending_days: number
+          total_days: number
+          updated_at: string
+          used_days: number
+          year: number
+        }
+        Insert: {
+          carried_forward?: number
+          created_at?: string
+          employee_id: string
+          id?: string
+          leave_type_id: string
+          organization_id?: string | null
+          pending_days?: number
+          total_days?: number
+          updated_at?: string
+          used_days?: number
+          year?: number
+        }
+        Update: {
+          carried_forward?: number
+          created_at?: string
+          employee_id?: string
+          id?: string
+          leave_type_id?: string
+          organization_id?: string | null
+          pending_days?: number
+          total_days?: number
+          updated_at?: string
+          used_days?: number
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_balances_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_balances_leave_type_id_fkey"
+            columns: ["leave_type_id"]
+            isOneToOne: false
+            referencedRelation: "leave_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_balances_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_requests: {
+        Row: {
+          created_at: string
+          employee_id: string
+          end_date: string
+          half_day_type: string | null
+          id: string
+          is_half_day: boolean | null
+          leave_type_id: string
+          organization_id: string | null
+          reason: string | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          start_date: string
+          status: string
+          total_days: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          end_date: string
+          half_day_type?: string | null
+          id?: string
+          is_half_day?: boolean | null
+          leave_type_id: string
+          organization_id?: string | null
+          reason?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          start_date: string
+          status?: string
+          total_days: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          end_date?: string
+          half_day_type?: string | null
+          id?: string
+          is_half_day?: boolean | null
+          leave_type_id?: string
+          organization_id?: string | null
+          reason?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          start_date?: string
+          status?: string
+          total_days?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_requests_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_requests_leave_type_id_fkey"
+            columns: ["leave_type_id"]
+            isOneToOne: false
+            referencedRelation: "leave_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_types: {
+        Row: {
+          allow_carry_forward: boolean | null
+          color: string | null
+          created_at: string
+          days_per_year: number
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_paid: boolean | null
+          max_carry_forward_days: number | null
+          name: string
+          organization_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          allow_carry_forward?: boolean | null
+          color?: string | null
+          created_at?: string
+          days_per_year?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_paid?: boolean | null
+          max_carry_forward_days?: number | null
+          name: string
+          organization_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          allow_carry_forward?: boolean | null
+          color?: string | null
+          created_at?: string
+          days_per_year?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_paid?: boolean | null
+          max_carry_forward_days?: number | null
+          name?: string
+          organization_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_types_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -3020,6 +3354,114 @@ export type Database = {
           {
             foreignKeyName: "webrtc_signals_sender_id_fkey"
             columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wfh_policies: {
+        Row: {
+          advance_notice_days: number | null
+          blackout_days: string[] | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          max_wfh_days_per_month: number | null
+          organization_id: string | null
+          require_approval: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          advance_notice_days?: number | null
+          blackout_days?: string[] | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          max_wfh_days_per_month?: number | null
+          organization_id?: string | null
+          require_approval?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          advance_notice_days?: number | null
+          blackout_days?: string[] | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          max_wfh_days_per_month?: number | null
+          organization_id?: string | null
+          require_approval?: boolean | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wfh_policies_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wfh_requests: {
+        Row: {
+          created_at: string
+          employee_id: string
+          id: string
+          organization_id: string | null
+          reason: string | null
+          request_date: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          id?: string
+          organization_id?: string | null
+          reason?: string | null
+          request_date: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          id?: string
+          organization_id?: string | null
+          reason?: string | null
+          request_date?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wfh_requests_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wfh_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wfh_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
