@@ -27,6 +27,10 @@ import { ShiftManagement } from '@/components/workforce/ShiftManagement';
 import { LeaveManagement } from '@/components/workforce/LeaveManagement';
 import { GeoAttendance } from '@/components/workforce/GeoAttendance';
 import { WFHManagement } from '@/components/workforce/WFHManagement';
+import { FeedbackManagement } from '@/components/performance/FeedbackManagement';
+import { OKRManagement } from '@/components/performance/OKRManagement';
+import { OneOnOneMeetings } from '@/components/performance/OneOnOneMeetings';
+import { PIPManagement } from '@/components/performance/PIPManagement';
 
 import { Coins, Clock, CheckCircle, Plus, Crown, ArrowRight, Shield, Building2 } from 'lucide-react';
 
@@ -198,6 +202,18 @@ export default function ModernDashboard() {
       
       case 'wfh':
         return <WFHManagement />;
+      
+      case 'okrs':
+        return <OKRManagement />;
+      
+      case 'feedback':
+        return isAdmin ? <FeedbackManagement /> : null;
+      
+      case 'meetings':
+        return <OneOnOneMeetings />;
+      
+      case 'pips':
+        return isAdmin ? <PIPManagement /> : null;
       
       case 'communication':
         return <ModernCommunication />;
