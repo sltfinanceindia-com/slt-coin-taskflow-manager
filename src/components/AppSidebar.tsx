@@ -13,7 +13,11 @@ import {
   MessageSquare,
   Building2,
   Shield,
-  Crown
+  Crown,
+  CalendarDays,
+  MapPin,
+  Home,
+  Palmtree
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -39,13 +43,15 @@ const adminItems = [
   { title: "Overview", url: "overview", icon: LayoutDashboard },
   { title: "Kanban Board", url: "tasks", icon: CheckSquare },
   { title: "Projects", url: "projects", icon: FolderOpen },
-  { title: "Shifts", url: "shifts", icon: Clock },
+  { title: "Shifts", url: "shifts", icon: CalendarDays },
+  { title: "Leave", url: "leave", icon: Palmtree },
+  { title: "Attendance", url: "attendance", icon: MapPin },
+  { title: "WFH", url: "wfh", icon: Home },
   { title: "Time Logs", url: "time", icon: Clock },
   { title: "Training", url: "training", icon: BookOpen },
   { title: "Communication", url: "communication", icon: MessageSquare },
   { title: "Coins", url: "coins", icon: Coins },
   { title: "Interns", url: "interns", icon: Users },
-  { title: "Attendance", url: "attendance", icon: Clock },
   { title: "Analytics", url: "analytics", icon: BarChart3 },
 ]
 
@@ -54,6 +60,9 @@ const internItems = [
   { title: "Overview", url: "overview", icon: LayoutDashboard },
   { title: "My Tasks", url: "tasks", icon: CheckSquare },
   { title: "Projects", url: "projects", icon: FolderOpen },
+  { title: "Leave", url: "leave", icon: Palmtree },
+  { title: "Attendance", url: "attendance", icon: MapPin },
+  { title: "WFH", url: "wfh", icon: Home },
   { title: "Training", url: "training", icon: BookOpen },
   { title: "Time Logs", url: "time", icon: Clock },
   { title: "Communication", url: "communication", icon: MessageSquare },

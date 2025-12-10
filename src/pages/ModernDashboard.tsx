@@ -17,13 +17,16 @@ import { MyCoins } from '@/components/MyCoins';
 import { EnhancedDashboardWidgets } from '@/components/EnhancedDashboardWidgets';
 import { ProjectManagement } from '@/components/ProjectManagement';
 import { KanbanBoard } from '@/components/KanbanBoard';
-import { EnhancedAttendanceTracker } from '@/components/attendance/EnhancedAttendanceTracker';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AppHeader } from '@/components/AppHeader';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import ModernCommunication from '@/components/ModernCommunication';
 import { Button } from '@/components/ui/button';
+import { ShiftManagement } from '@/components/workforce/ShiftManagement';
+import { LeaveManagement } from '@/components/workforce/LeaveManagement';
+import { GeoAttendance } from '@/components/workforce/GeoAttendance';
+import { WFHManagement } from '@/components/workforce/WFHManagement';
 
 import { Coins, Clock, CheckCircle, Plus, Crown, ArrowRight, Shield, Building2 } from 'lucide-react';
 
@@ -184,11 +187,20 @@ export default function ModernDashboard() {
       case 'analytics':
         return <AnalyticsPage />;
       
+      case 'shifts':
+        return isAdmin ? <ShiftManagement /> : null;
+      
+      case 'leave':
+        return <LeaveManagement />;
+      
       case 'attendance':
-        return isAdmin ? <EnhancedAttendanceTracker /> : null;
+        return <GeoAttendance />;
+      
+      case 'wfh':
+        return <WFHManagement />;
       
       case 'communication':
-          return <ModernCommunication />;
+        return <ModernCommunication />;
       
       default:
         return <EnhancedDashboardWidgets />;
