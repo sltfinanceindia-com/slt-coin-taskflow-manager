@@ -1129,6 +1129,182 @@ export type Database = {
           },
         ]
       }
+      feedback_cycles: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          end_date: string
+          id: string
+          is_anonymous: boolean | null
+          name: string
+          organization_id: string | null
+          start_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          end_date: string
+          id?: string
+          is_anonymous?: boolean | null
+          name: string
+          organization_id?: string | null
+          start_date: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          end_date?: string
+          id?: string
+          is_anonymous?: boolean | null
+          name?: string
+          organization_id?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_cycles_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_cycles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feedback_requests: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          cycle_id: string
+          due_date: string | null
+          feedback_type: string
+          id: string
+          organization_id: string | null
+          reviewer_id: string
+          status: string
+          subject_id: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          cycle_id: string
+          due_date?: string | null
+          feedback_type: string
+          id?: string
+          organization_id?: string | null
+          reviewer_id: string
+          status?: string
+          subject_id: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          cycle_id?: string
+          due_date?: string | null
+          feedback_type?: string
+          id?: string
+          organization_id?: string | null
+          reviewer_id?: string
+          status?: string
+          subject_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_requests_cycle_id_fkey"
+            columns: ["cycle_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_cycles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_requests_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_requests_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feedback_responses: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          organization_id: string | null
+          question_category: string
+          question_text: string
+          rating: number | null
+          request_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          organization_id?: string | null
+          question_category: string
+          question_text: string
+          rating?: number | null
+          request_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          organization_id?: string | null
+          question_category?: string
+          question_text?: string
+          rating?: number | null
+          request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_responses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_responses_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       file_attachments: {
         Row: {
           created_at: string
@@ -1401,6 +1577,69 @@ export type Database = {
           },
         ]
       }
+      key_results: {
+        Row: {
+          created_at: string
+          current_value: number | null
+          description: string | null
+          due_date: string | null
+          id: string
+          objective_id: string
+          organization_id: string | null
+          start_value: number | null
+          status: string
+          target_value: number
+          title: string
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_value?: number | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          objective_id: string
+          organization_id?: string | null
+          start_value?: number | null
+          status?: string
+          target_value: number
+          title: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_value?: number | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          objective_id?: string
+          organization_id?: string | null
+          start_value?: number | null
+          status?: string
+          target_value?: number
+          title?: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "key_results_objective_id_fkey"
+            columns: ["objective_id"]
+            isOneToOne: false
+            referencedRelation: "objectives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "key_results_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leave_balances: {
         Row: {
           carried_forward: number
@@ -1597,6 +1836,196 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "leave_types_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meeting_action_items: {
+        Row: {
+          assigned_to: string
+          completed_at: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          due_date: string | null
+          id: string
+          meeting_id: string
+          organization_id: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to: string
+          completed_at?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          meeting_id: string
+          organization_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          meeting_id?: string
+          organization_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_action_items_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meeting_action_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meeting_action_items_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "one_on_one_meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meeting_action_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meeting_agenda_items: {
+        Row: {
+          added_by: string
+          created_at: string
+          description: string | null
+          display_order: number | null
+          id: string
+          is_discussed: boolean | null
+          meeting_id: string
+          organization_id: string | null
+          topic: string
+          topic_type: string | null
+        }
+        Insert: {
+          added_by: string
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_discussed?: boolean | null
+          meeting_id: string
+          organization_id?: string | null
+          topic: string
+          topic_type?: string | null
+        }
+        Update: {
+          added_by?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_discussed?: boolean | null
+          meeting_id?: string
+          organization_id?: string | null
+          topic?: string
+          topic_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_agenda_items_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meeting_agenda_items_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "one_on_one_meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meeting_agenda_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meeting_notes: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string
+          id: string
+          is_private: boolean | null
+          meeting_id: string
+          organization_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by: string
+          id?: string
+          is_private?: boolean | null
+          meeting_id: string
+          organization_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_private?: boolean | null
+          meeting_id?: string
+          organization_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_notes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meeting_notes_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "one_on_one_meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meeting_notes_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -2002,6 +2431,217 @@ export type Database = {
           },
         ]
       }
+      objectives: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          end_date: string | null
+          id: string
+          level: string
+          organization_id: string | null
+          owner_id: string
+          parent_id: string | null
+          progress_percentage: number | null
+          quarter: string | null
+          start_date: string | null
+          status: string
+          title: string
+          updated_at: string
+          year: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          level?: string
+          organization_id?: string | null
+          owner_id: string
+          parent_id?: string | null
+          progress_percentage?: number | null
+          quarter?: string | null
+          start_date?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          year?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          level?: string
+          organization_id?: string | null
+          owner_id?: string
+          parent_id?: string | null
+          progress_percentage?: number | null
+          quarter?: string | null
+          start_date?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "objectives_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "objectives_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "objectives_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "objectives_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "objectives"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      okr_check_ins: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          key_result_id: string
+          new_value: number
+          notes: string | null
+          organization_id: string | null
+          previous_value: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          key_result_id: string
+          new_value: number
+          notes?: string | null
+          organization_id?: string | null
+          previous_value?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          key_result_id?: string
+          new_value?: number
+          notes?: string | null
+          organization_id?: string | null
+          previous_value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "okr_check_ins_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "okr_check_ins_key_result_id_fkey"
+            columns: ["key_result_id"]
+            isOneToOne: false
+            referencedRelation: "key_results"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "okr_check_ins_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      one_on_one_meetings: {
+        Row: {
+          created_at: string
+          duration_minutes: number | null
+          employee_id: string
+          id: string
+          is_recurring: boolean | null
+          location: string | null
+          manager_id: string
+          meeting_url: string | null
+          organization_id: string | null
+          recurrence_pattern: string | null
+          scheduled_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration_minutes?: number | null
+          employee_id: string
+          id?: string
+          is_recurring?: boolean | null
+          location?: string | null
+          manager_id: string
+          meeting_url?: string | null
+          organization_id?: string | null
+          recurrence_pattern?: string | null
+          scheduled_at: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration_minutes?: number | null
+          employee_id?: string
+          id?: string
+          is_recurring?: boolean | null
+          location?: string | null
+          manager_id?: string
+          meeting_url?: string | null
+          organization_id?: string | null
+          recurrence_pattern?: string | null
+          scheduled_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "one_on_one_meetings_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "one_on_one_meetings_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "one_on_one_meetings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_invitations: {
         Row: {
           accepted_at: string | null
@@ -2122,6 +2762,217 @@ export type Database = {
             columns: ["subscription_plan_id"]
             isOneToOne: false
             referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      performance_improvement_plans: {
+        Row: {
+          created_at: string
+          created_by: string
+          employee_id: string
+          end_date: string
+          final_outcome: string | null
+          final_outcome_date: string | null
+          hr_representative_id: string | null
+          id: string
+          manager_id: string
+          organization_id: string | null
+          reason: string
+          start_date: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          employee_id: string
+          end_date: string
+          final_outcome?: string | null
+          final_outcome_date?: string | null
+          hr_representative_id?: string | null
+          id?: string
+          manager_id: string
+          organization_id?: string | null
+          reason: string
+          start_date: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          employee_id?: string
+          end_date?: string
+          final_outcome?: string | null
+          final_outcome_date?: string | null
+          hr_representative_id?: string | null
+          id?: string
+          manager_id?: string
+          organization_id?: string | null
+          reason?: string
+          start_date?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_improvement_plans_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "performance_improvement_plans_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "performance_improvement_plans_hr_representative_id_fkey"
+            columns: ["hr_representative_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "performance_improvement_plans_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "performance_improvement_plans_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pip_check_ins: {
+        Row: {
+          check_in_date: string
+          created_at: string
+          created_by: string
+          employee_notes: string | null
+          id: string
+          manager_notes: string | null
+          next_steps: string | null
+          organization_id: string | null
+          overall_progress: string | null
+          pip_id: string
+          updated_at: string
+        }
+        Insert: {
+          check_in_date: string
+          created_at?: string
+          created_by: string
+          employee_notes?: string | null
+          id?: string
+          manager_notes?: string | null
+          next_steps?: string | null
+          organization_id?: string | null
+          overall_progress?: string | null
+          pip_id: string
+          updated_at?: string
+        }
+        Update: {
+          check_in_date?: string
+          created_at?: string
+          created_by?: string
+          employee_notes?: string | null
+          id?: string
+          manager_notes?: string | null
+          next_steps?: string | null
+          organization_id?: string | null
+          overall_progress?: string | null
+          pip_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pip_check_ins_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pip_check_ins_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pip_check_ins_pip_id_fkey"
+            columns: ["pip_id"]
+            isOneToOne: false
+            referencedRelation: "performance_improvement_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pip_goals: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          organization_id: string | null
+          pip_id: string
+          progress_notes: string | null
+          status: string
+          success_criteria: string
+          target_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          organization_id?: string | null
+          pip_id: string
+          progress_notes?: string | null
+          status?: string
+          success_criteria: string
+          target_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          organization_id?: string | null
+          pip_id?: string
+          progress_notes?: string | null
+          status?: string
+          success_criteria?: string
+          target_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pip_goals_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pip_goals_pip_id_fkey"
+            columns: ["pip_id"]
+            isOneToOne: false
+            referencedRelation: "performance_improvement_plans"
             referencedColumns: ["id"]
           },
         ]

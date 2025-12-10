@@ -17,7 +17,11 @@ import {
   CalendarDays,
   MapPin,
   Home,
-  Palmtree
+  Palmtree,
+  Target,
+  MessageCircle,
+  UserCheck,
+  AlertTriangle
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -47,6 +51,10 @@ const adminItems = [
   { title: "Leave", url: "leave", icon: Palmtree },
   { title: "Attendance", url: "attendance", icon: MapPin },
   { title: "WFH", url: "wfh", icon: Home },
+  { title: "OKRs", url: "okrs", icon: Target },
+  { title: "360° Feedback", url: "feedback", icon: MessageCircle },
+  { title: "1:1 Meetings", url: "meetings", icon: UserCheck },
+  { title: "PIPs", url: "pips", icon: AlertTriangle },
   { title: "Time Logs", url: "time", icon: Clock },
   { title: "Training", url: "training", icon: BookOpen },
   { title: "Communication", url: "communication", icon: MessageSquare },
