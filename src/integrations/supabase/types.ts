@@ -3757,6 +3757,85 @@ export type Database = {
           },
         ]
       }
+      request_types: {
+        Row: {
+          auto_route_rules: Json | null
+          color: string | null
+          created_at: string
+          created_by: string | null
+          default_assignee_id: string | null
+          default_priority: string | null
+          description: string | null
+          form_fields: Json | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          organization_id: string | null
+          requires_approval: boolean | null
+          sla_resolution_hours: number | null
+          sla_response_hours: number | null
+        }
+        Insert: {
+          auto_route_rules?: Json | null
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          default_assignee_id?: string | null
+          default_priority?: string | null
+          description?: string | null
+          form_fields?: Json | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          organization_id?: string | null
+          requires_approval?: boolean | null
+          sla_resolution_hours?: number | null
+          sla_response_hours?: number | null
+        }
+        Update: {
+          auto_route_rules?: Json | null
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          default_assignee_id?: string | null
+          default_priority?: string | null
+          description?: string | null
+          form_fields?: Json | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          organization_id?: string | null
+          requires_approval?: boolean | null
+          sla_resolution_hours?: number | null
+          sla_response_hours?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_types_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_types_default_assignee_id_fkey"
+            columns: ["default_assignee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_types_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_logs: {
         Row: {
           closure_note: string | null
@@ -4067,6 +4146,60 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sla_breaches: {
+        Row: {
+          breach_duration_minutes: number | null
+          breach_type: string
+          breached_at: string
+          created_at: string
+          expected_at: string
+          id: string
+          notified: boolean | null
+          notified_at: string | null
+          organization_id: string | null
+          request_id: string
+        }
+        Insert: {
+          breach_duration_minutes?: number | null
+          breach_type: string
+          breached_at?: string
+          created_at?: string
+          expected_at: string
+          id?: string
+          notified?: boolean | null
+          notified_at?: string | null
+          organization_id?: string | null
+          request_id: string
+        }
+        Update: {
+          breach_duration_minutes?: number | null
+          breach_type?: string
+          breached_at?: string
+          created_at?: string
+          expected_at?: string
+          id?: string
+          notified?: boolean | null
+          notified_at?: string | null
+          organization_id?: string | null
+          request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sla_breaches_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sla_breaches_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "work_requests"
             referencedColumns: ["id"]
           },
         ]
@@ -5137,6 +5270,134 @@ export type Database = {
           },
         ]
       }
+      work_requests: {
+        Row: {
+          assigned_team: string | null
+          assigned_to: string | null
+          converted_to_project_id: string | null
+          converted_to_task_id: string | null
+          created_at: string
+          description: string | null
+          first_response_at: string | null
+          form_data: Json | null
+          id: string
+          organization_id: string | null
+          priority: string
+          request_number: string
+          request_type_id: string
+          requester_id: string
+          resolved_at: string | null
+          sla_resolution_due: string | null
+          sla_response_due: string | null
+          status: string
+          title: string
+          triage_notes: string | null
+          triaged_at: string | null
+          triaged_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          assigned_team?: string | null
+          assigned_to?: string | null
+          converted_to_project_id?: string | null
+          converted_to_task_id?: string | null
+          created_at?: string
+          description?: string | null
+          first_response_at?: string | null
+          form_data?: Json | null
+          id?: string
+          organization_id?: string | null
+          priority?: string
+          request_number: string
+          request_type_id: string
+          requester_id: string
+          resolved_at?: string | null
+          sla_resolution_due?: string | null
+          sla_response_due?: string | null
+          status?: string
+          title: string
+          triage_notes?: string | null
+          triaged_at?: string | null
+          triaged_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assigned_team?: string | null
+          assigned_to?: string | null
+          converted_to_project_id?: string | null
+          converted_to_task_id?: string | null
+          created_at?: string
+          description?: string | null
+          first_response_at?: string | null
+          form_data?: Json | null
+          id?: string
+          organization_id?: string | null
+          priority?: string
+          request_number?: string
+          request_type_id?: string
+          requester_id?: string
+          resolved_at?: string | null
+          sla_resolution_due?: string | null
+          sla_response_due?: string | null
+          status?: string
+          title?: string
+          triage_notes?: string | null
+          triaged_at?: string | null
+          triaged_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_requests_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_requests_converted_to_project_id_fkey"
+            columns: ["converted_to_project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_requests_converted_to_task_id_fkey"
+            columns: ["converted_to_task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_requests_request_type_id_fkey"
+            columns: ["request_type_id"]
+            isOneToOne: false
+            referencedRelation: "request_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_requests_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_requests_triaged_by_fkey"
+            columns: ["triaged_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -5167,6 +5428,7 @@ export type Database = {
         Args: { p_email_type: string; p_user_id: string }
         Returns: boolean
       }
+      check_sla_breaches: { Args: never; Returns: undefined }
       cleanup_expired_typing_indicators: { Args: never; Returns: undefined }
       create_direct_message_channel: {
         Args: { user1_id: string; user2_id: string }
