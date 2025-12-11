@@ -3169,6 +3169,72 @@ export type Database = {
           },
         ]
       }
+      portfolios: {
+        Row: {
+          budget: number | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          organization_id: string | null
+          owner_id: string | null
+          risk_level: string | null
+          spent_budget: number | null
+          start_date: string | null
+          status: string
+          target_end_date: string | null
+          target_roi: number | null
+          updated_at: string
+        }
+        Insert: {
+          budget?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          organization_id?: string | null
+          owner_id?: string | null
+          risk_level?: string | null
+          spent_budget?: number | null
+          start_date?: string | null
+          status?: string
+          target_end_date?: string | null
+          target_roi?: number | null
+          updated_at?: string
+        }
+        Update: {
+          budget?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string | null
+          owner_id?: string | null
+          risk_level?: string | null
+          spent_budget?: number | null
+          start_date?: string | null
+          status?: string
+          target_end_date?: string | null
+          target_roi?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolios_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolios_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -3273,35 +3339,144 @@ export type Database = {
           },
         ]
       }
-      projects: {
+      programs: {
         Row: {
+          budget: number | null
           created_at: string
-          created_by: string
           description: string | null
           id: string
           name: string
           organization_id: string | null
-          status: string | null
+          owner_id: string | null
+          portfolio_id: string | null
+          spent_budget: number | null
+          start_date: string | null
+          status: string
+          target_end_date: string | null
           updated_at: string
         }
         Insert: {
+          budget?: number | null
           created_at?: string
-          created_by: string
           description?: string | null
           id?: string
           name: string
           organization_id?: string | null
-          status?: string | null
+          owner_id?: string | null
+          portfolio_id?: string | null
+          spent_budget?: number | null
+          start_date?: string | null
+          status?: string
+          target_end_date?: string | null
           updated_at?: string
         }
         Update: {
+          budget?: number | null
           created_at?: string
-          created_by?: string
           description?: string | null
           id?: string
           name?: string
           organization_id?: string | null
+          owner_id?: string | null
+          portfolio_id?: string | null
+          spent_budget?: number | null
+          start_date?: string | null
+          status?: string
+          target_end_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "programs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programs_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programs_portfolio_id_fkey"
+            columns: ["portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "portfolios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          actual_end_date: string | null
+          budget: number | null
+          business_case: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          health_reason: string | null
+          health_status: string | null
+          id: string
+          kpis: Json | null
+          name: string
+          organization_id: string | null
+          priority: string | null
+          program_id: string | null
+          spent_budget: number | null
+          sponsor_id: string | null
+          stage: string | null
+          start_date: string | null
+          status: string | null
+          target_end_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          actual_end_date?: string | null
+          budget?: number | null
+          business_case?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          health_reason?: string | null
+          health_status?: string | null
+          id?: string
+          kpis?: Json | null
+          name: string
+          organization_id?: string | null
+          priority?: string | null
+          program_id?: string | null
+          spent_budget?: number | null
+          sponsor_id?: string | null
+          stage?: string | null
+          start_date?: string | null
           status?: string | null
+          target_end_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          actual_end_date?: string | null
+          budget?: number | null
+          business_case?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          health_reason?: string | null
+          health_status?: string | null
+          id?: string
+          kpis?: Json | null
+          name?: string
+          organization_id?: string | null
+          priority?: string | null
+          program_id?: string | null
+          spent_budget?: number | null
+          sponsor_id?: string | null
+          stage?: string | null
+          start_date?: string | null
+          status?: string | null
+          target_end_date?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -3317,6 +3492,20 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_sponsor_id_fkey"
+            columns: ["sponsor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
