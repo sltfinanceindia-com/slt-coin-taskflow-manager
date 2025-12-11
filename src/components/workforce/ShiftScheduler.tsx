@@ -87,60 +87,66 @@ export function ShiftScheduler() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 sm:pb-6">
           <div>
-            <CardTitle>Weekly Schedule</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-base sm:text-lg">Weekly Schedule</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
               {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d, yyyy')}
             </CardDescription>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setCurrentWeek(subWeeks(currentWeek, 1))}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setCurrentWeek(startOfWeek(new Date(), { weekStartsOn: 1 }))}
-            >
-              Today
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setCurrentWeek(addWeeks(currentWeek, 1))}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9"
+                onClick={() => setCurrentWeek(subWeeks(currentWeek, 1))}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 text-xs sm:text-sm"
+                onClick={() => setCurrentWeek(startOfWeek(new Date(), { weekStartsOn: 1 }))}
+              >
+                Today
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9"
+                onClick={() => setCurrentWeek(addWeeks(currentWeek, 1))}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
 
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="ml-4">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Shift
+                <Button size="sm" className="h-9 text-xs sm:text-sm">
+                  <Plus className="h-4 w-4 mr-1 sm:mr-2" />
+                  <span className="hidden xs:inline">Add</span> Shift
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                   <DialogTitle>Schedule a Shift</DialogTitle>
-                  <DialogDescription>
+                  <DialogDescription className="text-xs sm:text-sm">
                     Assign an employee to a shift on a specific date
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                    <Label>Date</Label>
+                    <Label className="text-sm">Date</Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
                           className={cn(
-                            'justify-start text-left font-normal',
+                            'justify-start text-left font-normal min-h-[44px]',
                             !selectedDate && 'text-muted-foreground'
                           )}
                         >
@@ -160,9 +166,9 @@ export function ShiftScheduler() {
                   </div>
 
                   <div className="grid gap-2">
-                    <Label>Employee</Label>
+                    <Label className="text-sm">Employee</Label>
                     <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
-                      <SelectTrigger>
+                      <SelectTrigger className="min-h-[44px]">
                         <SelectValue placeholder="Select employee" />
                       </SelectTrigger>
                       <SelectContent>
@@ -171,7 +177,7 @@ export function ShiftScheduler() {
                             <div className="flex items-center gap-2">
                               <Avatar className="h-6 w-6">
                                 <AvatarImage src={emp.avatar_url || ''} />
-                                <AvatarFallback>{emp.full_name?.charAt(0)}</AvatarFallback>
+                                <AvatarFallback className="text-xs">{emp.full_name?.charAt(0)}</AvatarFallback>
                               </Avatar>
                               {emp.full_name}
                             </div>
@@ -182,9 +188,9 @@ export function ShiftScheduler() {
                   </div>
 
                   <div className="grid gap-2">
-                    <Label>Shift Type</Label>
+                    <Label className="text-sm">Shift Type</Label>
                     <Select value={selectedShiftType} onValueChange={setSelectedShiftType}>
-                      <SelectTrigger>
+                      <SelectTrigger className="min-h-[44px]">
                         <SelectValue placeholder="Select shift type" />
                       </SelectTrigger>
                       <SelectContent>
@@ -194,10 +200,10 @@ export function ShiftScheduler() {
                             <SelectItem key={shift.id} value={shift.id}>
                               <div className="flex items-center gap-2">
                                 <div
-                                  className="w-3 h-3 rounded-full"
+                                  className="w-3 h-3 rounded-full flex-shrink-0"
                                   style={{ backgroundColor: shift.color }}
                                 />
-                                {shift.name} ({shift.start_time} - {shift.end_time})
+                                <span className="truncate">{shift.name} ({shift.start_time} - {shift.end_time})</span>
                               </div>
                             </SelectItem>
                           ))}
@@ -205,13 +211,14 @@ export function ShiftScheduler() {
                     </Select>
                   </div>
                 </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                <DialogFooter className="flex-col sm:flex-row gap-2">
+                  <Button variant="outline" onClick={() => setDialogOpen(false)} className="w-full sm:w-auto min-h-[44px]">
                     Cancel
                   </Button>
                   <Button
                     onClick={handleCreateSchedule}
                     disabled={!selectedDate || !selectedEmployee || !selectedShiftType || createSchedule.isPending}
+                    className="w-full sm:w-auto min-h-[44px]"
                   >
                     {createSchedule.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                     Schedule Shift
@@ -221,89 +228,170 @@ export function ShiftScheduler() {
             </Dialog>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-3 sm:p-6">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : (
-            <div className="grid grid-cols-7 gap-4">
-              {days.map((day) => {
-                const daySchedules = getSchedulesForDay(day);
-                const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+            <>
+              {/* Mobile View - List */}
+              <div className="space-y-3 md:hidden">
+                {days.map((day) => {
+                  const daySchedules = getSchedulesForDay(day);
+                  const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
 
-                return (
-                  <div
-                    key={day.toISOString()}
-                    className={cn(
-                      'min-h-[200px] rounded-lg border p-3',
-                      isToday && 'bg-primary/5 border-primary'
-                    )}
-                  >
-                    <div className="text-center mb-3">
-                      <p className="text-sm font-medium text-muted-foreground">
-                        {format(day, 'EEE')}
-                      </p>
-                      <p
-                        className={cn(
-                          'text-2xl font-bold',
-                          isToday && 'text-primary'
-                        )}
-                      >
-                        {format(day, 'd')}
-                      </p>
-                    </div>
+                  return (
+                    <div
+                      key={day.toISOString()}
+                      className={cn(
+                        'rounded-lg border p-3',
+                        isToday && 'bg-primary/5 border-primary'
+                      )}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">
+                            {format(day, 'EEE')}
+                          </p>
+                          <p className={cn('text-lg font-bold', isToday && 'text-primary')}>
+                            {format(day, 'MMM d')}
+                          </p>
+                        </div>
+                        <Badge variant="secondary" className="text-xs">
+                          {daySchedules.length} shift{daySchedules.length !== 1 ? 's' : ''}
+                        </Badge>
+                      </div>
 
-                    <div className="space-y-2">
-                      {daySchedules.map((schedule) => (
-                        <div
-                          key={schedule.id}
-                          className="group relative p-2 rounded-md border bg-card text-xs"
-                          style={{
-                            borderLeftColor: schedule.shift_type?.color,
-                            borderLeftWidth: '3px',
-                          }}
-                        >
-                          <button
-                            onClick={() => handleDeleteSchedule(schedule.id)}
-                            className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full bg-destructive text-destructive-foreground"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
-                          <div className="flex items-center gap-1 mb-1">
-                            <Avatar className="h-5 w-5">
-                              <AvatarImage src={schedule.employee?.avatar_url || ''} />
-                              <AvatarFallback className="text-[10px]">
-                                {schedule.employee?.full_name?.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="font-medium truncate">
-                              {schedule.employee?.full_name?.split(' ')[0]}
-                            </span>
-                          </div>
-                          <Badge
-                            variant="secondary"
-                            className="text-[10px] px-1 py-0"
+                      <div className="space-y-2">
+                        {daySchedules.map((schedule) => (
+                          <div
+                            key={schedule.id}
+                            className="group relative p-2 rounded-md border bg-card text-sm flex items-center justify-between"
                             style={{
-                              backgroundColor: `${schedule.shift_type?.color}20`,
-                              color: schedule.shift_type?.color,
+                              borderLeftColor: schedule.shift_type?.color,
+                              borderLeftWidth: '3px',
                             }}
                           >
-                            {schedule.shift_type?.name}
-                          </Badge>
-                        </div>
-                      ))}
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Avatar className="h-6 w-6 flex-shrink-0">
+                                <AvatarImage src={schedule.employee?.avatar_url || ''} />
+                                <AvatarFallback className="text-[10px]">
+                                  {schedule.employee?.full_name?.charAt(0)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="font-medium truncate">
+                                {schedule.employee?.full_name}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                variant="secondary"
+                                className="text-xs px-2 py-0.5"
+                                style={{
+                                  backgroundColor: `${schedule.shift_type?.color}20`,
+                                  color: schedule.shift_type?.color,
+                                }}
+                              >
+                                {schedule.shift_type?.name}
+                              </Badge>
+                              <button
+                                onClick={() => handleDeleteSchedule(schedule.id)}
+                                className="p-1.5 rounded-full bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                                aria-label="Delete shift"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
 
-                      {daySchedules.length === 0 && (
-                        <p className="text-center text-xs text-muted-foreground py-4">
-                          No shifts
-                        </p>
-                      )}
+                        {daySchedules.length === 0 && (
+                          <p className="text-center text-xs text-muted-foreground py-2">
+                            No shifts scheduled
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop View - Grid */}
+              <div className="hidden md:grid grid-cols-7 gap-3 lg:gap-4">
+                {days.map((day) => {
+                  const daySchedules = getSchedulesForDay(day);
+                  const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+
+                  return (
+                    <div
+                      key={day.toISOString()}
+                      className={cn(
+                        'min-h-[180px] lg:min-h-[200px] rounded-lg border p-2 lg:p-3',
+                        isToday && 'bg-primary/5 border-primary'
+                      )}
+                    >
+                      <div className="text-center mb-2 lg:mb-3">
+                        <p className="text-xs lg:text-sm font-medium text-muted-foreground">
+                          {format(day, 'EEE')}
+                        </p>
+                        <p className={cn('text-xl lg:text-2xl font-bold', isToday && 'text-primary')}>
+                          {format(day, 'd')}
+                        </p>
+                      </div>
+
+                      <div className="space-y-1.5 lg:space-y-2">
+                        {daySchedules.map((schedule) => (
+                          <div
+                            key={schedule.id}
+                            className="group relative p-1.5 lg:p-2 rounded-md border bg-card text-xs"
+                            style={{
+                              borderLeftColor: schedule.shift_type?.color,
+                              borderLeftWidth: '3px',
+                            }}
+                          >
+                            <button
+                              onClick={() => handleDeleteSchedule(schedule.id)}
+                              className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full bg-destructive text-destructive-foreground"
+                              aria-label="Delete shift"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                            <div className="flex items-center gap-1 mb-1">
+                              <Avatar className="h-4 w-4 lg:h-5 lg:w-5">
+                                <AvatarImage src={schedule.employee?.avatar_url || ''} />
+                                <AvatarFallback className="text-[8px] lg:text-[10px]">
+                                  {schedule.employee?.full_name?.charAt(0)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="font-medium truncate text-[10px] lg:text-xs">
+                                {schedule.employee?.full_name?.split(' ')[0]}
+                              </span>
+                            </div>
+                            <Badge
+                              variant="secondary"
+                              className="text-[8px] lg:text-[10px] px-1 py-0"
+                              style={{
+                                backgroundColor: `${schedule.shift_type?.color}20`,
+                                color: schedule.shift_type?.color,
+                              }}
+                            >
+                              {schedule.shift_type?.name}
+                            </Badge>
+                          </div>
+                        ))}
+
+                        {daySchedules.length === 0 && (
+                          <p className="text-center text-[10px] lg:text-xs text-muted-foreground py-4">
+                            No shifts
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

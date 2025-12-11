@@ -68,60 +68,74 @@ export const AttendanceSettings: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
       {/* Work Hours */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
+        <CardHeader className="pb-3 sm:pb-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
             Work Hours
           </CardTitle>
-          <CardDescription>Configure standard working hours and thresholds</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">Configure standard working hours and thresholds</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="work-start">Work Start Time</Label>
+              <Label htmlFor="work-start" className="text-sm">Work Start Time</Label>
               <Input
                 id="work-start"
                 type="time"
+                className="min-h-[44px]"
                 value={formData.work_start_time}
                 onChange={(e) => setFormData(prev => ({ ...prev, work_start_time: e.target.value }))}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="work-end">Work End Time</Label>
+              <Label htmlFor="work-end" className="text-sm">Work End Time</Label>
               <Input
                 id="work-end"
                 type="time"
+                className="min-h-[44px]"
                 value={formData.work_end_time}
                 onChange={(e) => setFormData(prev => ({ ...prev, work_end_time: e.target.value }))}
               />
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="late-threshold">Late Threshold (minutes)</Label>
+              <Label htmlFor="late-threshold" className="text-sm">Late Threshold (minutes)</Label>
               <Input
                 id="late-threshold"
                 type="number"
+                inputMode="numeric"
                 min="0"
+                max="120"
+                className="min-h-[44px]"
                 value={formData.late_threshold_minutes}
-                onChange={(e) => setFormData(prev => ({ ...prev, late_threshold_minutes: parseInt(e.target.value) || 0 }))}
+                onChange={(e) => setFormData(prev => ({ 
+                  ...prev, 
+                  late_threshold_minutes: Math.min(Math.max(parseInt(e.target.value) || 0, 0), 120)
+                }))}
               />
               <p className="text-xs text-muted-foreground">
                 Grace period before marking as late
               </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="early-leave">Early Leave Threshold (minutes)</Label>
+              <Label htmlFor="early-leave" className="text-sm">Early Leave Threshold (minutes)</Label>
               <Input
                 id="early-leave"
                 type="number"
+                inputMode="numeric"
                 min="0"
+                max="120"
+                className="min-h-[44px]"
                 value={formData.early_leave_threshold_minutes}
-                onChange={(e) => setFormData(prev => ({ ...prev, early_leave_threshold_minutes: parseInt(e.target.value) || 0 }))}
+                onChange={(e) => setFormData(prev => ({ 
+                  ...prev, 
+                  early_leave_threshold_minutes: Math.min(Math.max(parseInt(e.target.value) || 0, 0), 120)
+                }))}
               />
               <p className="text-xs text-muted-foreground">
                 Minutes before work end to flag early leave
@@ -133,18 +147,18 @@ export const AttendanceSettings: React.FC = () => {
 
       {/* Geo-Fencing */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MapPin className="h-5 w-5" />
+        <CardHeader className="pb-3 sm:pb-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <MapPin className="h-4 w-4 sm:h-5 sm:w-5" />
             Geo-Fencing
           </CardTitle>
-          <CardDescription>Restrict clock in/out to office location</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">Restrict clock in/out to office location</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="enable-geo">Enable Geo-Fencing</Label>
-              <p className="text-sm text-muted-foreground">
+          <label htmlFor="enable-geo" className="flex items-center justify-between gap-4 cursor-pointer p-3 -m-3 rounded-lg hover:bg-muted/50 transition-colors">
+            <div className="space-y-0.5">
+              <span className="text-sm font-medium">Enable Geo-Fencing</span>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Require employees to be within office area to clock in
               </p>
             </div>
@@ -153,53 +167,62 @@ export const AttendanceSettings: React.FC = () => {
               checked={formData.enable_geo_fencing}
               onCheckedChange={(checked) => setFormData(prev => ({ ...prev, enable_geo_fencing: checked }))}
             />
-          </div>
+          </label>
 
           {formData.enable_geo_fencing && (
-            <>
-              <div className="grid gap-4 md:grid-cols-3">
+            <div className="space-y-4 pt-2">
+              <div className="grid gap-4 sm:grid-cols-3">
                 <div className="space-y-2">
-                  <Label htmlFor="latitude">Office Latitude</Label>
+                  <Label htmlFor="latitude" className="text-sm">Office Latitude</Label>
                   <Input
                     id="latitude"
                     type="text"
+                    inputMode="decimal"
                     placeholder="e.g., 37.7749"
+                    className="min-h-[44px]"
                     value={formData.office_latitude}
                     onChange={(e) => setFormData(prev => ({ ...prev, office_latitude: e.target.value }))}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="longitude">Office Longitude</Label>
+                  <Label htmlFor="longitude" className="text-sm">Office Longitude</Label>
                   <Input
                     id="longitude"
                     type="text"
+                    inputMode="decimal"
                     placeholder="e.g., -122.4194"
+                    className="min-h-[44px]"
                     value={formData.office_longitude}
                     onChange={(e) => setFormData(prev => ({ ...prev, office_longitude: e.target.value }))}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="radius">Radius (meters)</Label>
+                  <Label htmlFor="radius" className="text-sm">Radius (meters)</Label>
                   <Input
                     id="radius"
                     type="number"
+                    inputMode="numeric"
                     min="10"
                     max="1000"
+                    className="min-h-[44px]"
                     value={formData.geo_fence_radius_meters}
-                    onChange={(e) => setFormData(prev => ({ ...prev, geo_fence_radius_meters: parseInt(e.target.value) || 100 }))}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      geo_fence_radius_meters: Math.min(Math.max(parseInt(e.target.value) || 100, 10), 1000)
+                    }))}
                   />
                 </div>
               </div>
-              <Button type="button" variant="outline" onClick={handleGetCurrentLocation}>
+              <Button type="button" variant="outline" onClick={handleGetCurrentLocation} className="w-full sm:w-auto min-h-[44px]">
                 <MapPin className="h-4 w-4 mr-2" />
                 Use Current Location
               </Button>
-            </>
+            </div>
           )}
         </CardContent>
       </Card>
 
-      <Button type="submit" disabled={updateSettings.isPending}>
+      <Button type="submit" disabled={updateSettings.isPending} className="w-full sm:w-auto min-h-[44px]">
         <Save className="h-4 w-4 mr-2" />
         {updateSettings.isPending ? 'Saving...' : 'Save Settings'}
       </Button>
