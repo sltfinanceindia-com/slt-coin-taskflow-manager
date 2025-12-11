@@ -46,39 +46,48 @@ export function TrainingCourses({ sections: propSections, isLoading: propIsLoadi
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Assessment Section */}
       {publishedAssessments.length > 0 && (
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-primary" />
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Award className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               Assessments & Exams
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
+          <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+            <div className="grid gap-3 sm:gap-4">
               {publishedAssessments.map((assessment) => (
-                <div key={assessment.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex-1">
-                    <h3 className="font-semibold">{assessment.title}</h3>
-                    <p className="text-sm text-muted-foreground mb-2">{assessment.description}</p>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div 
+                  key={assessment.id} 
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 border rounded-lg"
+                >
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm sm:text-base truncate">{assessment.title}</h3>
+                    {assessment.description && (
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-2 line-clamp-2">{assessment.description}</p>
+                    )}
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                       <span className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        {assessment.time_limit_minutes} minutes
+                        <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
+                        {assessment.time_limit_minutes} min
                       </span>
                       <span className="flex items-center gap-1">
-                        <FileText className="h-4 w-4" />
-                        {assessment.total_questions} questions
+                        <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
+                        {assessment.total_questions} Q
                       </span>
                       <span className="flex items-center gap-1">
-                        <Award className="h-4 w-4" />
-                        {assessment.passing_score}% to pass
+                        <Award className="h-3 w-3 sm:h-4 sm:w-4" />
+                        {assessment.passing_score}%
                       </span>
                     </div>
                   </div>
-                  <Button onClick={() => handleTakeAssessment(assessment.id)}>
+                  <Button 
+                    onClick={() => handleTakeAssessment(assessment.id)}
+                    className="w-full sm:w-auto min-h-[40px] text-xs sm:text-sm"
+                    size="sm"
+                  >
                     Start Assessment
                   </Button>
                 </div>
@@ -89,7 +98,7 @@ export function TrainingCourses({ sections: propSections, isLoading: propIsLoadi
       )}
 
       {/* Training Sections */}
-      <div className="grid gap-6">
+      <div className="grid gap-4 sm:gap-6">
         {sections.map((section) => {
           const progress = calculateSectionProgress(section);
           const sectionVideos = section.training_videos || [];
@@ -98,27 +107,30 @@ export function TrainingCourses({ sections: propSections, isLoading: propIsLoadi
           
           return (
             <Card key={section.id}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="flex items-center gap-2">
-                      <BookOpen className="h-5 w-5 text-primary" />
-                      {section.title}
+              <CardHeader className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                      <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                      <span className="truncate">{section.title}</span>
                     </CardTitle>
                     {section.description && (
-                      <p className="text-muted-foreground mt-2">{section.description}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-2 line-clamp-2">{section.description}</p>
                     )}
                   </div>
-                  <Badge variant={section.is_published ? "default" : "secondary"}>
+                  <Badge 
+                    variant={section.is_published ? "default" : "secondary"}
+                    className="self-start text-xs"
+                  >
                     {section.is_published ? "Published" : "Draft"}
                   </Badge>
                 </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
+                <div className="space-y-2 mt-3">
+                  <div className="flex items-center justify-between text-xs sm:text-sm">
                     <span className="text-muted-foreground">Progress</span>
                     <span className="font-medium">{progress}%</span>
                   </div>
-                  <Progress value={progress} className="h-2" />
+                  <Progress value={progress} className="h-2" aria-label={`Course progress: ${progress}%`} />
                 </div>
               </CardHeader>
               
@@ -207,12 +219,12 @@ export function TrainingCourses({ sections: propSections, isLoading: propIsLoadi
         })}
       </div>
 
-      {sections.length === 0 && (
+      {sections.length === 0 && publishedAssessments.length === 0 && (
         <Card>
-          <CardContent className="text-center py-12">
-            <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Training Courses Available</h3>
-            <p className="text-muted-foreground">
+          <CardContent className="text-center py-8 sm:py-12 px-4">
+            <BookOpen className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+            <h3 className="text-base sm:text-lg font-semibold mb-2">No Training Courses Available</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">
               Training courses will appear here once they are published by administrators.
             </p>
           </CardContent>
