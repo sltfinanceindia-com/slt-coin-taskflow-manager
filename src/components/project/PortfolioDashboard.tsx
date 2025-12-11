@@ -15,7 +15,7 @@ import {
 import { usePortfolios, Portfolio } from '@/hooks/usePortfolios';
 import { usePrograms } from '@/hooks/usePrograms';
 import { useEnhancedProjects } from '@/hooks/useEnhancedProjects';
-import { formatCurrency } from '@/lib/currency';
+import { formatINR } from '@/lib/currency';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface StatCardProps {
@@ -117,8 +117,8 @@ export const PortfolioDashboard: React.FC = () => {
         />
         <StatCard
           title="Total Budget"
-          value={formatCurrency(totalBudget)}
-          subtitle={`${formatCurrency(totalSpent)} spent`}
+          value={formatINR(totalBudget)}
+          subtitle={`${formatINR(totalSpent)} spent`}
           icon={<DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />}
         />
         <StatCard
@@ -206,9 +206,9 @@ export const PortfolioDashboard: React.FC = () => {
                   <span>Budget</span>
                 </div>
                 <div className="text-right">
-                  <p className="font-medium">{formatCurrency(portfolio.budget || 0)}</p>
+                  <p className="font-medium">{formatINR(portfolio.budget || 0)}</p>
                   <p className="text-xs text-muted-foreground">
-                    {formatCurrency(portfolio.spent_budget || 0)} spent
+                    {formatINR(portfolio.spent_budget || 0)} spent
                   </p>
                 </div>
               </div>
