@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { 
   Card, 
@@ -18,7 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Building2, ArrowLeft, Loader2 } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Building2, ArrowLeft, Loader2, Check, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsSuperAdmin } from '@/hooks/useUserRole';
 import { useAuth } from '@/hooks/useAuth';
@@ -31,6 +32,22 @@ interface SubscriptionPlan {
   code: string;
   max_users: number;
 }
+
+// Password strength checker
+const getPasswordStrength = (password: string): { score: number; label: string; color: string } => {
+  let score = 0;
+  if (password.length >= 8) score++;
+  if (password.length >= 12) score++;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
+  if (/\d/.test(password)) score++;
+  if (/[^a-zA-Z0-9]/.test(password)) score++;
+  
+  if (score <= 1) return { score: 20, label: 'Weak', color: 'bg-red-500' };
+  if (score === 2) return { score: 40, label: 'Fair', color: 'bg-orange-500' };
+  if (score === 3) return { score: 60, label: 'Good', color: 'bg-yellow-500' };
+  if (score === 4) return { score: 80, label: 'Strong', color: 'bg-emerald-500' };
+  return { score: 100, label: 'Very Strong', color: 'bg-emerald-600' };
+};
 
 export default function CreateOrganization() {
   const navigate = useNavigate();
@@ -52,8 +69,8 @@ export default function CreateOrganization() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Fetch subscription plans
-  useState(() => {
+  // Fetch subscription plans - Fixed: use useEffect instead of useState
+  useEffect(() => {
     const fetchPlans = async () => {
       const { data } = await supabase
         .from('subscription_plans')
@@ -71,7 +88,9 @@ export default function CreateOrganization() {
       }
     };
     fetchPlans();
-  });
+  }, []);
+
+  const passwordStrength = getPasswordStrength(formData.adminPassword);
 
   const generateSubdomain = (name: string) => {
     return name
@@ -338,7 +357,37 @@ export default function CreateOrganization() {
                     value={formData.adminPassword}
                     onChange={(e) => setFormData(prev => ({ ...prev, adminPassword: e.target.value }))}
                     placeholder="Min 8 characters"
+                    className="min-h-[44px]"
                   />
+                  {formData.adminPassword && (
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">Password strength:</span>
+                        <span className={`font-medium ${passwordStrength.score >= 60 ? 'text-emerald-600' : 'text-muted-foreground'}`}>
+                          {passwordStrength.label}
+                        </span>
+                      </div>
+                      <Progress value={passwordStrength.score} className={`h-1.5 ${passwordStrength.color}`} />
+                      <div className="grid grid-cols-2 gap-1 text-xs text-muted-foreground mt-2">
+                        <div className="flex items-center gap-1">
+                          {formData.adminPassword.length >= 8 ? <Check className="h-3 w-3 text-emerald-500" /> : <X className="h-3 w-3 text-muted-foreground" />}
+                          8+ characters
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {/[A-Z]/.test(formData.adminPassword) ? <Check className="h-3 w-3 text-emerald-500" /> : <X className="h-3 w-3 text-muted-foreground" />}
+                          Uppercase
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {/[a-z]/.test(formData.adminPassword) ? <Check className="h-3 w-3 text-emerald-500" /> : <X className="h-3 w-3 text-muted-foreground" />}
+                          Lowercase
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {/\d/.test(formData.adminPassword) ? <Check className="h-3 w-3 text-emerald-500" /> : <X className="h-3 w-3 text-muted-foreground" />}
+                          Number
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {errors.adminPassword && <p className="text-sm text-destructive">{errors.adminPassword}</p>}
                 </div>
 
@@ -350,6 +399,7 @@ export default function CreateOrganization() {
                     value={formData.confirmPassword}
                     onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                     placeholder="Confirm password"
+                    className="min-h-[44px]"
                   />
                   {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword}</p>}
                 </div>

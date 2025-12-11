@@ -24,6 +24,8 @@ import SuperAdminDashboard from "./pages/super-admin/SuperAdminDashboard";
 import OrganizationsList from "./pages/super-admin/OrganizationsList";
 import CreateOrganization from "./pages/super-admin/CreateOrganization";
 import OrganizationDetail from "./pages/super-admin/OrganizationDetail";
+import SuperAdminUsers from "./pages/super-admin/SuperAdminUsers";
+import SuperAdminSettings from "./pages/super-admin/SuperAdminSettings";
 import OrganizationSettings from "./pages/admin/OrganizationSettings";
 
 const queryClient = new QueryClient();
@@ -72,6 +74,8 @@ function AppContent() {
           <Route path="/super-admin/organizations" element={<ProtectedRoute><OrganizationsList /></ProtectedRoute>} />
           <Route path="/super-admin/organizations/new" element={<ProtectedRoute><CreateOrganization /></ProtectedRoute>} />
           <Route path="/super-admin/organizations/:id" element={<ProtectedRoute><OrganizationDetail /></ProtectedRoute>} />
+          <Route path="/super-admin/users" element={<ProtectedRoute><SuperAdminUsers /></ProtectedRoute>} />
+          <Route path="/super-admin/settings" element={<ProtectedRoute><SuperAdminSettings /></ProtectedRoute>} />
           
           {/* Admin Routes */}
           <Route path="/admin/settings" element={<ProtectedRoute><OrganizationSettings /></ProtectedRoute>} />
