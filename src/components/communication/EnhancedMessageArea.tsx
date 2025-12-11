@@ -351,17 +351,17 @@ export default function EnhancedMessageArea({
   return (
     <div className="h-full flex flex-col bg-background">
       {/* Header */}
-      <div className="border-b border-border px-4 md:px-6 py-3 md:py-4 flex items-center justify-between sticky top-0 bg-card z-10 shadow-sm safe-top">
-        <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
+      <div className="border-b border-border px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 md:py-4 flex items-center justify-between sticky top-0 bg-card z-10 shadow-sm safe-top">
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 min-w-0 flex-1">
           {isMobile && onBack && (
-            <Button variant="ghost" size="icon" onClick={onBack}>
+            <Button variant="ghost" size="icon" onClick={onBack} className="h-9 w-9 min-h-[44px] min-w-[44px]" aria-label="Go back">
               <ChevronLeft className="h-5 w-5" />
             </Button>
           )}
           
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10 border-2 border-border">
-              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Avatar className="h-9 w-9 sm:h-10 sm:w-10 border-2 border-border">
+              <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs sm:text-sm">
                 {getInitials(
                   channel.is_direct_message
                     ? (getChannelUser()?.full_name || 'Unknown')
@@ -370,8 +370,8 @@ export default function EnhancedMessageArea({
               </AvatarFallback>
             </Avatar>
             
-            <div>
-              <h3 className="font-semibold text-foreground">
+            <div className="min-w-0">
+              <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">
                 {channel.is_direct_message ? getChannelUser()?.full_name : channel.name}
               </h3>
               {channel.is_direct_message && getChannelUser() && (
@@ -383,49 +383,49 @@ export default function EnhancedMessageArea({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="h-9 w-9">
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="icon" className="h-9 w-9 min-h-[44px] min-w-[44px]" aria-label="Voice call">
             <Phone className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-9 w-9">
+          <Button variant="ghost" size="icon" className="h-9 w-9 min-h-[44px] min-w-[44px] hidden sm:flex" aria-label="Video call">
             <Video className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setShowProfileModal(true)}>
+          <Button variant="ghost" size="icon" className="h-9 w-9 min-h-[44px] min-w-[44px]" onClick={() => setShowProfileModal(true)} aria-label="Channel info">
             <Info className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
       {/* Messages Area */}
-      <ScrollArea className="flex-1 p-4">
-        <div className="space-y-6">
+      <ScrollArea className="flex-1 p-3 sm:p-4">
+        <div className="space-y-4 sm:space-y-6">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
             </div>
           ) : messages.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="text-center py-8 sm:py-12">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                 {channel.is_direct_message ? (
-                  <Avatar className="h-12 w-12">
+                  <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
                     <AvatarImage src={channelUser?.avatar_url} />
-                    <AvatarFallback>
+                    <AvatarFallback className="text-sm sm:text-base">
                       {channelUser ? getInitials(channelUser.full_name) : '?'}
                     </AvatarFallback>
                   </Avatar>
                 ) : (
-                  <span className="text-2xl font-bold text-muted-foreground">
+                  <span className="text-xl sm:text-2xl font-bold text-muted-foreground">
                     {channel.name.charAt(0)}
                   </span>
                 )}
               </div>
-              <h3 className="text-lg font-semibold mb-2">
+              <h3 className="text-base sm:text-lg font-semibold mb-2">
                 {channel.is_direct_message && channelUser 
                   ? `This is the beginning of your conversation with ${channelUser.full_name}`
                   : `Welcome to #${channel.name}`
                 }
               </h3>
-              <p className="text-muted-foreground">
+              <p className="text-sm text-muted-foreground px-4">
                 {channel.is_direct_message 
                   ? 'Send a message to start the conversation'
                   : channel.description || 'This is the start of this channel'
@@ -436,7 +436,7 @@ export default function EnhancedMessageArea({
             Object.entries(groupedMessages).map(([date, dateMessages]) => (
               <div key={date} className="space-y-2">
                 {/* Date Separator */}
-                <div className="flex items-center gap-4 my-6">
+                <div className="flex items-center gap-3 sm:gap-4 my-4 sm:my-6">
                   <Separator className="flex-1" />
                   <span className="text-xs font-medium text-muted-foreground px-2 py-1 bg-muted rounded">
                     {date}

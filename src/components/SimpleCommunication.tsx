@@ -279,41 +279,44 @@ export function SimpleCommunication() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-[600px]">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center h-[500px] sm:h-[600px]">
+        <div className="animate-spin rounded-full h-16 w-16 sm:h-32 sm:w-32 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <Card className="h-[600px] flex">
-      {/* Sidebar */}
-      <div className="w-80 border-r flex flex-col">
+    <Card className="h-[500px] sm:h-[600px] flex flex-col md:flex-row overflow-hidden">
+      {/* Sidebar - Hidden on mobile when channel selected */}
+      <div className={cn(
+        "w-full md:w-80 border-b md:border-b-0 md:border-r flex flex-col",
+        selectedChannel && "hidden md:flex"
+      )}>
         {/* Channels */}
         <div className="flex-1 overflow-hidden">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
+          <CardHeader className="pb-2 sm:pb-3">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />
               Communication
             </CardTitle>
           </CardHeader>
           
-          <div className="px-4 space-y-4">
+          <div className="px-3 sm:px-4 space-y-3 sm:space-y-4 overflow-y-auto flex-1">
             {/* Channels List */}
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">Channels</h3>
+              <h3 className="text-xs sm:text-sm font-medium text-muted-foreground mb-2">Channels</h3>
               <div className="space-y-1">
                 {channels.map((channel) => (
                   <Button
                     key={channel.id}
                     variant={selectedChannel?.id === channel.id ? "secondary" : "ghost"}
-                    className="w-full justify-start"
+                    className="w-full justify-start min-h-[44px] text-sm"
                     onClick={() => setSelectedChannel(channel)}
                   >
                     {getChannelIcon(channel)}
                     <span className="ml-2 truncate">{getChannelDisplayName(channel)}</span>
                     {channel.unread_count && channel.unread_count > 0 && (
-                      <Badge variant="secondary" className="ml-auto">
+                      <Badge variant="secondary" className="ml-auto text-xs">
                         {channel.unread_count}
                       </Badge>
                     )}
@@ -326,24 +329,24 @@ export function SimpleCommunication() {
 
             {/* Team Members */}
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">Team Members</h3>
+              <h3 className="text-xs sm:text-sm font-medium text-muted-foreground mb-2">Team Members</h3>
               <div className="space-y-1">
                 {teamMembers.slice(0, 5).map((member) => (
                   <Button
                     key={member.id}
                     variant="ghost"
-                    className="w-full justify-start"
+                    className="w-full justify-start min-h-[44px] text-sm"
                     onClick={() => startDirectMessage(member)}
                   >
                     <Avatar className="h-6 w-6">
                       <AvatarImage src={member.avatar_url} />
-                      <AvatarFallback>
+                      <AvatarFallback className="text-xs">
                         {member.full_name.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <span className="ml-2 flex-1 truncate text-left">{member.full_name}</span>
                     <div className={cn(
-                      "w-2 h-2 rounded-full",
+                      "w-2 h-2 rounded-full flex-shrink-0",
                       member.is_online ? "bg-green-500" : "bg-gray-300"
                     )} />
                   </Button>
@@ -355,31 +358,43 @@ export function SimpleCommunication() {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className={cn(
+        "flex-1 flex flex-col min-w-0",
+        !selectedChannel && "hidden md:flex"
+      )}>
         {selectedChannel ? (
           <>
             {/* Chat Header */}
-            <CardHeader className="border-b">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+            <CardHeader className="border-b py-3 px-3 sm:px-6">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                  {/* Back button on mobile */}
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="md:hidden h-9 w-9 flex-shrink-0"
+                    onClick={() => setSelectedChannel(null)}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  </Button>
                   {getChannelIcon(selectedChannel)}
-                  <div>
-                    <CardTitle className="text-lg">
+                  <div className="min-w-0">
+                    <CardTitle className="text-base sm:text-lg truncate">
                       {getChannelDisplayName(selectedChannel)}
                     </CardTitle>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       {selectedChannel.member_count || 0} members
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm">
+                <div className="flex items-center gap-1">
+                  <Button variant="ghost" size="icon" className="h-9 w-9">
                     <Phone className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="icon" className="h-9 w-9 hidden sm:flex">
                     <Video className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="icon" className="h-9 w-9">
                     <Info className="h-4 w-4" />
                   </Button>
                 </div>
@@ -387,31 +402,31 @@ export function SimpleCommunication() {
             </CardHeader>
 
             {/* Messages */}
-            <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
+            <CardContent className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
               {messages.length === 0 ? (
                 <div className="text-center text-muted-foreground py-8">
-                  <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No messages yet. Start the conversation!</p>
+                  <MessageSquare className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-4 opacity-50" />
+                  <p className="text-sm sm:text-base">No messages yet. Start the conversation!</p>
                 </div>
               ) : (
                 messages.map((message) => (
-                  <div key={message.id} className="flex gap-3">
-                    <Avatar className="h-8 w-8">
+                  <div key={message.id} className="flex gap-2 sm:gap-3">
+                    <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
                       <AvatarImage src={message.sender_profile?.avatar_url} />
-                      <AvatarFallback>
+                      <AvatarFallback className="text-xs">
                         {message.sender_profile?.full_name?.charAt(0).toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-sm">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span className="font-medium text-xs sm:text-sm">
                           {message.sender_profile?.full_name || message.sender_name || 'Unknown'}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          {new Date(message.created_at).toLocaleTimeString()}
+                          {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
-                      <p className="text-sm">{message.content}</p>
+                      <p className="text-xs sm:text-sm break-words">{message.content}</p>
                     </div>
                   </div>
                 ))
@@ -419,7 +434,7 @@ export function SimpleCommunication() {
             </CardContent>
 
             {/* Message Input */}
-            <div className="border-t p-4">
+            <div className="border-t p-3 sm:p-4">
               <div className="flex gap-2">
                 <Textarea
                   placeholder="Type your message..."
@@ -431,25 +446,27 @@ export function SimpleCommunication() {
                       sendMessage();
                     }
                   }}
-                  className="resize-none"
+                  className="resize-none min-h-[44px] text-sm"
                   rows={2}
                 />
                 <Button 
                   onClick={sendMessage}
                   disabled={!newMessage.trim()}
-                  className="self-end"
+                  className="self-end h-10 w-10 sm:h-10 sm:w-auto sm:px-4"
+                  size="icon"
                 >
                   <Send className="h-4 w-4" />
+                  <span className="hidden sm:inline ml-2">Send</span>
                 </Button>
               </div>
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center p-4">
             <div className="text-center text-muted-foreground">
-              <MessageSquare className="h-16 w-16 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium">Welcome to Team Communication</p>
-              <p>Select a channel or start a direct message to begin</p>
+              <MessageSquare className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 opacity-50" />
+              <p className="text-base sm:text-lg font-medium">Welcome to Team Communication</p>
+              <p className="text-sm">Select a channel or start a direct message to begin</p>
             </div>
           </div>
         )}

@@ -176,7 +176,7 @@ export default function EnhancedMessageInput({
       )}
 
       {/* Input Area */}
-      <div className="flex items-end gap-2">
+      <div className="flex items-end gap-1.5 sm:gap-2">
         {/* File Input */}
         <input
           ref={fileInputRef}
@@ -190,10 +190,11 @@ export default function EnhancedMessageInput({
         {/* Attach Button */}
         <Button
           variant="ghost"
-          size="sm"
+          size="icon"
           onClick={() => fileInputRef.current?.click()}
           disabled={disabled || isSending}
-          className="flex-shrink-0"
+          className="flex-shrink-0 h-10 w-10 min-h-[44px] min-w-[44px]"
+          aria-label="Attach file"
         >
           <Paperclip className="h-4 w-4" />
         </Button>
@@ -207,7 +208,8 @@ export default function EnhancedMessageInput({
             onKeyPress={handleKeyPress}
             placeholder={placeholder}
             disabled={disabled || isSending}
-            className="pr-10"
+            className="pr-10 min-h-[44px] text-base"
+            aria-label="Message input"
           />
           
           {/* Emoji Picker */}
@@ -215,9 +217,10 @@ export default function EnhancedMessageInput({
             <PopoverTrigger asChild>
               <Button
                 variant="ghost"
-                size="sm"
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                size="icon"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
                 disabled={disabled || isSending}
+                aria-label="Add emoji"
               >
                 <Smile className="h-4 w-4" />
               </Button>
@@ -229,8 +232,8 @@ export default function EnhancedMessageInput({
             >
               <EmojiPicker 
                 onEmojiClick={handleEmojiClick}
-                width={350}
-                height={400}
+                width={320}
+                height={350}
               />
             </PopoverContent>
           </Popover>
@@ -240,14 +243,17 @@ export default function EnhancedMessageInput({
         <Button
           onClick={handleSendMessage}
           disabled={(!message.trim() && attachments.length === 0) || disabled || isSending}
-          className="flex-shrink-0"
+          className="flex-shrink-0 h-10 w-10 min-h-[44px] min-w-[44px] sm:w-auto sm:px-4"
+          size="icon"
+          aria-label="Send message"
         >
           <Send className="h-4 w-4" />
+          <span className="hidden sm:inline ml-2">Send</span>
         </Button>
       </div>
 
-      {/* Helper Text */}
-      <p className="text-xs text-muted-foreground px-1">
+      {/* Helper Text - hidden on mobile */}
+      <p className="hidden sm:block text-xs text-muted-foreground px-1">
         Press Enter to send, Shift + Enter for new line
       </p>
     </div>

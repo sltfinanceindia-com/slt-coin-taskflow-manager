@@ -256,9 +256,10 @@ export default function EnhancedChatList({
           <Search className="absolute left-3 top-1/2 h-4 w-4 text-muted-foreground transform -translate-y-1/2" />
           <Input
             placeholder="Search chats..."
-            className="pl-10 bg-muted/50 h-10"
+            className="pl-10 bg-muted/50 min-h-[44px] text-base"
             value={searchQuery}
             onChange={(e) => onSearchChange?.(e.target.value)}
+            aria-label="Search conversations"
           />
         </div>
       </div>
@@ -308,20 +309,20 @@ export default function EnhancedChatList({
                   <div key={member.id} className="group">
                     <Button
                       variant="ghost"
-                      className="w-full justify-start h-auto py-3 px-3 group-hover:bg-muted/50 transition-colors"
+                      className="w-full justify-start h-auto py-2.5 sm:py-3 px-2.5 sm:px-3 group-hover:bg-muted/50 transition-colors touch-manipulation min-h-[56px]"
                       onClick={() => onMemberSelect(member)}
                     >
-                      <div className="flex items-center gap-3 w-full">
+                      <div className="flex items-center gap-2.5 sm:gap-3 w-full">
                         {/* Avatar with status */}
                         <div className="relative flex-shrink-0">
-                          <Avatar className="h-10 w-10">
+                          <Avatar className="h-9 w-9 sm:h-10 sm:w-10">
                             <AvatarImage src={member.avatar_url} />
-                            <AvatarFallback className="text-sm">
+                            <AvatarFallback className="text-xs sm:text-sm">
                               {getInitials(member.full_name)}
                             </AvatarFallback>
                           </Avatar>
                           <div className={cn(
-                            "w-3 h-3 rounded-full border-2 border-background absolute -bottom-0.5 -right-0.5",
+                            "w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full border-2 border-background absolute -bottom-0.5 -right-0.5",
                             statusColor
                           )} />
                         </div>
@@ -334,7 +335,7 @@ export default function EnhancedChatList({
                             </h4>
                             <Badge 
                               variant={member.role === 'admin' ? 'default' : 'secondary'} 
-                              className="text-xs h-5"
+                              className="text-xs h-5 hidden sm:inline-flex"
                             >
                               {member.role}
                             </Badge>
@@ -344,8 +345,8 @@ export default function EnhancedChatList({
                           </p>
                         </div>
 
-                        {/* Message Icon */}
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        {/* Message Icon - visible on hover for desktop */}
+                        <div className="hidden sm:block opacity-0 group-hover:opacity-100 transition-opacity">
                           <MessageCircle className="h-4 w-4 text-muted-foreground" />
                         </div>
                       </div>
@@ -359,8 +360,8 @@ export default function EnhancedChatList({
           {/* Empty State */}
           {processedChannels.length === 0 && filteredTeamMembers.length === 0 && (
             <div className="text-center py-12 px-4">
-              <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">
+              <Users className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-sm text-muted-foreground">
                 {searchQuery ? 'No team members found' : 'No team members available'}
               </p>
             </div>
