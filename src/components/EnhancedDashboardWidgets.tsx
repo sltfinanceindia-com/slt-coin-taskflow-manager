@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
 import { 
   Coins, 
   Clock, 
@@ -11,7 +12,10 @@ import {
   CheckCircle,
   AlertCircle,
   BarChart3,
-  Activity
+  Activity,
+  MessageCircle,
+  Users,
+  ArrowRight
 } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
@@ -20,6 +24,7 @@ import { useTasks } from '@/hooks/useTasks';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
 import { useCoinTransactions } from '@/hooks/useCoinTransactions';
 import { SimpleLineChart } from '@/components/SimpleChart';
+import { useCommunication } from '@/hooks/useCommunication';
 
 export function EnhancedDashboardWidgets() {
   const { profile } = useAuth();
@@ -28,8 +33,13 @@ export function EnhancedDashboardWidgets() {
   const { getWeeklyHours } = useTimeLogs();
   const { getTotalEarned, getPendingCoins } = useCoinTransactions();
   const { isAdmin } = useUserRole();
+  const { channels, teamMembers, status: commStatus } = useCommunication();
 
-  const myTasks = tasks.filter(task => 
+  // Calculate unread messages
+  const unreadCount = channels.reduce((acc, channel) => acc + (channel.unread_count || 0), 0);
+  const recentChannels = channels.slice(0, 3);
+
+  const myTasks = tasks.filter(task =>
     isAdmin ? true : task.assigned_to === profile?.id
   );
   
@@ -199,6 +209,98 @@ export function EnhancedDashboardWidgets() {
           </Card>
         ))}
       </div>
+
+      {/* Communication Quick Access Widget */}
+      <Card className="card-gradient border-primary/20">
+        <CardHeader className="pb-3 sm:pb-4">
+          <CardTitle className="flex items-center justify-between text-base sm:text-lg">
+            <div className="flex items-center gap-2">
+              <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              Team Communication
+            </div>
+            {unreadCount > 0 && (
+              <Badge variant="destructive" className="text-xs">
+                {unreadCount} unread
+              </Badge>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {commStatus === 'ready' ? (
+            <>
+              {/* Team Members Online */}
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Users className="h-4 w-4" />
+                <span>{teamMembers.filter(m => m.is_online).length} online</span>
+                <span className="text-muted-foreground/50">•</span>
+                <span>{teamMembers.length} total members</span>
+              </div>
+
+              {/* Recent Conversations */}
+              {recentChannels.length > 0 ? (
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Recent Conversations
+                  </p>
+                  {recentChannels.map(channel => (
+                    <div 
+                      key={channel.id} 
+                      className="flex items-center justify-between p-2 bg-muted/30 rounded-lg"
+                    >
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                          <MessageCircle className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium truncate">
+                            {channel.is_direct_message ? 'Direct Message' : channel.name}
+                          </p>
+                          {channel.last_message && (
+                            <p className="text-xs text-muted-foreground truncate">
+                              {channel.last_message.content}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      {channel.unread_count > 0 && (
+                        <Badge variant="secondary" className="text-xs shrink-0 ml-2">
+                          {channel.unread_count}
+                        </Badge>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground">No conversations yet</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Start chatting with your team members
+                  </p>
+                </div>
+              )}
+
+              {/* Quick Action Button */}
+              <Button 
+                variant="outline" 
+                className="w-full gap-2"
+                onClick={() => {
+                  // Navigate to communication tab - this will be handled by parent
+                  const event = new CustomEvent('navigate-to-tab', { detail: 'communication' });
+                  window.dispatchEvent(event);
+                }}
+              >
+                <MessageCircle className="h-4 w-4" />
+                Open Communication
+                <ArrowRight className="h-4 w-4 ml-auto" />
+              </Button>
+            </>
+          ) : (
+            <div className="flex items-center justify-center py-6">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
