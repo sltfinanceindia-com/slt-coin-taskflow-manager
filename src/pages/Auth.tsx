@@ -99,32 +99,32 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">
-      <div className="w-full max-w-md space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-background px-3 sm:px-4 py-6 sm:py-8">
+      <div className="w-full max-w-md space-y-6 sm:space-y-8">
         <div className="text-center">
-          <div className="flex items-center justify-center mb-4">
+          <div className="flex items-center justify-center mb-3 sm:mb-4">
             <img 
               src="/lovable-uploads/56d5dd03-2808-4b88-9f9c-cc8932c46fe8.png" 
               alt="SLT work HuB"
-              className="h-12 w-auto object-contain"
+              className="h-10 sm:h-12 w-auto object-contain"
             />
           </div>
-          <h1 className="text-lg font-semibold text-primary mb-2">
+          <h1 className="text-base sm:text-lg font-semibold text-primary mb-1 sm:mb-2">
             <span className="font-black">SLT</span>
             <span className="font-normal"> work </span>
             <span className="font-black">HuB</span>
           </h1>
-          <p className="text-muted-foreground">Coin-Based Workfront System</p>
+          <p className="text-muted-foreground text-xs sm:text-sm">Coin-Based Workfront System</p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Sign In to Dashboard</CardTitle>
-            <CardDescription>
+        <Card className="shadow-lg">
+          <CardHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2 sm:pb-4">
+            <CardTitle className="text-lg sm:text-xl">Sign In to Dashboard</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
               Empowering productivity through smart task management and rewards
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
             {validationErrors.length > 0 && (
               <Alert variant="destructive" className="mb-6">
                 <AlertCircle className="h-4 w-4" />

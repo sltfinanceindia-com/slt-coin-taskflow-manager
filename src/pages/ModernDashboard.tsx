@@ -272,11 +272,11 @@ export default function ModernDashboard() {
               )}
 
               <header className="mb-4 sm:mb-6 lg:mb-8">
-                <div className="flex flex-wrap items-center gap-2 mb-2">
-                  <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent leading-tight">
-                    Welcome back, {profile?.full_name}!
+                <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-1 sm:gap-2 mb-2">
+                  <h1 className="text-lg sm:text-2xl lg:text-3xl xl:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent leading-tight break-words hyphens-auto">
+                    Welcome back, {profile?.full_name?.split(' ')[0] || profile?.full_name}!
                   </h1>
-                  <Badge variant="outline" className="hidden sm:inline-flex">
+                  <Badge variant="outline" className="w-fit text-xs">
                     {getRoleDisplayName()}
                   </Badge>
                 </div>
