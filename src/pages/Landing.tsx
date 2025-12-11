@@ -305,16 +305,18 @@ export default function Landing() {
                 </Link>
               </CardContent>
             </Card>
-            <Card className="border-gray-200 text-center sm:col-span-2 lg:col-span-1">
+            <Card className="border-gray-200 dark:border-gray-700 text-center sm:col-span-2 lg:col-span-1 bg-card">
               <CardContent className="p-4 sm:p-6">
-                <h3 className="font-semibold text-base sm:text-lg mb-2">Enterprise</h3>
-                <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">Custom</div>
-                <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">For large organizations</p>
-                <ul className="text-xs sm:text-sm text-gray-600 space-y-1.5 sm:space-y-2 mb-4 sm:mb-6">
+                <h3 className="font-semibold text-base sm:text-lg mb-2 text-foreground">Enterprise</h3>
+                <div className="text-2xl sm:text-3xl font-bold text-foreground mb-3 sm:mb-4">Custom</div>
+                <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">For large organizations</p>
+                <ul className="text-xs sm:text-sm text-muted-foreground space-y-1.5 sm:space-y-2 mb-4 sm:mb-6">
                   <li>Unlimited users</li>
                   <li>Custom features</li>
                 </ul>
-                <Button variant="outline" className="w-full text-sm">Contact Sales</Button>
+                <Link to="/pricing">
+                  <Button variant="outline" className="w-full text-sm">Contact Sales</Button>
+                </Link>
               </CardContent>
             </Card>
           </div>
@@ -372,7 +374,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-8 sm:py-12" role="contentinfo">
+      <footer className="bg-slate-900 dark:bg-slate-950 text-slate-100 py-8 sm:py-12" role="contentinfo">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center gap-6 text-center md:text-left md:flex-row md:justify-between">
             <div className="flex flex-col items-center md:items-start gap-3">
@@ -382,7 +384,7 @@ export default function Landing() {
                 </div>
                 <span className="text-sm sm:text-lg font-bold">
                   <span className="font-black">SLT</span>
-                  <span className="font-normal text-gray-400"> work </span>
+                  <span className="font-normal text-slate-400"> work </span>
                   <span className="font-black">HuB</span>
                 </span>
               </div>
@@ -393,13 +395,13 @@ export default function Landing() {
             </div>
             
             <div className="flex flex-col items-center md:items-end gap-2">
-              <div className="text-gray-400 text-xs sm:text-sm">
+              <div className="text-slate-400 text-xs sm:text-sm">
                 © 2024 SLT work HuB. All rights reserved.
               </div>
-              <div className="flex gap-4 text-xs text-gray-500">
-                <Link to="/privacy" className="hover:text-gray-300 transition-colors">Privacy</Link>
-                <Link to="/terms" className="hover:text-gray-300 transition-colors">Terms</Link>
-                <Link to="/pricing" className="hover:text-gray-300 transition-colors">Pricing</Link>
+              <div className="flex gap-4 text-xs text-slate-500">
+                <Link to="/privacy" className="hover:text-slate-300 transition-colors">Privacy</Link>
+                <Link to="/terms" className="hover:text-slate-300 transition-colors">Terms</Link>
+                <Link to="/pricing" className="hover:text-slate-300 transition-colors">Pricing</Link>
               </div>
             </div>
           </div>
