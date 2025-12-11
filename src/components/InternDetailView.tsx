@@ -36,86 +36,88 @@ export function InternDetailView({ internId, onClose }: InternDetailViewProps) {
 
   return (
     <Dialog open onOpenChange={() => onClose()}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-full sm:max-w-4xl max-h-[90vh] overflow-y-auto mx-2 sm:mx-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            {internProfile?.full_name} - Intern Details
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <User className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="truncate">{internProfile?.full_name} - Intern Details</span>
           </DialogTitle>
         </DialogHeader>
 
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="tasks">Tasks</TabsTrigger>
-            <TabsTrigger value="time">Time Logs</TabsTrigger>
-            <TabsTrigger value="certificate">Certificate</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto -mx-2 px-2">
+            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:grid-cols-5 gap-1">
+              <TabsTrigger value="overview" className="text-xs sm:text-sm whitespace-nowrap">Overview</TabsTrigger>
+              <TabsTrigger value="analytics" className="text-xs sm:text-sm whitespace-nowrap">Analytics</TabsTrigger>
+              <TabsTrigger value="tasks" className="text-xs sm:text-sm whitespace-nowrap">Tasks</TabsTrigger>
+              <TabsTrigger value="time" className="text-xs sm:text-sm whitespace-nowrap">Time Logs</TabsTrigger>
+              <TabsTrigger value="certificate" className="text-xs sm:text-sm whitespace-nowrap">Certificate</TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="overview" className="space-y-4">
             {/* Profile Info */}
             <Card>
-              <CardHeader>
-                <CardTitle>Profile Information</CardTitle>
+              <CardHeader className="pb-2 sm:pb-4">
+                <CardTitle className="text-base sm:text-lg">Profile Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <p className="text-sm text-muted-foreground">Full Name</p>
-                    <p className="font-medium">{internProfile?.full_name}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Full Name</p>
+                    <p className="font-medium text-sm sm:text-base truncate">{internProfile?.full_name}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <p className="font-medium">{internProfile?.email}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Email</p>
+                    <p className="font-medium text-sm sm:text-base truncate">{internProfile?.email}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Employee ID</p>
-                    <p className="font-medium">{internProfile?.employee_id || 'Not set'}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Employee ID</p>
+                    <p className="font-medium text-sm sm:text-base">{internProfile?.employee_id || 'Not set'}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Department</p>
-                    <p className="font-medium">{internProfile?.department || 'Not set'}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Department</p>
+                    <p className="font-medium text-sm sm:text-base">{internProfile?.department || 'Not set'}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Performance Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4">
               <Card>
-                <CardContent className="p-4 text-center">
-                  <Award className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold">{analyticsData?.totalStats.totalTasks || 0}</p>
-                  <p className="text-sm text-muted-foreground">Total Tasks</p>
+                <CardContent className="p-3 sm:p-4 text-center">
+                  <Award className="h-6 w-6 sm:h-8 sm:w-8 text-green-500 mx-auto mb-1 sm:mb-2" />
+                  <p className="text-lg sm:text-2xl font-bold">{analyticsData?.totalStats.totalTasks || 0}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Total Tasks</p>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent className="p-4 text-center">
-                  <Award className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold">{analyticsData?.totalStats.completedTasks || 0}</p>
-                  <p className="text-sm text-muted-foreground">Completed</p>
+                <CardContent className="p-3 sm:p-4 text-center">
+                  <Award className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500 mx-auto mb-1 sm:mb-2" />
+                  <p className="text-lg sm:text-2xl font-bold">{analyticsData?.totalStats.completedTasks || 0}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Completed</p>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent className="p-4 text-center">
-                  <Clock className="h-8 w-8 text-purple-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold">{analyticsData?.totalStats.totalHours || 0}h</p>
-                  <p className="text-sm text-muted-foreground">Total Hours</p>
+                <CardContent className="p-3 sm:p-4 text-center">
+                  <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-purple-500 mx-auto mb-1 sm:mb-2" />
+                  <p className="text-lg sm:text-2xl font-bold">{analyticsData?.totalStats.totalHours || 0}h</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Total Hours</p>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent className="p-4 text-center">
-                  <MessageSquare className="h-8 w-8 text-orange-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold">{analyticsData?.totalStats.totalComments || 0}</p>
-                  <p className="text-sm text-muted-foreground">Comments</p>
+                <CardContent className="p-3 sm:p-4 text-center">
+                  <MessageSquare className="h-6 w-6 sm:h-8 sm:w-8 text-orange-500 mx-auto mb-1 sm:mb-2" />
+                  <p className="text-lg sm:text-2xl font-bold">{analyticsData?.totalStats.totalComments || 0}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Comments</p>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent className="p-4 text-center">
-                  <Award className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold">{analyticsData?.totalStats.totalCoins || 0}</p>
-                  <p className="text-sm text-muted-foreground">SLT Coins</p>
+                <CardContent className="p-3 sm:p-4 text-center">
+                  <Award className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500 mx-auto mb-1 sm:mb-2" />
+                  <p className="text-lg sm:text-2xl font-bold">{analyticsData?.totalStats.totalCoins || 0}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">SLT Coins</p>
                 </CardContent>
               </Card>
             </div>

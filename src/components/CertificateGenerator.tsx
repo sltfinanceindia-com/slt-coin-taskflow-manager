@@ -251,15 +251,15 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 p-4">
+    <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6 p-2 sm:p-4">
       {/* Certificate Form */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Award className="h-5 w-5" />
+        <CardHeader className="pb-2 sm:pb-4">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Award className="h-4 w-4 sm:h-5 sm:w-5" />
             Certificate Generator
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs sm:text-sm">
             Generate completion certificates for interns
           </CardDescription>
         </CardHeader>
@@ -282,11 +282,12 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
           </div>
 
           {/* Certificate Data Form */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="internName">Intern Name</Label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="internName" className="text-xs sm:text-sm">Intern Name</Label>
               <Input
                 id="internName"
+                className="h-9 sm:h-10 text-sm"
                 value={certificateData.internName}
                 onChange={(e) => setCertificateData(prev => ({ ...prev, internName: e.target.value }))}
               />
@@ -407,22 +408,25 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
 
       {/* Certificate Preview */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
+        <CardHeader className="pb-2 sm:pb-4">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <FileText className="h-4 w-4 sm:h-5 sm:w-5" />
             Professional Certificate Preview
           </CardTitle>
+          <p className="text-xs text-muted-foreground mt-1">
+            Scroll horizontally to view full certificate on mobile
+          </p>
         </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-lg">
-            <div className="flex justify-center">
+        <CardContent className="p-2 sm:p-6">
+          <div className="overflow-x-auto bg-gradient-to-br from-slate-50 to-slate-100 p-2 sm:p-6 rounded-lg">
+            <div className="flex justify-start sm:justify-center min-w-max">
               <div
                 ref={certificateRef}
                 className="w-[1400px] h-[990px] bg-white relative shadow-2xl"
                 style={{ 
                   fontFamily: 'serif',
                   minWidth: '1400px',
-                  border: '6px solid #374151', // Dark grey outer border
+                  border: '6px solid #374151',
                 }}
               >
                 {/* Green Inner Border */}
