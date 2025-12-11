@@ -285,44 +285,44 @@ function MeetingCard({ meeting, profile, onSelect, isSelected }: any) {
       className={`cursor-pointer transition-all ${isSelected ? 'ring-2 ring-primary' : 'hover:shadow-md'}`}
       onClick={onSelect}
     >
-      <CardContent className="pt-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-12 w-12">
+      <CardContent className="p-3 sm:pt-6 sm:px-6 sm:pb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-start sm:items-center gap-3 sm:gap-4">
+            <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0">
               <AvatarImage src={otherPerson?.avatar_url} />
-              <AvatarFallback>{otherPerson?.full_name?.charAt(0)}</AvatarFallback>
+              <AvatarFallback className="text-sm">{otherPerson?.full_name?.charAt(0)}</AvatarFallback>
             </Avatar>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-semibold">{otherPerson?.full_name}</span>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <span className="font-semibold text-sm sm:text-base truncate">{otherPerson?.full_name}</span>
                 {getStatusBadge(meeting.status)}
-                {meeting.is_recurring && <Badge variant="outline">Recurring</Badge>}
+                {meeting.is_recurring && <Badge variant="outline" className="text-xs">Recurring</Badge>}
               </div>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm text-muted-foreground mt-1">
                 <span className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  {format(new Date(meeting.scheduled_at), 'MMM d, yyyy')}
+                  <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  {format(new Date(meeting.scheduled_at), 'MMM d')}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  {format(new Date(meeting.scheduled_at), 'h:mm a')} ({meeting.duration_minutes} min)
+                  <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  {format(new Date(meeting.scheduled_at), 'h:mm a')} ({meeting.duration_minutes}m)
                 </span>
                 {meeting.location && (
-                  <span className="flex items-center gap-1">
-                    <MapPin className="h-4 w-4" />
-                    {meeting.location}
+                  <span className="flex items-center gap-1 hidden sm:flex">
+                    <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    <span className="truncate max-w-[100px]">{meeting.location}</span>
                   </span>
                 )}
                 {meeting.meeting_url && (
                   <span className="flex items-center gap-1">
-                    <Video className="h-4 w-4" />
-                    Video call
+                    <Video className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Video</span>
                   </span>
                 )}
               </div>
             </div>
           </div>
-          <Badge variant="outline">{isManager ? 'Manager' : 'Employee'}</Badge>
+          <Badge variant="outline" className="self-start sm:self-center text-xs">{isManager ? 'Manager' : 'Employee'}</Badge>
         </div>
       </CardContent>
     </Card>
