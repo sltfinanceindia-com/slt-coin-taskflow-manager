@@ -25,22 +25,22 @@ export function TrainingManagement() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
         <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
           <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-4 gap-1">
-            <TabsTrigger value="sections" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4">
+            <TabsTrigger value="sections" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4 min-h-[44px]">
               <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline">Sections</span>
-              <span className="xs:hidden">Sec</span>
+              <span className="hidden sm:inline">Sections</span>
+              <span className="sm:hidden">Sec</span>
             </TabsTrigger>
-            <TabsTrigger value="assessments" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4">
+            <TabsTrigger value="assessments" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4 min-h-[44px]">
               <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline">Assessments</span>
-              <span className="xs:hidden">Tests</span>
+              <span className="hidden sm:inline">Assessments</span>
+              <span className="sm:hidden">Tests</span>
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4">
+            <TabsTrigger value="analytics" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4 min-h-[44px]">
               <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline">Analytics</span>
-              <span className="xs:hidden">Stats</span>
+              <span className="hidden sm:inline">Analytics</span>
+              <span className="sm:hidden">Stats</span>
             </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4">
+            <TabsTrigger value="users" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4 min-h-[44px]">
               <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               Users
             </TabsTrigger>

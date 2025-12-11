@@ -22,21 +22,21 @@ export function ShiftManagement() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
         <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
           <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-4 lg:w-auto lg:inline-grid h-auto">
-            <TabsTrigger value="overview" className="gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[40px]">
+            <TabsTrigger value="overview" className="gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[44px]">
               <CalendarDays className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline sm:inline">Overview</span>
+              <span className="sm:inline">Overview</span>
             </TabsTrigger>
-            <TabsTrigger value="schedule" className="gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[40px]">
+            <TabsTrigger value="schedule" className="gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[44px]">
               <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline sm:inline">Schedule</span>
+              <span className="sm:inline">Schedule</span>
             </TabsTrigger>
-            <TabsTrigger value="shifts" className="gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[40px]">
+            <TabsTrigger value="shifts" className="gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[44px]">
               <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline sm:inline">Shift Types</span>
+              <span className="sm:inline">Shifts</span>
             </TabsTrigger>
-            <TabsTrigger value="swaps" className="gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[40px]">
+            <TabsTrigger value="swaps" className="gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[44px]">
               <ArrowLeftRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline sm:inline">Swaps</span>
+              <span className="sm:inline">Swaps</span>
             </TabsTrigger>
           </TabsList>
         </div>

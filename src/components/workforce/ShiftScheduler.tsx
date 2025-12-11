@@ -126,9 +126,9 @@ export function ShiftScheduler() {
 
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <Button size="sm" className="h-9 text-xs sm:text-sm">
+                <Button size="sm" className="h-9 text-xs sm:text-sm min-h-[44px]">
                   <Plus className="h-4 w-4 mr-1 sm:mr-2" />
-                  <span className="hidden xs:inline">Add</span> Shift
+                  <span className="hidden sm:inline">Add</span> Shift
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">

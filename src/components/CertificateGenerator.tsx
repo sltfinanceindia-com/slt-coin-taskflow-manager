@@ -414,7 +414,8 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
             Professional Certificate Preview
           </CardTitle>
           <p className="text-xs text-muted-foreground mt-1">
-            Scroll horizontally to view full certificate on mobile
+            <span className="sm:hidden">Use landscape mode or scroll horizontally to view</span>
+            <span className="hidden sm:inline">Full-size preview of the certificate</span>
           </p>
         </CardHeader>
         <CardContent className="p-2 sm:p-6">
@@ -449,7 +450,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                   <div className="w-full h-full border-l-4 border-t-4 border-green-500 rounded-tl-3xl bg-gradient-to-tl from-green-50 to-green-100"></div>
                 </div>
 
-                {/* Header Section with Green Theme - FIXED ALIGNMENT */}
+                {/* Header Section with Green Theme */}
                 <div className="relative z-20 px-16 py-8">
                   <div className="grid grid-cols-3 items-start gap-4 mb-6">
                     {/* Left: Logo */}
@@ -461,7 +462,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                       />
                     </div>
                     
-                    {/* Center: Company Name - FIXED WITHOUT TRANSFORM */}
+                    {/* Center: Company Name */}
                     <div className="flex flex-col items-center justify-center text-center">
                       <h1 className="text-2xl font-bold text-green-700 tracking-wider whitespace-nowrap">SLT FINANCE INDIA</h1>
                       <p className="text-sm text-gray-600 tracking-wide mt-1">Your Wealth Is Our Future</p>
@@ -595,6 +596,9 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
               </div>
             </div>
           </div>
+          <p className="text-xs text-center text-muted-foreground mt-2 sm:hidden">
+            Tip: Download the PDF for the best quality on mobile
+          </p>
         </CardContent>
       </Card>
     </div>
