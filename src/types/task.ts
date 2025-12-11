@@ -14,6 +14,16 @@ export interface Task {
   project_id?: string;
   created_at: string;
   updated_at: string;
+  // Phase 2: Scheduling fields
+  planned_start_date?: string | null;
+  planned_end_date?: string | null;
+  actual_start_date?: string | null;
+  actual_end_date?: string | null;
+  is_milestone?: boolean;
+  is_critical?: boolean;
+  estimated_hours?: number | null;
+  actual_hours?: number | null;
+  progress_percentage?: number;
   assigned_profile?: {
     id: string;
     full_name: string;

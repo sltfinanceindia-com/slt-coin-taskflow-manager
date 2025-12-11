@@ -3943,17 +3943,88 @@ export type Database = {
           },
         ]
       }
+      task_dependencies: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          dependency_type: string
+          id: string
+          lag_days: number | null
+          organization_id: string | null
+          predecessor_id: string
+          successor_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          dependency_type?: string
+          id?: string
+          lag_days?: number | null
+          organization_id?: string | null
+          predecessor_id: string
+          successor_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          dependency_type?: string
+          id?: string
+          lag_days?: number | null
+          organization_id?: string | null
+          predecessor_id?: string
+          successor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_dependencies_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_dependencies_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_dependencies_predecessor_id_fkey"
+            columns: ["predecessor_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_dependencies_successor_id_fkey"
+            columns: ["successor_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
+          actual_end_date: string | null
+          actual_hours: number | null
+          actual_start_date: string | null
           admin_feedback: string | null
           assigned_to: string | null
           created_at: string
           created_by: string
           description: string | null
           end_date: string | null
+          estimated_hours: number | null
           id: string
+          is_critical: boolean | null
+          is_milestone: boolean | null
           organization_id: string | null
+          planned_end_date: string | null
+          planned_start_date: string | null
           priority: Database["public"]["Enums"]["task_priority"] | null
+          progress_percentage: number | null
           project_id: string | null
           quiz_template_id: string | null
           slt_coin_value: number
@@ -3965,15 +4036,24 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          actual_end_date?: string | null
+          actual_hours?: number | null
+          actual_start_date?: string | null
           admin_feedback?: string | null
           assigned_to?: string | null
           created_at?: string
           created_by: string
           description?: string | null
           end_date?: string | null
+          estimated_hours?: number | null
           id?: string
+          is_critical?: boolean | null
+          is_milestone?: boolean | null
           organization_id?: string | null
+          planned_end_date?: string | null
+          planned_start_date?: string | null
           priority?: Database["public"]["Enums"]["task_priority"] | null
+          progress_percentage?: number | null
           project_id?: string | null
           quiz_template_id?: string | null
           slt_coin_value?: number
@@ -3985,15 +4065,24 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          actual_end_date?: string | null
+          actual_hours?: number | null
+          actual_start_date?: string | null
           admin_feedback?: string | null
           assigned_to?: string | null
           created_at?: string
           created_by?: string
           description?: string | null
           end_date?: string | null
+          estimated_hours?: number | null
           id?: string
+          is_critical?: boolean | null
+          is_milestone?: boolean | null
           organization_id?: string | null
+          planned_end_date?: string | null
+          planned_start_date?: string | null
           priority?: Database["public"]["Enums"]["task_priority"] | null
+          progress_percentage?: number | null
           project_id?: string | null
           quiz_template_id?: string | null
           slt_coin_value?: number
@@ -4835,6 +4924,13 @@ export type Database = {
           metric_date: string
           metric_name: string
           metric_value: number
+        }[]
+      }
+      calculate_task_critical_path: {
+        Args: { p_project_id: string }
+        Returns: {
+          is_on_critical_path: boolean
+          task_id: string
         }[]
       }
       can_org_add_user: { Args: { _org_id: string }; Returns: boolean }

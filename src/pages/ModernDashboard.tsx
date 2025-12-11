@@ -17,6 +17,7 @@ import { CoinManagement } from '@/components/CoinManagement';
 import { MyCoins } from '@/components/MyCoins';
 import { EnhancedDashboardWidgets } from '@/components/EnhancedDashboardWidgets';
 import { ProjectPortfolioHub } from '@/components/project/ProjectPortfolioHub';
+import { ProjectScheduleHub } from '@/components/project/ProjectScheduleHub';
 import { KanbanBoard } from '@/components/KanbanBoard';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { AppSidebar } from '@/components/AppSidebar';
