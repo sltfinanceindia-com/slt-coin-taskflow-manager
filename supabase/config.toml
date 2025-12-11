@@ -3,6 +3,9 @@ project_id = "orybzmkhccrqmjuvioln"
 [functions.send-email]
 verify_jwt = true
 
+[functions.email-notifications]
+verify_jwt = true
+
 [functions.webrtc-signal]
 verify_jwt = false
 
