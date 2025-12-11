@@ -4362,6 +4362,8 @@ export type Database = {
       }
       get_current_profile_id: { Args: never; Returns: string }
       get_current_user_role: { Args: never; Returns: string }
+      get_my_org_id: { Args: never; Returns: string }
+      get_my_profile_id: { Args: never; Returns: string }
       get_org_user_count: { Args: { _org_id: string }; Returns: number }
       get_public_stats: { Args: never; Returns: Json }
       get_user_channel_ids: {

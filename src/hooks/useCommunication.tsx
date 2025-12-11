@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useNotifications } from '@/hooks/useNotifications';
 
 export interface Channel {
@@ -59,112 +59,144 @@ export interface TeamMember {
   last_seen?: string;
 }
 
+type LoadingStep = 'validating' | 'team' | 'channels' | 'ready' | null;
+type Status = 'idle' | 'loading' | 'ready' | 'error';
+
 export function useCommunication() {
-  const { profile } = useAuth();
-  const { toast } = useToast();
+  const { profile, session } = useAuth();
   const { notifyMessage } = useNotifications();
   
+  // State machine
+  const [status, setStatus] = useState<Status>('idle');
+  const [loadingStep, setLoadingStep] = useState<LoadingStep>(null);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Data states
   const [channels, setChannels] = useState<Channel[]>([]);
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [typingUsers, setTypingUsers] = useState<TeamMember[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [error, setError] = useState<string | null>(null);
   
   const retryCount = useRef(0);
   const maxRetries = 3;
+  const isMounted = useRef(true);
 
-  // Simplified channel fetch - RLS handles filtering now
-  const fetchChannels = useCallback(async () => {
-    if (!profile?.id || !profile?.organization_id) {
-      console.log('[Comm] No profile/org, skipping channel fetch');
-      setChannels([]);
-      return;
-    }
-
-    try {
-      console.log('[Comm] Fetching channels...');
-      
-      const { data: channelsData, error: channelsError } = await supabase
-        .from('communication_channels')
-        .select('*')
-        .order('last_message_at', { ascending: false, nullsFirst: false });
-
-      if (channelsError) {
-        console.error('[Comm] Channel error:', channelsError);
-        throw channelsError;
-      }
-
-      console.log('[Comm] Got channels:', channelsData?.length || 0);
-
-      const channelsWithMetadata: Channel[] = (channelsData || []).map(channel => ({
-        ...channel,
-        unread_count: 0,
-        last_message: undefined
-      }));
-
-      setChannels(channelsWithMetadata);
-    } catch (err: any) {
-      console.error('[Comm] fetchChannels error:', err);
-      throw err;
-    }
-  }, [profile?.id, profile?.organization_id]);
-
-  // Simplified team members fetch
-  const fetchTeamMembers = useCallback(async () => {
-    if (!profile?.organization_id) {
-      console.log('[Comm] No org, skipping team fetch');
-      return;
-    }
+  // Validate session before any operation
+  const validateSession = useCallback(async (): Promise<boolean> => {
+    console.log('[Comm] Validating session...');
     
     try {
-      console.log('[Comm] Fetching team members...');
+      const { data: { session: currentSession }, error } = await supabase.auth.getSession();
       
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, full_name, email, avatar_url, department, role, is_active, organization_id')
-        .eq('is_active', true)
-        .eq('organization_id', profile.organization_id)
-        .order('full_name');
-
-      if (profilesError) {
-        console.error('[Comm] Team error:', profilesError);
-        throw profilesError;
+      if (error) {
+        console.error('[Comm] Session error:', error);
+        return false;
       }
-
-      // Fetch presence data
-      const { data: presenceData } = await supabase
-        .from('user_presence')
-        .select('*');
-
-      const teamMembersData: TeamMember[] = (profiles || []).map(profileData => {
-        const presence = presenceData?.find(p => p.user_id === profileData.id);
-        
-        return {
-          id: profileData.id,
-          full_name: profileData.full_name || 'Unknown',
-          email: profileData.email || '',
-          role: profileData.role || 'intern',
-          avatar_url: profileData.avatar_url,
-          department: profileData.department,
-          organization_id: profileData.organization_id,
-          is_online: presence?.is_online || false,
-          activity_status: (presence?.activity_status as 'online' | 'away' | 'busy' | 'offline') || 'offline',
-          status_message: presence?.status_message || undefined,
-          last_seen: presence?.last_seen || undefined
-        };
-      });
-
-      console.log('[Comm] Got team members:', teamMembersData.length);
-      setTeamMembers(teamMembersData);
+      
+      if (!currentSession) {
+        console.log('[Comm] No active session');
+        return false;
+      }
+      
+      // Check if session expires in less than 5 minutes
+      const expiresAt = new Date((currentSession.expires_at || 0) * 1000);
+      const fiveMinutesFromNow = new Date(Date.now() + 5 * 60 * 1000);
+      
+      if (expiresAt < fiveMinutesFromNow) {
+        console.log('[Comm] Session expiring soon, refreshing...');
+        const { error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError) {
+          console.error('[Comm] Session refresh failed:', refreshError);
+          return false;
+        }
+      }
+      
+      console.log('[Comm] Session valid');
+      return true;
     } catch (err) {
-      console.error('[Comm] fetchTeamMembers error:', err);
-      throw err;
+      console.error('[Comm] Session validation error:', err);
+      return false;
     }
+  }, []);
+
+  // Fetch team members (fast query, do first)
+  const fetchTeamMembers = useCallback(async (): Promise<TeamMember[]> => {
+    if (!profile?.organization_id) {
+      console.log('[Comm] No org, skipping team fetch');
+      return [];
+    }
+    
+    console.log('[Comm] Fetching team members for org:', profile.organization_id);
+    
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, avatar_url, department, role, is_active, organization_id')
+      .eq('is_active', true)
+      .eq('organization_id', profile.organization_id)
+      .order('full_name');
+
+    if (profilesError) {
+      console.error('[Comm] Team fetch error:', profilesError);
+      throw new Error('Failed to load team members');
+    }
+
+    // Fetch presence data separately
+    const { data: presenceData } = await supabase
+      .from('user_presence')
+      .select('*');
+
+    const teamMembersData: TeamMember[] = (profiles || []).map(profileData => {
+      const presence = presenceData?.find(p => p.user_id === profileData.id);
+      
+      return {
+        id: profileData.id,
+        full_name: profileData.full_name || 'Unknown',
+        email: profileData.email || '',
+        role: profileData.role || 'intern',
+        avatar_url: profileData.avatar_url,
+        department: profileData.department,
+        organization_id: profileData.organization_id,
+        is_online: presence?.is_online || false,
+        activity_status: (presence?.activity_status as 'online' | 'away' | 'busy' | 'offline') || 'offline',
+        status_message: presence?.status_message || undefined,
+        last_seen: presence?.last_seen || undefined
+      };
+    });
+
+    console.log('[Comm] Loaded', teamMembersData.length, 'team members');
+    return teamMembersData;
   }, [profile?.organization_id]);
+
+  // Fetch channels
+  const fetchChannels = useCallback(async (): Promise<Channel[]> => {
+    if (!profile?.id || !profile?.organization_id) {
+      console.log('[Comm] No profile/org, skipping channel fetch');
+      return [];
+    }
+
+    console.log('[Comm] Fetching channels...');
+    
+    const { data: channelsData, error: channelsError } = await supabase
+      .from('communication_channels')
+      .select('*')
+      .order('last_message_at', { ascending: false, nullsFirst: false });
+
+    if (channelsError) {
+      console.error('[Comm] Channel fetch error:', channelsError);
+      throw new Error('Failed to load channels');
+    }
+
+    console.log('[Comm] Loaded', channelsData?.length || 0, 'channels');
+
+    return (channelsData || []).map(channel => ({
+      ...channel,
+      unread_count: 0,
+      last_message: undefined
+    }));
+  }, [profile?.id, profile?.organization_id]);
 
   // Fetch messages for selected channel
   const fetchMessages = useCallback(async (channelId: string) => {
@@ -188,16 +220,12 @@ export function useCommunication() {
 
       setMessages((messagesData || []) as Message[]);
     } catch (err) {
-      console.error('[Comm] fetchMessages error:', err);
-      toast({
-        title: "Error",
-        description: "Failed to load messages",
-        variant: "destructive"
-      });
+      console.error('[Comm] Message fetch error:', err);
+      toast.error('Failed to load messages');
     } finally {
       setIsLoadingMessages(false);
     }
-  }, [toast]);
+  }, []);
 
   // Send message
   const sendMessage = useCallback(async (content: string, channelId?: string, receiverId?: string): Promise<string | void> => {
@@ -242,35 +270,10 @@ export function useCommunication() {
 
       return data.id;
     } catch (err) {
-      console.error('[Comm] sendMessage error:', err);
-      toast({
-        title: "Error",
-        description: "Failed to send message",
-        variant: "destructive"
-      });
+      console.error('[Comm] Send message error:', err);
+      toast.error('Failed to send message');
     }
-  }, [profile, toast]);
-
-  // Get channel display name
-  const getChannelDisplayName = useCallback((channel: Channel) => {
-    if (!channel.is_direct_message) {
-      return channel.name;
-    }
-    
-    const otherParticipantId = channel.participant_ids?.find(id => id !== profile?.id);
-    if (otherParticipantId) {
-      const otherUser = teamMembers.find(member => member.id === otherParticipantId);
-      if (otherUser) {
-        const status = otherUser.is_online ? '🟢 ' : 
-                      otherUser.activity_status === 'away' ? '🟡 ' :
-                      otherUser.activity_status === 'busy' ? '🔴 ' : '⚫ ';
-        return `${status}${otherUser.full_name}`;
-      }
-      return 'Direct Message';
-    }
-    
-    return 'Direct Message';
-  }, [profile?.id, teamMembers]);
+  }, [profile]);
 
   // Create direct message channel
   const createDirectMessage = useCallback(async (memberId: string) => {
@@ -294,7 +297,7 @@ export function useCommunication() {
 
       if (channelError) throw channelError;
 
-      const newChannel = {
+      const newChannel: Channel = {
         ...channelData,
         unread_count: 0,
         last_message: undefined
@@ -304,19 +307,18 @@ export function useCommunication() {
       setChannels(prev => {
         const exists = prev.some(c => c.id === newChannel.id);
         if (exists) return prev;
-        return [...prev, newChannel];
+        return [newChannel, ...prev];
       });
+      
+      // Fetch messages for the new channel
+      fetchMessages(newChannel.id);
 
       return newChannel;
     } catch (err) {
-      console.error('[Comm] createDirectMessage error:', err);
-      toast({
-        title: "Error",
-        description: "Failed to create conversation",
-        variant: "destructive"
-      });
+      console.error('[Comm] Create DM error:', err);
+      toast.error('Failed to create conversation');
     }
-  }, [profile?.id, toast]);
+  }, [profile?.id, fetchMessages]);
 
   // Handle channel selection
   const selectChannel = useCallback((channel: Channel) => {
@@ -340,30 +342,55 @@ export function useCommunication() {
     }
   }, [profile?.id, profile?.organization_id, fetchMessages]);
 
-  // Load data with retry logic
+  // Main data loading function
   const loadData = useCallback(async () => {
     if (!profile?.id || !profile?.organization_id) {
-      console.log('[Comm] No profile/org, stopping');
-      setIsLoading(false);
+      console.log('[Comm] Waiting for profile...');
+      setStatus('idle');
       return;
     }
 
-    setIsLoading(true);
+    setStatus('loading');
     setError(null);
-
+    
     try {
-      console.log('[Comm] Loading data, attempt:', retryCount.current + 1);
+      // Step 1: Validate session
+      setLoadingStep('validating');
+      console.log('[Comm] Step 1: Validating session');
+      const sessionValid = await validateSession();
       
-      // Fetch in parallel
-      await Promise.all([
-        fetchTeamMembers(),
-        fetchChannels()
-      ]);
+      if (!sessionValid) {
+        throw new Error('Session expired. Please refresh the page.');
+      }
+
+      if (!isMounted.current) return;
+
+      // Step 2: Fetch team members first (faster)
+      setLoadingStep('team');
+      console.log('[Comm] Step 2: Loading team members');
+      const team = await fetchTeamMembers();
       
+      if (!isMounted.current) return;
+      setTeamMembers(team);
+
+      // Step 3: Fetch channels
+      setLoadingStep('channels');
+      console.log('[Comm] Step 3: Loading channels');
+      const channelList = await fetchChannels();
+      
+      if (!isMounted.current) return;
+      setChannels(channelList);
+
+      // Done
+      setLoadingStep('ready');
+      setStatus('ready');
       retryCount.current = 0;
-      console.log('[Comm] Data loaded successfully');
+      console.log('[Comm] ✅ All data loaded successfully');
+      
     } catch (err: any) {
       console.error('[Comm] Load error:', err);
+      
+      if (!isMounted.current) return;
       
       if (retryCount.current < maxRetries) {
         retryCount.current++;
@@ -373,29 +400,35 @@ export function useCommunication() {
         return;
       }
       
-      setError('Failed to connect. Please check your connection and try again.');
-    } finally {
-      setIsLoading(false);
+      setStatus('error');
+      setLoadingStep(null);
+      setError(err.message || 'Failed to connect. Please try again.');
     }
-  }, [profile?.id, profile?.organization_id, fetchChannels, fetchTeamMembers]);
+  }, [profile?.id, profile?.organization_id, validateSession, fetchTeamMembers, fetchChannels]);
 
   // Refresh function
   const refresh = useCallback(() => {
+    console.log('[Comm] Manual refresh triggered');
     retryCount.current = 0;
     loadData();
   }, [loadData]);
 
-  // Initial load
+  // Initial load effect
   useEffect(() => {
+    isMounted.current = true;
     loadData();
+    
+    return () => {
+      isMounted.current = false;
+    };
   }, [loadData]);
 
   // Real-time subscriptions
   useEffect(() => {
-    if (!profile?.id || !profile?.organization_id) return;
+    if (!profile?.id || !profile?.organization_id || status !== 'ready') return;
 
     const messagesChannel = supabase
-      .channel('messages-org-' + profile.organization_id)
+      .channel('messages-rt-' + profile.organization_id)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
@@ -404,10 +437,12 @@ export function useCommunication() {
       }, (payload) => {
         const newMessage = payload.new as Message;
         
+        // Add to messages if in current channel
         if (selectedChannel && newMessage.channel_id === selectedChannel.id) {
           setMessages(prev => [...prev, newMessage]);
         }
         
+        // Notify if not from current user and not in current channel
         if (newMessage.sender_id !== profile.id && 
             (!selectedChannel || newMessage.channel_id !== selectedChannel.id)) {
           notifyMessage(
@@ -417,6 +452,7 @@ export function useCommunication() {
           );
         }
         
+        // Update channel last message
         setChannels(prev => prev.map(channel => {
           if (channel.id === newMessage.channel_id) {
             return {
@@ -435,13 +471,14 @@ export function useCommunication() {
       .subscribe();
 
     const presenceChannel = supabase
-      .channel('presence-org-' + profile.organization_id)
+      .channel('presence-rt-' + profile.organization_id)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
         table: 'user_presence'
       }, () => {
-        fetchTeamMembers();
+        // Refresh team member presence
+        fetchTeamMembers().then(setTeamMembers);
       })
       .subscribe();
 
@@ -449,24 +486,32 @@ export function useCommunication() {
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(presenceChannel);
     };
-  }, [profile?.id, profile?.organization_id, selectedChannel?.id, fetchTeamMembers, notifyMessage]);
+  }, [profile?.id, profile?.organization_id, selectedChannel?.id, status, fetchTeamMembers, notifyMessage]);
+
+  // Computed values
+  const isLoading = status === 'loading';
 
   return {
+    // State
+    status,
+    loadingStep,
+    error,
+    isLoading,
+    isLoadingMessages,
+    
+    // Data
     channels,
     selectedChannel,
     messages,
     teamMembers,
     typingUsers,
-    isLoading,
-    isLoadingMessages,
     searchQuery,
-    error,
+    
+    // Actions
     setSearchQuery,
     selectChannel,
     sendMessage,
     createDirectMessage,
-    getChannelDisplayName,
-    fetchChannels,
     fetchMessages,
     refresh
   };
