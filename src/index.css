@@ -844,4 +844,61 @@ All colors MUST be HSL.
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  /* Touch-friendly target sizes (WCAG 2.5.5) */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  .touch-target-sm {
+    @apply min-h-[36px] min-w-[36px];
+  }
+
+  /* Safe area insets for mobile devices */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* Enhanced focus states for accessibility */
+  .focus-visible-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  }
+
+  /* Text contrast for readability */
+  .text-contrast {
+    @apply text-foreground;
+  }
+
+  .text-contrast-muted {
+    @apply text-muted-foreground;
+  }
+
+  /* Prevent text selection on interactive elements */
+  .select-none-interactive {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Smooth appearance for inputs */
+  .input-smooth {
+    @apply transition-colors duration-200 focus:ring-2 focus:ring-ring focus:ring-offset-2;
+  }
+
+  /* Mobile-optimized spacing */
+  @media (max-width: 640px) {
+    .mobile-compact {
+      @apply px-3 py-2 text-sm;
+    }
+
+    .mobile-spacing {
+      @apply gap-2;
+    }
+  }
 }

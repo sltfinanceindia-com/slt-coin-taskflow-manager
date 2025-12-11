@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { 
   Users, 
   GraduationCap, 
@@ -16,7 +18,8 @@ import {
   Globe,
   Headphones,
   ArrowRight,
-  Check
+  Check,
+  Menu
 } from 'lucide-react';
 
 const features = [
@@ -150,29 +153,65 @@ const additionalFeatures = [
 ];
 
 export default function Features() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
       <header className="border-b bg-background/95 backdrop-blur sticky top-0 z-50">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="container mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
               <span className="text-primary-foreground font-bold">S</span>
             </div>
-            <span className="font-bold text-xl">SLT Work Hub</span>
+            <span className="font-bold text-lg sm:text-xl">SLT Work Hub</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6">
             <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">Home</Link>
             <Link to="/features" className="text-foreground font-medium">Features</Link>
             <Link to="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</Link>
           </nav>
-          <div className="flex items-center gap-3">
+          
+          {/* Desktop Actions */}
+          <div className="hidden sm:flex items-center gap-3">
             <Button variant="ghost" asChild>
               <Link to="/auth">Login</Link>
             </Button>
             <Button asChild>
               <Link to="/signup">Start Free Trial</Link>
             </Button>
+          </div>
+
+          {/* Mobile Menu */}
+          <div className="sm:hidden">
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">Open menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[280px] pt-12">
+                <div className="flex flex-col gap-4">
+                  <Link to="/" onClick={() => setMobileMenuOpen(false)} className="text-foreground hover:text-primary transition-colors py-2">
+                    Home
+                  </Link>
+                  <Link to="/features" onClick={() => setMobileMenuOpen(false)} className="text-primary font-medium py-2">
+                    Features
+                  </Link>
+                  <Link to="/pricing" onClick={() => setMobileMenuOpen(false)} className="text-foreground hover:text-primary transition-colors py-2">
+                    Pricing
+                  </Link>
+                  <hr className="my-2" />
+                  <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full">Login</Button>
+                  </Link>
+                  <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
+                    <Button className="w-full">Start Free Trial</Button>
+                  </Link>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </header>

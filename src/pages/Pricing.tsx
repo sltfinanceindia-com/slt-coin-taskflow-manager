@@ -299,9 +299,11 @@ export default function Pricing() {
                     Start Free Trial
                   </Button>
                 </Link>
-                <Button variant="outline" className="min-h-[44px]">
-                  Contact Sales
-                </Button>
+                <a href="mailto:sales@sltworkhub.com" className="w-full sm:w-auto">
+                  <Button variant="outline" className="w-full min-h-[44px]">
+                    Contact Sales
+                  </Button>
+                </a>
               </div>
             </CardContent>
           </Card>
