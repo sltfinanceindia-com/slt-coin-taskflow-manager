@@ -339,7 +339,7 @@ export function InternManagement() {
       )}
 
       {/* Team Members Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {isLoading ? (
           Array.from({ length: 6 }).map((_, i) => (
             <SkeletonCard key={i} />
@@ -347,48 +347,48 @@ export function InternManagement() {
         ) : interns.length > 0 ? (
           interns.map((intern) => (
             <Card key={intern.id} className={`${!intern.is_active ? 'opacity-70 border-destructive/50' : ''}`}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <CardTitle className="text-lg">{intern.full_name}</CardTitle>
-                    <Badge variant={intern.is_active !== false ? "default" : "destructive"}>
+              <CardHeader className="p-4 sm:p-6">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex flex-col gap-1.5 min-w-0 flex-1">
+                    <CardTitle className="text-base sm:text-lg truncate">{intern.full_name}</CardTitle>
+                    <Badge variant={intern.is_active !== false ? "default" : "destructive"} className="text-[10px] sm:text-xs w-fit">
                       {intern.is_active !== false ? <UserCheck className="h-3 w-3 mr-1" /> : <UserX className="h-3 w-3 mr-1" />}
                       {intern.is_active !== false ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-1 flex-shrink-0">
                     <Button
                       variant="ghost"
-                      size="sm"
+                      size="icon"
+                      className="h-8 w-8"
                       onClick={() => {
                         setSelectedIntern(intern);
                         setDetailViewOpen(true);
                       }}
-                      className="text-primary hover:text-primary"
                     >
-                      <Eye className="h-4 w-4" />
+                      <Eye className="h-4 w-4 text-primary" />
                     </Button>
                     <Button
                       variant="ghost"
-                      size="sm"
+                      size="icon"
+                      className="h-8 w-8"
                       onClick={() => {
                         setSelectedIntern(intern);
                         setDeleteDialogOpen(true);
                       }}
-                      className="text-destructive hover:text-destructive"
                     >
-                      <Trash className="h-4 w-4" />
+                      <Trash className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
                 </div>
-                <CardDescription>{intern.email}</CardDescription>
+                <CardDescription className="text-xs sm:text-sm truncate">{intern.email}</CardDescription>
                 {!intern.is_active && intern.deactivation_reason && (
-                  <div className="text-xs text-destructive italic mt-2 p-2 bg-destructive/10 rounded border border-destructive/20">
+                  <div className="text-[10px] sm:text-xs text-destructive italic mt-2 p-2 bg-destructive/10 rounded border border-destructive/20">
                     <strong>Reason:</strong> {intern.deactivation_reason}
                   </div>
                 )}
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6 pt-0">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Role:</span>
