@@ -338,16 +338,17 @@ export function KanbanBoard({
           />
         ) : (
         <DragDropContext onDragEnd={onDragEnd}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+          <div className="overflow-x-auto pb-4 -mx-2 px-2 sm:mx-0 sm:px-0 sm:overflow-visible">
+            <div className="grid grid-cols-1 min-w-[900px] sm:min-w-0 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
             {columns.map((column) => (
-              <div key={column.id} className="flex flex-col min-h-[600px]">
+              <div key={column.id} className="flex flex-col min-h-[400px] sm:min-h-[500px] lg:min-h-[600px]">
                 {/* Column Header */}
-                <div className={`px-4 py-3 rounded-t-lg bg-gray-100 dark:bg-gray-800 border-b-2 ${column.id === 'assigned' ? 'border-blue-500' : column.id === 'in_progress' ? 'border-yellow-500' : column.id === 'completed' ? 'border-purple-500' : column.id === 'verified' ? 'border-emerald-500' : 'border-red-500'}`}>
+                <div className={`px-3 sm:px-4 py-2 sm:py-3 rounded-t-lg bg-gray-100 dark:bg-gray-800 border-b-2 ${column.id === 'assigned' ? 'border-blue-500' : column.id === 'in_progress' ? 'border-yellow-500' : column.id === 'completed' ? 'border-purple-500' : column.id === 'verified' ? 'border-emerald-500' : 'border-red-500'}`}>
                   <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-sm uppercase tracking-wide text-gray-900 dark:text-gray-50">
+                    <h3 className="font-bold text-xs sm:text-sm uppercase tracking-wide text-gray-900 dark:text-gray-50">
                       {column.title}
                     </h3>
-                    <Badge variant="secondary" className="text-xs font-semibold px-2.5 py-0.5 ml-2 flex-shrink-0 bg-gray-200 dark:bg-gray-700">
+                    <Badge variant="secondary" className="text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2.5 py-0.5 ml-2 flex-shrink-0 bg-gray-200 dark:bg-gray-700">
                       {getTaskCountForColumn(column.status)}
                     </Badge>
                   </div>
@@ -413,6 +414,7 @@ export function KanbanBoard({
                 </Droppable>
               </div>
             ))}
+            </div>
           </div>
         </DragDropContext>
         )}

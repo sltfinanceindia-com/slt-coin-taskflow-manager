@@ -79,103 +79,107 @@ export function CoinManagement() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <Coins className="h-7 w-7 text-coin-gold" />
+        <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+          <Coins className="h-5 w-5 sm:h-7 sm:w-7 text-coin-gold" />
           SLT Coin Management
         </h2>
-        <p className="text-muted-foreground">Manage coin rates, approve tasks, and track coin distribution</p>
+        <p className="text-muted-foreground text-xs sm:text-sm">Manage coin rates, approve tasks, and track coin distribution</p>
       </div>
 
       {/* Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Current SLT Rate</CardTitle>
-            <TrendingUp className="h-4 w-4 text-emerald-600" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Current Rate</CardTitle>
+            <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-600" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCoinRate(currentRate)}</div>
-            <p className="text-xs text-muted-foreground">Per SLT coin</p>
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-lg sm:text-2xl font-bold">{formatCoinRate(currentRate)}</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Per SLT coin</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Coins Awarded</CardTitle>
-            <Coins className="h-4 w-4 text-coin-gold" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Total Awarded</CardTitle>
+            <Coins className="h-3 w-3 sm:h-4 sm:w-4 text-coin-gold" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-coin-gold">{totalCoinsAwarded}</div>
-            <p className="text-xs text-muted-foreground">{formatINR(totalUSDValue)}</p>
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-lg sm:text-2xl font-bold text-coin-gold">{totalCoinsAwarded}</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">{formatINR(totalUSDValue)}</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Approval</CardTitle>
-            <Clock className="h-4 w-4 text-orange-500" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Pending</CardTitle>
+            <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-orange-500" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-500">{pendingTasks.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {pendingCoinsValue} coins ({formatINR(pendingUSDValue)})
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-lg sm:text-2xl font-bold text-orange-500">{pendingTasks.length}</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">
+              {pendingCoinsValue} coins
             </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Approved This Month</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-500" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Approved</CardTitle>
+            <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-500">{verifiedTasks.length}</div>
-            <p className="text-xs text-muted-foreground">Tasks completed</p>
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-lg sm:text-2xl font-bold text-green-500">{verifiedTasks.length}</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">This month</p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Coin Value</CardTitle>
-            <TrendingUp className="h-4 w-4 text-blue-500" />
+        <Card className="col-span-2 lg:col-span-1">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Avg Value</CardTitle>
+            <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-500">
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-lg sm:text-2xl font-bold text-blue-500">
               {verifiedTasks.length > 0 ? Math.round(totalCoinsAwarded / verifiedTasks.length) : 0}
             </div>
-            <p className="text-xs text-muted-foreground">Per completed task</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Per task</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="approvals" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 lg:w-auto">
-          <TabsTrigger value="approvals" className="flex items-center gap-2">
-            <Award className="h-4 w-4" />
-            Task Approvals
-            {pendingTasks.length > 0 && (
-              <Badge variant="destructive" className="ml-1">
-                {pendingTasks.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="rate-management" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            Rate Management
-          </TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="approvals" className="space-y-4 sm:space-y-6">
+        <div className="overflow-x-auto pb-2 -mx-2 px-2">
+          <TabsList className="inline-flex w-auto min-w-full sm:w-auto lg:w-auto">
+            <TabsTrigger value="approvals" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
+              <Award className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Task </span>Approvals
+              {pendingTasks.length > 0 && (
+                <Badge variant="destructive" className="ml-1 text-[10px] sm:text-xs px-1.5">
+                  {pendingTasks.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="rate-management" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
+              <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Rate </span>Management
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Task Approvals Tab */}
-        <TabsContent value="approvals" className="space-y-6">
-          <Tabs defaultValue="pending" className="space-y-6">
-            <TabsList>
-              <TabsTrigger value="pending">Pending Approval ({pendingTasks.length})</TabsTrigger>
-              <TabsTrigger value="approved">Approved ({verifiedTasks.length})</TabsTrigger>
-              <TabsTrigger value="rejected">Rejected ({rejectedTasks.length})</TabsTrigger>
-            </TabsList>
+        <TabsContent value="approvals" className="space-y-4 sm:space-y-6">
+          <Tabs defaultValue="pending" className="space-y-4 sm:space-y-6">
+            <div className="overflow-x-auto pb-2 -mx-2 px-2">
+              <TabsList className="inline-flex w-auto min-w-full sm:w-auto">
+                <TabsTrigger value="pending" className="text-xs sm:text-sm">Pending ({pendingTasks.length})</TabsTrigger>
+                <TabsTrigger value="approved" className="text-xs sm:text-sm">Approved ({verifiedTasks.length})</TabsTrigger>
+                <TabsTrigger value="rejected" className="text-xs sm:text-sm">Rejected ({rejectedTasks.length})</TabsTrigger>
+              </TabsList>
+            </div>
 
             <TabsContent value="pending">
               <div className="space-y-4">

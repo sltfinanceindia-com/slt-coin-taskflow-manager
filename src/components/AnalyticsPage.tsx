@@ -106,74 +106,76 @@ export function AnalyticsPage() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold">Analytics & Reports</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Analytics & Reports</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm">
             Comprehensive performance metrics and team insights
           </p>
         </div>
-        <Button onClick={exportData} variant="outline">
+        <Button onClick={exportData} variant="outline" size="sm" className="w-full sm:w-auto min-h-[44px] sm:min-h-0">
           <Download className="h-4 w-4 mr-2" />
           Export CSV
         </Button>
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total SLT Coins</CardTitle>
-            <Coins className="h-4 w-4 text-coin-gold" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Total SLT Coins</CardTitle>
+            <Coins className="h-3 w-3 sm:h-4 sm:w-4 text-coin-gold" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-coin-gold">{totalCoinsAwarded}</div>
-            <p className="text-xs text-muted-foreground">Awarded to team</p>
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-lg sm:text-2xl font-bold text-coin-gold">{totalCoinsAwarded}</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Awarded to team</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Task Completion</CardTitle>
-            <TrendingUp className="h-4 w-4 text-success" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Task Completion</CardTitle>
+            <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-success" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{completionRate.toFixed(1)}%</div>
-            <p className="text-xs text-muted-foreground">{completedTasks} of {totalTasks} tasks</p>
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-lg sm:text-2xl font-bold">{completionRate.toFixed(1)}%</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">{completedTasks} of {totalTasks} tasks</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Hours</CardTitle>
-            <Clock className="h-4 w-4 text-accent" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Total Hours</CardTitle>
+            <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-accent" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalHours.toFixed(1)}</div>
-            <p className="text-xs text-muted-foreground">Hours logged</p>
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-lg sm:text-2xl font-bold">{totalHours.toFixed(1)}</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Hours logged</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Tasks</CardTitle>
-            <BarChart3 className="h-4 w-4 text-primary" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Active Tasks</CardTitle>
+            <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{pendingTasks}</div>
-            <p className="text-xs text-muted-foreground">In progress</p>
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-lg sm:text-2xl font-bold">{pendingTasks}</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">In progress</p>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="team">Team Performance</TabsTrigger>
-          <TabsTrigger value="tasks">Task Analysis</TabsTrigger>
-          <TabsTrigger value="coins">Coin Transactions</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
+        <div className="overflow-x-auto pb-2 -mx-2 px-2">
+          <TabsList className="inline-flex w-auto min-w-full sm:w-auto">
+            <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
+            <TabsTrigger value="team" className="text-xs sm:text-sm">Team</TabsTrigger>
+            <TabsTrigger value="tasks" className="text-xs sm:text-sm">Tasks</TabsTrigger>
+            <TabsTrigger value="coins" className="text-xs sm:text-sm">Coins</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -238,51 +240,53 @@ export function AnalyticsPage() {
         <TabsContent value="team">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Users className="h-5 w-5" />
+              <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
+                <Users className="h-4 w-4 sm:h-5 sm:w-5" />
                 <span>Team Performance</span>
               </CardTitle>
-              <CardDescription>Individual performance metrics for all team members</CardDescription>
+              <CardDescription className="text-xs sm:text-sm">Individual performance metrics for all team members</CardDescription>
             </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>SLT Coins</TableHead>
-                    <TableHead>Tasks</TableHead>
-                    <TableHead>Completion Rate</TableHead>
-                    <TableHead>Hours Logged</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {teamPerformance.map((member) => (
-                    <TableRow key={member.id}>
-                      <TableCell className="font-medium">{member.full_name}</TableCell>
-                      <TableCell>
-                        <Badge variant={member.role === 'admin' ? 'default' : 'secondary'}>
-                          {member.role}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-1">
-                          <Coins className="h-4 w-4 text-coin-gold" />
-                          <span className="font-bold text-coin-gold">{member.total_coins}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>{member.completedTasks}/{member.taskCount}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <Progress value={member.completionRate} className="w-16" />
-                          <span className="text-sm">{member.completionRate.toFixed(0)}%</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>{member.totalHours.toFixed(1)}h</TableCell>
+            <CardContent className="p-0 sm:p-6">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs sm:text-sm min-w-[120px]">Name</TableHead>
+                      <TableHead className="text-xs sm:text-sm">Role</TableHead>
+                      <TableHead className="text-xs sm:text-sm">Coins</TableHead>
+                      <TableHead className="text-xs sm:text-sm hidden sm:table-cell">Tasks</TableHead>
+                      <TableHead className="text-xs sm:text-sm hidden md:table-cell">Completion</TableHead>
+                      <TableHead className="text-xs sm:text-sm hidden lg:table-cell">Hours</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {teamPerformance.map((member) => (
+                      <TableRow key={member.id}>
+                        <TableCell className="font-medium text-xs sm:text-sm">{member.full_name}</TableCell>
+                        <TableCell>
+                          <Badge variant={member.role === 'admin' ? 'default' : 'secondary'} className="text-[10px] sm:text-xs">
+                            {member.role}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-1">
+                            <Coins className="h-3 w-3 sm:h-4 sm:w-4 text-coin-gold" />
+                            <span className="font-bold text-coin-gold text-xs sm:text-sm">{member.total_coins}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell text-xs sm:text-sm">{member.completedTasks}/{member.taskCount}</TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <div className="flex items-center space-x-2">
+                            <Progress value={member.completionRate} className="w-12 sm:w-16" />
+                            <span className="text-xs sm:text-sm">{member.completionRate.toFixed(0)}%</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell text-xs sm:text-sm">{member.totalHours.toFixed(1)}h</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -290,47 +294,49 @@ export function AnalyticsPage() {
         <TabsContent value="tasks">
           <Card>
             <CardHeader>
-              <CardTitle>Recent Tasks</CardTitle>
-              <CardDescription>Latest task activities and status updates</CardDescription>
+              <CardTitle className="text-base sm:text-lg">Recent Tasks</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Latest task activities and status updates</CardDescription>
             </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Task</TableHead>
-                    <TableHead>Assigned To</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>SLT Coins</TableHead>
-                    <TableHead>Due Date</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {tasks.slice(0, 10).map((task) => (
-                    <TableRow key={task.id}>
-                      <TableCell className="font-medium">{task.title}</TableCell>
-                      <TableCell>{task.assigned_profile?.full_name}</TableCell>
-                      <TableCell>
-                        <Badge className={
-                          task.status === 'verified' ? 'bg-green-100 text-green-800' :
-                          task.status === 'completed' ? 'bg-purple-100 text-purple-800' :
-                          task.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
-                          task.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                          'bg-blue-100 text-blue-800'
-                        }>
-                          {task.status.replace('_', ' ')}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-1">
-                          <Coins className="h-4 w-4 text-coin-gold" />
-                          <span>{task.slt_coin_value}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>{format(new Date(task.end_date), 'MMM dd, yyyy')}</TableCell>
+            <CardContent className="p-0 sm:p-6">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs sm:text-sm min-w-[140px]">Task</TableHead>
+                      <TableHead className="text-xs sm:text-sm hidden sm:table-cell">Assigned To</TableHead>
+                      <TableHead className="text-xs sm:text-sm">Status</TableHead>
+                      <TableHead className="text-xs sm:text-sm">Coins</TableHead>
+                      <TableHead className="text-xs sm:text-sm hidden md:table-cell">Due Date</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {tasks.slice(0, 10).map((task) => (
+                      <TableRow key={task.id}>
+                        <TableCell className="font-medium text-xs sm:text-sm">{task.title}</TableCell>
+                        <TableCell className="hidden sm:table-cell text-xs sm:text-sm">{task.assigned_profile?.full_name}</TableCell>
+                        <TableCell>
+                          <Badge className={`text-[10px] sm:text-xs ${
+                            task.status === 'verified' ? 'bg-green-100 text-green-800' :
+                            task.status === 'completed' ? 'bg-purple-100 text-purple-800' :
+                            task.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
+                            task.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                            'bg-blue-100 text-blue-800'
+                          }`}>
+                            {task.status.replace('_', ' ')}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-1">
+                            <Coins className="h-3 w-3 sm:h-4 sm:w-4 text-coin-gold" />
+                            <span className="text-xs sm:text-sm">{task.slt_coin_value}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell text-xs sm:text-sm">{format(new Date(task.end_date), 'MMM dd, yyyy')}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -338,45 +344,47 @@ export function AnalyticsPage() {
         <TabsContent value="coins">
           <Card>
             <CardHeader>
-              <CardTitle>SLT Coin Transactions</CardTitle>
-              <CardDescription>Recent coin awards and transactions</CardDescription>
+              <CardTitle className="text-base sm:text-lg">SLT Coin Transactions</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Recent coin awards and transactions</CardDescription>
             </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Recipient</TableHead>
-                    <TableHead>Task</TableHead>
-                    <TableHead>Coins</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {transactions.slice(0, 10).map((transaction) => (
-                    <TableRow key={transaction.id}>
-                      <TableCell>{format(new Date(transaction.transaction_date), 'MMM dd, yyyy')}</TableCell>
-                      <TableCell>{transaction.user_profile?.full_name}</TableCell>
-                      <TableCell>{transaction.task?.title}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-1">
-                          <Coins className="h-4 w-4 text-coin-gold" />
-                          <span className="font-bold text-coin-gold">{transaction.coins_earned}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={
-                          transaction.status === 'approved' ? 'bg-green-100 text-green-800' :
-                          transaction.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }>
-                          {transaction.status}
-                        </Badge>
-                      </TableCell>
+            <CardContent className="p-0 sm:p-6">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs sm:text-sm">Date</TableHead>
+                      <TableHead className="text-xs sm:text-sm hidden sm:table-cell">Recipient</TableHead>
+                      <TableHead className="text-xs sm:text-sm hidden md:table-cell">Task</TableHead>
+                      <TableHead className="text-xs sm:text-sm">Coins</TableHead>
+                      <TableHead className="text-xs sm:text-sm">Status</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {transactions.slice(0, 10).map((transaction) => (
+                      <TableRow key={transaction.id}>
+                        <TableCell className="text-xs sm:text-sm">{format(new Date(transaction.transaction_date), 'MMM dd')}</TableCell>
+                        <TableCell className="hidden sm:table-cell text-xs sm:text-sm">{transaction.user_profile?.full_name}</TableCell>
+                        <TableCell className="hidden md:table-cell text-xs sm:text-sm max-w-[150px] truncate">{transaction.task?.title}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-1">
+                            <Coins className="h-3 w-3 sm:h-4 sm:w-4 text-coin-gold" />
+                            <span className="font-bold text-coin-gold text-xs sm:text-sm">{transaction.coins_earned}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={`text-[10px] sm:text-xs ${
+                            transaction.status === 'approved' ? 'bg-green-100 text-green-800' :
+                            transaction.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {transaction.status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
