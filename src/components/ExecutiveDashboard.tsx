@@ -107,7 +107,7 @@ export function ExecutiveDashboard() {
       total: tasks.length,
       completed: tasks.filter(t => ['completed', 'verified'].includes(t.status)).length,
       inProgress: tasks.filter(t => t.status === 'in_progress').length,
-      overdue: tasks.filter(t => t.status === 'pending' || t.status === 'assigned').length,
+      overdue: tasks.filter(t => t.status === 'assigned' || t.status === 'rejected').length,
     };
   }, [tasks]);
 
