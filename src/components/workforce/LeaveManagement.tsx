@@ -24,22 +24,22 @@ export const LeaveManagement: React.FC = () => {
       <Tabs defaultValue="overview" className="space-y-4">
         <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
           <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-4 lg:w-auto lg:inline-grid h-auto">
-            <TabsTrigger value="overview" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[40px]">
+            <TabsTrigger value="overview" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[44px]">
               <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline sm:inline">Overview</span>
+              <span className="sm:inline">Overview</span>
             </TabsTrigger>
-            <TabsTrigger value="apply" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[40px]">
+            <TabsTrigger value="apply" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[44px]">
               <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline sm:inline">Apply</span>
+              <span className="sm:inline">Apply</span>
             </TabsTrigger>
-            <TabsTrigger value="requests" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[40px]">
+            <TabsTrigger value="requests" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[44px]">
               <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline sm:inline">Requests</span>
+              <span className="sm:inline">Requests</span>
             </TabsTrigger>
             {isAdmin && (
-              <TabsTrigger value="balances" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[40px]">
+              <TabsTrigger value="balances" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[44px]">
                 <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="hidden xs:inline sm:inline">Balances</span>
+                <span className="sm:inline">Balances</span>
               </TabsTrigger>
             )}
           </TabsList>
