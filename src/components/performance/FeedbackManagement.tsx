@@ -241,30 +241,30 @@ function PendingFeedbackRequests() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-3 sm:gap-4">
           {myRequests.map((request: any) => (
             <Card key={request.id}>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <Avatar>
+              <CardContent className="p-3 sm:p-4 pt-3 sm:pt-6">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0">
                       <AvatarImage src={request.subject?.avatar_url} />
-                      <AvatarFallback>{request.subject?.full_name?.charAt(0)}</AvatarFallback>
+                      <AvatarFallback className="text-xs sm:text-sm">{request.subject?.full_name?.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    <div>
-                      <p className="font-medium">Feedback for {request.subject?.full_name}</p>
-                      <p className="text-sm text-muted-foreground capitalize">
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm sm:text-base truncate">Feedback for {request.subject?.full_name}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground capitalize truncate">
                         {request.feedback_type} review • {request.cycle?.name}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 ml-12 sm:ml-0">
                     {request.due_date && (
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
                         Due: {format(new Date(request.due_date), 'MMM d')}
                       </span>
                     )}
-                    <Button size="sm">Give Feedback</Button>
+                    <Button size="sm" className="min-h-[36px] sm:min-h-[40px] text-xs sm:text-sm">Give Feedback</Button>
                   </div>
                 </div>
               </CardContent>
@@ -299,24 +299,24 @@ function ReceivedFeedback() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-3 sm:gap-4">
           {receivedRequests.map((request: any) => (
             <Card key={request.id}>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <Avatar>
+              <CardContent className="p-3 sm:p-4 pt-3 sm:pt-6">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0">
                       <AvatarImage src={request.reviewer?.avatar_url} />
-                      <AvatarFallback>{request.reviewer?.full_name?.charAt(0)}</AvatarFallback>
+                      <AvatarFallback className="text-xs sm:text-sm">{request.reviewer?.full_name?.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    <div>
-                      <p className="font-medium">From {request.reviewer?.full_name}</p>
-                      <p className="text-sm text-muted-foreground capitalize">
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm sm:text-base truncate">From {request.reviewer?.full_name}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground capitalize">
                         {request.feedback_type} review
                       </p>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm">View Details</Button>
+                  <Button variant="outline" size="sm" className="ml-12 sm:ml-0 min-h-[36px] sm:min-h-[40px] text-xs sm:text-sm w-fit">View Details</Button>
                 </div>
               </CardContent>
             </Card>
