@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useCommunication } from '@/hooks/useCommunication';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { MessageCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { MessageCircle, AlertCircle, RefreshCw, Users } from 'lucide-react';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -15,20 +15,6 @@ export default function ModernCommunication() {
   const communication = useCommunication();
   const [showSidebar, setShowSidebar] = useState(!isMobile);
 
-  // Debug logging
-  React.useEffect(() => {
-    console.log('🔍 ModernCommunication render:', {
-      hasProfile: !!profile,
-      profileId: profile?.id,
-      organizationId: profile?.organization_id,
-      isLoading: communication.isLoading,
-      error: communication.error,
-      channelsCount: communication.channels.length,
-      teamMembersCount: communication.teamMembers.length
-    });
-  }, [profile, communication.isLoading, communication.error, communication.channels.length, communication.teamMembers.length]);
-
-  // Update sidebar visibility when screen size changes
   React.useEffect(() => {
     setShowSidebar(!isMobile);
   }, [isMobile]);
@@ -49,18 +35,18 @@ export default function ModernCommunication() {
           <div className="p-4 rounded-full bg-destructive/10 w-fit mx-auto">
             <AlertCircle className="h-12 w-12 text-destructive" />
           </div>
-          <h3 className="text-xl font-semibold">Failed to Load Communication</h3>
+          <h3 className="text-xl font-semibold">Connection Issue</h3>
           <p className="text-muted-foreground text-sm">{communication.error}</p>
           <Button onClick={() => communication.refresh()} className="gap-2">
             <RefreshCw className="h-4 w-4" />
-            Try Again
+            Retry Connection
           </Button>
         </div>
       </div>
     );
   }
 
-  // Loading state with skeleton
+  // Loading state
   if (communication.isLoading) {
     return (
       <div className="h-[500px] flex">
@@ -81,14 +67,14 @@ export default function ModernCommunication() {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
-            <p className="text-muted-foreground text-sm">Loading communication...</p>
+            <p className="text-muted-foreground text-sm">Connecting...</p>
           </div>
         </div>
       </div>
     );
   }
 
-  // Show empty state if no profile or organization
+  // No organization state
   if (!profile?.organization_id) {
     return (
       <div className="h-[500px] flex items-center justify-center">
@@ -98,20 +84,42 @@ export default function ModernCommunication() {
           </div>
           <h3 className="text-xl font-semibold">Communication Unavailable</h3>
           <p className="text-muted-foreground">
-            Please ensure you're part of an organization to access communication features.
+            Join an organization to access communication features.
           </p>
         </div>
       </div>
     );
   }
 
-  // Show welcome state when no channels and no channel selected
-  const showWelcomeState = communication.channels.length === 0 && !communication.selectedChannel;
+  // Welcome state component
+  const WelcomeState = () => (
+    <div className="h-full flex items-center justify-center bg-background">
+      <div className="text-center space-y-6 max-w-md mx-auto p-6">
+        <div className="p-4 rounded-full bg-primary/10 w-fit mx-auto">
+          <MessageCircle className="h-12 w-12 text-primary" />
+        </div>
+        <h3 className="text-xl sm:text-2xl font-semibold">
+          {communication.channels.length === 0 ? 'Start a Conversation' : 'Welcome to Chat'}
+        </h3>
+        <p className="text-muted-foreground text-sm sm:text-base">
+          {communication.channels.length === 0 
+            ? 'Click on a team member in the sidebar to start a direct message.'
+            : 'Select a conversation or click a team member to chat.'
+          }
+        </p>
+        {communication.teamMembers.length > 0 && (
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Users className="h-4 w-4" />
+            <span>{communication.teamMembers.length} team member{communication.teamMembers.length !== 1 ? 's' : ''} available</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <div className="h-full flex bg-background">
       {isMobile ? (
-        // Mobile: Relative positioned panels with proper overflow handling
         <div className="relative w-full h-full overflow-hidden bg-background">
           {/* Chat List Panel */}
           <div
@@ -153,9 +161,7 @@ export default function ModernCommunication() {
           </div>
         </div>
       ) : (
-        // Desktop: Resizable panels
         <ResizablePanelGroup direction="horizontal" className="h-full">
-          {/* Chat List Panel */}
           <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
             <EnhancedChatList
               channels={communication.channels}
@@ -170,7 +176,6 @@ export default function ModernCommunication() {
 
           <ResizableHandle className="w-1 bg-border/50 hover:bg-border transition-colors" />
 
-          {/* Message Area Panel */}
           <ResizablePanel defaultSize={70} minSize={50}>
             {communication.selectedChannel ? (
               <EnhancedMessageArea
@@ -182,22 +187,7 @@ export default function ModernCommunication() {
                 onSendMessage={(content) => communication.sendMessage(content, communication.selectedChannel?.id)}
               />
             ) : (
-              <div className="h-full flex items-center justify-center bg-background">
-                <div className="text-center space-y-6 max-w-md mx-auto p-6">
-                  <div className="p-4 rounded-full bg-primary/10 w-fit mx-auto">
-                    <MessageCircle className="h-12 w-12 text-primary" />
-                  </div>
-                  <h3 className="text-xl sm:text-2xl font-semibold">
-                    {showWelcomeState ? 'Start a Conversation' : 'Welcome to Chat'}
-                  </h3>
-                  <p className="text-muted-foreground text-sm sm:text-base">
-                    {showWelcomeState 
-                      ? 'Click on a team member in the sidebar to start a direct message conversation.'
-                      : 'Select a conversation from the left panel to start chatting, or create a new conversation with a team member.'
-                    }
-                  </p>
-                </div>
-              </div>
+              <WelcomeState />
             )}
           </ResizablePanel>
         </ResizablePanelGroup>
