@@ -36,26 +36,26 @@ export const AttendanceClockIn: React.FC = () => {
   };
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
       {/* Clock Card */}
       <Card className="md:col-span-2">
-        <CardHeader className="text-center">
-          <CardTitle className="text-4xl font-mono">
+        <CardHeader className="text-center pb-2 sm:pb-4">
+          <CardTitle className="text-2xl sm:text-3xl lg:text-4xl font-mono">
             {format(currentTime, 'HH:mm:ss')}
           </CardTitle>
-          <CardDescription className="text-lg">
+          <CardDescription className="text-sm sm:text-base lg:text-lg">
             {format(currentTime, 'EEEE, MMMM d, yyyy')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col items-center gap-6">
+        <CardContent className="flex flex-col items-center gap-4 sm:gap-6">
           <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">Status:</span>
+            <span className="text-muted-foreground text-xs sm:text-sm">Status:</span>
             {getStatusBadge()}
           </div>
 
           {settings?.enable_geo_fencing && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <MapPin className="h-4 w-4" />
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground text-center">
+              <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
               <span>Location tracking enabled ({settings.geo_fence_radius_meters}m radius)</span>
             </div>
           )}
@@ -63,19 +63,19 @@ export const AttendanceClockIn: React.FC = () => {
           {locationError && (
             <Alert variant="destructive" className="max-w-md">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{locationError}</AlertDescription>
+              <AlertDescription className="text-xs sm:text-sm">{locationError}</AlertDescription>
             </Alert>
           )}
 
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
             {!isClockedIn && !isClockedOut && (
               <Button 
                 size="lg" 
-                className="min-w-40"
+                className="w-full sm:w-auto sm:min-w-40 h-11 sm:h-12 text-sm sm:text-base"
                 onClick={() => clockIn.mutate()}
                 disabled={clockIn.isPending}
               >
-                <LogIn className="h-5 w-5 mr-2" />
+                <LogIn className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                 {clockIn.isPending ? 'Clocking In...' : 'Clock In'}
               </Button>
             )}
@@ -84,18 +84,18 @@ export const AttendanceClockIn: React.FC = () => {
               <Button 
                 size="lg" 
                 variant="destructive"
-                className="min-w-40"
+                className="w-full sm:w-auto sm:min-w-40 h-11 sm:h-12 text-sm sm:text-base"
                 onClick={() => clockOut.mutate()}
                 disabled={clockOut.isPending}
               >
-                <LogOut className="h-5 w-5 mr-2" />
+                <LogOut className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                 {clockOut.isPending ? 'Clocking Out...' : 'Clock Out'}
               </Button>
             )}
 
             {isClockedOut && (
-              <div className="flex items-center gap-2 text-green-600">
-                <CheckCircle2 className="h-5 w-5" />
+              <div className="flex items-center justify-center gap-2 text-green-600 text-sm sm:text-base">
+                <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5" />
                 <span>Completed for today</span>
               </div>
             )}

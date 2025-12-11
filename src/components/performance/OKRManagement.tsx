@@ -105,17 +105,17 @@ export function OKRManagement() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between gap-4">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">OKRs & Goals</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">OKRs & Goals</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm">
             Set objectives and track key results across your organization
           </p>
         </div>
         <div className="flex gap-2">
           <Select value={selectedLevel} onValueChange={setSelectedLevel}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-32 sm:w-40 text-xs sm:text-sm h-9 sm:h-10">
               <SelectValue placeholder="Filter by level" />
             </SelectTrigger>
             <SelectContent>
