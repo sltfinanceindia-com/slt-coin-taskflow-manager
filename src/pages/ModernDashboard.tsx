@@ -114,7 +114,7 @@ export default function ModernDashboard() {
         return <ProjectManagement />;
       
       case 'training':
-        window.location.href = '/training';
+        navigate('/training');
         return null;
       
       case 'time':

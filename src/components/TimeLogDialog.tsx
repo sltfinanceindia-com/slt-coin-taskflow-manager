@@ -89,18 +89,20 @@ export function TimeLogDialog({ onLogTime, isLogging }: TimeLogDialogProps) {
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="hours">Hours Worked *</Label>
               <Input
                 id="hours"
                 type="number"
+                inputMode="decimal"
                 min="0.25"
                 max="24"
                 step="0.25"
                 value={formData.hours_worked}
                 onChange={(e) => setFormData({ ...formData, hours_worked: parseFloat(e.target.value) || 0 })}
                 required
+                className="min-h-[44px]"
               />
             </div>
 
@@ -113,6 +115,7 @@ export function TimeLogDialog({ onLogTime, isLogging }: TimeLogDialogProps) {
                 onChange={(e) => setFormData({ ...formData, date_logged: e.target.value })}
                 max={new Date().toISOString().split('T')[0]}
                 required
+                className="min-h-[44px]"
               />
             </div>
           </div>
@@ -128,11 +131,11 @@ export function TimeLogDialog({ onLogTime, isLogging }: TimeLogDialogProps) {
             />
           </div>
 
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+          <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="min-h-[44px]">
               Cancel
             </Button>
-            <Button type="submit" disabled={isLogging}>
+            <Button type="submit" disabled={isLogging} className="min-h-[44px]">
               {isLogging ? "Logging..." : "Log Hours"}
             </Button>
           </div>

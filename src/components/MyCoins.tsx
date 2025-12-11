@@ -65,56 +65,56 @@ export function MyCoins() {
       </div>
 
       {/* Overview Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card className="bg-gradient-to-br from-coin-gold/20 to-coin-gold/5 border-coin-gold/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-            <CardTitle className="text-xs sm:text-sm font-medium">Total Coins Earned</CardTitle>
-            <Coins className="h-4 w-4 text-coin-gold" />
+            <CardTitle className="text-xs sm:text-sm font-medium truncate">Total Earned</CardTitle>
+            <Coins className="h-4 w-4 text-coin-gold shrink-0" />
           </CardHeader>
           <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
-            <div className="text-xl sm:text-2xl font-bold text-coin-gold">{totalEarned} coins</div>
+            <div className="text-lg sm:text-2xl font-bold text-coin-gold">{totalEarned}</div>
             <p className="text-xs text-muted-foreground truncate">
-              {formatINR(totalUsdValue)} @ {formatCoinRate(currentRate)}/coin
+              {formatINR(totalUsdValue)}
             </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Coins</CardTitle>
-            <Clock className="h-4 w-4 text-orange-500" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium truncate">Pending</CardTitle>
+            <Clock className="h-4 w-4 text-orange-500 shrink-0" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-500">{pendingCoins} coins</div>
-            <p className="text-xs text-muted-foreground">
-              {formatINR(pendingUsdValue)} awaiting approval
+          <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+            <div className="text-lg sm:text-2xl font-bold text-orange-500">{pendingCoins}</div>
+            <p className="text-xs text-muted-foreground truncate">
+              Awaiting approval
             </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tasks Completed</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-500" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium truncate">Completed</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-500">{completedTasks.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {completionRate.toFixed(1)}% completion rate
+          <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+            <div className="text-lg sm:text-2xl font-bold text-green-500">{completedTasks.length}</div>
+            <p className="text-xs text-muted-foreground truncate">
+              {completionRate.toFixed(0)}% rate
             </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Coins/Task</CardTitle>
-            <TrendingUp className="h-4 w-4 text-blue-500" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium truncate">Avg/Task</CardTitle>
+            <TrendingUp className="h-4 w-4 text-blue-500 shrink-0" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-500">
+          <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+            <div className="text-lg sm:text-2xl font-bold text-blue-500">
               {avgCoinsPerTask.toFixed(1)}
             </div>
-            <p className="text-xs text-muted-foreground">Per completed task</p>
+            <p className="text-xs text-muted-foreground truncate">Coins per task</p>
           </CardContent>
         </Card>
       </div>
@@ -154,12 +154,14 @@ export function MyCoins() {
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="history" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="history">Earning History</TabsTrigger>
-          <TabsTrigger value="monthly">Monthly Breakdown</TabsTrigger>
-          <TabsTrigger value="tasks">Task Breakdown</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="history" className="space-y-4 sm:space-y-6">
+        <div className="overflow-x-auto -mx-1 px-1">
+          <TabsList className="inline-flex w-auto min-w-full sm:w-full">
+            <TabsTrigger value="history" className="flex-1 text-xs sm:text-sm whitespace-nowrap">History</TabsTrigger>
+            <TabsTrigger value="monthly" className="flex-1 text-xs sm:text-sm whitespace-nowrap">Monthly</TabsTrigger>
+            <TabsTrigger value="tasks" className="flex-1 text-xs sm:text-sm whitespace-nowrap">Tasks</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="history">
           <Card>

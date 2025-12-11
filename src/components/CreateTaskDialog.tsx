@@ -204,21 +204,22 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
                 )}
                 
                 {/* Intern Selection */}
-                <div className="border rounded-md p-3 max-h-32 overflow-y-auto space-y-2">
+                <div className="border rounded-md p-3 max-h-40 overflow-y-auto space-y-2">
                   {interns?.map((intern) => (
-                    <div key={intern.id} className="flex items-center space-x-2">
+                    <div key={intern.id} className="flex items-center gap-3 min-h-[44px] py-1">
                       <Checkbox
                         id={intern.id}
                         checked={formData.assigned_to.includes(intern.id)}
                         onCheckedChange={() => handleInternToggle(intern.id)}
+                        className="h-5 w-5"
                       />
-                      <Label htmlFor={intern.id} className="flex-1 cursor-pointer">
+                      <Label htmlFor={intern.id} className="flex-1 cursor-pointer text-sm">
                         {intern.full_name}
                       </Label>
                     </div>
                   ))}
                   {(!interns || interns.length === 0) && (
-                    <p className="text-sm text-muted-foreground">No interns available</p>
+                    <p className="text-sm text-muted-foreground py-2">No interns available</p>
                   )}
                 </div>
               </div>
@@ -248,17 +249,23 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
           <div className="space-y-2">
             <Label htmlFor="coins">SLT Coin Reward *</Label>
             <div className="flex items-center space-x-2">
-              <Coins className="h-4 w-4 text-coin-gold" />
+              <Coins className="h-4 w-4 text-coin-gold shrink-0" />
               <Input
                 id="coins"
                 type="number"
+                inputMode="numeric"
                 min="1"
+                max="1000"
                 value={formData.slt_coin_value}
-                onChange={(e) => setFormData({ ...formData, slt_coin_value: parseInt(e.target.value) || 0 })}
-                className="flex-1"
+                onChange={(e) => {
+                  const value = parseInt(e.target.value) || 0;
+                  setFormData({ ...formData, slt_coin_value: Math.min(Math.max(value, 0), 1000) });
+                }}
+                className="flex-1 min-h-[44px]"
                 required
               />
             </div>
+            <p className="text-xs text-muted-foreground">Max 1000 coins per task</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -269,6 +276,7 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
                 type="date"
                 value={formData.start_date}
                 onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                className="min-h-[44px]"
               />
             </div>
 
@@ -281,15 +289,16 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
                 onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
                 min={formData.start_date}
                 required
+                className="min-h-[44px]"
               />
             </div>
           </div>
 
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+          <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="min-h-[44px]">
               Cancel
             </Button>
-            <Button type="submit" disabled={isCreating}>
+            <Button type="submit" disabled={isCreating} className="min-h-[44px]">
               {isCreating ? "Creating..." : "Create Task"}
             </Button>
           </div>

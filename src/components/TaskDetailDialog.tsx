@@ -82,32 +82,32 @@ export function TaskDetailDialog({ task }: TaskDetailDialogProps) {
             <CardContent>
               <p className="text-muted-foreground mb-4">{task.description}</p>
               
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div className="flex items-center space-x-2">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">Assigned to</p>
-                    <p>{task.assigned_profile?.full_name}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                <div className="flex items-start gap-2 p-2 rounded-lg bg-muted/50">
+                  <User className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="font-medium text-xs text-muted-foreground">Assigned to</p>
+                    <p className="truncate">{task.assigned_profile?.full_name}</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">Created by</p>
-                    <p>{task.creator_profile?.full_name}</p>
+                <div className="flex items-start gap-2 p-2 rounded-lg bg-muted/50">
+                  <User className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="font-medium text-xs text-muted-foreground">Created by</p>
+                    <p className="truncate">{task.creator_profile?.full_name}</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">Due Date</p>
+                <div className="flex items-start gap-2 p-2 rounded-lg bg-muted/50">
+                  <Calendar className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="font-medium text-xs text-muted-foreground">Due Date</p>
                     <p>{task.end_date ? format(new Date(task.end_date), 'MMM dd, yyyy') : 'No due date'}</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Coins className="h-4 w-4 text-coin-gold" />
-                  <div>
-                    <p className="font-medium">Coin Value</p>
+                <div className="flex items-start gap-2 p-2 rounded-lg bg-muted/50">
+                  <Coins className="h-4 w-4 text-coin-gold mt-0.5 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="font-medium text-xs text-muted-foreground">Coin Value</p>
                     <p className="text-coin-gold font-bold">{task.slt_coin_value}</p>
                   </div>
                 </div>
