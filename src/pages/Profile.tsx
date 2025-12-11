@@ -31,27 +31,25 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gradient-background">
       <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
+        {/* Header with back button and title */}
+        <div className="flex items-center gap-3 mb-4 sm:mb-6">
           <Button 
             variant="ghost" 
             size="sm"
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 self-start"
+            className="flex items-center gap-2 shrink-0"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">Back to Dashboard</span>
-            <span className="sm:hidden">Back</span>
+            <span className="hidden sm:inline">Back</span>
           </Button>
-          <h1 className="text-xl sm:text-2xl font-bold">Profile Settings</h1>
-        </div>
-        
-        <div className="mb-4 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
-            Profile
-          </h1>
-          <p className="text-muted-foreground text-sm sm:text-base">
-            Manage your account information and view your progress.
-          </p>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
+              Profile
+            </h1>
+            <p className="text-muted-foreground text-xs sm:text-sm truncate">
+              Manage your account and view progress
+            </p>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

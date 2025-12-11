@@ -37,13 +37,13 @@ export default function ModernCommunication() {
   return (
     <div className="h-full flex bg-background">
       {isMobile ? (
-        // Mobile: Full-screen fixed panel view with smooth transitions
-        <div className="fixed inset-0 z-50 bg-background">
+        // Mobile: Relative positioned panels with proper overflow handling
+        <div className="relative w-full h-full overflow-hidden bg-background">
+          {/* Chat List Panel */}
           <div
-            className={`absolute inset-0 w-full h-full transition-transform duration-300 ease-in-out bg-background ${
-              showSidebar || !communication.selectedChannel ? 'translate-x-0' : '-translate-x-full'
+            className={`absolute inset-0 w-full h-full transition-transform duration-300 ease-out bg-background overflow-y-auto ${
+              showSidebar || !communication.selectedChannel ? 'translate-x-0' : '-translate-x-full pointer-events-none'
             }`}
-            style={{ willChange: 'transform' }}
           >
             <EnhancedChatList
               channels={communication.channels}
@@ -58,11 +58,11 @@ export default function ModernCommunication() {
               onSearchChange={communication.setSearchQuery}
             />
           </div>
+          {/* Message Area Panel */}
           <div
-            className={`absolute inset-0 w-full h-full transition-transform duration-300 ease-in-out bg-background ${
-              !showSidebar && communication.selectedChannel ? 'translate-x-0' : 'translate-x-full'
+            className={`absolute inset-0 w-full h-full transition-transform duration-300 ease-out bg-background ${
+              !showSidebar && communication.selectedChannel ? 'translate-x-0' : 'translate-x-full pointer-events-none'
             }`}
-            style={{ willChange: 'transform' }}
           >
             {communication.selectedChannel && (
               <EnhancedMessageArea
