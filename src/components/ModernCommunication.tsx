@@ -28,8 +28,28 @@ export default function ModernCommunication() {
 
   if (communication.isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className="h-[500px] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
+          <p className="text-muted-foreground text-sm">Loading communication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show empty state if no profile or organization
+  if (!profile?.organization_id) {
+    return (
+      <div className="h-[500px] flex items-center justify-center">
+        <div className="text-center space-y-4 max-w-md mx-auto p-6">
+          <div className="p-4 rounded-full bg-muted w-fit mx-auto">
+            <MessageCircle className="h-12 w-12 text-muted-foreground" />
+          </div>
+          <h3 className="text-xl font-semibold">Communication Unavailable</h3>
+          <p className="text-muted-foreground">
+            Please ensure you're part of an organization to access communication features.
+          </p>
+        </div>
       </div>
     );
   }
