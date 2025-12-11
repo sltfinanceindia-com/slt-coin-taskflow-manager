@@ -86,7 +86,7 @@ export function useCommunication() {
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch channels - optimized with timeout and using RPC functions
+  // Fetch channels - simplified query that relies on RLS
   const fetchChannels = useCallback(async () => {
     if (!profile?.id || !profile?.organization_id) {
       console.log('⏭️ Skipping channel fetch - no profile ID or organization');
@@ -95,39 +95,18 @@ export function useCommunication() {
     }
 
     try {
-      console.log('📡 Fetching channels for user:', profile.id);
+      console.log('📡 Fetching channels for org:', profile.organization_id);
       setError(null);
       
-      // Step 1: Get channel IDs the user is a member of (with timeout)
-      const memberQuery = supabase
-        .from('channel_members')
-        .select('channel_id')
-        .eq('user_id', profile.id);
-
-      const { data: memberData, error: memberError } = await fetchWithTimeout(memberQuery, 8000);
-
-      if (memberError) {
-        console.error('Error fetching channel members:', memberError);
-        throw memberError;
-      }
-
-      const channelIds = memberData?.map(m => m.channel_id) || [];
-      console.log('📋 Found channel IDs:', channelIds.length);
-
-      if (channelIds.length === 0) {
-        console.log('ℹ️ No channels found for user');
-        setChannels([]);
-        return;
-      }
-
-      // Step 2: Fetch channel details using the IDs (with timeout)
-      const channelsQuery = supabase
-        .from('communication_channels')
-        .select('*')
-        .in('id', channelIds)
-        .or(`organization_id.eq.${profile.organization_id},organization_id.is.null`);
-
-      const { data: channelsData, error: channelsError } = await fetchWithTimeout(channelsQuery, 8000);
+      // Direct query - RLS handles access control
+      const { data: channelsData, error: channelsError } = await fetchWithTimeout(
+        supabase
+          .from('communication_channels')
+          .select('*')
+          .eq('organization_id', profile.organization_id)
+          .order('last_message_at', { ascending: false, nullsFirst: false }),
+        15000
+      );
 
       if (channelsError) {
         console.error('Error fetching channels:', channelsError);
@@ -136,19 +115,23 @@ export function useCommunication() {
 
       console.log('📢 Fetched channels:', channelsData?.length || 0);
 
-      // Step 3: Get last messages for channels (non-blocking)
+      // Get last messages for channels (non-blocking)
       let lastMessages: any[] = [];
-      try {
-        const messagesQuery = supabase
-          .from('messages')
-          .select('channel_id, content, sender_name, created_at')
-          .in('channel_id', channelIds)
-          .order('created_at', { ascending: false });
-        
-        const { data } = await fetchWithTimeout(messagesQuery, 5000);
-        lastMessages = data || [];
-      } catch (e) {
-        console.warn('⚠️ Could not fetch last messages, continuing without them');
+      if (channelsData && channelsData.length > 0) {
+        const channelIds = channelsData.map(c => c.id);
+        try {
+          const { data } = await fetchWithTimeout(
+            supabase
+              .from('messages')
+              .select('channel_id, content, sender_name, created_at')
+              .in('channel_id', channelIds)
+              .order('created_at', { ascending: false }),
+            5000
+          );
+          lastMessages = data || [];
+        } catch (e) {
+          console.warn('⚠️ Could not fetch last messages, continuing without them');
+        }
       }
 
       const channelsWithMetadata: Channel[] = (channelsData || []).map(channel => {
@@ -166,21 +149,16 @@ export function useCommunication() {
       });
 
       setChannels(channelsWithMetadata);
-      console.log('✅ Channels loaded successfully');
+      console.log('✅ Channels loaded successfully:', channelsWithMetadata.length);
     } catch (error: any) {
       console.error('❌ Error fetching channels:', error);
       const errorMessage = error?.message === 'Request timeout' 
         ? 'Connection timed out. Please check your network and try again.'
         : 'Failed to load channels. Please try again.';
       setError(errorMessage);
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
       setChannels([]);
     }
-  }, [profile, toast]);
+  }, [profile]);
 
   // Fetch team members - filtered by organization
   const fetchTeamMembers = useCallback(async () => {
@@ -502,10 +480,11 @@ export function useCommunication() {
     };
   }, [profile?.id, profile?.organization_id, selectedChannel?.id, fetchTeamMembers, fetchChannels, notifyMessage]);
 
-  // Initial data fetch
+  // Initial data fetch with better error handling
   useEffect(() => {
     if (!profile?.id) {
       console.log('⏭️ No profile ID yet, waiting...');
+      setIsLoading(false);
       return;
     }
 
@@ -515,16 +494,26 @@ export function useCommunication() {
       return;
     }
 
-    console.log('🔄 Fetching communication data for profile:', profile.id, 'org:', profile.organization_id);
-    setIsLoading(true);
-    
-    Promise.all([
-      fetchChannels(),
-      fetchTeamMembers()
-    ]).finally(() => {
-      console.log('✅ Communication data loaded');
-      setIsLoading(false);
-    });
+    const loadData = async () => {
+      console.log('🔄 Fetching communication data for profile:', profile.id, 'org:', profile.organization_id);
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        // Fetch team members first (they're always needed for DM)
+        await fetchTeamMembers();
+        // Then fetch channels
+        await fetchChannels();
+        console.log('✅ Communication data loaded');
+      } catch (err: any) {
+        console.error('❌ Failed to load communication data:', err);
+        setError('Failed to load communication. Please refresh the page.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
   }, [profile?.id, profile?.organization_id, fetchChannels, fetchTeamMembers]);
 
   // Refresh function for retry

@@ -15,6 +15,19 @@ export default function ModernCommunication() {
   const communication = useCommunication();
   const [showSidebar, setShowSidebar] = useState(!isMobile);
 
+  // Debug logging
+  React.useEffect(() => {
+    console.log('🔍 ModernCommunication render:', {
+      hasProfile: !!profile,
+      profileId: profile?.id,
+      organizationId: profile?.organization_id,
+      isLoading: communication.isLoading,
+      error: communication.error,
+      channelsCount: communication.channels.length,
+      teamMembersCount: communication.teamMembers.length
+    });
+  }, [profile, communication.isLoading, communication.error, communication.channels.length, communication.teamMembers.length]);
+
   // Update sidebar visibility when screen size changes
   React.useEffect(() => {
     setShowSidebar(!isMobile);
