@@ -100,11 +100,22 @@ export default function EnhancedChatList({
     return channel.name;
   };
 
-  // Process and sort channels
+  // Process and sort channels - filter out orphan DM channels
   const processedChannels = useMemo(() => {
-    let filtered = channels.filter(channel =>
-      getChannelDisplayName(channel, profile?.id || '').toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    let filtered = channels.filter(channel => {
+      // Filter by search query
+      const matchesSearch = getChannelDisplayName(channel, profile?.id || '').toLowerCase().includes(searchQuery.toLowerCase());
+      if (!matchesSearch) return false;
+      
+      // Filter out orphan DM channels (where the other participant doesn't exist)
+      if (channel.is_direct_message) {
+        const otherUser = getDirectMessageUser(channel, profile?.id || '');
+        // Only show DM channels where we can identify the other user OR have messages
+        if (!otherUser && !channel.last_message) return false;
+      }
+      
+      return true;
+    });
 
     // Sort by: pinned first, then unread, then recent activity
     return filtered.sort((a, b) => {
@@ -118,7 +129,7 @@ export default function EnhancedChatList({
       
       return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
     });
-  }, [channels, searchQuery, pinnedChats, teamMembers]);
+  }, [channels, searchQuery, pinnedChats, teamMembers, profile?.id]);
 
   const pinnedChannels = processedChannels.filter(channel => pinnedChats.has(channel.id));
   const recentChannels = processedChannels.filter(channel => !pinnedChats.has(channel.id));

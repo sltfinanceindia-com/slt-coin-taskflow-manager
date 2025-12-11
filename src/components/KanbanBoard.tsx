@@ -338,10 +338,14 @@ export function KanbanBoard({
           />
         ) : (
         <DragDropContext onDragEnd={onDragEnd}>
-          <div className="overflow-x-auto pb-4 -mx-2 px-2 sm:mx-0 sm:px-0 sm:overflow-visible">
-            <div className="grid grid-cols-1 min-w-[900px] sm:min-w-0 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
+          {/* Mobile scroll hint */}
+          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground mb-2 sm:hidden">
+            <span>← Swipe to see more columns →</span>
+          </div>
+          <div className="overflow-x-auto pb-4 -mx-2 px-2 sm:mx-0 sm:px-0 snap-x snap-mandatory">
+            <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4 min-w-max sm:min-w-0">
             {columns.map((column) => (
-              <div key={column.id} className="flex flex-col min-h-[400px] sm:min-h-[500px] lg:min-h-[600px]">
+              <div key={column.id} className="flex flex-col min-h-[350px] sm:min-h-[500px] lg:min-h-[600px] w-[280px] sm:w-auto flex-shrink-0 snap-start">
                 {/* Column Header */}
                 <div className={`px-3 sm:px-4 py-2 sm:py-3 rounded-t-lg bg-gray-100 dark:bg-gray-800 border-b-2 ${column.id === 'assigned' ? 'border-blue-500' : column.id === 'in_progress' ? 'border-yellow-500' : column.id === 'completed' ? 'border-purple-500' : column.id === 'verified' ? 'border-emerald-500' : 'border-red-500'}`}>
                   <div className="flex items-center justify-between">

@@ -206,13 +206,13 @@ export default function ModernCommunication() {
 
   // Main UI
   return (
-    <div className="h-full flex bg-background overflow-hidden">
+    <div className="h-full flex flex-col bg-background overflow-hidden min-h-0">
       {isMobile ? (
         // Mobile Layout - Simple conditional rendering for better reliability
-        <div className="w-full h-full overflow-hidden">
+        <div className="flex-1 min-h-0 overflow-hidden">
           {showSidebar || !communication.selectedChannel ? (
             // Show Chat List
-            <div className="w-full h-full">
+            <div className="h-full overflow-auto">
               <EnhancedChatList
                 channels={communication.channels}
                 teamMembers={communication.teamMembers}

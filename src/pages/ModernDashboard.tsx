@@ -228,7 +228,11 @@ export default function ModernDashboard() {
         return isAdmin ? <PIPManagement /> : null;
       
       case 'communication':
-        return <ModernCommunication />;
+        return (
+          <div className="h-[calc(100vh-12rem)] sm:h-[calc(100vh-14rem)] min-h-[400px]">
+            <ModernCommunication />
+          </div>
+        );
       
       default:
         return <EnhancedDashboardWidgets />;

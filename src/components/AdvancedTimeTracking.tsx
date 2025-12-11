@@ -139,15 +139,15 @@ export function AdvancedTimeTracking({ userId }: AdvancedTimeTrackingProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header Controls */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Advanced Time Tracking</h2>
-          <p className="text-muted-foreground">Real-time system activity monitoring</p>
+          <h2 className="text-xl sm:text-2xl font-bold">Advanced Time Tracking</h2>
+          <p className="text-xs sm:text-sm text-muted-foreground">Real-time system activity monitoring</p>
         </div>
-        <div className="flex items-center gap-4">
-          <Badge variant={isTracking ? "default" : "secondary"} className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+          <Badge variant={isTracking ? "default" : "secondary"} className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
             <div className={`w-2 h-2 rounded-full ${isTracking ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
             {isTracking ? 'Active' : 'Paused'}
           </Badge>
@@ -155,56 +155,57 @@ export function AdvancedTimeTracking({ userId }: AdvancedTimeTrackingProps) {
             variant="outline"
             size="sm"
             onClick={() => setIsTracking(!isTracking)}
+            className="h-9 text-xs sm:text-sm min-h-[36px]"
           >
-            {isTracking ? <Pause className="h-4 w-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
+            {isTracking ? <Pause className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5" /> : <Play className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5" />}
             {isTracking ? 'Pause' : 'Resume'}
           </Button>
-          <Button variant="outline" size="sm" onClick={takeScreenshot}>
-            <Camera className="h-4 w-4 mr-2" />
-            Screenshot
+          <Button variant="outline" size="sm" onClick={takeScreenshot} className="h-9 text-xs sm:text-sm min-h-[36px]">
+            <Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5" />
+            <span className="hidden xs:inline">Screenshot</span>
           </Button>
         </div>
       </div>
 
       {/* Real-time Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-blue-100">
-                <Clock className="h-5 w-5 text-blue-600" />
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-1.5 sm:p-2 rounded-full bg-blue-100">
+                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm font-medium">Active Time</p>
-                <p className="text-xl font-bold">{currentSession.totalActiveTime.toFixed(1)}h</p>
+                <p className="text-xs sm:text-sm font-medium">Active Time</p>
+                <p className="text-lg sm:text-xl font-bold">{currentSession.totalActiveTime.toFixed(1)}h</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-green-100">
-                <TrendingUp className="h-5 w-5 text-green-600" />
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-1.5 sm:p-2 rounded-full bg-green-100">
+                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
               </div>
               <div>
-                <p className="text-sm font-medium">Focus Score</p>
-                <p className="text-xl font-bold">{Math.round(currentSession.focusScore)}%</p>
+                <p className="text-xs sm:text-sm font-medium">Focus Score</p>
+                <p className="text-lg sm:text-xl font-bold">{Math.round(currentSession.focusScore)}%</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-purple-100">
-                <Keyboard className="h-5 w-5 text-purple-600" />
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-1.5 sm:p-2 rounded-full bg-purple-100">
+                <Keyboard className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
               </div>
               <div>
-                <p className="text-sm font-medium">Keystrokes</p>
-                <p className="text-xl font-bold">
+                <p className="text-xs sm:text-sm font-medium">Keystrokes</p>
+                <p className="text-lg sm:text-xl font-bold">
                   {activityData.reduce((sum, a) => sum + a.keystrokes, 0)}
                 </p>
               </div>
@@ -213,14 +214,14 @@ export function AdvancedTimeTracking({ userId }: AdvancedTimeTrackingProps) {
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-orange-100">
-                <MousePointer className="h-5 w-5 text-orange-600" />
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-1.5 sm:p-2 rounded-full bg-orange-100">
+                <MousePointer className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
               </div>
               <div>
-                <p className="text-sm font-medium">Mouse Clicks</p>
-                <p className="text-xl font-bold">
+                <p className="text-xs sm:text-sm font-medium">Mouse Clicks</p>
+                <p className="text-lg sm:text-xl font-bold">
                   {activityData.reduce((sum, a) => sum + a.mouseClicks, 0)}
                 </p>
               </div>
@@ -230,13 +231,15 @@ export function AdvancedTimeTracking({ userId }: AdvancedTimeTrackingProps) {
       </div>
 
       {/* Detailed Analytics */}
-      <Tabs defaultValue="activity" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="activity">Activity Timeline</TabsTrigger>
-          <TabsTrigger value="productivity">Productivity</TabsTrigger>
-          <TabsTrigger value="applications">Applications</TabsTrigger>
-          <TabsTrigger value="screenshots">Screenshots</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="activity" className="space-y-4 sm:space-y-6">
+        <div className="overflow-x-auto pb-2 -mx-2 px-2">
+          <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-4">
+            <TabsTrigger value="activity" className="text-xs sm:text-sm whitespace-nowrap">Activity</TabsTrigger>
+            <TabsTrigger value="productivity" className="text-xs sm:text-sm whitespace-nowrap">Productivity</TabsTrigger>
+            <TabsTrigger value="applications" className="text-xs sm:text-sm whitespace-nowrap">Apps</TabsTrigger>
+            <TabsTrigger value="screenshots" className="text-xs sm:text-sm whitespace-nowrap">Screenshots</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="activity" className="space-y-6">
           <Card>
