@@ -4360,9 +4360,14 @@ export type Database = {
           partner_role: string
         }[]
       }
+      get_current_profile_id: { Args: never; Returns: string }
       get_current_user_role: { Args: never; Returns: string }
       get_org_user_count: { Args: { _org_id: string }; Returns: number }
       get_public_stats: { Args: never; Returns: Json }
+      get_user_channel_ids: {
+        Args: { p_profile_id: string }
+        Returns: string[]
+      }
       get_user_highest_role: {
         Args: { p_user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -4385,6 +4390,10 @@ export type Database = {
         Returns: undefined
       }
       is_any_admin: { Args: { p_user_id?: string }; Returns: boolean }
+      is_channel_member: {
+        Args: { p_channel_id: string; p_profile_id: string }
+        Returns: boolean
+      }
       is_org_admin: { Args: { _org_id?: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
       track_user_activity: {

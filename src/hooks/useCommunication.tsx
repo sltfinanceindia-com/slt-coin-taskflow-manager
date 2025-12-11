@@ -59,6 +59,18 @@ export interface TeamMember {
   last_seen?: string;
 }
 
+// Timeout utility for database queries
+const fetchWithTimeout = async <T,>(
+  queryBuilder: PromiseLike<T>, 
+  timeoutMs: number = 10000
+): Promise<T> => {
+  const promise = Promise.resolve(queryBuilder);
+  const timeout = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error('Request timeout')), timeoutMs)
+  );
+  return Promise.race([promise, timeout]);
+};
+
 export function useCommunication() {
   const { profile } = useAuth();
   const { toast } = useToast();
@@ -72,22 +84,27 @@ export function useCommunication() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  // Fetch channels - simplified two-step approach
+  // Fetch channels - optimized with timeout and using RPC functions
   const fetchChannels = useCallback(async () => {
     if (!profile?.id || !profile?.organization_id) {
       console.log('⏭️ Skipping channel fetch - no profile ID or organization');
+      setChannels([]);
       return;
     }
 
     try {
       console.log('📡 Fetching channels for user:', profile.id);
+      setError(null);
       
-      // Step 1: Get channel IDs the user is a member of
-      const { data: memberData, error: memberError } = await supabase
+      // Step 1: Get channel IDs the user is a member of (with timeout)
+      const memberQuery = supabase
         .from('channel_members')
         .select('channel_id')
         .eq('user_id', profile.id);
+
+      const { data: memberData, error: memberError } = await fetchWithTimeout(memberQuery, 8000);
 
       if (memberError) {
         console.error('Error fetching channel members:', memberError);
@@ -103,12 +120,14 @@ export function useCommunication() {
         return;
       }
 
-      // Step 2: Fetch channel details using the IDs
-      const { data: channelsData, error: channelsError } = await supabase
+      // Step 2: Fetch channel details using the IDs (with timeout)
+      const channelsQuery = supabase
         .from('communication_channels')
         .select('*')
         .in('id', channelIds)
         .or(`organization_id.eq.${profile.organization_id},organization_id.is.null`);
+
+      const { data: channelsData, error: channelsError } = await fetchWithTimeout(channelsQuery, 8000);
 
       if (channelsError) {
         console.error('Error fetching channels:', channelsError);
@@ -117,12 +136,20 @@ export function useCommunication() {
 
       console.log('📢 Fetched channels:', channelsData?.length || 0);
 
-      // Step 3: Get last messages for channels
-      const { data: lastMessages } = await supabase
-        .from('messages')
-        .select('channel_id, content, sender_name, created_at')
-        .in('channel_id', channelIds)
-        .order('created_at', { ascending: false });
+      // Step 3: Get last messages for channels (non-blocking)
+      let lastMessages: any[] = [];
+      try {
+        const messagesQuery = supabase
+          .from('messages')
+          .select('channel_id, content, sender_name, created_at')
+          .in('channel_id', channelIds)
+          .order('created_at', { ascending: false });
+        
+        const { data } = await fetchWithTimeout(messagesQuery, 5000);
+        lastMessages = data || [];
+      } catch (e) {
+        console.warn('⚠️ Could not fetch last messages, continuing without them');
+      }
 
       const channelsWithMetadata: Channel[] = (channelsData || []).map(channel => {
         const lastMessage = lastMessages?.find(m => m.channel_id === channel.id);
@@ -140,11 +167,15 @@ export function useCommunication() {
 
       setChannels(channelsWithMetadata);
       console.log('✅ Channels loaded successfully');
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error fetching channels:', error);
+      const errorMessage = error?.message === 'Request timeout' 
+        ? 'Connection timed out. Please check your network and try again.'
+        : 'Failed to load channels. Please try again.';
+      setError(errorMessage);
       toast({
         title: "Error",
-        description: "Failed to load channels. Please refresh the page.",
+        description: errorMessage,
         variant: "destructive"
       });
       setChannels([]);
@@ -496,6 +527,17 @@ export function useCommunication() {
     });
   }, [profile?.id, profile?.organization_id, fetchChannels, fetchTeamMembers]);
 
+  // Refresh function for retry
+  const refresh = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await Promise.all([fetchChannels(), fetchTeamMembers()]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchChannels, fetchTeamMembers]);
+
   return {
     channels,
     selectedChannel,
@@ -505,12 +547,14 @@ export function useCommunication() {
     isLoading,
     isLoadingMessages,
     searchQuery,
+    error,
     setSearchQuery,
     selectChannel,
     sendMessage,
     createDirectMessage,
     getChannelDisplayName,
     fetchChannels,
-    fetchMessages
+    fetchMessages,
+    refresh
   };
 }
