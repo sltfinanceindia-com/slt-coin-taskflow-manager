@@ -54,6 +54,9 @@ export default function ModernCommunication() {
     );
   }
 
+  // Show welcome state when no channels and no channel selected
+  const showWelcomeState = communication.channels.length === 0 && !communication.selectedChannel;
+
   return (
     <div className="h-full flex bg-background">
       {isMobile ? (
@@ -133,9 +136,14 @@ export default function ModernCommunication() {
                   <div className="p-4 rounded-full bg-primary/10 w-fit mx-auto">
                     <MessageCircle className="h-12 w-12 text-primary" />
                   </div>
-                  <h3 className="text-2xl font-semibold">Welcome to Chat</h3>
-                  <p className="text-muted-foreground">
-                    Select a conversation from the left panel to start chatting, or create a new conversation with a team member.
+                  <h3 className="text-xl sm:text-2xl font-semibold">
+                    {showWelcomeState ? 'Start a Conversation' : 'Welcome to Chat'}
+                  </h3>
+                  <p className="text-muted-foreground text-sm sm:text-base">
+                    {showWelcomeState 
+                      ? 'Click on a team member in the sidebar to start a direct message conversation.'
+                      : 'Select a conversation from the left panel to start chatting, or create a new conversation with a team member.'
+                    }
                   </p>
                 </div>
               </div>

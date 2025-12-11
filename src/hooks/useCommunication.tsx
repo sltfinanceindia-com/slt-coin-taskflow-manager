@@ -73,7 +73,7 @@ export function useCommunication() {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Fetch channels - filtered by organization
+  // Fetch channels - simplified two-step approach
   const fetchChannels = useCallback(async () => {
     if (!profile?.id || !profile?.organization_id) {
       console.log('⏭️ Skipping channel fetch - no profile ID or organization');
@@ -81,24 +81,12 @@ export function useCommunication() {
     }
 
     try {
-      const { data: channelMembers, error: memberError } = await supabase
+      console.log('📡 Fetching channels for user:', profile.id);
+      
+      // Step 1: Get channel IDs the user is a member of
+      const { data: memberData, error: memberError } = await supabase
         .from('channel_members')
-        .select(`
-          channel_id,
-          communication_channels (
-            id,
-            name,
-            description,
-            type,
-            is_direct_message,
-            member_count,
-            participant_ids,
-            created_by,
-            created_at,
-            updated_at,
-            organization_id
-          )
-        `)
+        .select('channel_id')
         .eq('user_id', profile.id);
 
       if (memberError) {
@@ -106,24 +94,37 @@ export function useCommunication() {
         throw memberError;
       }
 
-      // Filter channels by organization
-      const orgChannels = channelMembers?.filter(cm => 
-        cm.communication_channels?.organization_id === profile.organization_id ||
-        cm.communication_channels?.organization_id === null // Include global channels
-      ) || [];
+      const channelIds = memberData?.map(m => m.channel_id) || [];
+      console.log('📋 Found channel IDs:', channelIds.length);
 
-      // Get unread counts and last messages
-      const channelIds = orgChannels.map(cm => cm.channel_id);
-      
+      if (channelIds.length === 0) {
+        console.log('ℹ️ No channels found for user');
+        setChannels([]);
+        return;
+      }
+
+      // Step 2: Fetch channel details using the IDs
+      const { data: channelsData, error: channelsError } = await supabase
+        .from('communication_channels')
+        .select('*')
+        .in('id', channelIds)
+        .or(`organization_id.eq.${profile.organization_id},organization_id.is.null`);
+
+      if (channelsError) {
+        console.error('Error fetching channels:', channelsError);
+        throw channelsError;
+      }
+
+      console.log('📢 Fetched channels:', channelsData?.length || 0);
+
+      // Step 3: Get last messages for channels
       const { data: lastMessages } = await supabase
         .from('messages')
         .select('channel_id, content, sender_name, created_at')
         .in('channel_id', channelIds)
-        .order('created_at', { ascending: false })
-        .limit(1);
+        .order('created_at', { ascending: false });
 
-      const channelsWithMetadata = orgChannels.map(cm => {
-        const channel = cm.communication_channels;
+      const channelsWithMetadata: Channel[] = (channelsData || []).map(channel => {
         const lastMessage = lastMessages?.find(m => m.channel_id === channel.id);
         
         return {
@@ -134,17 +135,19 @@ export function useCommunication() {
             sender_name: lastMessage.sender_name || 'Unknown',
             timestamp: lastMessage.created_at
           } : undefined
-        } as Channel;
+        };
       });
 
       setChannels(channelsWithMetadata);
+      console.log('✅ Channels loaded successfully');
     } catch (error) {
-      console.error('Error fetching channels:', error);
+      console.error('❌ Error fetching channels:', error);
       toast({
         title: "Error",
-        description: "Failed to load channels",
+        description: "Failed to load channels. Please refresh the page.",
         variant: "destructive"
       });
+      setChannels([]);
     }
   }, [profile, toast]);
 
