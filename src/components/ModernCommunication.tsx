@@ -208,38 +208,24 @@ export default function ModernCommunication() {
   return (
     <div className="h-full flex bg-background overflow-hidden">
       {isMobile ? (
-        // Mobile Layout - Sliding panels
-        <div className="relative w-full h-full overflow-hidden">
-          {/* Chat List Panel */}
-          <div
-            className={cn(
-              "absolute inset-0 w-full h-full transition-transform duration-300 ease-out bg-background z-10",
-              showSidebar || !communication.selectedChannel 
-                ? 'translate-x-0' 
-                : '-translate-x-full pointer-events-none'
-            )}
-          >
-            <EnhancedChatList
-              channels={communication.channels}
-              teamMembers={communication.teamMembers}
-              selectedChannel={communication.selectedChannel}
-              onChannelSelect={handleChannelSelect}
-              onMemberSelect={handleMemberSelect}
-              searchQuery={communication.searchQuery}
-              onSearchChange={communication.setSearchQuery}
-            />
-          </div>
-
-          {/* Message Area Panel */}
-          <div
-            className={cn(
-              "absolute inset-0 w-full h-full transition-transform duration-300 ease-out bg-background",
-              !showSidebar && communication.selectedChannel 
-                ? 'translate-x-0' 
-                : 'translate-x-full pointer-events-none'
-            )}
-          >
-            {communication.selectedChannel ? (
+        // Mobile Layout - Simple conditional rendering for better reliability
+        <div className="w-full h-full overflow-hidden">
+          {showSidebar || !communication.selectedChannel ? (
+            // Show Chat List
+            <div className="w-full h-full">
+              <EnhancedChatList
+                channels={communication.channels}
+                teamMembers={communication.teamMembers}
+                selectedChannel={communication.selectedChannel}
+                onChannelSelect={handleChannelSelect}
+                onMemberSelect={handleMemberSelect}
+                searchQuery={communication.searchQuery}
+                onSearchChange={communication.setSearchQuery}
+              />
+            </div>
+          ) : (
+            // Show Message Area
+            <div className="w-full h-full">
               <EnhancedMessageArea
                 channel={communication.selectedChannel}
                 messages={communication.messages}
@@ -250,10 +236,8 @@ export default function ModernCommunication() {
                 onBack={handleBack}
                 isMobile={true}
               />
-            ) : (
-              <WelcomeState />
-            )}
-          </div>
+            </div>
+          )}
         </div>
       ) : (
         // Desktop Layout - Resizable panels

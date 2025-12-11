@@ -203,16 +203,18 @@ export function PIPManagement() {
       </div>
 
       <Tabs defaultValue="active">
-        <TabsList>
-          <TabsTrigger value="active" className="gap-2">
-            <AlertTriangle className="h-4 w-4" />
-            Active ({activePIPs.length})
-          </TabsTrigger>
-          <TabsTrigger value="completed" className="gap-2">
-            <CheckCircle className="h-4 w-4" />
-            Completed ({completedPIPs.length})
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+          <TabsList className="inline-flex w-auto min-w-full sm:w-auto h-auto">
+            <TabsTrigger value="active" className="gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[44px]">
+              <AlertTriangle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span>Active ({activePIPs.length})</span>
+            </TabsTrigger>
+            <TabsTrigger value="completed" className="gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[44px]">
+              <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span>Completed ({completedPIPs.length})</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="active" className="mt-6">
           {activePIPs.length === 0 ? (
@@ -291,32 +293,32 @@ function PIPCard({ pip, onSelect, isSelected, onUpdate, isAdmin }: any) {
     <Card>
       <Collapsible open={isSelected} onOpenChange={onSelect}>
         <CollapsibleTrigger asChild>
-          <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                {isSelected ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-                <Avatar className="h-10 w-10">
+          <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors p-3 sm:p-4 lg:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+              <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
+                {isSelected ? <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" /> : <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />}
+                <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
                   <AvatarImage src={pip.employee?.avatar_url} />
-                  <AvatarFallback>{pip.employee?.full_name?.charAt(0)}</AvatarFallback>
+                  <AvatarFallback className="text-xs sm:text-sm">{pip.employee?.full_name?.charAt(0)}</AvatarFallback>
                 </Avatar>
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    {pip.title}
+                <div className="min-w-0 flex-1">
+                  <CardTitle className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-sm sm:text-base">
+                    <span className="truncate">{pip.title}</span>
                     {getStatusBadge(pip.status)}
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-xs sm:text-sm truncate">
                     {pip.employee?.full_name} • Manager: {pip.manager?.full_name}
                   </CardDescription>
                 </div>
               </div>
-              <div className="text-right">
+              <div className="text-left sm:text-right ml-10 sm:ml-0">
                 {pip.status === 'active' && (
-                  <>
-                    <div className="text-lg font-bold">
+                  <div className="flex sm:flex-col items-center sm:items-end gap-2 sm:gap-1">
+                    <div className="text-sm sm:text-lg font-bold whitespace-nowrap">
                       {daysRemaining > 0 ? `${daysRemaining} days left` : 'Overdue'}
                     </div>
-                    <Progress value={progressPercentage} className="w-24 h-2" />
-                  </>
+                    <Progress value={progressPercentage} className="w-20 sm:w-24 h-2" />
+                  </div>
                 )}
               </div>
             </div>
@@ -324,7 +326,7 @@ function PIPCard({ pip, onSelect, isSelected, onUpdate, isAdmin }: any) {
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <CardContent className="border-t pt-4">
+          <CardContent className="border-t pt-3 sm:pt-4 p-3 sm:p-4 lg:p-6">
             <PIPDetailsPanel pipId={pip.id} pip={pip} onUpdate={onUpdate} isAdmin={isAdmin} />
           </CardContent>
         </CollapsibleContent>
