@@ -324,8 +324,8 @@ export default function Pricing() {
                 <span className="font-black">HuB</span>
               </span>
             </div>
-            <div className="text-gray-400 text-xs sm:text-sm text-center">
-              © 2024 SLT work HuB. All rights reserved.
+          <div className="text-gray-400 text-xs sm:text-sm text-center">
+              © 2025 SLT work HuB. All rights reserved.
             </div>
           </div>
         </div>

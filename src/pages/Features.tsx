@@ -164,7 +164,11 @@ export default function Features() {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
               <span className="text-primary-foreground font-bold">S</span>
             </div>
-            <span className="font-bold text-lg sm:text-xl">SLT Work Hub</span>
+            <span className="text-lg sm:text-xl">
+              <span className="font-black">SLT</span>
+              <span className="font-normal text-muted-foreground"> work </span>
+              <span className="font-black">HuB</span>
+            </span>
           </Link>
           <nav className="hidden md:flex items-center gap-6">
             <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">Home</Link>
@@ -336,7 +340,11 @@ export default function Features() {
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
                 <span className="text-primary-foreground font-bold">S</span>
               </div>
-              <span className="font-bold">SLT Work Hub</span>
+              <span className="font-bold">
+                <span className="font-black">SLT</span>
+                <span className="font-normal text-muted-foreground"> work </span>
+                <span className="font-black">HuB</span>
+              </span>
             </div>
             <p className="text-sm text-muted-foreground">
               © {new Date().getFullYear()} SLT Work Hub. All rights reserved.
