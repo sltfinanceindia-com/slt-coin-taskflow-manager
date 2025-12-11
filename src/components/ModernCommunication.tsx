@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { useCommunication } from '@/hooks/useCommunication';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import EnhancedChatList from './communication/EnhancedChatList';
 import EnhancedMessageArea from './communication/EnhancedMessageArea';
 
@@ -26,12 +28,48 @@ export default function ModernCommunication() {
     await communication.createDirectMessage(member.id);
   };
 
-  if (communication.isLoading) {
+  // Error state with retry
+  if (communication.error) {
     return (
       <div className="h-[500px] flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
-          <p className="text-muted-foreground text-sm">Loading communication...</p>
+        <div className="text-center space-y-4 max-w-md mx-auto p-6">
+          <div className="p-4 rounded-full bg-destructive/10 w-fit mx-auto">
+            <AlertCircle className="h-12 w-12 text-destructive" />
+          </div>
+          <h3 className="text-xl font-semibold">Failed to Load Communication</h3>
+          <p className="text-muted-foreground text-sm">{communication.error}</p>
+          <Button onClick={() => communication.refresh()} className="gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading state with skeleton
+  if (communication.isLoading) {
+    return (
+      <div className="h-[500px] flex">
+        <div className="w-80 border-r p-4 space-y-4">
+          <Skeleton className="h-10 w-full" />
+          <div className="space-y-3">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="flex items-center gap-3">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
+            <p className="text-muted-foreground text-sm">Loading communication...</p>
+          </div>
         </div>
       </div>
     );
