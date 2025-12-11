@@ -144,19 +144,19 @@ export default function SuperAdminDashboard() {
 
   return (
     <SuperAdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-              <Crown className="h-8 w-8 text-amber-500" />
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold flex items-center gap-2">
+              <Crown className="h-6 w-6 sm:h-8 sm:w-8 text-amber-500" />
               Super Admin Dashboard
             </h1>
-            <p className="text-muted-foreground mt-1">
+            <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
               Manage all organizations and platform settings
             </p>
           </div>
-          <Button asChild>
+          <Button asChild className="w-full sm:w-auto text-sm">
             <a href="/super-admin/organizations/new">
               <Plus className="h-4 w-4 mr-2" />
               Create Organization
@@ -165,14 +165,14 @@ export default function SuperAdminDashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Organizations</CardTitle>
-              <Building2 className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-6 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Total Organizations</CardTitle>
+              <Building2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalOrganizations}</div>
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-xl sm:text-2xl font-bold">{stats.totalOrganizations}</div>
               <p className="text-xs text-muted-foreground">
                 {stats.activeOrganizations} active
               </p>
@@ -180,12 +180,12 @@ export default function SuperAdminDashboard() {
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-6 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Total Users</CardTitle>
+              <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalUsers}</div>
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-xl sm:text-2xl font-bold">{stats.totalUsers}</div>
               <p className="text-xs text-muted-foreground">
                 Across all organizations
               </p>
@@ -193,12 +193,12 @@ export default function SuperAdminDashboard() {
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Active Organizations</CardTitle>
-              <Activity className="h-4 w-4 text-emerald-500" />
+            <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-6 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Active Orgs</CardTitle>
+              <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-500" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-emerald-600">{stats.activeOrganizations}</div>
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-xl sm:text-2xl font-bold text-emerald-600">{stats.activeOrganizations}</div>
               <p className="text-xs text-muted-foreground">
                 Currently active
               </p>
@@ -206,12 +206,12 @@ export default function SuperAdminDashboard() {
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Trial Organizations</CardTitle>
-              <TrendingUp className="h-4 w-4 text-blue-500" />
+            <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-6 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Trial Orgs</CardTitle>
+              <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{stats.trialOrganizations}</div>
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-xl sm:text-2xl font-bold text-blue-600">{stats.trialOrganizations}</div>
               <p className="text-xs text-muted-foreground">
                 {stats.suspendedOrganizations} suspended
               </p>

@@ -94,11 +94,11 @@ export function PIPManagement() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between gap-4">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Performance Improvement Plans</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">Performance Improvement Plans</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm">
             Create and manage structured improvement plans for employees
           </p>
         </div>

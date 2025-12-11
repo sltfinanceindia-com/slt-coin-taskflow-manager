@@ -12,35 +12,37 @@ export const WFHManagement: React.FC = () => {
   const isAdmin = profile?.role === 'admin';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Work From Home</h2>
-        <p className="text-muted-foreground">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">Work From Home</h2>
+        <p className="text-muted-foreground text-xs sm:text-sm">
           Request and manage WFH days
         </p>
       </div>
 
       <Tabs defaultValue="request" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
-          <TabsTrigger value="request" className="flex items-center gap-2">
-            <Home className="h-4 w-4" />
-            <span className="hidden sm:inline">Request</span>
-          </TabsTrigger>
-          <TabsTrigger value="history" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            <span className="hidden sm:inline">History</span>
-          </TabsTrigger>
-          <TabsTrigger value="calendar" className="flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
-            <span className="hidden sm:inline">Calendar</span>
-          </TabsTrigger>
-          {isAdmin && (
-            <TabsTrigger value="policy" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">Policy</span>
+        <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+          <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-4 lg:w-auto lg:inline-grid h-auto">
+            <TabsTrigger value="request" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[40px]">
+              <Home className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline sm:inline">Request</span>
             </TabsTrigger>
-          )}
-        </TabsList>
+            <TabsTrigger value="history" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[40px]">
+              <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline sm:inline">History</span>
+            </TabsTrigger>
+            <TabsTrigger value="calendar" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[40px]">
+              <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline sm:inline">Calendar</span>
+            </TabsTrigger>
+            {isAdmin && (
+              <TabsTrigger value="policy" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[40px]">
+                <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline sm:inline">Policy</span>
+              </TabsTrigger>
+            )}
+          </TabsList>
+        </div>
 
         <TabsContent value="request">
           <WFHRequestForm />

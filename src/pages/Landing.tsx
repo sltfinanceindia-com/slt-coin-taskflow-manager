@@ -1,13 +1,16 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Coins, TrendingUp, TrendingDown, Shield, Users, BarChart3, MessageSquare, BookOpen, Award, ArrowRight, CheckCircle, LineChart } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Coins, TrendingUp, TrendingDown, Shield, Users, BarChart3, MessageSquare, BookOpen, Award, ArrowRight, CheckCircle, Menu } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { CoinRateChart } from '@/components/CoinRateChart';
+
 export default function Landing() {
-  // Fetch latest coin rate
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   // Fetch latest coin rate
   const { data: latestRate } = useQuery({
     queryKey: ['latest-coin-rate'],
@@ -34,7 +37,7 @@ export default function Landing() {
       }
       return data as { totalUsers: number; completedTasks: number; totalCoins: number };
     },
-    staleTime: 30000, // 30 seconds
+    staleTime: 30000,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
     retry: 3,
@@ -77,6 +80,7 @@ export default function Landing() {
     color: 'text-indigo-600',
     bgColor: 'bg-indigo-50'
   }];
+
   const stats = [
     {
       value: statsLoading ? "..." : (statsError ? "N/A" : statsData?.totalUsers?.toString() || '0'),
@@ -95,94 +99,120 @@ export default function Landing() {
       label: 'Uptime'
     }
   ];
-  return <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+
+  const NavLinks = () => (
+    <>
+      <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
+        <Button variant="ghost" className="w-full justify-start sm:w-auto transition-all duration-200 hover-lift focus-ring text-muted">
+          Sign In
+        </Button>
+      </Link>
+      <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
+        <Button className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 transition-all duration-200 hover-grow focus-ring">
+          Start Free Trial
+          <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+        </Button>
+      </Link>
+    </>
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       {/* Header */}
       <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white/80 backdrop-blur-sm" role="banner">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex h-16 items-center justify-between" aria-label="Main navigation">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center" aria-hidden="true">
-                <Coins className="h-5 w-5 text-white" />
+          <nav className="flex h-14 sm:h-16 items-center justify-between" aria-label="Main navigation">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center" aria-hidden="true">
+                <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
               </div>
-              <span className="text-lg font-bold text-gray-900">
+              <span className="text-sm sm:text-lg font-bold text-gray-900">
                 <span className="font-black">SLT</span>
                 <span className="font-normal text-gray-600"> work </span>
                 <span className="font-black">HuB</span>
               </span>
             </div>
-            <div className="flex items-center gap-3">
-              <Link to="/auth">
-                <Button variant="ghost" className="transition-all duration-200 hover-lift focus-ring text-muted">
-                  Sign In
-                </Button>
-              </Link>
-              <Link to="/signup">
-                <Button className="bg-emerald-600 hover:bg-emerald-700 transition-all duration-200 hover-grow focus-ring">
-                  Start Free Trial
-                  <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
-                </Button>
-              </Link>
+
+            {/* Desktop Navigation */}
+            <div className="hidden sm:flex items-center gap-3">
+              <NavLinks />
+            </div>
+
+            {/* Mobile Navigation */}
+            <div className="sm:hidden">
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-9 w-9">
+                    <Menu className="h-5 w-5" />
+                    <span className="sr-only">Open menu</span>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[280px] pt-12">
+                  <div className="flex flex-col gap-4">
+                    <NavLinks />
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
           </nav>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section aria-labelledby="hero-heading" className="relative overflow-hidden py-20 sm:py-32 bg-white">
+      <section aria-labelledby="hero-heading" className="relative overflow-hidden py-12 sm:py-20 lg:py-32 bg-white">
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-white to-blue-50 opacity-70" aria-hidden="true" />
         <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
-            <Badge className="mb-4 bg-emerald-100 text-emerald-800 border-emerald-200 animate-bounce-subtle">
+            <Badge className="mb-3 sm:mb-4 bg-emerald-100 text-emerald-800 border-emerald-200 animate-bounce-subtle text-xs sm:text-sm">
               <TrendingUp className="mr-1 h-3 w-3" aria-hidden="true" />
               Now Live - Real-time Coin Trading
             </Badge>
-            <h1 id="hero-heading" className="mb-6 text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl leading-tight animate-fade-in">
+            <h1 id="hero-heading" className="mb-4 sm:mb-6 text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight text-gray-900 leading-tight animate-fade-in">
               The Complete Workplace
               <span className="block text-emerald-600">Management Platform</span>
             </h1>
-            <p className="mb-8 text-lg text-gray-600 sm:text-xl max-w-2xl mx-auto leading-relaxed animate-fade-in" style={{
-            animationDelay: '100ms'
-          }}>
+            <p className="mb-6 sm:mb-8 text-sm sm:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed animate-fade-in px-4" style={{
+              animationDelay: '100ms'
+            }}>
               Streamline your workflow with task management, team collaboration, 
-              and a revolutionary coin rewards system. Track progress, earn rewards, 
-              and boost productivity.
+              and a revolutionary coin rewards system.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style={{
-            animationDelay: '200ms'
-          }}>
-              <Link to="/signup">
-                <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 h-12 px-8 transition-all duration-200 hover-grow focus-ring">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 animate-fade-in" style={{
+              animationDelay: '200ms'
+            }}>
+              <Link to="/signup" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base transition-all duration-200 hover-grow focus-ring">
                   Start Free Trial
-                  <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
+                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
                 </Button>
               </Link>
-              <Link to="/auth">
-                <Button size="lg" variant="outline" className="h-12 px-8 transition-all duration-200 hover-lift focus-ring">
+              <Link to="/auth" className="w-full sm:w-auto">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base transition-all duration-200 hover-lift focus-ring">
                   Sign In
-                  <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
+                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
                 </Button>
               </Link>
             </div>
           </div>
 
           {/* Compact Coin Rate Display */}
-          <div className="mt-16 mx-auto max-w-md animate-fade-in" style={{
+          <div className="mt-10 sm:mt-16 mx-auto max-w-sm sm:max-w-md animate-fade-in px-4" style={{
             animationDelay: '300ms'
           }}>
             <Card className="border-2 border-emerald-200 shadow-xl overflow-hidden hover-lift" role="region" aria-label="Current SLT coin rate">
-              <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 p-6 text-white text-center">
+              <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 p-4 sm:p-6 text-white text-center">
                 <div className="flex items-center justify-center gap-2 mb-2">
-                  <Coins className="h-6 w-6" aria-hidden="true" />
-                  <h3 className="text-lg font-semibold">SLT Coin Rate</h3>
+                  <Coins className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
+                  <h3 className="text-base sm:text-lg font-semibold">SLT Coin Rate</h3>
                 </div>
                 {latestRate && (
-                   <div>
-                    <div className="text-4xl font-bold mb-2" aria-label={`Current rate: ${Number(latestRate.rate).toFixed(4)} rupees`}>
+                  <div>
+                    <div className="text-2xl sm:text-4xl font-bold mb-2" aria-label={`Current rate: ${Number(latestRate.rate).toFixed(4)} rupees`}>
                       ₹{Number(latestRate.rate).toFixed(4)}
                     </div>
                     <Badge 
                       variant={Number(latestRate.change_percentage) >= 0 ? 'success' : 'destructive'} 
-                      className="text-sm"
+                      className="text-xs sm:text-sm"
                       aria-label={`24 hour change: ${Number(latestRate.change_percentage) >= 0 ? 'increased' : 'decreased'} by ${Math.abs(Number(latestRate.change_percentage)).toFixed(2)} percent`}
                     >
                       {Number(latestRate.change_percentage) >= 0 ? (
@@ -202,92 +232,94 @@ export default function Landing() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-white" aria-labelledby="features-heading">
+      <section className="py-12 sm:py-20 bg-white" aria-labelledby="features-heading">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <header className="text-center mb-16">
-            <h2 id="features-heading" className="text-3xl font-bold text-gray-900 sm:text-4xl mb-4 leading-tight">
+          <header className="text-center mb-10 sm:mb-16">
+            <h2 id="features-heading" className="text-xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 leading-tight">
               Everything You Need to Succeed
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-sm sm:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed px-4">
               Powerful features designed to boost productivity and engagement
             </p>
           </header>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" role="list">
-            {features.map((feature, index) => <Card key={index} className="hover-scale border-gray-200 transition-all duration-200 animate-fade-in bg-card" style={{
-            animationDelay: `${index * 100}ms`
-          }} role="listitem">
-                <CardContent className="p-6">
-                  <div className={`h-12 w-12 rounded-lg ${feature.bgColor} flex items-center justify-center mb-4 transition-transform duration-200`} aria-hidden="true">
-                    <feature.icon className={`h-6 w-6 ${feature.color}`} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8" role="list">
+            {features.map((feature, index) => (
+              <Card key={index} className="hover-scale border-gray-200 transition-all duration-200 animate-fade-in bg-card" style={{
+                animationDelay: `${index * 100}ms`
+              }} role="listitem">
+                <CardContent className="p-4 sm:p-6">
+                  <div className={`h-10 w-10 sm:h-12 sm:w-12 rounded-lg ${feature.bgColor} flex items-center justify-center mb-3 sm:mb-4 transition-transform duration-200`} aria-hidden="true">
+                    <feature.icon className={`h-5 w-5 sm:h-6 sm:w-6 ${feature.color}`} />
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2 leading-snug">
+                  <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1.5 sm:mb-2 leading-snug">
                     {feature.title}
                   </h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
+                  <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed">
                     {feature.description}
                   </p>
                 </CardContent>
-              </Card>)}
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Pricing Preview Section */}
-      <section className="py-20 bg-white" aria-labelledby="pricing-heading">
+      <section className="py-12 sm:py-20 bg-white" aria-labelledby="pricing-heading">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <header className="text-center mb-12">
-            <h2 id="pricing-heading" className="text-3xl font-bold text-gray-900 sm:text-4xl mb-4">
+          <header className="text-center mb-8 sm:mb-12">
+            <h2 id="pricing-heading" className="text-xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
               Simple, Transparent Pricing
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-sm sm:text-lg text-gray-600 max-w-2xl mx-auto">
               Start free and scale as you grow
             </p>
           </header>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 max-w-5xl mx-auto">
             <Card className="border-gray-200 text-center">
-              <CardContent className="p-6">
-                <h3 className="font-semibold text-lg mb-2">Free</h3>
-                <div className="text-3xl font-bold text-gray-900 mb-4">₹0<span className="text-sm font-normal text-gray-500">/month</span></div>
-                <p className="text-sm text-gray-600 mb-4">For small teams getting started</p>
-                <ul className="text-sm text-gray-600 space-y-2 mb-6">
+              <CardContent className="p-4 sm:p-6">
+                <h3 className="font-semibold text-base sm:text-lg mb-2">Free</h3>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">₹0<span className="text-xs sm:text-sm font-normal text-gray-500">/month</span></div>
+                <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">For small teams getting started</p>
+                <ul className="text-xs sm:text-sm text-gray-600 space-y-1.5 sm:space-y-2 mb-4 sm:mb-6">
                   <li>Up to 5 users</li>
                   <li>Basic features</li>
                 </ul>
                 <Link to="/signup">
-                  <Button variant="outline" className="w-full">Start Free</Button>
+                  <Button variant="outline" className="w-full text-sm">Start Free</Button>
                 </Link>
               </CardContent>
             </Card>
             <Card className="border-emerald-500 border-2 text-center relative">
-              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-600">Popular</Badge>
-              <CardContent className="p-6">
-                <h3 className="font-semibold text-lg mb-2">Professional</h3>
-                <div className="text-3xl font-bold text-gray-900 mb-4">₹7,999<span className="text-sm font-normal text-gray-500">/month</span></div>
-                <p className="text-sm text-gray-600 mb-4">For growing businesses</p>
-                <ul className="text-sm text-gray-600 space-y-2 mb-6">
+              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-600 text-xs">Popular</Badge>
+              <CardContent className="p-4 sm:p-6">
+                <h3 className="font-semibold text-base sm:text-lg mb-2">Professional</h3>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">₹7,999<span className="text-xs sm:text-sm font-normal text-gray-500">/month</span></div>
+                <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">For growing businesses</p>
+                <ul className="text-xs sm:text-sm text-gray-600 space-y-1.5 sm:space-y-2 mb-4 sm:mb-6">
                   <li>Up to 100 users</li>
                   <li>All features</li>
                 </ul>
                 <Link to="/signup">
-                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700">Start Trial</Button>
+                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-sm">Start Trial</Button>
                 </Link>
               </CardContent>
             </Card>
-            <Card className="border-gray-200 text-center">
-              <CardContent className="p-6">
-                <h3 className="font-semibold text-lg mb-2">Enterprise</h3>
-                <div className="text-3xl font-bold text-gray-900 mb-4">Custom</div>
-                <p className="text-sm text-gray-600 mb-4">For large organizations</p>
-                <ul className="text-sm text-gray-600 space-y-2 mb-6">
+            <Card className="border-gray-200 text-center sm:col-span-2 lg:col-span-1">
+              <CardContent className="p-4 sm:p-6">
+                <h3 className="font-semibold text-base sm:text-lg mb-2">Enterprise</h3>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">Custom</div>
+                <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">For large organizations</p>
+                <ul className="text-xs sm:text-sm text-gray-600 space-y-1.5 sm:space-y-2 mb-4 sm:mb-6">
                   <li>Unlimited users</li>
                   <li>Custom features</li>
                 </ul>
-                <Button variant="outline" className="w-full">Contact Sales</Button>
+                <Button variant="outline" className="w-full text-sm">Contact Sales</Button>
               </CardContent>
             </Card>
           </div>
-          <div className="text-center mt-8">
-            <Link to="/pricing" className="text-emerald-600 hover:text-emerald-700 font-medium">
+          <div className="text-center mt-6 sm:mt-8">
+            <Link to="/pricing" className="text-emerald-600 hover:text-emerald-700 font-medium text-sm sm:text-base">
               View full pricing details →
             </Link>
           </div>
@@ -295,41 +327,43 @@ export default function Landing() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 bg-gradient-to-r from-emerald-600 to-emerald-500" aria-labelledby="stats-heading">
+      <section className="py-12 sm:py-20 bg-gradient-to-r from-emerald-600 to-emerald-500" aria-labelledby="stats-heading">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <h2 id="stats-heading" className="sr-only">Platform statistics</h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center" role="list">
-            {stats.map((stat, index) => <div key={index} className="animate-fade-in" style={{
-            animationDelay: `${index * 100}ms`
-          }} role="listitem">
-                <div className="text-4xl font-bold text-white mb-2 count-up">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 text-center" role="list">
+            {stats.map((stat, index) => (
+              <div key={index} className="animate-fade-in" style={{
+                animationDelay: `${index * 100}ms`
+              }} role="listitem">
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-2 count-up">
                   {stat.value}
                 </div>
-                <div className="text-emerald-100">
+                <div className="text-emerald-100 text-xs sm:text-sm lg:text-base">
                   {stat.label}
                 </div>
-              </div>)}
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gray-50" aria-labelledby="cta-heading">
+      <section className="py-12 sm:py-20 bg-gray-50" aria-labelledby="cta-heading">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <Card className="max-w-4xl mx-auto bg-gradient-to-br from-emerald-50 to-blue-50 border-2 border-emerald-200 hover-lift animate-fade-in">
-            <CardContent className="p-12 text-center">
-              <CheckCircle className="h-16 w-16 text-emerald-600 mx-auto mb-6 animate-bounce-subtle" aria-hidden="true" />
-              <h2 id="cta-heading" className="text-3xl font-bold text-gray-900 mb-4 leading-tight">
+            <CardContent className="p-6 sm:p-8 lg:p-12 text-center">
+              <CheckCircle className="h-12 w-12 sm:h-16 sm:w-16 text-emerald-600 mx-auto mb-4 sm:mb-6 animate-bounce-subtle" aria-hidden="true" />
+              <h2 id="cta-heading" className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-3 sm:mb-4 leading-tight">
                 Ready to Transform Your Workflow?
               </h2>
-              <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-sm sm:text-base lg:text-lg text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed">
                 Join thousands of teams already using SLTwork Hub to manage tasks, 
                 collaborate effectively, and reward productivity.
               </p>
               <Link to="/signup">
-                <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 h-12 px-8 transition-all duration-200 hover-grow focus-ring">
+                <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base transition-all duration-200 hover-grow focus-ring">
                   Start Your Free Trial
-                  <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
+                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
                 </Button>
               </Link>
             </CardContent>
@@ -338,14 +372,14 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12" role="contentinfo">
+      <footer className="bg-gray-900 text-white py-8 sm:py-12" role="contentinfo">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center" aria-hidden="true">
-                <Coins className="h-5 w-5 text-white" />
+          <div className="flex flex-col items-center gap-4 sm:gap-6 md:flex-row md:justify-between">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center" aria-hidden="true">
+                <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
               </div>
-              <span className="text-lg font-bold">
+              <span className="text-sm sm:text-lg font-bold">
                 <span className="font-black">SLT</span>
                 <span className="font-normal text-gray-400"> work </span>
                 <span className="font-black">HuB</span>
@@ -353,18 +387,19 @@ export default function Landing() {
             </div>
             
             {/* Made in India tagline */}
-            <div className="flex items-center">
-              <span className="text-emerald-400 font-medium flex items-center gap-2">
+            <div className="flex items-center order-last md:order-none">
+              <span className="text-emerald-400 font-medium flex items-center gap-2 text-xs sm:text-base">
                 <span>Made with ❤️ in</span>
-                <span className="font-bold text-lg">భారత్ 🇮🇳</span>
+                <span className="font-bold text-base sm:text-lg">భారత్ 🇮🇳</span>
               </span>
             </div>
             
-            <div className="text-gray-400 text-sm">
+            <div className="text-gray-400 text-xs sm:text-sm">
               © 2024 SLT work HuB. All rights reserved.
             </div>
           </div>
         </div>
       </footer>
-    </div>;
+    </div>
+  );
 }

@@ -85,11 +85,11 @@ export function OneOnOneMeetings() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between gap-4">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">1:1 Meetings</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">1:1 Meetings</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm">
             Schedule and manage one-on-one meetings with your team
           </p>
         </div>

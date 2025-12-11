@@ -12,37 +12,39 @@ export const GeoAttendance: React.FC = () => {
   const isAdmin = profile?.role === 'admin';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Time & Attendance</h2>
-        <p className="text-muted-foreground">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">Time & Attendance</h2>
+        <p className="text-muted-foreground text-xs sm:text-sm">
           Clock in/out with location tracking
         </p>
       </div>
 
       <Tabs defaultValue="clock" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
-          <TabsTrigger value="clock" className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            <span className="hidden sm:inline">Clock In/Out</span>
-          </TabsTrigger>
-          <TabsTrigger value="history" className="flex items-center gap-2">
-            <History className="h-4 w-4" />
-            <span className="hidden sm:inline">History</span>
-          </TabsTrigger>
-          {isAdmin && (
-            <>
-              <TabsTrigger value="dashboard" className="flex items-center gap-2">
-                <BarChart3 className="h-4 w-4" />
-                <span className="hidden sm:inline">Dashboard</span>
-              </TabsTrigger>
-              <TabsTrigger value="settings" className="flex items-center gap-2">
-                <Settings className="h-4 w-4" />
-                <span className="hidden sm:inline">Settings</span>
-              </TabsTrigger>
-            </>
-          )}
-        </TabsList>
+        <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+          <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-4 lg:w-auto lg:inline-grid h-auto">
+            <TabsTrigger value="clock" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[40px]">
+              <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline sm:inline">Clock</span>
+            </TabsTrigger>
+            <TabsTrigger value="history" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[40px]">
+              <History className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline sm:inline">History</span>
+            </TabsTrigger>
+            {isAdmin && (
+              <>
+                <TabsTrigger value="dashboard" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[40px]">
+                  <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="hidden xs:inline sm:inline">Dashboard</span>
+                </TabsTrigger>
+                <TabsTrigger value="settings" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2 min-h-[40px]">
+                  <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="hidden xs:inline sm:inline">Settings</span>
+                </TabsTrigger>
+              </>
+            )}
+          </TabsList>
+        </div>
 
         <TabsContent value="clock">
           <AttendanceClockIn />

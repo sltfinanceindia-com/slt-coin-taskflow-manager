@@ -701,5 +701,54 @@ All colors MUST be HSL.
   .max-h-dvh {
     max-height: 100dvh;
   }
-}
 
+  /* Responsive text utilities */
+  .heading-page {
+    @apply text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight;
+  }
+
+  .heading-section {
+    @apply text-lg sm:text-xl lg:text-2xl font-semibold;
+  }
+
+  .text-description {
+    @apply text-xs sm:text-sm lg:text-base text-muted-foreground;
+  }
+
+  /* Responsive spacing utilities */
+  .space-responsive {
+    @apply space-y-4 sm:space-y-6;
+  }
+
+  .gap-responsive {
+    @apply gap-3 sm:gap-4 lg:gap-6;
+  }
+
+  .p-responsive {
+    @apply p-3 sm:p-4 lg:p-6;
+  }
+
+  /* Touch-friendly buttons */
+  .btn-touch {
+    @apply min-h-[44px] px-4 sm:px-6;
+  }
+
+  /* Responsive dialog/modal content */
+  .dialog-responsive {
+    @apply max-h-[85vh] overflow-y-auto;
+  }
+
+  /* Hide on specific breakpoints */
+  .hide-mobile {
+    @apply hidden sm:block;
+  }
+
+  .show-mobile {
+    @apply block sm:hidden;
+  }
+
+  /* Tab responsive utilities */
+  .tabs-scrollable {
+    @apply overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0;
+  }
+}
