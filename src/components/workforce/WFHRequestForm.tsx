@@ -42,26 +42,26 @@ export const WFHRequestForm: React.FC = () => {
   };
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
       {/* Request Form */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Home className="h-5 w-5" />
+        <CardHeader className="pb-3 sm:pb-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Home className="h-4 w-4 sm:h-5 sm:w-5" />
             Request WFH Day
           </CardTitle>
-          <CardDescription>Submit a work from home request</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">Submit a work from home request</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label>Select Date</Label>
+              <Label className="text-sm">Select Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal",
+                      "w-full justify-start text-left font-normal min-h-[44px]",
                       !date && "text-muted-foreground"
                     )}
                   >
@@ -87,19 +87,20 @@ export const WFHRequestForm: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="reason">Reason (Optional)</Label>
+              <Label htmlFor="reason" className="text-sm">Reason (Optional)</Label>
               <Textarea
                 id="reason"
                 placeholder="Enter reason for WFH..."
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 rows={3}
+                className="min-h-[80px]"
               />
             </div>
 
             <Button 
               type="submit" 
-              className="w-full"
+              className="w-full min-h-[44px]"
               disabled={!date || remainingDays <= 0 || createRequest.isPending}
             >
               <Home className="mr-2 h-4 w-4" />
@@ -111,28 +112,28 @@ export const WFHRequestForm: React.FC = () => {
 
       {/* Policy Info */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Info className="h-5 w-5" />
+        <CardHeader className="pb-3 sm:pb-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Info className="h-4 w-4 sm:h-5 sm:w-5" />
             WFH Policy
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 rounded-lg bg-muted">
-              <p className="text-sm text-muted-foreground">Monthly Limit</p>
-              <p className="text-2xl font-bold">{policy?.max_wfh_days_per_month || 8} days</p>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            <div className="p-3 sm:p-4 rounded-lg bg-muted">
+              <p className="text-xs sm:text-sm text-muted-foreground">Monthly Limit</p>
+              <p className="text-xl sm:text-2xl font-bold">{policy?.max_wfh_days_per_month || 8} <span className="text-sm font-normal">days</span></p>
             </div>
-            <div className="p-4 rounded-lg bg-muted">
-              <p className="text-sm text-muted-foreground">Used This Month</p>
-              <p className="text-2xl font-bold">{monthlyCount} days</p>
+            <div className="p-3 sm:p-4 rounded-lg bg-muted">
+              <p className="text-xs sm:text-sm text-muted-foreground">Used This Month</p>
+              <p className="text-xl sm:text-2xl font-bold">{monthlyCount} <span className="text-sm font-normal">days</span></p>
             </div>
           </div>
 
-          <div className="p-4 rounded-lg border">
-            <p className="text-sm font-medium">Remaining Days</p>
+          <div className="p-3 sm:p-4 rounded-lg border">
+            <p className="text-xs sm:text-sm font-medium">Remaining Days</p>
             <p className={cn(
-              "text-3xl font-bold",
+              "text-2xl sm:text-3xl font-bold",
               remainingDays <= 2 ? "text-amber-600" : "text-green-600"
             )}>
               {remainingDays}
@@ -142,7 +143,7 @@ export const WFHRequestForm: React.FC = () => {
           {policy?.require_approval && (
             <Alert>
               <Info className="h-4 w-4" />
-              <AlertDescription>
+              <AlertDescription className="text-xs sm:text-sm">
                 WFH requests require manager approval
               </AlertDescription>
             </Alert>
@@ -151,14 +152,14 @@ export const WFHRequestForm: React.FC = () => {
           {policy?.advance_notice_days && policy.advance_notice_days > 0 && (
             <Alert>
               <Info className="h-4 w-4" />
-              <AlertDescription>
+              <AlertDescription className="text-xs sm:text-sm">
                 Requests require {policy.advance_notice_days} day(s) advance notice
               </AlertDescription>
             </Alert>
           )}
 
           {policy?.blackout_days && policy.blackout_days.length > 0 && (
-            <div className="text-sm">
+            <div className="text-xs sm:text-sm">
               <p className="font-medium text-muted-foreground">Blackout Days:</p>
               <p>{policy.blackout_days.join(', ')}</p>
             </div>

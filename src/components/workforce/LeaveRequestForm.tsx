@@ -58,17 +58,17 @@ export const LeaveRequestForm: React.FC = () => {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Apply for Leave</CardTitle>
-        <CardDescription>Submit a new leave request for approval</CardDescription>
+      <CardHeader className="pb-3 sm:pb-6">
+        <CardTitle className="text-base sm:text-lg">Apply for Leave</CardTitle>
+        <CardDescription className="text-xs sm:text-sm">Submit a new leave request for approval</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-2">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="leave-type">Leave Type</Label>
+              <Label htmlFor="leave-type" className="text-sm">Leave Type</Label>
               <Select value={leaveTypeId} onValueChange={setLeaveTypeId}>
-                <SelectTrigger>
+                <SelectTrigger className="min-h-[44px]">
                   <SelectValue placeholder="Select leave type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -76,7 +76,7 @@ export const LeaveRequestForm: React.FC = () => {
                     <SelectItem key={type.id} value={type.id}>
                       <div className="flex items-center gap-2">
                         <div 
-                          className="w-3 h-3 rounded-full" 
+                          className="w-3 h-3 rounded-full flex-shrink-0" 
                           style={{ backgroundColor: type.color }}
                         />
                         {type.name}
@@ -86,22 +86,25 @@ export const LeaveRequestForm: React.FC = () => {
                 </SelectContent>
               </Select>
               {selectedBalance && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   Available: {available.toFixed(1)} days
                 </p>
               )}
             </div>
 
-            <div className="flex items-center space-x-2 pt-8">
-              <Checkbox 
-                id="half-day" 
-                checked={isHalfDay} 
-                onCheckedChange={(checked) => setIsHalfDay(checked as boolean)}
-              />
-              <Label htmlFor="half-day">Half Day</Label>
+            <div className="space-y-2 sm:pt-6">
+              <label htmlFor="half-day" className="flex items-center gap-3 cursor-pointer p-2 -ml-2 rounded-lg hover:bg-muted/50 transition-colors">
+                <Checkbox 
+                  id="half-day" 
+                  className="h-5 w-5"
+                  checked={isHalfDay} 
+                  onCheckedChange={(checked) => setIsHalfDay(checked as boolean)}
+                />
+                <span className="text-sm font-medium">Half Day</span>
+              </label>
               {isHalfDay && (
                 <Select value={halfDayType} onValueChange={(v) => setHalfDayType(v as 'first_half' | 'second_half')}>
-                  <SelectTrigger className="w-32">
+                  <SelectTrigger className="min-h-[44px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -113,15 +116,15 @@ export const LeaveRequestForm: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Start Date</Label>
+              <Label className="text-sm">Start Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal",
+                      "w-full justify-start text-left font-normal min-h-[44px]",
                       !startDate && "text-muted-foreground"
                     )}
                   >
@@ -149,13 +152,13 @@ export const LeaveRequestForm: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>End Date</Label>
+              <Label className="text-sm">End Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal",
+                      "w-full justify-start text-left font-normal min-h-[44px]",
                       !endDate && "text-muted-foreground"
                     )}
                     disabled={isHalfDay}
@@ -178,12 +181,12 @@ export const LeaveRequestForm: React.FC = () => {
           </div>
 
           {totalDays > 0 && (
-            <div className="rounded-lg bg-muted p-4">
+            <div className="rounded-lg bg-muted p-3 sm:p-4">
               <p className="text-sm font-medium">
                 Total Leave: <span className="text-primary">{totalDays} day(s)</span>
               </p>
               {totalDays > available && (
-                <p className="text-sm text-destructive mt-1">
+                <p className="text-xs sm:text-sm text-destructive mt-1">
                   ⚠️ Requested days exceed available balance
                 </p>
               )}
@@ -191,19 +194,20 @@ export const LeaveRequestForm: React.FC = () => {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="reason">Reason (Optional)</Label>
+            <Label htmlFor="reason" className="text-sm">Reason (Optional)</Label>
             <Textarea
               id="reason"
               placeholder="Enter reason for leave..."
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={3}
+              className="min-h-[80px]"
             />
           </div>
 
           <Button 
             type="submit" 
-            className="w-full md:w-auto"
+            className="w-full sm:w-auto min-h-[44px]"
             disabled={!leaveTypeId || !startDate || !endDate || totalDays > available || createRequest.isPending}
           >
             <Send className="mr-2 h-4 w-4" />
