@@ -357,12 +357,33 @@ export default function EnhancedChatList({
             </div>
           )}
 
-          {/* Empty State */}
+          {/* Empty State - No channels but team members available */}
+          {processedChannels.length === 0 && filteredTeamMembers.length > 0 && !searchQuery && (
+            <div className="text-center py-8 px-4 mb-4 bg-muted/30 rounded-lg mx-2">
+              <div className="p-3 rounded-full bg-primary/10 w-fit mx-auto mb-3">
+                <MessageCircle className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="font-semibold text-sm mb-1">Start a Conversation</h3>
+              <p className="text-xs text-muted-foreground mb-3">
+                Click on a team member below to start chatting
+              </p>
+            </div>
+          )}
+
+          {/* Empty State - No results */}
           {processedChannels.length === 0 && filteredTeamMembers.length === 0 && (
             <div className="text-center py-12 px-4">
-              <Users className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-sm text-muted-foreground">
-                {searchQuery ? 'No team members found' : 'No team members available'}
+              <div className="p-4 rounded-full bg-muted w-fit mx-auto mb-4">
+                <Users className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground" />
+              </div>
+              <h3 className="font-semibold mb-2">
+                {searchQuery ? 'No Results Found' : 'No Team Members'}
+              </h3>
+              <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                {searchQuery 
+                  ? `No conversations or team members match "${searchQuery}"`
+                  : 'There are no team members in your organization yet.'
+                }
               </p>
             </div>
           )}
