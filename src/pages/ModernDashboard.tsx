@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useViewMode } from '@/hooks/useViewMode';
@@ -42,6 +42,18 @@ export default function ModernDashboard() {
   const { timeLogs, logTime, isLogging } = useTimeLogs();
   const [activeTab, setActiveTab] = useState('overview');
   const navigate = useNavigate();
+
+  // Listen for navigation events from dashboard widgets
+  useEffect(() => {
+    const handleNavigateToTab = (event: CustomEvent<string>) => {
+      setActiveTab(event.detail);
+    };
+
+    window.addEventListener('navigate-to-tab', handleNavigateToTab as EventListener);
+    return () => {
+      window.removeEventListener('navigate-to-tab', handleNavigateToTab as EventListener);
+    };
+  }, []);
 
   if (loading || roleLoading) {
     return (

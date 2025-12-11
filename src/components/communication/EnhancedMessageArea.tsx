@@ -349,9 +349,12 @@ export default function EnhancedMessageArea({
   };
 
   return (
-    <div className="h-full flex flex-col bg-background">
+    <div className="h-full flex flex-col bg-background overflow-hidden">
       {/* Header */}
-      <div className="border-b border-border px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 md:py-4 flex items-center justify-between sticky top-0 bg-card z-10 shadow-sm safe-top">
+      <div 
+        className="border-b border-border px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 md:py-4 flex items-center justify-between sticky top-0 bg-card z-10 shadow-sm shrink-0"
+        style={{ paddingTop: 'max(0.625rem, env(safe-area-inset-top))' }}
+      >
         <div className="flex items-center gap-2 sm:gap-3 md:gap-4 min-w-0 flex-1">
           {isMobile && onBack && (
             <Button variant="ghost" size="icon" onClick={onBack} className="h-9 w-9 min-h-[44px] min-w-[44px]" aria-label="Go back">
@@ -397,8 +400,8 @@ export default function EnhancedMessageArea({
       </div>
 
       {/* Messages Area */}
-      <ScrollArea className="flex-1 p-3 sm:p-4">
-        <div className="space-y-4 sm:space-y-6">
+      <ScrollArea className="flex-1 min-h-0">
+        <div className="p-3 sm:p-4 space-y-4 sm:space-y-6">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -465,7 +468,10 @@ export default function EnhancedMessageArea({
       </ScrollArea>
 
       {/* Message Input */}
-      <div className="p-3 md:p-4 border-t border-border bg-card/50 backdrop-blur-sm safe-bottom">
+      <div 
+        className="p-3 md:p-4 border-t border-border bg-card/50 backdrop-blur-sm shrink-0"
+        style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+      >
         <EnhancedMessageInput
           onSendMessage={handleSendMessage}
           placeholder={`Message ${channel.is_direct_message && channelUser ? channelUser.full_name : `#${channel.name}`}`}

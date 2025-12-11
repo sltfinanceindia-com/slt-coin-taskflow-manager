@@ -251,7 +251,7 @@ export default function EnhancedChatList({
   return (
     <div className="h-full bg-background flex flex-col">
       {/* Search Header */}
-      <div className="p-3 sm:p-4 border-b border-border safe-top">
+      <div className="p-3 sm:p-4 border-b border-border shrink-0" style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 text-muted-foreground transform -translate-y-1/2" />
           <Input
@@ -265,8 +265,8 @@ export default function EnhancedChatList({
       </div>
 
       {/* Chat List */}
-      <ScrollArea className="flex-1 safe-bottom">
-        <div className="space-y-1 p-2">
+      <ScrollArea className="flex-1 min-h-0">
+        <div className="space-y-1 p-2" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
           {/* Pinned Section */}
           {pinnedChannels.length > 0 && (
             <div className="space-y-1">
