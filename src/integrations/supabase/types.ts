@@ -1321,6 +1321,121 @@ export type Database = {
           },
         ]
       }
+      employee_capacity: {
+        Row: {
+          available_from: string | null
+          available_until: string | null
+          created_at: string
+          hourly_rate: number | null
+          id: string
+          organization_id: string | null
+          profile_id: string
+          updated_at: string
+          utilization_target: number | null
+          weekly_hours: number
+        }
+        Insert: {
+          available_from?: string | null
+          available_until?: string | null
+          created_at?: string
+          hourly_rate?: number | null
+          id?: string
+          organization_id?: string | null
+          profile_id: string
+          updated_at?: string
+          utilization_target?: number | null
+          weekly_hours?: number
+        }
+        Update: {
+          available_from?: string | null
+          available_until?: string | null
+          created_at?: string
+          hourly_rate?: number | null
+          id?: string
+          organization_id?: string | null
+          profile_id?: string
+          updated_at?: string
+          utilization_target?: number | null
+          weekly_hours?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_capacity_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_capacity_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_skills: {
+        Row: {
+          certified_date: string | null
+          created_at: string
+          id: string
+          is_certified: boolean | null
+          organization_id: string | null
+          proficiency_level: number
+          profile_id: string
+          skill_id: string
+          updated_at: string
+          years_experience: number | null
+        }
+        Insert: {
+          certified_date?: string | null
+          created_at?: string
+          id?: string
+          is_certified?: boolean | null
+          organization_id?: string | null
+          proficiency_level?: number
+          profile_id: string
+          skill_id: string
+          updated_at?: string
+          years_experience?: number | null
+        }
+        Update: {
+          certified_date?: string | null
+          created_at?: string
+          id?: string
+          is_certified?: boolean | null
+          organization_id?: string | null
+          proficiency_level?: number
+          profile_id?: string
+          skill_id?: string
+          updated_at?: string
+          years_experience?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_skills_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_skills_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_skills_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feedback_cycles: {
         Row: {
           created_at: string
@@ -3409,6 +3524,71 @@ export type Database = {
           },
         ]
       }
+      project_role_requirements: {
+        Row: {
+          assigned_profile_id: string | null
+          created_at: string
+          id: string
+          min_proficiency: number | null
+          organization_id: string | null
+          project_id: string
+          required_hours: number | null
+          role_name: string
+          skill_id: string | null
+        }
+        Insert: {
+          assigned_profile_id?: string | null
+          created_at?: string
+          id?: string
+          min_proficiency?: number | null
+          organization_id?: string | null
+          project_id: string
+          required_hours?: number | null
+          role_name: string
+          skill_id?: string | null
+        }
+        Update: {
+          assigned_profile_id?: string | null
+          created_at?: string
+          id?: string
+          min_proficiency?: number | null
+          organization_id?: string | null
+          project_id?: string
+          required_hours?: number | null
+          role_name?: string
+          skill_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_role_requirements_assigned_profile_id_fkey"
+            columns: ["assigned_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_role_requirements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_role_requirements_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_role_requirements_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           actual_end_date: string | null
@@ -3839,6 +4019,51 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "shift_types_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skills: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          organization_id: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          organization_id?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skills_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skills_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -4962,6 +5187,19 @@ export type Database = {
       }
       get_current_profile_id: { Args: never; Returns: string }
       get_current_user_role: { Args: never; Returns: string }
+      get_employee_workload: {
+        Args: {
+          p_end_date?: string
+          p_profile_id: string
+          p_start_date?: string
+        }
+        Returns: {
+          capacity_hours: number
+          task_count: number
+          total_assigned_hours: number
+          utilization_percentage: number
+        }[]
+      }
       get_leaderboard: {
         Args: { p_org_id: string; p_period?: string }
         Returns: {
@@ -5011,6 +5249,22 @@ export type Database = {
       }
       is_org_admin: { Args: { _org_id?: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      suggest_task_assignment: {
+        Args: {
+          p_end_date?: string
+          p_min_proficiency?: number
+          p_required_skill_id?: string
+          p_start_date?: string
+        }
+        Returns: {
+          available_hours: number
+          current_utilization: number
+          full_name: string
+          match_score: number
+          proficiency_level: number
+          profile_id: string
+        }[]
+      }
       track_user_activity: {
         Args: {
           p_activity_type: string
