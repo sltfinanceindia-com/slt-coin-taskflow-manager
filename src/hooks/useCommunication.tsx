@@ -470,17 +470,27 @@ export function useCommunication() {
 
   // Initial data fetch
   useEffect(() => {
-    if (profile?.id && profile?.organization_id) {
-      console.log('🔄 Fetching communication data for profile:', profile.id);
-      setIsLoading(true);
-      Promise.all([
-        fetchChannels(),
-        fetchTeamMembers()
-      ]).finally(() => {
-        console.log('✅ Communication data loaded');
-        setIsLoading(false);
-      });
+    if (!profile?.id) {
+      console.log('⏭️ No profile ID yet, waiting...');
+      return;
     }
+
+    if (!profile?.organization_id) {
+      console.log('⚠️ No organization_id in profile, setting loading to false');
+      setIsLoading(false);
+      return;
+    }
+
+    console.log('🔄 Fetching communication data for profile:', profile.id, 'org:', profile.organization_id);
+    setIsLoading(true);
+    
+    Promise.all([
+      fetchChannels(),
+      fetchTeamMembers()
+    ]).finally(() => {
+      console.log('✅ Communication data loaded');
+      setIsLoading(false);
+    });
   }, [profile?.id, profile?.organization_id, fetchChannels, fetchTeamMembers]);
 
   return {
