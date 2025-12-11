@@ -43,7 +43,7 @@ import {
 import { usePortfolios, Portfolio, CreatePortfolioData } from '@/hooks/usePortfolios';
 import { useEmployeeDirectory } from '@/hooks/useEmployeeDirectory';
 import { useUserRole } from '@/hooks/useUserRole';
-import { formatCurrency } from '@/lib/currency';
+import { formatINR } from '@/lib/currency';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -314,8 +314,8 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({ portfolio, onEdit, onDele
           </div>
           <Progress value={budgetUsed} className="h-2" />
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>{formatCurrency(portfolio.spent_budget || 0)} spent</span>
-            <span>{formatCurrency(portfolio.budget || 0)} total</span>
+            <span>{formatINR(portfolio.spent_budget || 0)} spent</span>
+            <span>{formatINR(portfolio.budget || 0)} total</span>
           </div>
         </div>
 
@@ -450,14 +450,8 @@ export const PortfolioManagement: React.FC<PortfolioManagementProps> = ({ onSele
             ? 'Try adjusting your search terms' 
             : 'Create your first portfolio to start organizing programs and projects'
           }
-          action={
-            isAdmin && !searchQuery ? (
-              <Button onClick={() => setIsDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Portfolio
-              </Button>
-            ) : undefined
-          }
+          actionLabel={isAdmin && !searchQuery ? 'Create Portfolio' : undefined}
+          onAction={isAdmin && !searchQuery ? () => setIsDialogOpen(true) : undefined}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">

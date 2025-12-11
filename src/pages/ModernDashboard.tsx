@@ -16,7 +16,7 @@ import { InternManagement } from '@/components/InternManagement';
 import { CoinManagement } from '@/components/CoinManagement';
 import { MyCoins } from '@/components/MyCoins';
 import { EnhancedDashboardWidgets } from '@/components/EnhancedDashboardWidgets';
-import { ProjectManagement } from '@/components/ProjectManagement';
+import { ProjectPortfolioHub } from '@/components/project/ProjectPortfolioHub';
 import { KanbanBoard } from '@/components/KanbanBoard';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { AppSidebar } from '@/components/AppSidebar';
@@ -125,7 +125,7 @@ export default function ModernDashboard() {
         }
       
       case 'projects':
-        return <ProjectManagement />;
+        return <ProjectPortfolioHub />;
       
       case 'training':
         navigate('/training');
