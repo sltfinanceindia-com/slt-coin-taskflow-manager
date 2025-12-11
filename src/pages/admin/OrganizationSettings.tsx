@@ -137,52 +137,53 @@ export default function OrganizationSettings() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+    <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-6 sm:space-y-8">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-5 w-5" />
+      <div className="flex items-center gap-3 sm:gap-4">
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="shrink-0">
+          <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
         </Button>
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Organization Settings</h1>
-          <p className="text-muted-foreground">Manage your organization's profile and preferences</p>
+        <div className="min-w-0">
+          <h1 className="text-lg sm:text-2xl font-bold text-foreground truncate">Organization Settings</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm truncate">Manage your organization's profile and preferences</p>
         </div>
       </div>
 
       {/* Company Profile */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Building2 className="h-4 w-4 sm:h-5 sm:w-5" />
             Company Profile
           </CardTitle>
-          <CardDescription>Basic information about your organization</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">Basic information about your organization</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="p-4 sm:p-6 pt-0 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Organization Name</Label>
+              <Label htmlFor="name" className="text-sm">Organization Name</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Your company name"
+                className="h-10 sm:h-11"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="subdomain">Subdomain</Label>
+              <Label htmlFor="subdomain" className="text-sm">Subdomain</Label>
               <Input
                 id="subdomain"
                 value={organization.subdomain}
                 disabled
-                className="bg-muted"
+                className="bg-muted h-10 sm:h-11"
               />
               <p className="text-xs text-muted-foreground">Subdomain cannot be changed</p>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description" className="text-sm">Description</Label>
             <Textarea
               id="description"
               value={formData.description}
@@ -194,28 +195,30 @@ export default function OrganizationSettings() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="contact_email">Contact Email</Label>
+              <Label htmlFor="contact_email" className="text-sm">Contact Email</Label>
               <Input
                 id="contact_email"
                 type="email"
                 value={formData.contact_email}
                 onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
                 placeholder="contact@company.com"
+                className="h-10 sm:h-11"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="contact_phone">Contact Phone</Label>
+              <Label htmlFor="contact_phone" className="text-sm">Contact Phone</Label>
               <Input
                 id="contact_phone"
                 value={formData.contact_phone}
                 onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
                 placeholder="+91 9876543210"
+                className="h-10 sm:h-11"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="address">Address</Label>
+            <Label htmlFor="address" className="text-sm">Address</Label>
             <Textarea
               id="address"
               value={formData.address}
@@ -229,68 +232,70 @@ export default function OrganizationSettings() {
 
       {/* Branding */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Palette className="h-5 w-5" />
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Palette className="h-4 w-4 sm:h-5 sm:w-5" />
             Branding
           </CardTitle>
-          <CardDescription>Customize your organization's appearance</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">Customize your organization's appearance</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <CardContent className="p-4 sm:p-6 pt-0 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div className="space-y-2">
-              <Label htmlFor="primary_color">Primary Color</Label>
+              <Label htmlFor="primary_color" className="text-sm">Primary Color</Label>
               <div className="flex gap-2">
                 <Input
                   id="primary_color"
                   type="color"
                   value={formData.primary_color}
                   onChange={(e) => setFormData({ ...formData, primary_color: e.target.value })}
-                  className="w-16 h-10 p-1 cursor-pointer"
+                  className="w-12 h-10 sm:w-16 sm:h-11 p-1 cursor-pointer"
                 />
                 <Input
                   value={formData.primary_color}
                   onChange={(e) => setFormData({ ...formData, primary_color: e.target.value })}
                   placeholder="#10b981"
-                  className="flex-1"
+                  className="flex-1 h-10 sm:h-11"
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="secondary_color">Secondary Color</Label>
+              <Label htmlFor="secondary_color" className="text-sm">Secondary Color</Label>
               <div className="flex gap-2">
                 <Input
                   id="secondary_color"
                   type="color"
                   value={formData.secondary_color}
                   onChange={(e) => setFormData({ ...formData, secondary_color: e.target.value })}
-                  className="w-16 h-10 p-1 cursor-pointer"
+                  className="w-12 h-10 sm:w-16 sm:h-11 p-1 cursor-pointer"
                 />
                 <Input
                   value={formData.secondary_color}
                   onChange={(e) => setFormData({ ...formData, secondary_color: e.target.value })}
                   placeholder="#059669"
-                  className="flex-1"
+                  className="flex-1 h-10 sm:h-11"
                 />
               </div>
             </div>
           </div>
 
           {/* Preview */}
-          <div className="mt-4 p-4 rounded-lg border">
-            <p className="text-sm font-medium mb-3">Preview</p>
-            <div className="flex gap-3">
+          <div className="mt-4 p-3 sm:p-4 rounded-lg border">
+            <p className="text-xs sm:text-sm font-medium mb-3">Preview</p>
+            <div className="flex flex-wrap gap-2 sm:gap-3">
               <Button 
+                size="sm"
                 style={{ backgroundColor: formData.primary_color }}
-                className="text-white"
+                className="text-white text-xs sm:text-sm"
               >
-                Primary Button
+                Primary
               </Button>
               <Button 
+                size="sm"
                 style={{ backgroundColor: formData.secondary_color }}
-                className="text-white"
+                className="text-white text-xs sm:text-sm"
               >
-                Secondary Button
+                Secondary
               </Button>
             </div>
           </div>
@@ -299,18 +304,18 @@ export default function OrganizationSettings() {
 
       {/* Subscription */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />
             Subscription
           </CardTitle>
-          <CardDescription>Your current plan and usage</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">Your current plan and usage</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
+        <CardContent className="p-4 sm:p-6 pt-0 space-y-4 sm:space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <p className="font-medium">Current Plan</p>
-              <div className="flex items-center gap-2 mt-1">
+              <p className="font-medium text-sm sm:text-base">Current Plan</p>
+              <div className="flex flex-wrap items-center gap-2 mt-1">
                 <Badge className={getPlanBadgeColor(organization.subscription_plan?.code)}>
                   <Sparkles className="h-3 w-3 mr-1" />
                   {organization.subscription_plan?.name || 'Free'}
@@ -320,7 +325,7 @@ export default function OrganizationSettings() {
                 </Badge>
               </div>
             </div>
-            <Button variant="outline" disabled>
+            <Button variant="outline" disabled className="w-full sm:w-auto">
               Upgrade Plan
             </Button>
           </div>
@@ -331,9 +336,9 @@ export default function OrganizationSettings() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium">User Limit</span>
+                <span className="font-medium text-sm sm:text-base">User Limit</span>
               </div>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-xs sm:text-sm text-muted-foreground">
                 {userCount} / {organization.max_users === -1 ? '∞' : organization.max_users} users
               </span>
             </div>
@@ -341,7 +346,7 @@ export default function OrganizationSettings() {
               <Progress value={usagePercentage} className="h-2" />
             )}
             {usagePercentage >= 80 && organization.max_users !== -1 && (
-              <p className="text-sm text-amber-600">
+              <p className="text-xs sm:text-sm text-amber-600">
                 You're approaching your user limit. Consider upgrading your plan.
               </p>
             )}
@@ -350,9 +355,9 @@ export default function OrganizationSettings() {
           {organization.trial_ends_at && (
             <>
               <Separator />
-              <div className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-800">
-                <p className="font-medium text-amber-800 dark:text-amber-200">Trial Period</p>
-                <p className="text-sm text-amber-700 dark:text-amber-300">
+              <div className="p-3 sm:p-4 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                <p className="font-medium text-amber-800 dark:text-amber-200 text-sm">Trial Period</p>
+                <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-300">
                   Your trial ends on {new Date(organization.trial_ends_at).toLocaleDateString()}
                 </p>
               </div>
@@ -362,8 +367,8 @@ export default function OrganizationSettings() {
       </Card>
 
       {/* Save Button */}
-      <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={isSaving} className="min-w-[120px]">
+      <div className="flex justify-end pb-6">
+        <Button onClick={handleSave} disabled={isSaving} className="w-full sm:w-auto min-w-[120px]">
           {isSaving ? (
             <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
           ) : (

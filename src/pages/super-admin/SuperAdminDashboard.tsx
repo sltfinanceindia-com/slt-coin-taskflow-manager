@@ -221,50 +221,52 @@ export default function SuperAdminDashboard() {
 
         {/* Recent Organizations */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 sm:p-6">
             <div>
-              <CardTitle>Recent Organizations</CardTitle>
-              <CardDescription>Latest organizations registered on the platform</CardDescription>
+              <CardTitle className="text-base sm:text-lg">Recent Organizations</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Latest organizations registered on the platform</CardDescription>
             </div>
-            <Button variant="outline" size="sm" asChild>
+            <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
               <a href="/super-admin/organizations">
                 View All
                 <ArrowRight className="h-4 w-4 ml-2" />
               </a>
             </Button>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6 pt-0">
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
               </div>
             ) : recentOrgs.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {recentOrgs.map((org) => (
                   <div
                     key={org.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border rounded-lg hover:bg-accent/50 transition-colors gap-3"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Building2 className="h-5 w-5 text-primary" />
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                       </div>
-                      <div>
-                        <h4 className="font-medium">{org.name}</h4>
-                        <p className="text-sm text-muted-foreground">{org.subdomain}</p>
+                      <div className="min-w-0">
+                        <h4 className="font-medium text-sm sm:text-base truncate">{org.name}</h4>
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate">{org.subdomain}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right hidden sm:block">
-                        <p className="text-sm font-medium">{org.user_count} users</p>
+                    <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4 pl-11 sm:pl-0">
+                      <div className="text-left sm:text-right">
+                        <p className="text-xs sm:text-sm font-medium">{org.user_count} users</p>
                         <p className="text-xs text-muted-foreground">
                           {format(new Date(org.created_at), 'MMM dd, yyyy')}
                         </p>
                       </div>
-                      {getStatusBadge(org.status)}
-                      <Badge variant="outline">
-                        {org.subscription_plan?.name || 'Free'}
-                      </Badge>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {getStatusBadge(org.status)}
+                        <Badge variant="outline" className="text-xs hidden xs:inline-flex">
+                          {org.subscription_plan?.name || 'Free'}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
                 ))}
