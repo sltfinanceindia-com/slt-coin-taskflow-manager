@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Navigate, useParams, useNavigate } from 'react-router-dom';
+import { Navigate, useParams, useNavigate, Link } from 'react-router-dom';
 import { 
   Card, 
   CardContent, 
@@ -193,35 +193,35 @@ export default function OrganizationDetail() {
 
   return (
     <SuperAdminLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+      <div className="space-y-4 sm:space-y-6">
+        {/* Header - Responsive */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="shrink-0">
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold">{organization?.name || 'Loading...'}</h1>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <h1 className="text-lg sm:text-2xl font-bold truncate">{organization?.name || 'Loading...'}</h1>
                 {organization && getStatusBadge(organization.status)}
               </div>
-              <p className="text-muted-foreground">{organization?.subdomain}.sltworkhub.com</p>
+              <p className="text-xs sm:text-sm text-muted-foreground truncate">{organization?.subdomain}.sltworkhub.com</p>
             </div>
           </div>
           {organization && (
-            <div className="flex gap-2">
-              <Button variant="outline" asChild>
-                <a href={`/super-admin/organizations/${id}/edit`}>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit
-                </a>
+            <div className="flex gap-2 ml-auto sm:ml-0">
+              <Button variant="outline" size="sm" asChild>
+                <Link to={`/super-admin/organizations/${id}/edit`}>
+                  <Edit className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Edit</span>
+                </Link>
               </Button>
               {organization.status === 'active' ? (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive">
-                      <Ban className="h-4 w-4 mr-2" />
-                      Suspend
+                    <Button variant="destructive" size="sm">
+                      <Ban className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Suspend</span>
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
@@ -241,9 +241,9 @@ export default function OrganizationDetail() {
                   </AlertDialogContent>
                 </AlertDialog>
               ) : (
-                <Button variant="default" onClick={() => handleStatusChange('active')}>
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Activate
+                <Button variant="default" size="sm" onClick={() => handleStatusChange('active')}>
+                  <CheckCircle className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Activate</span>
                 </Button>
               )}
             </div>
@@ -329,44 +329,51 @@ export default function OrganizationDetail() {
 
             <TabsContent value="users">
               <Card>
-                <CardHeader>
-                  <CardTitle>Organization Users</CardTitle>
-                  <CardDescription>All users belonging to this organization</CardDescription>
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="text-base sm:text-lg">Organization Users</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">All users belonging to this organization</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-0 sm:p-6 sm:pt-0">
                   {users.length > 0 ? (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Role</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Joined</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {users.map((user) => (
-                          <TableRow key={user.id}>
-                            <TableCell className="font-medium">{user.full_name}</TableCell>
-                            <TableCell>{user.email}</TableCell>
-                            <TableCell>{getRoleBadge(user.role)}</TableCell>
-                            <TableCell>
-                              {user.is_active ? (
-                                <Badge className="bg-emerald-500">Active</Badge>
-                              ) : (
-                                <Badge variant="secondary">Inactive</Badge>
-                              )}
-                            </TableCell>
-                            <TableCell className="text-muted-foreground">
-                              {format(new Date(user.created_at), 'MMM dd, yyyy')}
-                            </TableCell>
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="min-w-[150px]">Name</TableHead>
+                            <TableHead className="min-w-[180px] hidden sm:table-cell">Email</TableHead>
+                            <TableHead>Role</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="hidden md:table-cell">Joined</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {users.map((user) => (
+                            <TableRow key={user.id}>
+                              <TableCell>
+                                <div>
+                                  <p className="font-medium text-sm">{user.full_name}</p>
+                                  <p className="text-xs text-muted-foreground sm:hidden">{user.email}</p>
+                                </div>
+                              </TableCell>
+                              <TableCell className="hidden sm:table-cell text-sm">{user.email}</TableCell>
+                              <TableCell>{getRoleBadge(user.role)}</TableCell>
+                              <TableCell>
+                                {user.is_active ? (
+                                  <Badge className="bg-emerald-500 text-xs">Active</Badge>
+                                ) : (
+                                  <Badge variant="secondary" className="text-xs">Inactive</Badge>
+                                )}
+                              </TableCell>
+                              <TableCell className="hidden md:table-cell text-muted-foreground text-sm">
+                                {format(new Date(user.created_at), 'MMM dd, yyyy')}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
                   ) : (
-                    <div className="text-center py-8 text-muted-foreground">
+                    <div className="text-center py-8 text-muted-foreground text-sm px-4">
                       No users found in this organization
                     </div>
                   )}
