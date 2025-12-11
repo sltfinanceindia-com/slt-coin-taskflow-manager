@@ -4372,6 +4372,7 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      get_user_org_id: { Args: { user_uuid: string }; Returns: string }
       get_user_organization_id: { Args: never; Returns: string }
       get_user_productivity_metrics: {
         Args: { p_end_date?: string; p_start_date?: string; p_user_id: string }
