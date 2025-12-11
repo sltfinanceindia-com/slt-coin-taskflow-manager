@@ -198,41 +198,41 @@ export function CoinManagement() {
                           </Badge>
                         </div>
                       </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          <div>
-                            <p className="text-sm font-medium mb-1">Task Description:</p>
-                            <p className="text-sm text-muted-foreground">{task.description}</p>
-                          </div>
-
-                          {task.submission_notes && (
+                        <CardContent className="p-3 sm:p-6">
+                          <div className="space-y-3 sm:space-y-4">
                             <div>
-                              <p className="text-sm font-medium mb-1">Submission Notes:</p>
-                              <p className="text-sm text-muted-foreground bg-background p-3 rounded border">
-                                {task.submission_notes}
-                              </p>
-                            </div>
-                          )}
-
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <Coins className="h-4 w-4 text-coin-gold" />
-                              <span className="font-semibold text-coin-gold">{task.slt_coin_value} SLT Coins</span>
+                              <p className="text-xs sm:text-sm font-medium mb-1">Task Description:</p>
+                              <p className="text-xs sm:text-sm text-muted-foreground">{task.description}</p>
                             </div>
 
-                            <div className="flex space-x-2">
-                              <Button variant="destructive" size="sm" onClick={() => handleVerifyClick(task, false)}>
-                                <XCircle className="h-4 w-4 mr-1" />
-                                Reject
-                              </Button>
-                              <Button size="sm" onClick={() => handleVerifyClick(task, true)}>
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Approve
-                              </Button>
+                            {task.submission_notes && (
+                              <div>
+                                <p className="text-xs sm:text-sm font-medium mb-1">Submission Notes:</p>
+                                <p className="text-xs sm:text-sm text-muted-foreground bg-background p-2 sm:p-3 rounded border">
+                                  {task.submission_notes}
+                                </p>
+                              </div>
+                            )}
+
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                              <div className="flex items-center space-x-2">
+                                <Coins className="h-4 w-4 text-coin-gold" />
+                                <span className="font-semibold text-coin-gold text-sm">{task.slt_coin_value} SLT Coins</span>
+                              </div>
+
+                              <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2">
+                                <Button variant="destructive" size="sm" onClick={() => handleVerifyClick(task, false)} className="min-h-[40px] text-xs sm:text-sm">
+                                  <XCircle className="h-4 w-4 mr-1" />
+                                  Reject
+                                </Button>
+                                <Button size="sm" onClick={() => handleVerifyClick(task, true)} className="min-h-[40px] text-xs sm:text-sm">
+                                  <CheckCircle className="h-4 w-4 mr-1" />
+                                  Approve
+                                </Button>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </CardContent>
+                        </CardContent>
                     </Card>
                   ))
                 ) : (
