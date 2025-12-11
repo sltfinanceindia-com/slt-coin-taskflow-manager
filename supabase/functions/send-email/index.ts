@@ -400,9 +400,9 @@ const handler = async (req: Request): Promise<Response> => {
     
     const template = getEmailTemplate(emailData);
     
-    // Send email using Resend
+    // Send email using Resend (use onboarding@resend.dev for unverified domains)
     const emailResponse = await resend.emails.send({
-      from: 'SLT Finance India <info@sltfinanceindia.com>',
+      from: 'SLT work HuB <onboarding@resend.dev>',
       to: [emailData.to],
       subject: template.subject,
       html: template.html,
