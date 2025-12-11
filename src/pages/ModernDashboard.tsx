@@ -4,6 +4,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useViewMode } from '@/hooks/useViewMode';
 import { useTasks } from '@/hooks/useTasks';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -42,6 +43,7 @@ export default function ModernDashboard() {
   const { timeLogs, logTime, isLogging } = useTimeLogs();
   const [activeTab, setActiveTab] = useState('overview');
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   // Listen for navigation events from dashboard widgets
   useEffect(() => {
@@ -228,8 +230,10 @@ export default function ModernDashboard() {
         return isAdmin ? <PIPManagement /> : null;
       
       case 'communication':
+        // On mobile, this is rendered full-screen separately
+        // On desktop, render with proper height constraint
         return (
-          <div className="h-[calc(100vh-12rem)] sm:h-[calc(100vh-14rem)] min-h-[400px]">
+          <div className="h-[calc(100vh-16rem)] min-h-[500px]">
             <ModernCommunication />
           </div>
         );
@@ -259,55 +263,65 @@ export default function ModernDashboard() {
           <AppHeader />
           
           <main id="main-content" className="flex-1 overflow-auto" role="main">
-            <div className="w-full max-w-none px-2 sm:px-4 lg:px-6 xl:px-8 py-2 sm:py-4 lg:py-6">
-              {/* Super Admin Banner - only show when viewing as org admin */}
-              {isSuperAdmin && isViewingOrgAdmin && (
-                <div className="mb-4 p-3 sm:p-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-200 dark:border-purple-800 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1.5">
-                      <Building2 className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                      <span className="text-xs font-medium text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-800/50 px-2 py-0.5 rounded">
-                        Organization View
+            {/* Full-screen communication on mobile */}
+            {activeTab === 'communication' && isMobile ? (
+              <div className="h-full">
+                <ModernCommunication />
+              </div>
+            ) : (
+              <div className="w-full max-w-none px-2 sm:px-4 lg:px-6 xl:px-8 py-2 sm:py-4 lg:py-6">
+                {/* Super Admin Banner - only show when viewing as org admin and not on communication */}
+                {isSuperAdmin && isViewingOrgAdmin && activeTab !== 'communication' && (
+                  <div className="mb-4 p-3 sm:p-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-200 dark:border-purple-800 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <Building2 className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                        <span className="text-xs font-medium text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-800/50 px-2 py-0.5 rounded">
+                          Organization View
+                        </span>
+                      </div>
+                      <span className="text-sm text-purple-800 dark:text-purple-200">
+                        Switch to Super Admin for platform management.
                       </span>
                     </div>
-                    <span className="text-sm text-purple-800 dark:text-purple-200">
-                      Switch to Super Admin for platform management.
-                    </span>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => navigate('/super-admin')}
+                      className="border-purple-300 text-purple-700 hover:bg-purple-100 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-900/50 w-full sm:w-auto"
+                    >
+                      <Shield className="h-4 w-4 mr-2" />
+                      Super Admin Panel
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => navigate('/super-admin')}
-                    className="border-purple-300 text-purple-700 hover:bg-purple-100 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-900/50 w-full sm:w-auto"
-                  >
-                    <Shield className="h-4 w-4 mr-2" />
-                    Super Admin Panel
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </div>
-              )}
+                )}
 
-              <header className="mb-4 sm:mb-6 lg:mb-8">
-                <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-1 sm:gap-2 mb-2">
-                  <h1 className="text-lg sm:text-2xl lg:text-3xl xl:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent leading-tight break-words hyphens-auto">
-                    Welcome back, {profile?.full_name?.split(' ')[0] || profile?.full_name}!
-                  </h1>
-                  <Badge variant="outline" className="w-fit text-xs">
-                    {getRoleDisplayName()}
-                  </Badge>
+                {/* Header - hide on communication tab on mobile */}
+                {!(activeTab === 'communication' && isMobile) && (
+                  <header className="mb-4 sm:mb-6 lg:mb-8">
+                    <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-1 sm:gap-2 mb-2">
+                      <h1 className="text-lg sm:text-2xl lg:text-3xl xl:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent leading-tight break-words hyphens-auto">
+                        Welcome back, {profile?.full_name?.split(' ')[0] || profile?.full_name}!
+                      </h1>
+                      <Badge variant="outline" className="w-fit text-xs">
+                        {getRoleDisplayName()}
+                      </Badge>
+                    </div>
+                    <p className="text-muted-foreground text-xs sm:text-sm lg:text-base leading-relaxed">
+                      {isAdmin 
+                        ? 'Manage tasks, track progress, and assign SLT Coins to your team.'
+                        : 'View your assigned tasks, log your hours, and earn SLT Coins.'
+                      }
+                    </p>
+                  </header>
+                )}
+                
+                <div className="animate-fade-in w-full">
+                  {renderTabContent()}
                 </div>
-                <p className="text-muted-foreground text-xs sm:text-sm lg:text-base leading-relaxed">
-                  {isAdmin 
-                    ? 'Manage tasks, track progress, and assign SLT Coins to your team.'
-                    : 'View your assigned tasks, log your hours, and earn SLT Coins.'
-                  }
-                </p>
-              </header>
-              
-              <div className="animate-fade-in w-full">
-                {renderTabContent()}
               </div>
-            </div>
+            )}
           </main>
         </div>
       </div>

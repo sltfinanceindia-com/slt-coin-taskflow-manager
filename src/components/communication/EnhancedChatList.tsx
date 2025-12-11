@@ -100,8 +100,10 @@ export default function EnhancedChatList({
     return channel.name;
   };
 
-  // Process and sort channels - filter out orphan DM channels
+  // Process and sort channels - filter out orphan DM channels and duplicates
   const processedChannels = useMemo(() => {
+    const seenDMUsers = new Set<string>();
+    
     let filtered = channels.filter(channel => {
       // Filter by search query
       const matchesSearch = getChannelDisplayName(channel, profile?.id || '').toLowerCase().includes(searchQuery.toLowerCase());
@@ -112,6 +114,12 @@ export default function EnhancedChatList({
         const otherUser = getDirectMessageUser(channel, profile?.id || '');
         // Only show DM channels where we can identify the other user OR have messages
         if (!otherUser && !channel.last_message) return false;
+        
+        // Deduplicate: Only keep first DM with each user (the most recent one after sorting)
+        if (otherUser) {
+          if (seenDMUsers.has(otherUser.id)) return false;
+          seenDMUsers.add(otherUser.id);
+        }
       }
       
       return true;
@@ -248,16 +256,30 @@ export default function EnhancedChatList({
     );
   };
 
-  // Filter team members based on search and exclude current user
+  // Get IDs of users who already have DM channels
+  const usersWithDMChannels = useMemo(() => {
+    const userIds = new Set<string>();
+    processedChannels.forEach(channel => {
+      if (channel.is_direct_message && channel.participant_ids) {
+        channel.participant_ids.forEach(id => {
+          if (id !== profile?.id) userIds.add(id);
+        });
+      }
+    });
+    return userIds;
+  }, [processedChannels, profile?.id]);
+
+  // Filter team members based on search and exclude current user + users with DM channels
   const filteredTeamMembers = useMemo(() => {
     return teamMembers
       .filter(member => member.id !== profile?.id) // Exclude current user
+      .filter(member => !usersWithDMChannels.has(member.id)) // Exclude users with DM channels
       .filter(member => 
         member.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         member.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
         member.role.toLowerCase().includes(searchQuery.toLowerCase())
       );
-  }, [teamMembers, searchQuery, profile]);
+  }, [teamMembers, searchQuery, profile, usersWithDMChannels]);
 
   return (
     <div className="h-full bg-background flex flex-col">
