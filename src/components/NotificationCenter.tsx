@@ -283,7 +283,11 @@ export function NotificationCenter() {
         <SheetTrigger asChild>
           {TriggerButton}
         </SheetTrigger>
-        <SheetContent side="bottom" className="h-[80vh] p-0">
+        <SheetContent 
+          side="bottom" 
+          className="h-[80vh] p-0"
+          aria-describedby="notification-description"
+        >
           <SheetHeader className="p-4 border-b">
             <div className="flex items-center justify-between">
               <SheetTitle>Notifications</SheetTitle>
@@ -292,12 +296,15 @@ export function NotificationCenter() {
                   variant="ghost"
                   size="sm"
                   onClick={markAllAsRead}
-                  className="text-xs"
+                  className="text-xs min-h-[36px]"
                 >
                   Mark all read
                 </Button>
               )}
             </div>
+            <p id="notification-description" className="sr-only">
+              View and manage your notifications
+            </p>
           </SheetHeader>
           <div className="overflow-y-auto h-[calc(80vh-4rem)]">
             <NotificationList />

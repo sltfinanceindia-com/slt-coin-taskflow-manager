@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,15 +10,15 @@ import { Badge } from '@/components/ui/badge';
 import { AvatarUpload } from '@/components/AvatarUpload';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
-import { Coins, Clock, Target, User, Calendar, Award } from 'lucide-react';
+import { Coins, Clock, Target, User, Calendar, Award, ArrowLeft } from 'lucide-react';
 
 export function ProfileDashboard() {
+  const navigate = useNavigate();
   const { profile: currentProfile } = useAuth();
   const { profile, stats, updateProfile, isUpdating } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || '',
-    email: profile?.email || '',
     bio: profile?.bio || '',
     department: profile?.department || '',
     employee_id: profile?.employee_id || '',
@@ -35,7 +36,6 @@ export function ProfileDashboard() {
   const handleCancelEdit = () => {
     setFormData({
       full_name: profile?.full_name || '',
-      email: profile?.email || '',
       bio: profile?.bio || '',
       department: profile?.department || '',
       employee_id: profile?.employee_id || '',
@@ -65,10 +65,12 @@ export function ProfileDashboard() {
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={() => window.history.back()}
-              className="text-xs sm:text-sm"
+              onClick={() => navigate('/dashboard')}
+              className="text-xs sm:text-sm min-h-[44px]"
             >
-              ← Back to Dashboard
+              <ArrowLeft className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Back to Dashboard</span>
+              <span className="sm:hidden">Back</span>
             </Button>
           </div>
         </div>
@@ -198,11 +200,11 @@ export function ProfileDashboard() {
                     <Input
                       id="email"
                       type="email"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      disabled={!isEditing}
-                      className="text-sm"
+                      value={profile.email || ''}
+                      disabled
+                      className="text-sm bg-muted"
                     />
+                    <p className="text-xs text-muted-foreground">Email cannot be changed</p>
                   </div>
                 </div>
                 <div className="space-y-2">
