@@ -303,30 +303,30 @@ function ObjectiveCard({ objective, onUpdate, onDelete, isAdmin }: any) {
     <Card>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
-          <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                {isOpen ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-                <div>
-                  <CardTitle className="flex items-center gap-2">
+          <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors p-3 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-start sm:items-center gap-2 sm:gap-4 min-w-0">
+                {isOpen ? <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 shrink-0 mt-0.5 sm:mt-0" /> : <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 shrink-0 mt-0.5 sm:mt-0" />}
+                <div className="min-w-0 flex-1">
+                  <CardTitle className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-sm sm:text-base">
                     {getLevelIcon(objective.level)}
-                    {objective.title}
+                    <span className="truncate">{objective.title}</span>
                     {getStatusBadge(objective.status)}
                   </CardTitle>
-                  <CardDescription className="flex items-center gap-2 mt-1">
-                    <Avatar className="h-5 w-5">
+                  <CardDescription className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1 text-xs sm:text-sm">
+                    <Avatar className="h-4 w-4 sm:h-5 sm:w-5">
                       <AvatarImage src={objective.owner?.avatar_url} />
-                      <AvatarFallback>{objective.owner?.full_name?.charAt(0)}</AvatarFallback>
+                      <AvatarFallback className="text-[10px] sm:text-xs">{objective.owner?.full_name?.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    {objective.owner?.full_name}
-                    {objective.quarter && ` • ${objective.quarter} ${objective.year}`}
+                    <span className="truncate">{objective.owner?.full_name}</span>
+                    {objective.quarter && <span className="hidden sm:inline">• {objective.quarter} {objective.year}</span>}
                   </CardDescription>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 sm:gap-4 pl-6 sm:pl-0">
                 <div className="text-right">
-                  <div className="text-2xl font-bold">{objective.progress_percentage}%</div>
-                  <Progress value={objective.progress_percentage} className="w-24 h-2" />
+                  <div className="text-lg sm:text-2xl font-bold">{objective.progress_percentage}%</div>
+                  <Progress value={objective.progress_percentage} className="w-16 sm:w-24 h-1.5 sm:h-2" />
                 </div>
               </div>
             </div>

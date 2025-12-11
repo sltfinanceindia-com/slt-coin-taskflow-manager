@@ -295,35 +295,37 @@ ${u.name}:
   };
 
   return (
-    <div className="space-y-6 p-4">
+    <div className="space-y-4 sm:space-y-6 p-2 sm:p-4">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h2 className="text-3xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 bg-gradient-primary bg-clip-text text-transparent">
             Attendance Management
           </h2>
-          <p className="text-muted-foreground">
-            {isAdmin ? 'Monitor team attendance with In Time and Out Time tracking' : 'View your attendance records'}
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            {isAdmin ? 'Monitor team attendance' : 'View your attendance records'}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={exportToCSV} variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export CSV
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={exportToCSV} variant="outline" size="sm" className="h-8 sm:h-9 text-xs sm:text-sm">
+            <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            <span className="hidden xs:inline">Export</span> CSV
           </Button>
-          <Button onClick={exportDetailedReport} variant="default" size="sm">
-            <FileText className="h-4 w-4 mr-2" />
-            Detailed Report
+          <Button onClick={exportDetailedReport} variant="default" size="sm" className="h-8 sm:h-9 text-xs sm:text-sm">
+            <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            Report
           </Button>
           {isAdmin && (
             <Button 
               onClick={closeAllStaleSessions} 
               variant="destructive"
               size="sm"
+              className="h-8 sm:h-9 text-xs sm:text-sm"
               disabled={isClosingStaleSessions}
             >
-              <X className="h-4 w-4 mr-2" />
-              {isClosingStaleSessions ? 'Closing...' : 'Close Stale Sessions'}
+              <X className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">{isClosingStaleSessions ? 'Closing...' : 'Close Stale'}</span>
+              <span className="sm:hidden">{isClosingStaleSessions ? '...' : 'Stale'}</span>
             </Button>
           )}
         </div>
@@ -332,50 +334,52 @@ ${u.name}:
       {/* Filters - Admin Only */}
       {isAdmin && (
         <Card>
-          <CardContent className="p-4">
-            <div className="flex gap-4 items-center flex-wrap">
-              <div className="flex-1 min-w-[200px]">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-center">
+              <div className="flex-1 w-full sm:min-w-[200px]">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search by name or email..."
+                    placeholder="Search..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9"
+                    className="pl-9 h-9 text-sm"
                   />
                 </div>
               </div>
               
-              <Select value={selectedUser} onValueChange={setSelectedUser}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="Select user" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Users</SelectItem>
-                  {allUsers.map(user => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.full_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="grid grid-cols-2 sm:flex gap-2 sm:gap-4">
+                <Select value={selectedUser} onValueChange={setSelectedUser}>
+                  <SelectTrigger className="w-full sm:w-[180px] h-9 text-xs sm:text-sm">
+                    <SelectValue placeholder="Select user" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Users</SelectItem>
+                    {allUsers.map(user => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.full_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="on-time">On Time</SelectItem>
-                  <SelectItem value="late">Late</SelectItem>
-                  <SelectItem value="very-late">Very Late</SelectItem>
-                </SelectContent>
-              </Select>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-full sm:w-[140px] h-9 text-xs sm:text-sm">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="on-time">On Time</SelectItem>
+                    <SelectItem value="late">Late</SelectItem>
+                    <SelectItem value="very-late">Very Late</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
               <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'week' | 'month')}>
-                <TabsList>
-                  <TabsTrigger value="week">Week</TabsTrigger>
-                  <TabsTrigger value="month">Month</TabsTrigger>
+                <TabsList className="h-9">
+                  <TabsTrigger value="week" className="text-xs sm:text-sm px-3">Week</TabsTrigger>
+                  <TabsTrigger value="month" className="text-xs sm:text-sm px-3">Month</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
@@ -384,33 +388,33 @@ ${u.name}:
       )}
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         <Card className="card-gradient">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-green-500/10">
-                <CheckCircle className="h-6 w-6 text-green-600" />
+          <CardContent className="p-3 sm:p-6">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-green-500/10">
+                <CheckCircle className="h-4 w-4 sm:h-6 sm:w-6 text-green-600" />
               </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">On Time</p>
-                <p className="text-2xl font-bold">{stats.onTimeCount}</p>
-                <p className="text-xs text-muted-foreground">{stats.onTimePercentage.toFixed(1)}% of days</p>
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">On Time</p>
+                <p className="text-lg sm:text-2xl font-bold">{stats.onTimeCount}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">{stats.onTimePercentage.toFixed(0)}%</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="card-gradient">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-orange-500/10">
-                <Clock className="h-6 w-6 text-orange-600" />
+          <CardContent className="p-3 sm:p-6">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-orange-500/10">
+                <Clock className="h-4 w-4 sm:h-6 sm:w-6 text-orange-600" />
               </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Late Arrivals</p>
-                <p className="text-2xl font-bold">{stats.lateCount + stats.veryLateCount}</p>
-                <p className="text-xs text-muted-foreground">
-                  {(stats.latePercentage + stats.veryLatePercentage).toFixed(1)}% of days
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Late</p>
+                <p className="text-lg sm:text-2xl font-bold">{stats.lateCount + stats.veryLateCount}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">
+                  {(stats.latePercentage + stats.veryLatePercentage).toFixed(0)}%
                 </p>
               </div>
             </div>
@@ -418,16 +422,16 @@ ${u.name}:
         </Card>
 
         <Card className="card-gradient">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-blue-500/10">
-                <TrendingUp className="h-6 w-6 text-blue-600" />
+          <CardContent className="p-3 sm:p-6">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-blue-500/10">
+                <TrendingUp className="h-4 w-4 sm:h-6 sm:w-6 text-blue-600" />
               </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Hours</p>
-                <p className="text-2xl font-bold">{formatDuration(stats.totalHours)}</p>
-                <p className="text-xs text-muted-foreground">
-                  {formatDuration(stats.avgHoursPerDay)} avg/day
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Hours</p>
+                <p className="text-lg sm:text-2xl font-bold">{formatDuration(stats.totalHours)}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
+                  {formatDuration(stats.avgHoursPerDay)}/day
                 </p>
               </div>
             </div>
@@ -435,16 +439,16 @@ ${u.name}:
         </Card>
 
         <Card className="card-gradient">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-purple-500/10">
-                <CalendarIcon className="h-6 w-6 text-purple-600" />
+          <CardContent className="p-3 sm:p-6">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-purple-500/10">
+                <CalendarIcon className="h-4 w-4 sm:h-6 sm:w-6 text-purple-600" />
               </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Days Present</p>
-                <p className="text-2xl font-bold">{stats.totalDays}</p>
-                <p className="text-xs text-muted-foreground">
-                  {viewMode === 'week' ? 'This week' : 'This month'}
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Present</p>
+                <p className="text-lg sm:text-2xl font-bold">{stats.totalDays}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">
+                  {viewMode === 'week' ? 'Week' : 'Month'}
                 </p>
               </div>
             </div>

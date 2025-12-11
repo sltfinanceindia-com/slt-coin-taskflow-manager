@@ -51,11 +51,11 @@ export const WFHRequests: React.FC = () => {
     return (
       <Card>
         <CardHeader>
-          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-5 sm:h-6 w-28 sm:w-32" />
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3 sm:space-y-4">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-20 w-full" />
+            <Skeleton key={i} className="h-24 sm:h-20 w-full" />
           ))}
         </CardContent>
       </Card>
@@ -64,19 +64,19 @@ export const WFHRequests: React.FC = () => {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Home className="h-5 w-5" />
+      <CardHeader className="pb-3 sm:pb-6">
+        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+          <Home className="h-4 w-4 sm:h-5 sm:w-5" />
           {isAdmin ? 'All WFH Requests' : 'My WFH Requests'}
         </CardTitle>
       </CardHeader>
       <CardContent>
         {requests.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
+          <div className="text-center py-6 sm:py-8 text-muted-foreground text-sm">
             No WFH requests found
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {requests.map((request) => {
               const status = statusConfig[request.status];
               const StatusIcon = status.icon;
@@ -84,75 +84,94 @@ export const WFHRequests: React.FC = () => {
               return (
                 <div 
                   key={request.id} 
-                  className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors gap-3"
                 >
-                  <div className="flex items-center gap-4">
+                  {/* Main Content */}
+                  <div className="flex items-start sm:items-center gap-3 sm:gap-4">
                     {isAdmin && request.employee && (
-                      <Avatar className="h-10 w-10">
+                      <Avatar className="h-8 w-8 sm:h-10 sm:w-10 shrink-0">
                         <AvatarImage src={request.employee.avatar_url || undefined} />
-                        <AvatarFallback>
+                        <AvatarFallback className="text-xs sm:text-sm">
                           {request.employee.full_name.split(' ').map(n => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>
                     )}
-                    <div className="space-y-1">
+                    <div className="space-y-1 min-w-0 flex-1">
                       {isAdmin && request.employee && (
-                        <p className="font-medium">{request.employee.full_name}</p>
+                        <p className="font-medium text-sm sm:text-base truncate">{request.employee.full_name}</p>
                       )}
-                      <div className="flex items-center gap-2 text-sm">
-                        <Home className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
+                        <Home className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground shrink-0" />
                         <span className="font-medium">
-                          {format(new Date(request.request_date), 'EEEE, MMMM d, yyyy')}
+                          {format(new Date(request.request_date), 'EEE, MMM d, yyyy')}
                         </span>
                       </div>
                       {request.reason && (
-                        <p className="text-sm text-muted-foreground line-clamp-1">{request.reason}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-1">{request.reason}</p>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <Badge variant={status.variant} className="flex items-center gap-1">
+                  {/* Actions */}
+                  <div className="flex items-center justify-between sm:justify-end gap-2 pt-2 sm:pt-0 border-t sm:border-t-0">
+                    <Badge variant={status.variant} className="flex items-center gap-1 text-xs">
                       <StatusIcon className="h-3 w-3" />
                       {status.label}
                     </Badge>
                     
-                    {isAdmin && request.status === 'pending' && (
-                      <>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedRequest(request);
-                            setReviewAction('approve');
-                          }}
-                        >
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          Approve
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedRequest(request);
-                            setReviewAction('reject');
-                          }}
-                        >
-                          <XCircle className="h-4 w-4 mr-1" />
-                          Reject
-                        </Button>
-                      </>
-                    )}
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      {isAdmin && request.status === 'pending' && (
+                        <>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="h-8 px-2 sm:px-3 text-xs sm:text-sm"
+                            onClick={() => {
+                              setSelectedRequest(request);
+                              setReviewAction('approve');
+                            }}
+                          >
+                            <CheckCircle className="h-3.5 w-3.5 sm:mr-1" />
+                            <span className="hidden sm:inline">Approve</span>
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="h-8 px-2 sm:px-3 text-xs sm:text-sm"
+                            onClick={() => {
+                              setSelectedRequest(request);
+                              setReviewAction('reject');
+                            }}
+                          >
+                            <XCircle className="h-3.5 w-3.5 sm:mr-1" />
+                            <span className="hidden sm:inline">Reject</span>
+                          </Button>
+                        </>
+                      )}
 
-                    {!isAdmin && request.status === 'pending' && (
-                      <Button 
-                        size="sm" 
+                      {!isAdmin && request.status === 'pending' && (
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          className="h-8 w-8 p-0"
+                          onClick={() => handleCancel(request.id)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+
+                      <Button
+                        size="sm"
                         variant="ghost"
-                        onClick={() => handleCancel(request.id)}
+                        className="h-8 w-8 p-0"
+                        onClick={() => {
+                          setSelectedRequest(request);
+                          setReviewAction(null);
+                        }}
                       >
-                        <X className="h-4 w-4" />
+                        <Eye className="h-4 w-4" />
                       </Button>
-                    )}
+                    </div>
                   </div>
                 </div>
               );
@@ -162,14 +181,15 @@ export const WFHRequests: React.FC = () => {
       </CardContent>
 
       {/* Review Dialog */}
-      <Dialog open={!!reviewAction && !!selectedRequest} onOpenChange={() => {
+      <Dialog open={!!selectedRequest} onOpenChange={() => {
+        setSelectedRequest(null);
         setReviewAction(null);
         setReviewNotes('');
       }}>
-        <DialogContent>
+        <DialogContent className="max-w-[95vw] sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>
-              {reviewAction === 'approve' ? 'Approve' : 'Reject'} WFH Request
+            <DialogTitle className="text-base sm:text-lg">
+              {reviewAction ? `${reviewAction === 'approve' ? 'Approve' : 'Reject'} WFH Request` : 'WFH Request Details'}
             </DialogTitle>
           </DialogHeader>
           
@@ -177,15 +197,15 @@ export const WFHRequests: React.FC = () => {
             <div className="space-y-4">
               {selectedRequest.employee && (
                 <div className="flex items-center gap-3">
-                  <Avatar>
+                  <Avatar className="h-10 w-10">
                     <AvatarImage src={selectedRequest.employee.avatar_url || undefined} />
                     <AvatarFallback>
                       {selectedRequest.employee.full_name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
-                  <div>
-                    <p className="font-medium">{selectedRequest.employee.full_name}</p>
-                    <p className="text-sm text-muted-foreground">
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm sm:text-base truncate">{selectedRequest.employee.full_name}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       {format(new Date(selectedRequest.request_date), 'EEEE, MMMM d, yyyy')}
                     </p>
                   </div>
@@ -194,34 +214,40 @@ export const WFHRequests: React.FC = () => {
 
               {selectedRequest.reason && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Reason</p>
-                  <p className="text-sm">{selectedRequest.reason}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Reason</p>
+                  <p className="text-xs sm:text-sm">{selectedRequest.reason}</p>
                 </div>
               )}
 
-              <div className="space-y-2">
-                <Label>Notes (Optional)</Label>
-                <Textarea
-                  placeholder="Add notes..."
-                  value={reviewNotes}
-                  onChange={(e) => setReviewNotes(e.target.value)}
-                />
-              </div>
+              {reviewAction && (
+                <div className="space-y-2">
+                  <Label className="text-xs sm:text-sm">Notes (Optional)</Label>
+                  <Textarea
+                    placeholder="Add notes..."
+                    value={reviewNotes}
+                    onChange={(e) => setReviewNotes(e.target.value)}
+                    className="text-sm"
+                  />
+                </div>
+              )}
             </div>
           )}
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setReviewAction(null)}>
-              Cancel
-            </Button>
-            <Button 
-              variant={reviewAction === 'approve' ? 'default' : 'destructive'}
-              onClick={() => handleReview(reviewAction === 'approve' ? 'approved' : 'rejected')}
-              disabled={reviewRequest.isPending}
-            >
-              {reviewAction === 'approve' ? 'Approve' : 'Reject'}
-            </Button>
-          </DialogFooter>
+          {reviewAction && (
+            <DialogFooter className="flex-col sm:flex-row gap-2">
+              <Button variant="outline" onClick={() => setReviewAction(null)} className="w-full sm:w-auto">
+                Cancel
+              </Button>
+              <Button 
+                variant={reviewAction === 'approve' ? 'default' : 'destructive'}
+                onClick={() => handleReview(reviewAction === 'approve' ? 'approved' : 'rejected')}
+                disabled={reviewRequest.isPending}
+                className="w-full sm:w-auto"
+              >
+                {reviewAction === 'approve' ? 'Approve' : 'Reject'}
+              </Button>
+            </DialogFooter>
+          )}
         </DialogContent>
       </Dialog>
     </Card>
