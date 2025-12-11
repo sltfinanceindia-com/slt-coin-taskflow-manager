@@ -227,62 +227,62 @@ export default function Signup() {
   const strengthColors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500', 'bg-emerald-500'];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/30 to-background px-4 py-8">
-      <div className="w-full max-w-lg space-y-6">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/30 to-background px-3 sm:px-4 py-6 sm:py-8">
+      <div className="w-full max-w-lg space-y-4 sm:space-y-6">
         {/* Header */}
         <div className="text-center">
-          <Link to="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
-              <Coins className="h-5 w-5 text-white" />
+          <Link to="/" className="inline-flex items-center gap-2 mb-4 sm:mb-6">
+            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
+              <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
             </div>
-            <span className="text-lg font-bold">
+            <span className="text-base sm:text-lg font-bold">
               <span className="font-black">SLT</span>
               <span className="font-normal text-muted-foreground"> work </span>
               <span className="font-black">HuB</span>
             </span>
           </Link>
-          <h1 className="text-2xl font-bold text-foreground">Create Your Organization</h1>
-          <p className="text-muted-foreground mt-2">Start your 14-day free trial</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Create Your Organization</h1>
+          <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">Start your 14-day free trial</p>
         </div>
 
         {/* Progress Steps */}
-        <div className="flex items-center justify-center gap-4">
-          <div className={`flex items-center gap-2 ${step >= 1 ? 'text-primary' : 'text-muted-foreground'}`}>
-            <div className={`h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium ${
+        <div className="flex items-center justify-center gap-2 sm:gap-4">
+          <div className={`flex items-center gap-1.5 sm:gap-2 ${step >= 1 ? 'text-primary' : 'text-muted-foreground'}`}>
+            <div className={`h-7 w-7 sm:h-8 sm:w-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium transition-colors ${
               step >= 1 ? 'bg-primary text-primary-foreground' : 'bg-muted'
             }`}>
               1
             </div>
-            <span className="text-sm font-medium hidden sm:block">Organization</span>
+            <span className="text-xs sm:text-sm font-medium">Organization</span>
           </div>
-          <div className="h-px w-8 bg-border" />
-          <div className={`flex items-center gap-2 ${step >= 2 ? 'text-primary' : 'text-muted-foreground'}`}>
-            <div className={`h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium ${
+          <div className="h-px w-6 sm:w-8 bg-border" />
+          <div className={`flex items-center gap-1.5 sm:gap-2 ${step >= 2 ? 'text-primary' : 'text-muted-foreground'}`}>
+            <div className={`h-7 w-7 sm:h-8 sm:w-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium transition-colors ${
               step >= 2 ? 'bg-primary text-primary-foreground' : 'bg-muted'
             }`}>
               2
             </div>
-            <span className="text-sm font-medium hidden sm:block">Your Account</span>
+            <span className="text-xs sm:text-sm font-medium">Account</span>
           </div>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>{step === 1 ? 'Organization Details' : 'Create Your Account'}</CardTitle>
-            <CardDescription>
+        <Card className="shadow-lg">
+          <CardHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2 sm:pb-4">
+            <CardTitle className="text-lg sm:text-xl">{step === 1 ? 'Organization Details' : 'Create Your Account'}</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
               {step === 1 
                 ? 'Tell us about your company' 
                 : 'Set up your admin account'
               }
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+          <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
+            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
               {step === 1 && (
                 <>
-                  <div className="space-y-2">
-                    <Label htmlFor="companyName">
-                      <Building2 className="h-4 w-4 inline mr-2" />
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <Label htmlFor="companyName" className="text-sm">
+                      <Building2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 inline mr-1.5 sm:mr-2" />
                       Company Name
                     </Label>
                     <Input
@@ -290,7 +290,7 @@ export default function Signup() {
                       value={formData.companyName}
                       onChange={(e) => handleCompanyNameChange(e.target.value)}
                       placeholder="Acme Corporation"
-                      className={errors.companyName ? 'border-destructive' : ''}
+                      className={`min-h-[44px] text-sm sm:text-base ${errors.companyName ? 'border-destructive' : ''}`}
                     />
                     {errors.companyName && (
                       <p className="text-sm text-destructive">{errors.companyName}</p>
