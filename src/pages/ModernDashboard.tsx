@@ -33,6 +33,10 @@ import { FeedbackManagement } from '@/components/performance/FeedbackManagement'
 import { OKRManagement } from '@/components/performance/OKRManagement';
 import { OneOnOneMeetings } from '@/components/performance/OneOnOneMeetings';
 import { PIPManagement } from '@/components/performance/PIPManagement';
+import { ProjectUpdatesFeed } from '@/components/updates/ProjectUpdatesFeed';
+import { WorkHealthDashboard } from '@/components/health/WorkHealthDashboard';
+import { AutomationBuilder } from '@/components/automation/AutomationBuilder';
+import { RuleTemplates } from '@/components/automation/RuleTemplates';
 
 import { Coins, Clock, CheckCircle, Plus, Crown, ArrowRight, Shield, Building2 } from 'lucide-react';
 
@@ -231,13 +235,29 @@ export default function ModernDashboard() {
         return isAdmin ? <PIPManagement /> : null;
       
       case 'communication':
-        // On mobile, this is rendered full-screen separately
-        // On desktop, render with proper height constraint
         return (
           <div className="h-[calc(100vh-16rem)] min-h-[500px]">
             <ModernCommunication />
           </div>
         );
+      
+      case 'updates':
+        return <ProjectUpdatesFeed />;
+      
+      case 'work-health':
+        return isAdmin ? <WorkHealthDashboard /> : null;
+      
+      case 'automation':
+        return isAdmin ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <AutomationBuilder />
+            </div>
+            <div>
+              <RuleTemplates />
+            </div>
+          </div>
+        ) : null;
       
       default:
         return <EnhancedDashboardWidgets />;
