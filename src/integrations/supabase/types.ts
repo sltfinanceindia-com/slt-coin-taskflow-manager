@@ -4454,6 +4454,77 @@ export type Database = {
           },
         ]
       }
+      project_scores: {
+        Row: {
+          calculated_at: string
+          calculated_by: string | null
+          created_at: string
+          criteria_scores: Json | null
+          id: string
+          notes: string | null
+          organization_id: string | null
+          project_id: string
+          scoring_model_id: string
+          total_score: number | null
+          updated_at: string
+        }
+        Insert: {
+          calculated_at?: string
+          calculated_by?: string | null
+          created_at?: string
+          criteria_scores?: Json | null
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          project_id: string
+          scoring_model_id: string
+          total_score?: number | null
+          updated_at?: string
+        }
+        Update: {
+          calculated_at?: string
+          calculated_by?: string | null
+          created_at?: string
+          criteria_scores?: Json | null
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          project_id?: string
+          scoring_model_id?: string
+          total_score?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_scores_calculated_by_fkey"
+            columns: ["calculated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_scores_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_scores_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_scores_scoring_model_id_fkey"
+            columns: ["scoring_model_id"]
+            isOneToOne: false
+            referencedRelation: "scoring_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_templates: {
         Row: {
           category: string | null
@@ -4984,6 +5055,57 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scoring_models: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          criteria: Json | null
+          description: string | null
+          id: string
+          is_default: boolean | null
+          name: string
+          organization_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          criteria?: Json | null
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          name: string
+          organization_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          criteria?: Json | null
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          organization_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scoring_models_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scoring_models_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -6760,6 +6882,10 @@ export type Database = {
           task_health_score: number
         }[]
       }
+      calculate_project_score: {
+        Args: { p_criteria_scores: Json; p_model_id: string }
+        Returns: number
+      }
       calculate_project_variance: {
         Args: { p_baseline_id?: string; p_project_id: string }
         Returns: {
@@ -6846,6 +6972,17 @@ export type Database = {
       get_my_org_id: { Args: never; Returns: string }
       get_my_profile_id: { Args: never; Returns: string }
       get_org_user_count: { Args: { _org_id: string }; Returns: number }
+      get_portfolio_ranking: {
+        Args: { p_model_id?: string }
+        Returns: {
+          criteria_scores: Json
+          project_id: string
+          project_name: string
+          project_status: string
+          rank: number
+          total_score: number
+        }[]
+      }
       get_public_stats: { Args: never; Returns: Json }
       get_sla_metrics: {
         Args: { p_end_date?: string; p_org_id: string; p_start_date?: string }
