@@ -1114,6 +1114,159 @@ export type Database = {
           },
         ]
       }
+      change_request_approvals: {
+        Row: {
+          approver_id: string
+          change_request_id: string
+          comments: string | null
+          created_at: string
+          decided_at: string | null
+          id: string
+          organization_id: string | null
+          status: string
+          step_order: number
+        }
+        Insert: {
+          approver_id: string
+          change_request_id: string
+          comments?: string | null
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          organization_id?: string | null
+          status?: string
+          step_order?: number
+        }
+        Update: {
+          approver_id?: string
+          change_request_id?: string
+          comments?: string | null
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          organization_id?: string | null
+          status?: string
+          step_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "change_request_approvals_approver_id_fkey"
+            columns: ["approver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "change_request_approvals_change_request_id_fkey"
+            columns: ["change_request_id"]
+            isOneToOne: false
+            referencedRelation: "change_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "change_request_approvals_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      change_requests: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          budget_impact: number | null
+          created_at: string
+          description: string | null
+          id: string
+          impact_analysis: Json | null
+          implementation_notes: string | null
+          implemented_at: string | null
+          organization_id: string | null
+          priority: string
+          project_id: string
+          reason: string
+          requested_by: string
+          resource_impact: string | null
+          schedule_impact_days: number | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          budget_impact?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          impact_analysis?: Json | null
+          implementation_notes?: string | null
+          implemented_at?: string | null
+          organization_id?: string | null
+          priority?: string
+          project_id: string
+          reason: string
+          requested_by: string
+          resource_impact?: string | null
+          schedule_impact_days?: number | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          budget_impact?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          impact_analysis?: Json | null
+          implementation_notes?: string | null
+          implemented_at?: string | null
+          organization_id?: string | null
+          priority?: string
+          project_id?: string
+          reason?: string
+          requested_by?: string
+          resource_impact?: string | null
+          schedule_impact_days?: number | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "change_requests_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "change_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "change_requests_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "change_requests_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       channel_members: {
         Row: {
           channel_id: string
