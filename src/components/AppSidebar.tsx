@@ -21,7 +21,10 @@ import {
   Target,
   MessageCircle,
   UserCheck,
-  AlertTriangle
+  AlertTriangle,
+  Activity,
+  HeartPulse,
+  Zap
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -47,6 +50,9 @@ const adminItems = [
   { title: "Overview", url: "overview", icon: LayoutDashboard },
   { title: "Kanban Board", url: "tasks", icon: CheckSquare },
   { title: "Projects", url: "projects", icon: FolderOpen },
+  { title: "Updates", url: "updates", icon: Activity },
+  { title: "Work Health", url: "work-health", icon: HeartPulse },
+  { title: "Automation", url: "automation", icon: Zap },
   { title: "Shifts", url: "shifts", icon: CalendarDays },
   { title: "Leave", url: "leave", icon: Palmtree },
   { title: "Attendance", url: "attendance", icon: MapPin },
@@ -68,6 +74,7 @@ const internItems = [
   { title: "Overview", url: "overview", icon: LayoutDashboard },
   { title: "My Tasks", url: "tasks", icon: CheckSquare },
   { title: "Projects", url: "projects", icon: FolderOpen },
+  { title: "Updates", url: "updates", icon: Activity },
   { title: "Leave", url: "leave", icon: Palmtree },
   { title: "Attendance", url: "attendance", icon: MapPin },
   { title: "WFH", url: "wfh", icon: Home },
