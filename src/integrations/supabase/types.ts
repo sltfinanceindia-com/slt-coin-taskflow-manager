@@ -6854,6 +6854,66 @@ export type Database = {
           },
         ]
       }
+      workload_scenarios: {
+        Row: {
+          base_date: string
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_baseline: boolean | null
+          name: string
+          organization_id: string | null
+          results: Json | null
+          scenario_data: Json
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          base_date?: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          is_baseline?: boolean | null
+          name: string
+          organization_id?: string | null
+          results?: Json | null
+          scenario_data?: Json
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          base_date?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_baseline?: boolean | null
+          name?: string
+          organization_id?: string | null
+          results?: Json | null
+          scenario_data?: Json
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workload_scenarios_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workload_scenarios_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -6908,6 +6968,14 @@ export type Database = {
           is_on_critical_path: boolean
           task_id: string
         }[]
+      }
+      calculate_workload_forecast: {
+        Args: {
+          p_organization_id: string
+          p_scenario_adjustments?: Json
+          p_weeks_ahead?: number
+        }
+        Returns: Json
       }
       can_org_add_user: { Args: { _org_id: string }; Returns: boolean }
       can_update_profile: {
