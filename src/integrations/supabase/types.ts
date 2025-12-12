@@ -4319,6 +4319,76 @@ export type Database = {
           },
         ]
       }
+      project_baselines: {
+        Row: {
+          baseline_date: string
+          budget_snapshot: number | null
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_current: boolean | null
+          name: string
+          organization_id: string | null
+          project_id: string
+          schedule_snapshot: Json | null
+          task_snapshots: Json | null
+          updated_at: string
+        }
+        Insert: {
+          baseline_date?: string
+          budget_snapshot?: number | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          is_current?: boolean | null
+          name: string
+          organization_id?: string | null
+          project_id: string
+          schedule_snapshot?: Json | null
+          task_snapshots?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          baseline_date?: string
+          budget_snapshot?: number | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_current?: boolean | null
+          name?: string
+          organization_id?: string | null
+          project_id?: string
+          schedule_snapshot?: Json | null
+          task_snapshots?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_baselines_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_baselines_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_baselines_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_role_requirements: {
         Row: {
           assigned_profile_id: string | null
@@ -5324,6 +5394,61 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      task_baseline_snapshots: {
+        Row: {
+          baseline_id: string
+          created_at: string
+          estimated_hours: number | null
+          id: string
+          organization_id: string | null
+          planned_end_date: string | null
+          planned_start_date: string | null
+          task_id: string
+        }
+        Insert: {
+          baseline_id: string
+          created_at?: string
+          estimated_hours?: number | null
+          id?: string
+          organization_id?: string | null
+          planned_end_date?: string | null
+          planned_start_date?: string | null
+          task_id: string
+        }
+        Update: {
+          baseline_id?: string
+          created_at?: string
+          estimated_hours?: number | null
+          id?: string
+          organization_id?: string | null
+          planned_end_date?: string | null
+          planned_start_date?: string | null
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_baseline_snapshots_baseline_id_fkey"
+            columns: ["baseline_id"]
+            isOneToOne: false
+            referencedRelation: "project_baselines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_baseline_snapshots_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_baseline_snapshots_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       task_comments: {
         Row: {
@@ -6635,6 +6760,22 @@ export type Database = {
           task_health_score: number
         }[]
       }
+      calculate_project_variance: {
+        Args: { p_baseline_id?: string; p_project_id: string }
+        Returns: {
+          actual_hours: number
+          baseline_end_date: string
+          baseline_hours: number
+          completion_rate: number
+          current_end_date: string
+          effort_variance: number
+          effort_variance_pct: number
+          schedule_variance_days: number
+          tasks_ahead: number
+          tasks_behind: number
+          tasks_on_track: number
+        }[]
+      }
       calculate_task_critical_path: {
         Args: { p_project_id: string }
         Returns: {
@@ -6655,6 +6796,10 @@ export type Database = {
       cleanup_expired_typing_indicators: { Args: never; Returns: undefined }
       create_direct_message_channel: {
         Args: { user1_id: string; user2_id: string }
+        Returns: string
+      }
+      create_project_baseline: {
+        Args: { p_description?: string; p_name: string; p_project_id: string }
         Returns: string
       }
       detect_early_warnings: { Args: { p_org_id: string }; Returns: number }
