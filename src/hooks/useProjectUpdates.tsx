@@ -87,7 +87,13 @@ export const useProjectUpdates = (projectId?: string, taskId?: string) => {
       const { data, error } = await supabase
         .from('project_updates')
         .insert([{
-          ...update,
+          project_id: update.project_id,
+          task_id: update.task_id,
+          update_type: update.update_type,
+          content: update.content,
+          metadata: update.metadata ? JSON.parse(JSON.stringify(update.metadata)) : undefined,
+          mentions: update.mentions,
+          is_important: update.is_important,
           user_id: profile.id,
           organization_id: profile.organization_id,
         }])

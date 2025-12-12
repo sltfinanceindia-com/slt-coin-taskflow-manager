@@ -192,7 +192,9 @@ export const useFileAnnotations = (fileVersionId: string) => {
           file_version_id: fileVersionId,
           user_id: profile.id,
           organization_id: profile.organization_id,
-          ...annotation,
+          annotation_type: annotation.annotation_type,
+          position_data: JSON.parse(JSON.stringify(annotation.position_data)),
+          content: annotation.content,
         }])
         .select()
         .single();
