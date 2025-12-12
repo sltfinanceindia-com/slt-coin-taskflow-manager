@@ -339,32 +339,7 @@ export default function ModernDashboard() {
               </div>
             ) : (
               <div className="w-full max-w-none px-2 sm:px-4 lg:px-6 xl:px-8 py-2 sm:py-4 lg:py-6">
-                {/* Super Admin Banner - only show when viewing as org admin and not on communication */}
-                {isSuperAdmin && isViewingOrgAdmin && activeTab !== 'communication' && (
-                  <div className="mb-4 p-3 sm:p-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-200 dark:border-purple-800 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1.5">
-                        <Building2 className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                        <span className="text-xs font-medium text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-800/50 px-2 py-0.5 rounded">
-                          Organization View
-                        </span>
-                      </div>
-                      <span className="text-sm text-purple-800 dark:text-purple-200">
-                        Switch to Super Admin for platform management.
-                      </span>
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => navigate('/super-admin')}
-                      className="border-purple-300 text-purple-700 hover:bg-purple-100 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-900/50 w-full sm:w-auto"
-                    >
-                      <Shield className="h-4 w-4 mr-2" />
-                      Super Admin Panel
-                      <ArrowRight className="h-4 w-4 ml-2" />
-                    </Button>
-                  </div>
-                )}
+                {/* Super Admin Banner removed - use header toggle instead */}
 
                 {/* Header - hide on communication tab on mobile */}
                 {!(activeTab === 'communication' && isMobile) && (

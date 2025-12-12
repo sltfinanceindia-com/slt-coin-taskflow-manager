@@ -170,13 +170,21 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
-  const { state } = useSidebar()
+  const { state, setOpenMobile, isMobile } = useSidebar()
   const { profile } = useAuth()
   const { isSuperAdmin, isAdmin, role, isLoading: roleLoading } = useUserRole()
   const { isViewingSuperAdmin, isViewingOrgAdmin } = useViewMode()
   
   const navGroups = isAdmin ? adminNavGroups : internNavGroups
   const collapsed = state === "collapsed"
+
+  // Handle tab change and close sidebar on mobile
+  const handleTabChange = (tab: string) => {
+    onTabChange(tab);
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   // Track which groups are open - default first group open
   const [openGroups, setOpenGroups] = useState<string[]>(["Main"])
@@ -326,7 +334,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
                           )}
                         >
                           <button
-                            onClick={() => onTabChange(item.url)}
+                            onClick={() => handleTabChange(item.url)}
                             className="w-full flex items-center justify-center"
                             title={item.title}
                           >
@@ -375,7 +383,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
                             )}
                           >
                             <button
-                              onClick={() => onTabChange(item.url)}
+                              onClick={() => handleTabChange(item.url)}
                               className="w-full flex items-center gap-2"
                             >
                               <item.icon className="h-4 w-4 shrink-0" />
