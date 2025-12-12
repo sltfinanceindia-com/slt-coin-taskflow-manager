@@ -1910,6 +1910,92 @@ export type Database = {
           },
         ]
       }
+      employee_assets: {
+        Row: {
+          asset_name: string
+          asset_tag: string | null
+          asset_type: string
+          assigned_at: string
+          assigned_by: string | null
+          condition_on_assign: string | null
+          condition_on_return: string | null
+          created_at: string
+          employee_id: string
+          id: string
+          notes: string | null
+          organization_id: string | null
+          received_by: string | null
+          returned_at: string | null
+          serial_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          asset_name: string
+          asset_tag?: string | null
+          asset_type: string
+          assigned_at?: string
+          assigned_by?: string | null
+          condition_on_assign?: string | null
+          condition_on_return?: string | null
+          created_at?: string
+          employee_id: string
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          received_by?: string | null
+          returned_at?: string | null
+          serial_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          asset_name?: string
+          asset_tag?: string | null
+          asset_type?: string
+          assigned_at?: string
+          assigned_by?: string | null
+          condition_on_assign?: string | null
+          condition_on_return?: string | null
+          created_at?: string
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          received_by?: string | null
+          returned_at?: string | null
+          serial_number?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_assets_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_assets_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_assets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_assets_received_by_fkey"
+            columns: ["received_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_capacity: {
         Row: {
           available_from: string | null
@@ -2880,6 +2966,230 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "leave_types_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lifecycle_instance_items: {
+        Row: {
+          assigned_to: string | null
+          assignee_role: string | null
+          category: string | null
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          due_date: string | null
+          id: string
+          instance_id: string
+          item_description: string | null
+          item_title: string
+          notes: string | null
+          organization_id: string | null
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          assignee_role?: string | null
+          category?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          instance_id: string
+          item_description?: string | null
+          item_title: string
+          notes?: string | null
+          organization_id?: string | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          assignee_role?: string | null
+          category?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          instance_id?: string
+          item_description?: string | null
+          item_title?: string
+          notes?: string | null
+          organization_id?: string | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lifecycle_instance_items_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lifecycle_instance_items_completed_by_fkey"
+            columns: ["completed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lifecycle_instance_items_instance_id_fkey"
+            columns: ["instance_id"]
+            isOneToOne: false
+            referencedRelation: "lifecycle_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lifecycle_instance_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lifecycle_instances: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          employee_id: string
+          id: string
+          notes: string | null
+          organization_id: string | null
+          playbook_id: string
+          started_at: string
+          status: string
+          target_completion_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id: string
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          playbook_id: string
+          started_at?: string
+          status?: string
+          target_completion_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          playbook_id?: string
+          started_at?: string
+          status?: string
+          target_completion_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lifecycle_instances_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lifecycle_instances_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lifecycle_instances_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lifecycle_instances_playbook_id_fkey"
+            columns: ["playbook_id"]
+            isOneToOne: false
+            referencedRelation: "lifecycle_playbooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lifecycle_playbooks: {
+        Row: {
+          checklist_items: Json
+          created_at: string
+          created_by: string | null
+          department_id: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          organization_id: string | null
+          role: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          checklist_items?: Json
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          organization_id?: string | null
+          role?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          checklist_items?: Json
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          organization_id?: string | null
+          role?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lifecycle_playbooks_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lifecycle_playbooks_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lifecycle_playbooks_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
