@@ -96,6 +96,15 @@ const adminNavGroups = [
     ]
   },
   {
+    label: "Project Controls",
+    icon: GitBranch,
+    items: [
+      { title: "Baselines", url: "baselines", icon: GitBranch },
+      { title: "Changes", url: "changes", icon: FileBox },
+      { title: "Scoring", url: "scoring", icon: Target },
+    ]
+  },
+  {
     label: "Admin Tools",
     icon: Shield,
     items: [
@@ -103,6 +112,8 @@ const adminNavGroups = [
       { title: "Approvals", url: "approvals", icon: GitBranch },
       { title: "Work Health", url: "work-health", icon: HeartPulse },
       { title: "Automation", url: "automation", icon: Zap },
+      { title: "Audit Packs", url: "audit", icon: FileBox },
+      { title: "Lifecycle", url: "lifecycle", icon: Users2 },
       { title: "Coins", url: "coins", icon: Coins },
       { title: "Interns", url: "interns", icon: Users },
       { title: "Analytics", url: "analytics", icon: BarChart3 },

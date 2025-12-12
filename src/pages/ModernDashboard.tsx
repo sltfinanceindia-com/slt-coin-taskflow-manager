@@ -43,6 +43,11 @@ import { ApprovalCenter } from '@/components/approvals/ApprovalCenter';
 import { ApprovalWorkflowConfig } from '@/components/approvals/ApprovalWorkflowConfig';
 import { CapacityHub } from '@/components/capacity/CapacityHub';
 import { RequestHub } from '@/components/requests/RequestHub';
+import { ProjectBaselineHub } from '@/components/baselines/ProjectBaselineHub';
+import { ChangeRequestHub } from '@/components/changes/ChangeRequestHub';
+import { ScoringHub } from '@/components/scoring/ScoringHub';
+import { AuditHub } from '@/components/audit/AuditHub';
+import { LifecycleHub } from '@/components/lifecycle/LifecycleHub';
 
 import { Coins, Clock, CheckCircle, Plus, Crown, ArrowRight, Shield, Building2 } from 'lucide-react';
 
@@ -286,6 +291,21 @@ export default function ModernDashboard() {
       
       case 'requests':
         return <RequestHub />;
+      
+      case 'baselines':
+        return isAdmin ? <ProjectBaselineHub /> : null;
+      
+      case 'changes':
+        return isAdmin ? <ChangeRequestHub /> : null;
+      
+      case 'scoring':
+        return isAdmin ? <ScoringHub /> : null;
+      
+      case 'audit':
+        return isAdmin ? <AuditHub /> : null;
+      
+      case 'lifecycle':
+        return isAdmin ? <LifecycleHub /> : null;
       
       default:
         return <EnhancedDashboardWidgets />;
