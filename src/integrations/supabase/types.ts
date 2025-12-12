@@ -2340,6 +2340,64 @@ export type Database = {
           },
         ]
       }
+      meeting_talking_points: {
+        Row: {
+          added_by: string | null
+          content: string
+          created_at: string
+          id: string
+          is_discussed: boolean | null
+          is_private: boolean | null
+          meeting_id: string
+          order_index: number | null
+          organization_id: string | null
+        }
+        Insert: {
+          added_by?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          is_discussed?: boolean | null
+          is_private?: boolean | null
+          meeting_id: string
+          order_index?: number | null
+          organization_id?: string | null
+        }
+        Update: {
+          added_by?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          is_discussed?: boolean | null
+          is_private?: boolean | null
+          meeting_id?: string
+          order_index?: number | null
+          organization_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_talking_points_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meeting_talking_points_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "one_on_one_meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meeting_talking_points_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       message_attachments: {
         Row: {
           created_at: string | null
