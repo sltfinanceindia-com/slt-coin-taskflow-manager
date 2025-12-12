@@ -37,6 +37,12 @@ import { ProjectUpdatesFeed } from '@/components/updates/ProjectUpdatesFeed';
 import { WorkHealthDashboard } from '@/components/health/WorkHealthDashboard';
 import { AutomationBuilder } from '@/components/automation/AutomationBuilder';
 import { RuleTemplates } from '@/components/automation/RuleTemplates';
+import { TemplateLibrary } from '@/components/templates/TemplateLibrary';
+import { TemplateBuilder } from '@/components/templates/TemplateBuilder';
+import { ApprovalCenter } from '@/components/approvals/ApprovalCenter';
+import { ApprovalWorkflowConfig } from '@/components/approvals/ApprovalWorkflowConfig';
+import { CapacityHub } from '@/components/capacity/CapacityHub';
+import { RequestHub } from '@/components/requests/RequestHub';
 
 import { Coins, Clock, CheckCircle, Plus, Crown, ArrowRight, Shield, Building2 } from 'lucide-react';
 
@@ -258,6 +264,28 @@ export default function ModernDashboard() {
             </div>
           </div>
         ) : null;
+      
+      case 'templates':
+        return isAdmin ? (
+          <div className="space-y-6">
+            <TemplateLibrary />
+            <TemplateBuilder />
+          </div>
+        ) : null;
+      
+      case 'approvals':
+        return (
+          <div className="space-y-6">
+            <ApprovalCenter />
+            {isAdmin && <ApprovalWorkflowConfig />}
+          </div>
+        );
+      
+      case 'capacity':
+        return isAdmin ? <CapacityHub /> : null;
+      
+      case 'requests':
+        return <RequestHub />;
       
       default:
         return <EnhancedDashboardWidgets />;

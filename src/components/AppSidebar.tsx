@@ -29,7 +29,11 @@ import {
   ChevronDown,
   Briefcase,
   TrendingUp,
-  Users2
+  Users2,
+  FileBox,
+  GitBranch,
+  Gauge,
+  Inbox
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -72,7 +76,9 @@ const adminNavGroups = [
     label: "Work Management",
     icon: Briefcase,
     items: [
+      { title: "Requests", url: "requests", icon: Inbox },
       { title: "Time Logs", url: "time", icon: Clock },
+      { title: "Capacity", url: "capacity", icon: Gauge },
       { title: "Shifts", url: "shifts", icon: CalendarDays },
       { title: "Attendance", url: "attendance", icon: MapPin },
       { title: "Leave", url: "leave", icon: Palmtree },
@@ -93,6 +99,8 @@ const adminNavGroups = [
     label: "Admin Tools",
     icon: Shield,
     items: [
+      { title: "Templates", url: "templates", icon: FileBox },
+      { title: "Approvals", url: "approvals", icon: GitBranch },
       { title: "Work Health", url: "work-health", icon: HeartPulse },
       { title: "Automation", url: "automation", icon: Zap },
       { title: "Coins", url: "coins", icon: Coins },
@@ -125,6 +133,7 @@ const internNavGroups = [
     label: "Work Management",
     icon: Briefcase,
     items: [
+      { title: "Requests", url: "requests", icon: Inbox },
       { title: "Time Logs", url: "time", icon: Clock },
       { title: "Attendance", url: "attendance", icon: MapPin },
       { title: "Leave", url: "leave", icon: Palmtree },
@@ -135,6 +144,7 @@ const internNavGroups = [
     label: "Resources",
     icon: BookOpen,
     items: [
+      { title: "Approvals", url: "approvals", icon: GitBranch },
       { title: "Training", url: "training", icon: BookOpen },
       { title: "Communication", url: "communication", icon: MessageSquare },
       { title: "My Coins", url: "my-coins", icon: Coins },
