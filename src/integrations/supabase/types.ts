@@ -4530,6 +4530,89 @@ export type Database = {
           },
         ]
       }
+      request_routing_rules: {
+        Row: {
+          assign_to_team: string | null
+          assign_to_user_id: string | null
+          condition_field: string
+          condition_operator: string
+          condition_value: string
+          created_at: string
+          created_by: string
+          id: string
+          is_active: boolean | null
+          name: string
+          organization_id: string | null
+          priority_override: string | null
+          request_type_id: string
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          assign_to_team?: string | null
+          assign_to_user_id?: string | null
+          condition_field: string
+          condition_operator?: string
+          condition_value: string
+          created_at?: string
+          created_by: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          organization_id?: string | null
+          priority_override?: string | null
+          request_type_id: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          assign_to_team?: string | null
+          assign_to_user_id?: string | null
+          condition_field?: string
+          condition_operator?: string
+          condition_value?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          organization_id?: string | null
+          priority_override?: string | null
+          request_type_id?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_routing_rules_assign_to_user_id_fkey"
+            columns: ["assign_to_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_routing_rules_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_routing_rules_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_routing_rules_request_type_id_fkey"
+            columns: ["request_type_id"]
+            isOneToOne: false
+            referencedRelation: "request_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       request_types: {
         Row: {
           auto_route_rules: Json | null
@@ -5382,6 +5465,61 @@ export type Database = {
           },
         ]
       }
+      ticket_feedback: {
+        Row: {
+          created_at: string
+          feedback_text: string | null
+          id: string
+          organization_id: string | null
+          rating: number
+          request_id: string
+          submitted_at: string
+          submitted_by: string
+        }
+        Insert: {
+          created_at?: string
+          feedback_text?: string | null
+          id?: string
+          organization_id?: string | null
+          rating: number
+          request_id: string
+          submitted_at?: string
+          submitted_by: string
+        }
+        Update: {
+          created_at?: string
+          feedback_text?: string | null
+          id?: string
+          organization_id?: string | null
+          rating?: number
+          request_id?: string
+          submitted_at?: string
+          submitted_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_feedback_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_feedback_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "work_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_feedback_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       time_logs: {
         Row: {
           created_at: string
@@ -6172,15 +6310,20 @@ export type Database = {
       }
       work_requests: {
         Row: {
+          approval_history: Json | null
           assigned_team: string | null
           assigned_to: string | null
           converted_to_project_id: string | null
           converted_to_task_id: string | null
           created_at: string
+          csat_rating: number | null
+          csat_submitted_at: string | null
           description: string | null
+          draft_saved_at: string | null
           first_response_at: string | null
           form_data: Json | null
           id: string
+          lifecycle_stage: string | null
           organization_id: string | null
           priority: string
           request_number: string
@@ -6190,6 +6333,7 @@ export type Database = {
           sla_resolution_due: string | null
           sla_response_due: string | null
           status: string
+          submitted_at: string | null
           title: string
           triage_notes: string | null
           triaged_at: string | null
@@ -6197,15 +6341,20 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          approval_history?: Json | null
           assigned_team?: string | null
           assigned_to?: string | null
           converted_to_project_id?: string | null
           converted_to_task_id?: string | null
           created_at?: string
+          csat_rating?: number | null
+          csat_submitted_at?: string | null
           description?: string | null
+          draft_saved_at?: string | null
           first_response_at?: string | null
           form_data?: Json | null
           id?: string
+          lifecycle_stage?: string | null
           organization_id?: string | null
           priority?: string
           request_number: string
@@ -6215,6 +6364,7 @@ export type Database = {
           sla_resolution_due?: string | null
           sla_response_due?: string | null
           status?: string
+          submitted_at?: string | null
           title: string
           triage_notes?: string | null
           triaged_at?: string | null
@@ -6222,15 +6372,20 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          approval_history?: Json | null
           assigned_team?: string | null
           assigned_to?: string | null
           converted_to_project_id?: string | null
           converted_to_task_id?: string | null
           created_at?: string
+          csat_rating?: number | null
+          csat_submitted_at?: string | null
           description?: string | null
+          draft_saved_at?: string | null
           first_response_at?: string | null
           form_data?: Json | null
           id?: string
+          lifecycle_stage?: string | null
           organization_id?: string | null
           priority?: string
           request_number?: string
@@ -6240,6 +6395,7 @@ export type Database = {
           sla_resolution_due?: string | null
           sla_response_due?: string | null
           status?: string
+          submitted_at?: string | null
           title?: string
           triage_notes?: string | null
           triaged_at?: string | null
@@ -6303,6 +6459,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_routing_rules: {
+        Args: { p_request_id: string }
+        Returns: undefined
+      }
       calculate_kanban_metrics: {
         Args: { end_date?: string; start_date?: string }
         Returns: {
@@ -6389,6 +6549,19 @@ export type Database = {
       get_my_profile_id: { Args: never; Returns: string }
       get_org_user_count: { Args: { _org_id: string }; Returns: number }
       get_public_stats: { Args: never; Returns: Json }
+      get_sla_metrics: {
+        Args: { p_end_date?: string; p_org_id: string; p_start_date?: string }
+        Returns: {
+          avg_csat_rating: number
+          avg_resolution_hours: number
+          avg_response_hours: number
+          resolution_sla_breached: number
+          resolution_sla_met: number
+          response_sla_breached: number
+          response_sla_met: number
+          total_requests: number
+        }[]
+      }
       get_user_channel_ids: {
         Args: { p_profile_id: string }
         Returns: string[]

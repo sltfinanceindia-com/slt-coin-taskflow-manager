@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RequestPortal } from './RequestPortal';
 import { TriageQueue } from './TriageQueue';
+import { SLADashboard } from './SLADashboard';
+import { RoutingRulesConfig } from './RoutingRulesConfig';
 import { useUserRole } from '@/hooks/useUserRole';
-import { FileText, Inbox, BarChart3 } from 'lucide-react';
+import { FileText, Inbox, BarChart3, Settings2 } from 'lucide-react';
 
 export function RequestHub() {
   const { isAdmin } = useUserRole();
@@ -19,18 +21,26 @@ export function RequestHub() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 lg:w-auto lg:inline-grid">
           <TabsTrigger value="submit" className="gap-2">
             <FileText className="h-4 w-4" />
-            <span className="hidden sm:inline">Submit Request</span>
-            <span className="sm:hidden">Submit</span>
+            <span className="hidden sm:inline">Submit</span>
           </TabsTrigger>
           {isAdmin && (
-            <TabsTrigger value="triage" className="gap-2">
-              <Inbox className="h-4 w-4" />
-              <span className="hidden sm:inline">Triage Queue</span>
-              <span className="sm:hidden">Triage</span>
-            </TabsTrigger>
+            <>
+              <TabsTrigger value="triage" className="gap-2">
+                <Inbox className="h-4 w-4" />
+                <span className="hidden sm:inline">Triage</span>
+              </TabsTrigger>
+              <TabsTrigger value="sla" className="gap-2">
+                <BarChart3 className="h-4 w-4" />
+                <span className="hidden sm:inline">SLA</span>
+              </TabsTrigger>
+              <TabsTrigger value="routing" className="gap-2">
+                <Settings2 className="h-4 w-4" />
+                <span className="hidden sm:inline">Routing</span>
+              </TabsTrigger>
+            </>
           )}
         </TabsList>
 
@@ -39,9 +49,17 @@ export function RequestHub() {
         </TabsContent>
 
         {isAdmin && (
-          <TabsContent value="triage" className="mt-0">
-            <TriageQueue />
-          </TabsContent>
+          <>
+            <TabsContent value="triage" className="mt-0">
+              <TriageQueue />
+            </TabsContent>
+            <TabsContent value="sla" className="mt-0">
+              <SLADashboard />
+            </TabsContent>
+            <TabsContent value="routing" className="mt-0">
+              <RoutingRulesConfig />
+            </TabsContent>
+          </>
         )}
       </Tabs>
     </div>
