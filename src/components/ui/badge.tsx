@@ -11,32 +11,32 @@ const badgeVariants = cva(
         default:
           "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
         secondary:
-          "bg-emerald-600 text-white border-transparent hover:bg-emerald-700",
+          "bg-secondary text-secondary-foreground border-transparent hover:bg-secondary/80",
         destructive:
           "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
         success:
-          "bg-green-100 text-green-800 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800",
+          "bg-success/20 text-success border border-success/30",
         warning:
-          "bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800",
+          "bg-warning/20 text-warning-foreground border border-warning/30",
         info:
-          "bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800",
+          "bg-info/20 text-info border border-info/30",
         outline: "text-foreground border",
-        // Status badges
-        verified: "bg-green-100 text-green-800 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800",
-        pending: "bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800",
-        rejected: "bg-red-100 text-red-800 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800",
-        inProgress: "bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800",
-        inactive: "bg-gray-100 text-gray-800 border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700",
+        // Status badges using semantic tokens
+        verified: "bg-success/20 text-success border border-success/30",
+        pending: "bg-warning/20 text-warning-foreground border border-warning/30",
+        rejected: "bg-destructive/20 text-destructive border border-destructive/30",
+        inProgress: "bg-info/20 text-info border border-info/30",
+        inactive: "bg-muted text-muted-foreground border border-border",
         // Role badges
-        admin: "bg-slate-800 text-white px-3 py-1 border-transparent dark:bg-slate-700",
-        intern: "bg-emerald-600 text-white px-3 py-1 border-transparent dark:bg-emerald-700",
+        admin: "bg-primary text-primary-foreground px-3 py-1 border-transparent",
+        intern: "bg-secondary text-secondary-foreground px-3 py-1 border-transparent",
         // Priority badges
-        urgent: "bg-red-100 text-red-800 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800",
-        high: "bg-orange-100 text-orange-800 border border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800",
-        medium: "bg-yellow-100 text-yellow-800 border border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800",
-        low: "bg-green-100 text-green-800 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800",
+        urgent: "bg-destructive/20 text-destructive border border-destructive/30",
+        high: "bg-warning/20 text-warning-foreground border border-warning/30",
+        medium: "bg-info/20 text-info border border-info/30",
+        low: "bg-success/20 text-success border border-success/30",
         // Count badge
-        count: "bg-red-500 text-white h-5 min-w-[1.25rem] px-1.5 py-0.5 border-2 border-white dark:border-gray-900",
+        count: "bg-destructive text-destructive-foreground h-5 min-w-[1.25rem] px-1.5 py-0.5 border-2 border-background",
       },
     },
     defaultVariants: {
