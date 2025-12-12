@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import type { Json } from '@/integrations/supabase/types';
 
 export interface ResourceChange {
   profile_id: string;
@@ -177,7 +178,7 @@ export function useWorkloadScenarios() {
           description: scenario.description,
           created_by: profile.id,
           base_date: scenario.base_date || new Date().toISOString().split('T')[0],
-          scenario_data: (scenario.scenario_data || { resource_changes: [], deadline_shifts: [], new_projects: [] }) as unknown as Record<string, unknown>,
+          scenario_data: JSON.parse(JSON.stringify(scenario.scenario_data || { resource_changes: [], deadline_shifts: [], new_projects: [] })) as Json,
           organization_id: profile.organization_id
         }])
         .select()
@@ -296,7 +297,7 @@ export function useWorkloadScenarios() {
       const { data, error } = await supabase
         .from('workload_scenarios')
         .update({
-          results: results as unknown as Record<string, unknown>,
+          results: results as Json,
           status: 'calculated'
         })
         .eq('id', scenario.id)
