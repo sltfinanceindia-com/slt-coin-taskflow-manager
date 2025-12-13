@@ -21,7 +21,9 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import UserProfileModal from './UserProfileModal';
-import MessageStateIndicator from './MessageStateIndicator';
+import { EnhancedMessageStatus, MessageTicks } from './EnhancedMessageStatus';
+import { EnhancedPresenceStatus, PresenceBadge } from './EnhancedPresenceStatus';
+import LastSeenDisplay from './LastSeenDisplay';
 import TypingIndicator from './TypingIndicator';
 import MessageActions from './MessageActions';
 import EnhancedMessageInput from './EnhancedMessageInput';
@@ -332,13 +334,17 @@ export default function EnhancedMessageArea({
             )}
           </div>
 
-          {/* Message State Indicator */}
+          {/* Message State Indicator - Enhanced with ticks */}
           {isOwn && (
-            <div className="flex items-center gap-1 mt-1">
-              <MessageStateIndicator 
+            <div className="flex items-center gap-1.5 mt-1">
+              <EnhancedMessageStatus 
                 state={message.is_read ? 'read' : 'delivered'} 
+                timestamp={message.created_at}
+                readAt={message.is_read ? message.created_at : undefined}
+                showTooltip={true}
+                size="sm"
               />
-              <span className="text-xs text-muted-foreground">
+              <span className="text-[10px] text-muted-foreground">
                 {message.is_read ? 'Read' : 'Delivered'}
               </span>
             </div>
@@ -363,24 +369,38 @@ export default function EnhancedMessageArea({
           )}
           
           <div className="flex items-center gap-2 sm:gap-3">
-            <Avatar className="h-9 w-9 sm:h-10 sm:w-10 border-2 border-border">
-              <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs sm:text-sm">
-                {getInitials(
-                  channel.is_direct_message
-                    ? (getChannelUser()?.full_name || 'Unknown')
-                    : channel.name
-                )}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative">
+              <Avatar className="h-9 w-9 sm:h-10 sm:w-10 border-2 border-border">
+                <AvatarImage src={channelUser?.avatar_url} />
+                <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs sm:text-sm">
+                  {getInitials(
+                    channel.is_direct_message
+                      ? (getChannelUser()?.full_name || 'Unknown')
+                      : channel.name
+                  )}
+                </AvatarFallback>
+              </Avatar>
+              {/* Presence badge on avatar */}
+              {channel.is_direct_message && channelUser && (
+                <PresenceBadge 
+                  status={onlineUsers.has(channelUser.id) ? 'online' : 'offline'} 
+                  size="md"
+                  className="-bottom-0.5 -right-0.5"
+                />
+              )}
+            </div>
             
             <div className="min-w-0">
               <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">
                 {channel.is_direct_message ? getChannelUser()?.full_name : channel.name}
               </h3>
-              {channel.is_direct_message && getChannelUser() && (
-                <p className="text-xs text-muted-foreground">
-                  {onlineUsers.has(getChannelUser()!.id) ? '🟢 Online' : '⚫ Offline'}
-                </p>
+              {channel.is_direct_message && channelUser && (
+                <LastSeenDisplay
+                  isOnline={onlineUsers.has(channelUser.id)}
+                  lastSeen={presenceList.find(p => p.user_id === channelUser.id)?.last_seen}
+                  statusMessage={presenceList.find(p => p.user_id === channelUser.id)?.status_message}
+                  variant="compact"
+                />
               )}
             </div>
           </div>
