@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,6 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, Users, MapPin, Video, Phone } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, addDays, isToday, isTomorrow } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 interface CalendarEvent {
   id: string;
@@ -31,50 +34,56 @@ export default function CalendarIntegration({
   onCreateEvent, 
   className 
 }: CalendarIntegrationProps) {
+  const { profile } = useAuth();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Mock data - replace with actual calendar integration
-  useEffect(() => {
-    const mockEvents: CalendarEvent[] = [
-      {
-        id: '1',
-        title: 'Team Standup',
-        description: 'Daily team synchronization meeting',
-        start: new Date(),
-        end: addDays(new Date(), 0),
-        type: 'meeting',
-        attendees: ['John Doe', 'Jane Smith', 'Mike Johnson'],
-        isOnline: true,
-        meetingUrl: 'https://meet.google.com/abc-defg-hij'
-      },
-      {
-        id: '2',
-        title: 'Project Deadline',
-        description: 'Phase 1 deliverables due',
-        start: addDays(new Date(), 2),
-        end: addDays(new Date(), 2),
-        type: 'deadline'
-      },
-      {
-        id: '3',
-        title: 'Client Presentation',
-        description: 'Present Q4 progress to stakeholders',
-        start: addDays(new Date(), 3),
-        end: addDays(new Date(), 3),
-        type: 'meeting',
-        attendees: ['Client Team', 'Management'],
-        location: 'Conference Room A'
-      }
-    ];
+  const fetchEvents = useCallback(async () => {
+    if (!profile?.id) return;
+    
+    setIsLoading(true);
+    try {
+      const startOfWeek = new Date();
+      startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+      const endOfWeek = addDays(startOfWeek, 14); // Get 2 weeks of events
 
-    setTimeout(() => {
-      setEvents(mockEvents);
+      const { data, error } = await supabase
+        .from('calendar_events')
+        .select('*')
+        .eq('user_id', profile.id)
+        .gte('start_time', startOfWeek.toISOString())
+        .lte('start_time', endOfWeek.toISOString())
+        .order('start_time', { ascending: true });
+
+      if (error) throw error;
+
+      const mappedEvents: CalendarEvent[] = (data || []).map(event => ({
+        id: event.id,
+        title: event.title,
+        description: event.description || undefined,
+        start: new Date(event.start_time),
+        end: new Date(event.end_time),
+        type: (event.event_type as 'meeting' | 'reminder' | 'deadline') || 'meeting',
+        attendees: event.attendees || undefined,
+        location: event.location || undefined,
+        isOnline: event.is_online || false,
+        meetingUrl: event.meeting_url || undefined
+      }));
+
+      setEvents(mappedEvents);
+    } catch (error) {
+      console.error('Error fetching calendar events:', error);
+      toast.error('Failed to load calendar events');
+    } finally {
       setIsLoading(false);
-    }, 1000);
-  }, []);
+    }
+  }, [profile?.id]);
+
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
 
   const getEventIcon = (type: CalendarEvent['type']) => {
     switch (type) {
@@ -118,19 +127,49 @@ export default function CalendarIntegration({
     return grouped;
   };
 
-  const handleCreateEvent = (eventData: Partial<CalendarEvent>) => {
-    const newEvent: CalendarEvent = {
-      id: crypto.randomUUID(),
-      title: eventData.title || 'New Event',
-      start: eventData.start || new Date(),
-      end: eventData.end || new Date(),
-      type: eventData.type || 'meeting',
-      ...eventData
-    };
+  const handleCreateEvent = async (eventData: Partial<CalendarEvent>) => {
+    if (!profile?.id) return;
 
-    setEvents(prev => [...prev, newEvent]);
-    onCreateEvent?.(newEvent);
-    setShowCreateForm(false);
+    try {
+      const { data, error } = await supabase
+        .from('calendar_events')
+        .insert({
+          user_id: profile.id,
+          organization_id: profile.organization_id,
+          title: eventData.title || 'New Event',
+          description: eventData.description,
+          start_time: eventData.start?.toISOString() || new Date().toISOString(),
+          end_time: eventData.end?.toISOString() || new Date().toISOString(),
+          event_type: eventData.type || 'meeting',
+          is_online: eventData.isOnline || false,
+          meeting_url: eventData.meetingUrl,
+          location: eventData.location
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const newEvent: CalendarEvent = {
+        id: data.id,
+        title: data.title,
+        description: data.description || undefined,
+        start: new Date(data.start_time),
+        end: new Date(data.end_time),
+        type: (data.event_type as 'meeting' | 'reminder' | 'deadline') || 'meeting',
+        isOnline: data.is_online || false,
+        meetingUrl: data.meeting_url || undefined,
+        location: data.location || undefined
+      };
+
+      setEvents(prev => [...prev, newEvent].sort((a, b) => a.start.getTime() - b.start.getTime()));
+      onCreateEvent?.(newEvent);
+      setShowCreateForm(false);
+      toast.success('Event created successfully');
+    } catch (error) {
+      console.error('Error creating event:', error);
+      toast.error('Failed to create event');
+    }
   };
 
   const handleJoinMeeting = (event: CalendarEvent) => {

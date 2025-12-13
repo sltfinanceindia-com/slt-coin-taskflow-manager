@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -14,10 +14,12 @@ import {
   Calendar,
   User,
   Hash,
-  X
+  X,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
+import { useEnhancedSearch } from '@/hooks/useEnhancedSearch';
 
 interface SearchResult {
   id: string;
@@ -56,66 +58,76 @@ export default function AdvancedSearch({
   const [activeFilter, setActiveFilter] = useState<'all' | 'people' | 'messages' | 'files'>('all');
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
   const [senderFilter, setSenderFilter] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  
+  const { results, loading, performSearch } = useEnhancedSearch();
 
-  // Mock search results - in real app, this would come from API
-  const mockResults: SearchResult[] = [
-    {
-      id: '1',
-      type: 'person',
-      title: 'Eric Ishida',
-      content: 'Admin • eric@sltfinance.com',
-      avatar: '/avatars/eric.jpg'
-    },
-    {
-      id: '2',
-      type: 'message',
-      title: 'Project Update',
-      content: 'Hey team, just wanted to update everyone on the project progress...',
-      timestamp: '2024-01-15T10:30:00Z',
-      channel: '#general',
-      sender: 'Harsha Vardhana'
-    },
-    {
-      id: '3',
-      type: 'file',
-      title: 'Q4_Report_Final.pdf',
-      content: 'Financial report for Q4 2023',
-      timestamp: '2024-01-14T14:20:00Z',
-      fileType: 'pdf',
-      size: '2.4 MB',
-      sender: 'Sarah Johnson'
-    },
-    {
-      id: '4',
-      type: 'channel',
-      title: 'Development Team',
-      content: '12 members • Last message 2 hours ago'
-    }
-  ];
+  // Perform search when query changes
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      if (searchQuery.trim()) {
+        performSearch(searchQuery, {
+          includeUsers: activeFilter === 'all' || activeFilter === 'people',
+          includeMessages: activeFilter === 'all' || activeFilter === 'messages',
+          includeFiles: activeFilter === 'all' || activeFilter === 'files',
+          includeChannels: activeFilter === 'all'
+        });
+      }
+    }, 300);
 
-  const filteredResults = useMemo(() => {
-    let filtered = mockResults.filter(result => 
-      result.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      result.content?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery, activeFilter, performSearch]);
 
-    if (activeFilter !== 'all') {
-      filtered = filtered.filter(result => {
-        if (activeFilter === 'people') return result.type === 'person';
-        if (activeFilter === 'messages') return result.type === 'message';
-        if (activeFilter === 'files') return result.type === 'file';
-        return true;
-      });
-    }
+  // Map hook results to component format
+  useEffect(() => {
+    const mappedResults: SearchResult[] = results.map(result => {
+      if (result.type === 'user') {
+        return {
+          id: result.id,
+          type: 'person' as const,
+          title: result.title,
+          content: result.content,
+          avatar: result.metadata?.avatar_url
+        };
+      }
+      if (result.type === 'message') {
+        return {
+          id: result.id,
+          type: 'message' as const,
+          title: result.title,
+          content: result.content,
+          timestamp: result.created_at,
+          channel: result.metadata?.channel_id ? `Channel` : undefined,
+          sender: result.title.replace('Message from ', '')
+        };
+      }
+      if (result.type === 'file') {
+        return {
+          id: result.id,
+          type: 'file' as const,
+          title: result.title,
+          content: result.content,
+          timestamp: result.created_at,
+          fileType: result.metadata?.file_type,
+          size: result.content?.split('•')[1]?.trim(),
+          sender: result.metadata?.uploader
+        };
+      }
+      return {
+        id: result.id,
+        type: 'channel' as const,
+        title: result.title,
+        content: result.content
+      };
+    });
 
-    if (senderFilter) {
-      filtered = filtered.filter(result => 
-        result.sender?.toLowerCase().includes(senderFilter.toLowerCase())
-      );
-    }
+    // Apply sender filter
+    const filtered = senderFilter 
+      ? mappedResults.filter(r => r.sender?.toLowerCase().includes(senderFilter.toLowerCase()))
+      : mappedResults;
 
-    return filtered;
-  }, [searchQuery, activeFilter, senderFilter]);
+    setSearchResults(filtered);
+  }, [results, senderFilter]);
 
   const getResultIcon = (type: string) => {
     switch (type) {
@@ -199,7 +211,11 @@ export default function AdvancedSearch({
         {/* Search Results */}
         <ScrollArea className="flex-1">
           <div className="p-4">
-            {searchQuery === '' ? (
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : searchQuery === '' ? (
               <div className="text-center py-12">
                 <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Search Everything</h3>
@@ -207,7 +223,7 @@ export default function AdvancedSearch({
                   Find people, messages, files, and channels across your workspace
                 </p>
               </div>
-            ) : filteredResults.length === 0 ? (
+            ) : searchResults.length === 0 ? (
               <div className="text-center py-12">
                 <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No results found</h3>
@@ -217,7 +233,7 @@ export default function AdvancedSearch({
               </div>
             ) : (
               <div className="space-y-2">
-                {filteredResults.map((result) => (
+                {searchResults.map((result) => (
                   <div
                     key={result.id}
                     className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"

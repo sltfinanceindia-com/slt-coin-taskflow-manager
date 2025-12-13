@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import DOMPurify from 'dompurify';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -37,11 +37,15 @@ import {
   SortDesc,
   Hash,
   AtSign,
-  Paperclip
+  Paperclip,
+  Loader2
 } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useEnhancedSearch } from '@/hooks/useEnhancedSearch';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 interface SearchFilters {
   query: string;
@@ -120,42 +124,66 @@ export default function SearchAndFilters({
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [saveSearchName, setSaveSearchName] = useState('');
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [availableChannels, setAvailableChannels] = useState<string[]>([]);
+  const [availableSenders, setAvailableSenders] = useState<string[]>([]);
+  
+  const { profile } = useAuth();
+  const { results, loading, performSearch: hookSearch, clearResults } = useEnhancedSearch();
 
   const availableTags = ['urgent', 'meeting', 'project', 'feedback', 'announcement', 'question'];
-  const availableChannels = ['general', 'development', 'design', 'marketing', 'support'];
-  const availableSenders = ['John Doe', 'Sarah Wilson', 'Mike Johnson', 'Emily Davis'];
 
+  // Fetch channels and senders on mount
   useEffect(() => {
-    // Mock search results
-    const mockResults: SearchResult[] = [
-      {
-        id: '1',
-        content: 'Can we schedule a meeting to discuss the project timeline?',
-        sender: { id: '1', name: 'John Doe', avatar: '/avatars/john.png' },
-        timestamp: new Date(Date.now() - 1000 * 60 * 30),
-        type: 'text',
-        channel: 'general',
-        isStarred: true,
-        isArchived: false,
-        tags: ['meeting', 'project'],
-        highlight: 'meeting to discuss the project'
-      },
-      {
-        id: '2',
-        content: 'Here are the design mockups for the new feature',
-        sender: { id: '2', name: 'Sarah Wilson', avatar: '/avatars/sarah.png' },
-        timestamp: new Date(Date.now() - 1000 * 60 * 60),
-        type: 'image',
-        channel: 'design',
+    const fetchOptions = async () => {
+      if (!profile?.organization_id) return;
+
+      // Fetch channels
+      const { data: channelsData } = await supabase
+        .from('communication_channels')
+        .select('name')
+        .eq('organization_id', profile.organization_id);
+      
+      if (channelsData) {
+        setAvailableChannels(channelsData.map(c => c.name));
+      }
+
+      // Fetch team members for sender filter
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('organization_id', profile.organization_id)
+        .eq('is_active', true);
+
+      if (profilesData) {
+        setAvailableSenders(profilesData.map(p => p.full_name).filter(Boolean) as string[]);
+      }
+    };
+
+    fetchOptions();
+  }, [profile?.organization_id]);
+
+  // Map hook results to component format
+  useEffect(() => {
+    const mappedResults: SearchResult[] = results
+      .filter(r => r.type === 'message')
+      .map(result => ({
+        id: result.id,
+        content: result.content || '',
+        sender: { 
+          id: result.metadata?.sender_id || '', 
+          name: result.title.replace('Message from ', ''),
+          avatar: undefined
+        },
+        timestamp: result.created_at ? new Date(result.created_at) : new Date(),
+        type: 'text' as const,
+        channel: result.metadata?.channel_id || 'general',
         isStarred: false,
         isArchived: false,
-        tags: ['design'],
-        attachments: [{ id: '1', name: 'mockups.png', type: 'image/png', size: 2048576 }]
-      }
-    ];
+        tags: []
+      }));
 
-    setSearchResults(mockResults);
-  }, []);
+    setSearchResults(mappedResults);
+  }, [results]);
 
   const updateFilters = (updates: Partial<SearchFilters>) => {
     const newFilters = { ...filters, ...updates };
@@ -163,15 +191,29 @@ export default function SearchAndFilters({
     onSearch?.(newFilters);
   };
 
-  const performSearch = async () => {
+  const performSearch = useCallback(async () => {
+    if (!filters.query.trim()) {
+      clearResults();
+      return;
+    }
+
     setIsSearching(true);
-    
-    // Simulate search delay
-    setTimeout(() => {
+    try {
+      await hookSearch(filters.query, {
+        includeMessages: true,
+        includeUsers: false,
+        includeFiles: filters.hasAttachments,
+        includeChannels: false,
+        dateRange: filters.dateRange ? {
+          start: filters.dateRange.from || new Date(),
+          end: filters.dateRange.to || new Date()
+        } : undefined
+      });
+      toast.success(`Search completed`);
+    } finally {
       setIsSearching(false);
-      toast.success(`Found ${searchResults.length} results`);
-    }, 1000);
-  };
+    }
+  }, [filters, hookSearch, clearResults]);
 
   const clearFilters = () => {
     const clearedFilters: SearchFilters = {
