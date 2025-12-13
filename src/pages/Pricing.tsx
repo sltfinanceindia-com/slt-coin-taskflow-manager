@@ -1,97 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Check, X, Coins, ArrowRight, Sparkles, Building2, Users, Menu } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
-const plans = [
-  {
-    name: 'Free',
-    price: '₹0',
-    period: '/month',
-    description: 'Perfect for trying out',
-    users: '5 users',
-    features: [
-      { text: 'Up to 5 users', included: true },
-      { text: 'Basic employee management', included: true },
-      { text: '5 training modules', included: true },
-      { text: 'Basic assessments', included: true },
-      { text: 'Task management', included: true },
-      { text: 'Community support', included: true },
-      { text: 'Advanced analytics', included: false },
-      { text: 'Custom branding', included: false },
-      { text: 'Priority support', included: false },
-    ],
-    cta: 'Start Free',
-    popular: false,
-    color: 'border-border',
-  },
-  {
-    name: 'Starter',
-    price: '₹2,499',
-    period: '/month',
-    description: 'For small teams',
-    users: '25 users',
-    features: [
-      { text: 'Up to 25 users', included: true },
-      { text: 'Full employee management', included: true },
-      { text: 'Unlimited training modules', included: true },
-      { text: 'Advanced assessments', included: true },
-      { text: 'Task management', included: true },
-      { text: 'Team communication', included: true },
-      { text: 'Rewards system', included: true },
-      { text: 'Email support', included: true },
-      { text: 'Custom branding', included: false },
-    ],
-    cta: 'Start Trial',
-    popular: true,
-    color: 'border-emerald-500',
-  },
-  {
-    name: 'Professional',
-    price: '₹7,999',
-    period: '/month',
-    description: 'For growing businesses',
-    users: '100 users',
-    features: [
-      { text: 'Up to 100 users', included: true },
-      { text: 'Everything in Starter', included: true },
-      { text: 'Advanced analytics', included: true },
-      { text: 'Custom branding', included: true },
-      { text: 'Department management', included: true },
-      { text: 'Advanced reporting', included: true },
-      { text: 'API access', included: true },
-      { text: 'Priority email support', included: true },
-      { text: 'Onboarding assistance', included: true },
-    ],
-    cta: 'Start Trial',
-    popular: false,
-    color: 'border-blue-500',
-  },
-  {
-    name: 'Enterprise',
-    price: 'Custom',
-    period: '',
-    description: 'For large organizations',
-    users: 'Unlimited',
-    features: [
-      { text: 'Unlimited users', included: true },
-      { text: 'Everything in Professional', included: true },
-      { text: 'Dedicated account manager', included: true },
-      { text: 'Custom integrations', included: true },
-      { text: 'Advanced security features', included: true },
-      { text: 'SLA guarantee', included: true },
-      { text: '24/7 phone support', included: true },
-      { text: 'Custom training', included: true },
-      { text: 'White-label options', included: true },
-    ],
-    cta: 'Contact Sales',
-    popular: false,
-    color: 'border-purple-500',
-  },
-];
+interface SubscriptionPlan {
+  id: string;
+  name: string;
+  code: string;
+  price_monthly: number;
+  price_yearly: number | null;
+  max_users: number;
+  features: string[];
+  is_active: boolean;
+}
 
 const faqs = [
   {
@@ -120,8 +46,52 @@ const faqs = [
   },
 ];
 
+const getPlanColor = (code: string) => {
+  switch (code) {
+    case 'free': return 'border-border';
+    case 'starter': return 'border-emerald-500';
+    case 'professional': return 'border-blue-500';
+    case 'enterprise': return 'border-purple-500';
+    default: return 'border-border';
+  }
+};
+
+const formatPrice = (price: number) => {
+  if (price === 0) return '₹0';
+  return `₹${price.toLocaleString('en-IN')}`;
+};
+
 export default function Pricing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchPlans();
+  }, []);
+
+  const fetchPlans = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('subscription_plans')
+        .select('*')
+        .eq('is_active', true)
+        .order('price_monthly', { ascending: true });
+
+      if (error) throw error;
+
+      const transformedPlans: SubscriptionPlan[] = (data || []).map(plan => ({
+        ...plan,
+        features: Array.isArray(plan.features) ? plan.features as string[] : [],
+      }));
+
+      setPlans(transformedPlans);
+    } catch (error) {
+      console.error('Error fetching plans:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const NavLinks = () => (
     <>
@@ -199,59 +169,89 @@ export default function Pricing() {
       {/* Pricing Cards */}
       <section className="pb-12 sm:pb-20">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-7xl mx-auto">
-            {plans.map((plan) => (
-              <Card 
-                key={plan.name} 
-                className={`relative flex flex-col ${plan.color} ${plan.popular ? 'border-2 shadow-lg' : ''}`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-emerald-600 text-white text-xs">
-                      Most Popular
-                    </Badge>
-                  </div>
-                )}
-                <CardHeader className="text-center pb-3 sm:pb-4 px-4 sm:px-6">
-                  <CardTitle className="text-lg sm:text-xl">{plan.name}</CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">{plan.description}</CardDescription>
-                  <div className="pt-3 sm:pt-4">
-                    <span className="text-2xl sm:text-4xl font-bold text-foreground">{plan.price}</span>
-                    <span className="text-muted-foreground text-xs sm:text-sm">{plan.period}</span>
-                  </div>
-                  <div className="flex items-center justify-center gap-1 text-xs sm:text-sm text-muted-foreground pt-2">
-                    <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    {plan.users}
-                  </div>
-                </CardHeader>
-                <CardContent className="flex-1 flex flex-col px-4 sm:px-6 pb-4 sm:pb-6">
-                  <ul className="space-y-2 sm:space-y-3 flex-1">
-                    {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        {feature.included ? (
-                          <Check className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 shrink-0 mt-0.5" />
-                        ) : (
-                          <X className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground/50 shrink-0 mt-0.5" />
-                        )}
-                        <span className={`text-xs sm:text-sm ${feature.included ? 'text-foreground' : 'text-muted-foreground/50'}`}>
-                          {feature.text}
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-7xl mx-auto">
+              {[...Array(4)].map((_, i) => (
+                <Card key={i} className="flex flex-col">
+                  <CardHeader className="text-center pb-3 sm:pb-4">
+                    <Skeleton className="h-6 w-24 mx-auto mb-2" />
+                    <Skeleton className="h-4 w-32 mx-auto mb-4" />
+                    <Skeleton className="h-10 w-28 mx-auto" />
+                  </CardHeader>
+                  <CardContent className="flex-1">
+                    <div className="space-y-3">
+                      {[...Array(6)].map((_, j) => (
+                        <Skeleton key={j} className="h-4 w-full" />
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : plans.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No plans available at the moment.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-7xl mx-auto">
+              {plans.map((plan, index) => {
+                const isPopular = plan.code === 'starter';
+                const isEnterprise = plan.code === 'enterprise';
+                
+                return (
+                  <Card 
+                    key={plan.id} 
+                    className={`relative flex flex-col ${getPlanColor(plan.code)} ${isPopular ? 'border-2 shadow-lg' : ''}`}
+                  >
+                    {isPopular && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                        <Badge className="bg-emerald-600 text-white text-xs">
+                          Most Popular
+                        </Badge>
+                      </div>
+                    )}
+                    <CardHeader className="text-center pb-3 sm:pb-4 px-4 sm:px-6">
+                      <CardTitle className="text-lg sm:text-xl">{plan.name}</CardTitle>
+                      <CardDescription className="text-xs sm:text-sm">
+                        {isEnterprise ? 'For large organizations' : `For ${plan.max_users === -1 ? 'unlimited' : `up to ${plan.max_users}`} users`}
+                      </CardDescription>
+                      <div className="pt-3 sm:pt-4">
+                        <span className="text-2xl sm:text-4xl font-bold text-foreground">
+                          {isEnterprise ? 'Custom' : formatPrice(plan.price_monthly)}
                         </span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Link to={plan.name === 'Enterprise' ? '/contact' : '/signup'} className="mt-4 sm:mt-6">
-                    <Button 
-                      className={`w-full min-h-[44px] text-sm ${plan.popular ? 'bg-emerald-600 hover:bg-emerald-700' : ''}`}
-                      variant={plan.popular ? 'default' : 'outline'}
-                    >
-                      {plan.cta}
-                      <ArrowRight className="h-4 w-4 ml-2" />
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                        {!isEnterprise && <span className="text-muted-foreground text-xs sm:text-sm">/month</span>}
+                      </div>
+                      <div className="flex items-center justify-center gap-1 text-xs sm:text-sm text-muted-foreground pt-2">
+                        <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        {plan.max_users === -1 ? 'Unlimited users' : `${plan.max_users} users`}
+                      </div>
+                    </CardHeader>
+                    <CardContent className="flex-1 flex flex-col px-4 sm:px-6 pb-4 sm:pb-6">
+                      <ul className="space-y-2 sm:space-y-3 flex-1">
+                        {plan.features.map((feature, idx) => (
+                          <li key={idx} className="flex items-start gap-2">
+                            <Check className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 shrink-0 mt-0.5" />
+                            <span className="text-xs sm:text-sm text-foreground">
+                              {feature}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                      <Link to={isEnterprise ? '/contact' : '/signup'} className="mt-4 sm:mt-6">
+                        <Button 
+                          className={`w-full min-h-[44px] text-sm ${isPopular ? 'bg-emerald-600 hover:bg-emerald-700' : ''}`}
+                          variant={isPopular ? 'default' : 'outline'}
+                        >
+                          {isEnterprise ? 'Contact Sales' : plan.price_monthly === 0 ? 'Start Free' : 'Start Trial'}
+                          <ArrowRight className="h-4 w-4 ml-2" />
+                        </Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
@@ -299,11 +299,11 @@ export default function Pricing() {
                     Start Free Trial
                   </Button>
                 </Link>
-                <a href="mailto:sales@sltworkhub.com" className="w-full sm:w-auto">
+                <Link to="/contact" className="w-full sm:w-auto">
                   <Button variant="outline" className="w-full min-h-[44px]">
                     Contact Sales
                   </Button>
-                </a>
+                </Link>
               </div>
             </CardContent>
           </Card>

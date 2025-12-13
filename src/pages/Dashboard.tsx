@@ -149,11 +149,12 @@ export default function Dashboard() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="w-full overflow-x-auto">
-            <TabsList className={`grid w-full min-w-max ${profile?.role === 'admin' ? 'grid-cols-8' : 'grid-cols-6'} ${profile?.role === 'admin' ? 'max-w-5xl' : 'max-w-3xl'} mx-auto`}>
+            <TabsList className={`grid w-full min-w-max ${profile?.role === 'admin' ? 'grid-cols-9' : 'grid-cols-7'} ${profile?.role === 'admin' ? 'max-w-6xl' : 'max-w-4xl'} mx-auto`}>
               <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 sm:px-4">Overview</TabsTrigger>
               <TabsTrigger value="tasks" className="text-xs sm:text-sm px-2 sm:px-4">Tasks</TabsTrigger>
               <TabsTrigger value="projects" className="text-xs sm:text-sm px-2 sm:px-4">Projects</TabsTrigger>
               <TabsTrigger value="attendance" className="text-xs sm:text-sm px-2 sm:px-4">Attendance</TabsTrigger>
+              <TabsTrigger value="time" className="text-xs sm:text-sm px-2 sm:px-4">Time Logs</TabsTrigger>
               {profile?.role === 'admin' && (
                 <>
                   <TabsTrigger value="coins" className="text-xs sm:text-sm px-2 sm:px-4">Coins</TabsTrigger>

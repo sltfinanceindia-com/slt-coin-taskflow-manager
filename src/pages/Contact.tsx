@@ -4,12 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { Mail, Phone, MapPin, Send, Building2 } from "lucide-react";
+import { toast } from "sonner";
+import { Mail, Phone, MapPin, Send, Building2, Coins } from "lucide-react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const Contact = () => {
-  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -23,16 +23,28 @@ const Contact = () => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    toast({
-      title: "Message sent!",
-      description: "We'll get back to you within 24 hours.",
-    });
-    
-    setFormData({ name: "", email: "", company: "", subject: "", message: "" });
-    setIsSubmitting(false);
+    try {
+      // Store in database
+      const { error } = await supabase
+        .from('contact_submissions')
+        .insert([{
+          name: formData.name,
+          email: formData.email,
+          company: formData.company || null,
+          subject: formData.subject,
+          message: formData.message,
+        }]);
+
+      if (error) throw error;
+      
+      toast.success("Message sent! We'll get back to you within 24 hours.");
+      setFormData({ name: "", email: "", company: "", subject: "", message: "" });
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      toast.error("Failed to send message. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -40,44 +52,50 @@ const Contact = () => {
       {/* Header */}
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <Building2 className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold">SLT Finance</span>
+          <Link to="/" className="flex items-center gap-2 sm:gap-3">
+            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
+              <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+            </div>
+            <span className="text-sm sm:text-lg font-bold">
+              <span className="font-black">SLT</span>
+              <span className="font-normal text-muted-foreground"> work </span>
+              <span className="font-black">HuB</span>
+            </span>
           </Link>
-          <nav className="flex items-center gap-4">
+          <nav className="flex items-center gap-2 sm:gap-4">
             <Link to="/pricing">
-              <Button variant="ghost">Pricing</Button>
+              <Button variant="ghost" size="sm" className="text-xs sm:text-sm">Pricing</Button>
             </Link>
             <Link to="/auth">
-              <Button>Sign In</Button>
+              <Button size="sm" className="text-xs sm:text-sm">Sign In</Button>
             </Link>
           </nav>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold tracking-tight mb-4">Contact Us</h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+      <main className="container mx-auto px-4 py-8 sm:py-16">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-2xl sm:text-4xl font-bold tracking-tight mb-3 sm:mb-4">Contact Us</h1>
+          <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
             Have questions about our enterprise plans or need custom solutions? 
             Our team is here to help you find the perfect fit for your organization.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+        <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 max-w-6xl mx-auto">
           {/* Contact Form */}
           <Card>
-            <CardHeader>
-              <CardTitle>Send us a message</CardTitle>
-              <CardDescription>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl">Send us a message</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
                 Fill out the form below and we'll get back to you within 24 hours.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Full Name *</Label>
+                    <Label htmlFor="name" className="text-sm">Full Name *</Label>
                     <Input
                       id="name"
                       required
@@ -87,7 +105,7 @@ const Contact = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email">Work Email *</Label>
+                    <Label htmlFor="email" className="text-sm">Work Email *</Label>
                     <Input
                       id="email"
                       type="email"
@@ -100,7 +118,7 @@ const Contact = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="company">Company Name</Label>
+                  <Label htmlFor="company" className="text-sm">Company Name</Label>
                   <Input
                     id="company"
                     value={formData.company}
@@ -110,7 +128,7 @@ const Contact = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="subject">Subject *</Label>
+                  <Label htmlFor="subject" className="text-sm">Subject *</Label>
                   <Input
                     id="subject"
                     required
@@ -121,7 +139,7 @@ const Contact = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="message">Message *</Label>
+                  <Label htmlFor="message" className="text-sm">Message *</Label>
                   <Textarea
                     id="message"
                     required
@@ -132,7 +150,7 @@ const Contact = () => {
                   />
                 </div>
 
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                <Button type="submit" className="w-full min-h-[44px]" disabled={isSubmitting}>
                   {isSubmitting ? (
                     "Sending..."
                   ) : (
@@ -147,59 +165,59 @@ const Contact = () => {
           </Card>
 
           {/* Contact Info */}
-          <div className="space-y-8">
+          <div className="space-y-4 sm:space-y-6">
             <Card>
-              <CardHeader>
-                <CardTitle>Get in touch</CardTitle>
-                <CardDescription>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-lg sm:text-xl">Get in touch</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
                   Reach out to our sales and support teams directly.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-lg bg-primary/10">
-                    <Mail className="h-5 w-5 text-primary" />
+              <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0 space-y-4 sm:space-y-6">
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="p-2.5 sm:p-3 rounded-lg bg-primary/10 shrink-0">
+                    <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   </div>
                   <div>
-                    <p className="font-medium">Email</p>
-                    <p className="text-muted-foreground">sales@sltfinance.com</p>
-                    <p className="text-muted-foreground">support@sltfinance.com</p>
+                    <p className="font-medium text-sm sm:text-base">Email</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">sales@sltworkhub.com</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">support@sltworkhub.com</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-lg bg-primary/10">
-                    <Phone className="h-5 w-5 text-primary" />
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="p-2.5 sm:p-3 rounded-lg bg-primary/10 shrink-0">
+                    <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   </div>
                   <div>
-                    <p className="font-medium">Phone</p>
-                    <p className="text-muted-foreground">+1 (555) 123-4567</p>
-                    <p className="text-sm text-muted-foreground">Mon-Fri, 9am-6pm EST</p>
+                    <p className="font-medium text-sm sm:text-base">Phone</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">+91 98765 43210</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">Mon-Fri, 9am-6pm IST</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-lg bg-primary/10">
-                    <MapPin className="h-5 w-5 text-primary" />
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="p-2.5 sm:p-3 rounded-lg bg-primary/10 shrink-0">
+                    <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   </div>
                   <div>
-                    <p className="font-medium">Office</p>
-                    <p className="text-muted-foreground">123 Business Avenue</p>
-                    <p className="text-muted-foreground">New York, NY 10001</p>
+                    <p className="font-medium text-sm sm:text-base">Office</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">SLT Finance Building</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Mumbai, India</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle>Enterprise Solutions</CardTitle>
-                <CardDescription>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-lg sm:text-xl">Enterprise Solutions</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
                   Need a custom solution for your large organization?
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-muted-foreground">
+              <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+                <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-muted-foreground">
                   <li>• Dedicated account manager</li>
                   <li>• Custom integrations</li>
                   <li>• SLA guarantees</li>
@@ -207,7 +225,7 @@ const Contact = () => {
                   <li>• Priority support 24/7</li>
                 </ul>
                 <Link to="/pricing">
-                  <Button variant="outline" className="w-full mt-4">
+                  <Button variant="outline" className="w-full mt-4 min-h-[44px]">
                     View Pricing Plans
                   </Button>
                 </Link>
@@ -218,10 +236,10 @@ const Contact = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t mt-16 py-8">
+      <footer className="border-t mt-12 sm:mt-16 py-6 sm:py-8">
         <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} SLT Finance. All rights reserved.</p>
-          <div className="flex justify-center gap-4 mt-4">
+          <p className="text-xs sm:text-sm">&copy; {new Date().getFullYear()} SLT work HuB. All rights reserved.</p>
+          <div className="flex justify-center gap-4 mt-3 sm:mt-4 text-xs sm:text-sm">
             <Link to="/privacy" className="hover:text-foreground">Privacy Policy</Link>
             <Link to="/terms" className="hover:text-foreground">Terms of Service</Link>
           </div>
