@@ -3902,6 +3902,63 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string | null
+          data: Json | null
+          expires_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          organization_id: string | null
+          read_at: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          data?: Json | null
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          organization_id?: string | null
+          read_at?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          data?: Json | null
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          organization_id?: string | null
+          read_at?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       objectives: {
         Row: {
           created_at: string
@@ -4254,6 +4311,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      otp_codes: {
+        Row: {
+          created_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          otp_hash: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          expires_at: string
+          id?: string
+          otp_hash: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          otp_hash?: string
+        }
+        Relationships: []
       }
       payment_methods: {
         Row: {
@@ -7528,6 +7609,7 @@ export type Database = {
         Returns: boolean
       }
       check_sla_breaches: { Args: never; Returns: undefined }
+      cleanup_expired_otps: { Args: never; Returns: undefined }
       cleanup_expired_typing_indicators: { Args: never; Returns: undefined }
       create_direct_message_channel: {
         Args: { user1_id: string; user2_id: string }
@@ -7639,6 +7721,16 @@ export type Database = {
       }
       is_org_admin: { Args: { _org_id?: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      send_notification: {
+        Args: {
+          p_data?: Json
+          p_message: string
+          p_title: string
+          p_type: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       suggest_task_assignment: {
         Args: {
           p_end_date?: string

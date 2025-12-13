@@ -21,6 +21,9 @@ interface SubscriptionInfo {
   shouldShowUpgradePrompt: boolean;
   isServiceSuspended: boolean;
   paymentFailedAt: Date | null;
+  autopayEnabled: boolean;
+  stripeCustomerId: string | null;
+  stripeSubscriptionId: string | null;
 }
 
 const PLAN_FEATURES: Record<PlanType, string[]> = {
@@ -57,6 +60,9 @@ export const useSubscriptionStatus = (): SubscriptionInfo => {
         shouldShowUpgradePrompt: false,
         isServiceSuspended: false,
         paymentFailedAt: null,
+        autopayEnabled: true,
+        stripeCustomerId: null,
+        stripeSubscriptionId: null,
       };
     }
 
@@ -65,10 +71,13 @@ export const useSubscriptionStatus = (): SubscriptionInfo => {
       subscription_status?: string;
       payment_failed_at?: string;
       service_suspended_at?: string;
+      autopay_enabled?: boolean;
+      stripe_customer_id?: string;
+      stripe_subscription_id?: string;
     };
 
     const status = (org.subscription_status || "trialing") as SubscriptionStatus;
-    const plan = (organization.subscription_plan || "free") as PlanType;
+    const plan = (organization.subscription_plan?.code || "free") as PlanType;
     const trialEndsAt = organization.trial_ends_at 
       ? new Date(organization.trial_ends_at) 
       : null;
@@ -88,10 +97,19 @@ export const useSubscriptionStatus = (): SubscriptionInfo => {
     const isServiceSuspended = !!serviceSuspendedAt;
 
     const canAccessFeature = (feature: string): boolean => {
+      // If service is suspended, block all features
       if (isServiceSuspended) return false;
+      
+      // If subscription is canceled or unpaid, block features
       if (status === "canceled" || status === "unpaid") return false;
+      
+      // If trial has expired and no active subscription, block features
       if (status === "trialing" && isTrialExpired) return false;
       
+      // During trial, allow all features
+      if (status === "trialing" && !isTrialExpired) return true;
+      
+      // Check if feature is included in the plan
       return PLAN_FEATURES[plan]?.includes(feature) ?? false;
     };
 
@@ -110,6 +128,9 @@ export const useSubscriptionStatus = (): SubscriptionInfo => {
       shouldShowUpgradePrompt,
       isServiceSuspended,
       paymentFailedAt,
+      autopayEnabled: org.autopay_enabled ?? true,
+      stripeCustomerId: org.stripe_customer_id ?? null,
+      stripeSubscriptionId: org.stripe_subscription_id ?? null,
     };
   }, [organization, isLoading]);
 
