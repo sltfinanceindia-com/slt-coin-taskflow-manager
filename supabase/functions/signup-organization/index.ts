@@ -140,8 +140,26 @@ serve(async (req) => {
       .update({ created_by: authData.user.id })
       .eq('id', orgData.id);
 
-    // 4. The handle_new_user trigger should create profile and user_roles,
-    //    but let's ensure user_roles is properly set
+    // 4. Create the profile (trigger may not work with admin API)
+    const { error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .upsert({
+        id: authData.user.id,
+        user_id: authData.user.id,
+        full_name: fullName,
+        email: email,
+        organization_id: orgData.id,
+        is_active: true,
+      }, {
+        onConflict: 'id'
+      });
+
+    if (profileError) {
+      console.error('Profile creation error:', profileError);
+      // Non-critical for signup flow, but log it
+    }
+
+    // 5. Create user_roles entry
     const { error: roleError } = await supabaseAdmin.from('user_roles').upsert({
       user_id: authData.user.id,
       role: 'org_admin',
@@ -152,8 +170,16 @@ serve(async (req) => {
 
     if (roleError) {
       console.error('Role assignment error:', roleError);
-      // Non-critical, continue anyway
     }
+
+    // 6. Create chat_users entry
+    await supabaseAdmin.from('chat_users').upsert({
+      user_id: authData.user.id,
+      status: 'offline',
+      organization_id: orgData.id,
+    }, {
+      onConflict: 'user_id'
+    });
 
     console.log('Signup completed successfully for:', email);
 
