@@ -43,7 +43,7 @@ export function BillingTab({ organizationId, organizationName }: BillingTabProps
 
       if (orgError) throw orgError;
       setOrganization(orgData);
-      setSelectedPlan(orgData.subscription_plan || '');
+      setSelectedPlan(orgData.subscription_plan_id || '');
 
       const { data: plansData } = await supabase
         .from('subscription_plans')
