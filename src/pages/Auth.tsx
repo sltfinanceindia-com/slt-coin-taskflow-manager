@@ -202,7 +202,7 @@ export default function Auth() {
         <div className="text-center">
           <div className="flex items-center justify-center mb-3 sm:mb-4">
             <img 
-              src="/lovable-uploads/56d5dd03-2808-4b88-9f9c-cc8932c46fe8.png" 
+              src="/slt-hub-icon.png" 
               alt="SLT work HuB"
               className="h-10 sm:h-12 w-auto object-contain"
             />
