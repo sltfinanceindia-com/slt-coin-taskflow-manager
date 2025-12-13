@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => ({
         name: 'SLT work HuB',
         short_name: 'SLT HuB',
         description: 'Complete Workplace Management Platform with task management, team collaboration, and SLT coin rewards',
-        theme_color: '#10b981',
+        theme_color: '#1e3a5f',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
