@@ -16,13 +16,17 @@ import {
   Pin,
   MoreHorizontal,
   Circle,
-  Archive
+  Archive,
+  CheckCheck,
+  Check
 } from 'lucide-react';
 import type { Channel, TeamMember } from '@/hooks/useCommunication';
 import { usePresence } from '@/hooks/usePresence';
 import { useChatUsers } from '@/hooks/useChatUsers';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
+import { PresenceBadge } from './EnhancedPresenceStatus';
+import LastSeenDisplay from './LastSeenDisplay';
 
 interface EnhancedChatListProps {
   channels: Channel[];
@@ -63,13 +67,15 @@ export default function EnhancedChatList({
 
   const getStatusIndicator = (userId: string) => {
     const presence = presenceList.find(p => p.user_id === userId);
-    const statusColor = getStatusBadgeColor(presence);
+    const isOnline = presence?.is_online || false;
+    const activityStatus = presence?.activity_status || 'offline';
     
     return (
-      <div className={cn(
-        "w-3 h-3 rounded-full border-2 border-background absolute -bottom-0.5 -right-0.5",
-        statusColor
-      )} />
+      <PresenceBadge 
+        status={isOnline ? activityStatus : 'offline'} 
+        size="sm"
+        className="-bottom-0.5 -right-0.5"
+      />
     );
   };
 
@@ -211,10 +217,14 @@ export default function EnhancedChatList({
                 </span>
               </div>
               
-              {/* Last Message */}
+              {/* Last Message with delivery ticks */}
               {channel.last_message ? (
-                <div className="flex items-center gap-1 mt-0.5">
-                  <p className="text-xs text-muted-foreground truncate">
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  {/* Show delivery tick indicator */}
+                  <span className="flex-shrink-0">
+                    <CheckCheck className="h-3 w-3 text-muted-foreground" />
+                  </span>
+                  <p className="text-xs text-muted-foreground truncate flex-1">
                     {!channel.is_direct_message && (
                       <span className="font-medium">{channel.last_message.sender_name}: </span>
                     )}
@@ -222,12 +232,17 @@ export default function EnhancedChatList({
                   </p>
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {channel.is_direct_message && user ? 
-                    getStatusText(presenceList.find(p => p.user_id === user.id)) :
-                    'No messages yet'
-                  }
-                </p>
+                <div className="mt-0.5">
+                  {channel.is_direct_message && user ? (
+                    <LastSeenDisplay
+                      isOnline={presenceList.find(p => p.user_id === user.id)?.is_online || false}
+                      lastSeen={presenceList.find(p => p.user_id === user.id)?.last_seen}
+                      variant="compact"
+                    />
+                  ) : (
+                    <p className="text-xs text-muted-foreground">No messages yet</p>
+                  )}
+                </div>
               )}
             </div>
 
@@ -354,10 +369,11 @@ export default function EnhancedChatList({
                               {getInitials(member.full_name)}
                             </AvatarFallback>
                           </Avatar>
-                          <div className={cn(
-                            "w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full border-2 border-background absolute -bottom-0.5 -right-0.5",
-                            statusColor
-                          )} />
+                          <PresenceBadge 
+                            status={presence?.is_online ? (presence.activity_status || 'online') : 'offline'} 
+                            size="sm"
+                            className="-bottom-0.5 -right-0.5"
+                          />
                         </div>
 
                         {/* Member Info */}
@@ -373,9 +389,12 @@ export default function EnhancedChatList({
                               {member.role}
                             </Badge>
                           </div>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {getStatusText(presence)}
-                          </p>
+                          <LastSeenDisplay
+                            isOnline={presence?.is_online || false}
+                            lastSeen={presence?.last_seen}
+                            statusMessage={presence?.status_message}
+                            variant="compact"
+                          />
                         </div>
 
                         {/* Message Icon - visible on hover for desktop */}
