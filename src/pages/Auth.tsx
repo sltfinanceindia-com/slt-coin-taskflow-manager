@@ -204,7 +204,7 @@ export default function Auth() {
             <img 
               src="/slt-hub-icon.png" 
               alt="SLT work HuB"
-              className="h-10 sm:h-12 w-auto object-contain"
+              className="h-10 sm:h-12 w-auto object-contain rounded-xl"
             />
           </div>
           <h1 className="text-base sm:text-lg font-semibold text-primary mb-1 sm:mb-2">

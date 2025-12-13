@@ -245,7 +245,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
               <img 
                 src="/slt-hub-icon.png" 
                 alt="SLT work HuB"
-                className="h-9 w-auto object-contain shrink-0"
+                className="h-9 w-auto object-contain shrink-0 rounded-xl"
               />
               {!collapsed && (
                 <div className="min-w-0 flex-1">
