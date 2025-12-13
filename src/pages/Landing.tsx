@@ -97,8 +97,8 @@ export default function Landing() {
       label: 'Coins Distributed'
     },
     {
-      value: '99.9%',
-      label: 'Uptime'
+      value: '24/7',
+      label: 'Support'
     }
   ];
 
