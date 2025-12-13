@@ -18,8 +18,8 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'robots.txt', 'lovable-uploads/*.png'],
       manifest: {
-        name: 'SLTwork Hub',
-        short_name: 'SLTwork',
+        name: 'SLT work HuB',
+        short_name: 'SLT HuB',
         description: 'Complete Workplace Management Platform with task management, team collaboration, and SLT coin rewards',
         theme_color: '#10b981',
         background_color: '#ffffff',
@@ -29,19 +29,19 @@ export default defineConfig(({ mode }) => ({
         start_url: '/',
         icons: [
           {
-            src: '/lovable-uploads/45c61710-9ed7-4d4a-8c88-e68c20e3aa13.png',
+            src: '/slt-hub-icon.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: '/lovable-uploads/45c61710-9ed7-4d4a-8c88-e68c20e3aa13.png',
+            src: '/slt-hub-icon.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: '/lovable-uploads/45c61710-9ed7-4d4a-8c88-e68c20e3aa13.png',
+            src: '/slt-hub-icon.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'maskable'
