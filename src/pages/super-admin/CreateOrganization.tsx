@@ -33,6 +33,9 @@ interface SubscriptionPlan {
   max_users: number;
 }
 
+// Check if plan is enterprise level
+const isEnterprisePlan = (code: string) => code === 'enterprise';
+
 // Password strength checker
 const getPasswordStrength = (password: string): { score: number; label: string; color: string } => {
   let score = 0;
@@ -119,12 +122,19 @@ export default function CreateOrganization() {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
+    const selectedPlan = plans.find(p => p.id === formData.planId);
+    const isEnterprise = selectedPlan && isEnterprisePlan(selectedPlan.code);
 
     if (!formData.name.trim()) newErrors.name = 'Organization name is required';
-    if (!formData.subdomain.trim()) newErrors.subdomain = 'Subdomain is required';
-    if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(formData.subdomain) && formData.subdomain.length > 2) {
-      newErrors.subdomain = 'Subdomain must contain only lowercase letters, numbers, and hyphens';
+    
+    // Only validate subdomain for enterprise plans
+    if (isEnterprise) {
+      if (!formData.subdomain.trim()) newErrors.subdomain = 'Subdomain is required';
+      if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(formData.subdomain) && formData.subdomain.length > 2) {
+        newErrors.subdomain = 'Subdomain must contain only lowercase letters, numbers, and hyphens';
+      }
     }
+    
     if (!formData.adminName.trim()) newErrors.adminName = 'Admin name is required';
     if (!formData.adminEmail.trim()) newErrors.adminEmail = 'Admin email is required';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.adminEmail)) {
@@ -280,19 +290,22 @@ export default function CreateOrganization() {
                 {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="subdomain">Subdomain *</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    id="subdomain"
-                    value={formData.subdomain}
-                    onChange={(e) => setFormData(prev => ({ ...prev, subdomain: e.target.value.toLowerCase() }))}
-                    placeholder="acme"
-                  />
-                  <span className="text-muted-foreground whitespace-nowrap">.sltworkhub.com</span>
+              {/* Subdomain field - only show for enterprise plans */}
+              {isEnterprisePlan(plans.find(p => p.id === formData.planId)?.code || '') && (
+                <div className="space-y-2">
+                  <Label htmlFor="subdomain">Subdomain *</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="subdomain"
+                      value={formData.subdomain}
+                      onChange={(e) => setFormData(prev => ({ ...prev, subdomain: e.target.value.toLowerCase() }))}
+                      placeholder="acme"
+                    />
+                    <span className="text-muted-foreground whitespace-nowrap">.sltworkhub.com</span>
+                  </div>
+                  {errors.subdomain && <p className="text-sm text-destructive">{errors.subdomain}</p>}
                 </div>
-                {errors.subdomain && <p className="text-sm text-destructive">{errors.subdomain}</p>}
-              </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
