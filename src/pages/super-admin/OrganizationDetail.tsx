@@ -50,6 +50,7 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { Progress } from '@/components/ui/progress';
 import { OrganizationActivityLog } from '@/components/activity/OrganizationActivityLog';
+import { BillingTab } from '@/components/super-admin/BillingTab';
 
 type OrganizationStatus = 'active' | 'suspended' | 'pending' | 'cancelled' | 'trial';
 
@@ -256,8 +257,9 @@ export default function OrganizationDetail() {
           </div>
         ) : organization ? (
           <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList>
+            <TabsList className="flex-wrap h-auto gap-1">
               <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="billing">Billing</TabsTrigger>
               <TabsTrigger value="users">Users ({users.length})</TabsTrigger>
               <TabsTrigger value="activity">Activity</TabsTrigger>
             </TabsList>
@@ -325,6 +327,10 @@ export default function OrganizationDetail() {
                   </CardContent>
                 </Card>
               </div>
+            </TabsContent>
+
+            <TabsContent value="billing">
+              <BillingTab organizationId={organization.id} organizationName={organization.name} />
             </TabsContent>
 
             <TabsContent value="users">
