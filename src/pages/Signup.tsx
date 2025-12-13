@@ -4,9 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { 
   Coins, 
@@ -14,9 +12,6 @@ import {
   User, 
   Mail, 
   Lock, 
-  Globe, 
-  CheckCircle, 
-  AlertCircle,
   ArrowRight,
   Loader2,
   Eye,
@@ -27,19 +22,13 @@ export default function Signup() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(1);
-  const [subdomainAvailable, setSubdomainAvailable] = useState<boolean | null>(null);
-  const [checkingSubdomain, setCheckingSubdomain] = useState(false);
   
   const [formData, setFormData] = useState({
-    // Organization
     companyName: '',
-    subdomain: '',
-    // Admin
     fullName: '',
     email: '',
     password: '',
     confirmPassword: '',
-    // Terms
     agreeToTerms: false,
   });
 
@@ -47,57 +36,12 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const generateSubdomain = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '')
-      .slice(0, 30);
-  };
-
-  const checkSubdomainAvailability = async (subdomain: string) => {
-    if (subdomain.length < 3) {
-      setSubdomainAvailable(null);
-      return;
-    }
-    
-    setCheckingSubdomain(true);
-    try {
-      const { data, error } = await supabase
-        .from('organizations')
-        .select('id')
-        .eq('subdomain', subdomain)
-        .maybeSingle();
-
-      setSubdomainAvailable(!data && !error);
-    } catch {
-      setSubdomainAvailable(null);
-    } finally {
-      setCheckingSubdomain(false);
-    }
-  };
-
-  const handleCompanyNameChange = (value: string) => {
-    setFormData({ ...formData, companyName: value });
-    const subdomain = generateSubdomain(value);
-    setFormData(prev => ({ ...prev, subdomain }));
-    checkSubdomainAvailability(subdomain);
-  };
-
-  const handleSubdomainChange = (value: string) => {
-    const cleanedSubdomain = value.toLowerCase().replace(/[^a-z0-9-]/g, '');
-    setFormData({ ...formData, subdomain: cleanedSubdomain });
-    checkSubdomainAvailability(cleanedSubdomain);
-  };
-
   const validateStep1 = () => {
     const newErrors: Record<string, string> = {};
     
     if (!formData.companyName.trim()) {
       newErrors.companyName = 'Company name is required';
     }
-    // Subdomain is auto-generated, no validation needed for regular signups
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -144,58 +88,32 @@ export default function Signup() {
 
     setIsLoading(true);
     try {
-      // 1. Create the organization
-      const { data: orgData, error: orgError } = await supabase
-        .from('organizations')
-        .insert({
-          name: formData.companyName,
-          subdomain: formData.subdomain,
-          status: 'trial',
-          max_users: 5, // Free plan
-          trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(), // 14 days
-        })
-        .select()
-        .single();
-
-      if (orgError) throw orgError;
-
-      // 2. Create the admin user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            full_name: formData.fullName,
-            organization_id: orgData.id,
-            role: 'org_admin',
+      // Call the signup-organization edge function
+      const response = await fetch(
+        'https://orybzmkhccrqmjuvioln.supabase.co/functions/v1/signup-organization',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-        },
-      });
+          body: JSON.stringify({
+            companyName: formData.companyName,
+            fullName: formData.fullName,
+            email: formData.email,
+            password: formData.password,
+          }),
+        }
+      );
 
-      if (authError) {
-        // Rollback organization creation
-        await supabase.from('organizations').delete().eq('id', orgData.id);
-        throw authError;
-      }
+      const result = await response.json();
 
-      // 3. Update organization with created_by
-      if (authData.user) {
-        await supabase
-          .from('organizations')
-          .update({ created_by: authData.user.id })
-          .eq('id', orgData.id);
-
-        // 4. Create user_roles entry
-        await supabase.from('user_roles').insert({
-          user_id: authData.user.id,
-          role: 'org_admin',
-          organization_id: orgData.id,
-        });
+      if (!response.ok) {
+        throw new Error(result.error || 'Signup failed');
       }
 
       toast({
         title: 'Organization created!',
-        description: 'Welcome to SLT Work Hub. Check your email to verify your account.',
+        description: 'Welcome to SLT Work Hub. You can now sign in.',
       });
 
       navigate('/auth');
@@ -287,7 +205,7 @@ export default function Signup() {
                     <Input
                       id="companyName"
                       value={formData.companyName}
-                      onChange={(e) => handleCompanyNameChange(e.target.value)}
+                      onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                       placeholder="Acme Corporation"
                       className={`min-h-[44px] text-sm sm:text-base ${errors.companyName ? 'border-destructive' : ''}`}
                     />
