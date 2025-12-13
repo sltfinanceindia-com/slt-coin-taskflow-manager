@@ -150,14 +150,24 @@ serve(async (req) => {
         email: email,
         organization_id: orgData.id,
         is_active: true,
+        role: 'org_admin',
+        total_coins: 0,
       }, {
         onConflict: 'id'
       });
 
     if (profileError) {
       console.error('Profile creation error:', profileError);
-      // Non-critical for signup flow, but log it
+      // Critical error - rollback and fail
+      await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+      await supabaseAdmin.from('organizations').delete().eq('id', orgData.id);
+      return new Response(
+        JSON.stringify({ error: 'Failed to create profile: ' + profileError.message }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
+
+    console.log('Profile created for:', authData.user.id);
 
     // 5. Create user_roles entry
     const { error: roleError } = await supabaseAdmin.from('user_roles').upsert({
