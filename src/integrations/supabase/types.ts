@@ -4170,6 +4170,53 @@ export type Database = {
           },
         ]
       }
+      organization_domains: {
+        Row: {
+          created_at: string | null
+          custom_domain: string | null
+          dns_verified: boolean | null
+          id: string
+          is_published: boolean | null
+          organization_id: string | null
+          published_at: string | null
+          ssl_enabled: boolean | null
+          subdomain: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          custom_domain?: string | null
+          dns_verified?: boolean | null
+          id?: string
+          is_published?: boolean | null
+          organization_id?: string | null
+          published_at?: string | null
+          ssl_enabled?: boolean | null
+          subdomain: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          custom_domain?: string | null
+          dns_verified?: boolean | null
+          id?: string
+          is_published?: boolean | null
+          organization_id?: string | null
+          published_at?: string | null
+          ssl_enabled?: boolean | null
+          subdomain?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_domains_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_invitations: {
         Row: {
           accepted_at: string | null
@@ -6093,6 +6140,53 @@ export type Database = {
           },
           {
             foreignKeyName: "subscription_history_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_metrics: {
+        Row: {
+          active_subscriptions: number | null
+          arr: number | null
+          churned_subscriptions: number | null
+          created_at: string | null
+          id: string
+          mrr: number | null
+          new_subscriptions: number | null
+          organization_id: string | null
+          recorded_at: string | null
+          trial_conversions: number | null
+        }
+        Insert: {
+          active_subscriptions?: number | null
+          arr?: number | null
+          churned_subscriptions?: number | null
+          created_at?: string | null
+          id?: string
+          mrr?: number | null
+          new_subscriptions?: number | null
+          organization_id?: string | null
+          recorded_at?: string | null
+          trial_conversions?: number | null
+        }
+        Update: {
+          active_subscriptions?: number | null
+          arr?: number | null
+          churned_subscriptions?: number | null
+          created_at?: string | null
+          id?: string
+          mrr?: number | null
+          new_subscriptions?: number | null
+          organization_id?: string | null
+          recorded_at?: string | null
+          trial_conversions?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_metrics_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
