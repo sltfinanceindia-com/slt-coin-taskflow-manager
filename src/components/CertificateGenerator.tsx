@@ -456,15 +456,15 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                     {/* Left: Logo */}
                     <div className="flex items-center justify-start">
                       <img 
-                        src="/lovable-uploads/eff44302-96f7-4db7-8e46-3633f8bb8a1e.png" 
-                        alt="SLT Finance India Logo" 
+                        src="/slt-hub-icon.png" 
+                        alt="SLT work HuB Logo" 
                         className="h-16 w-auto"
                       />
                     </div>
                     
                     {/* Center: Company Name */}
                     <div className="flex flex-col items-center justify-center text-center">
-                      <h1 className="text-2xl font-bold text-green-700 tracking-wider whitespace-nowrap">SLT FINANCE INDIA</h1>
+                      <h1 className="text-2xl font-bold text-green-700 tracking-wider whitespace-nowrap">SLT work HuB</h1>
                       <p className="text-sm text-gray-600 tracking-wide mt-1">Your Wealth Is Our Future</p>
                     </div>
                     

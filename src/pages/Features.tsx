@@ -161,9 +161,11 @@ export default function Features() {
       <header className="border-b bg-background/95 backdrop-blur sticky top-0 z-50">
         <div className="container mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
-              <span className="text-primary-foreground font-bold">S</span>
-            </div>
+            <img 
+              src="/slt-hub-icon.png" 
+              alt="SLT work HuB"
+              className="w-8 h-8 rounded-lg object-contain"
+            />
             <span className="text-lg sm:text-xl">
               <span className="font-black">SLT</span>
               <span className="font-normal text-muted-foreground"> work </span>
@@ -337,9 +339,11 @@ export default function Features() {
         <div className="container mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
-                <span className="text-primary-foreground font-bold">S</span>
-              </div>
+              <img 
+                src="/slt-hub-icon.png" 
+                alt="SLT work HuB"
+                className="w-8 h-8 rounded-lg object-contain"
+              />
               <span className="font-bold">
                 <span className="font-black">SLT</span>
                 <span className="font-normal text-muted-foreground"> work </span>

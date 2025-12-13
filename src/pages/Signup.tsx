@@ -149,9 +149,11 @@ export default function Signup() {
         {/* Header */}
         <div className="text-center">
           <Link to="/" className="inline-flex items-center gap-2 mb-4 sm:mb-6">
-            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
-              <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-            </div>
+            <img 
+              src="/slt-hub-icon.png" 
+              alt="SLT work HuB"
+              className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg object-contain"
+            />
             <span className="text-base sm:text-lg font-bold">
               <span className="font-black">SLT</span>
               <span className="font-normal text-muted-foreground"> work </span>

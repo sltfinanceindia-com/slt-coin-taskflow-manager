@@ -53,8 +53,8 @@ export function ProfileDashboard() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <img 
-                src="/lovable-uploads/56d5dd03-2808-4b88-9f9c-cc8932c46fe8.png" 
-                alt="SLT Finance India"
+                src="/slt-hub-icon.png" 
+                alt="SLT work HuB"
                 className="h-8 sm:h-10 w-auto object-contain"
               />
               <div>
