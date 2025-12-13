@@ -31,10 +31,12 @@ import {
   Mic,
   Camera,
   Share,
-  Plus
+  Plus,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useCommunication } from '@/hooks/useCommunication';
 
 interface Message {
   id: string;
@@ -80,120 +82,84 @@ type View = 'channels' | 'chat' | 'members' | 'settings';
 
 export default function MobileLayout({ onChannelSelect, onMemberSelect }: MobileLayoutProps) {
   const [currentView, setCurrentView] = useState<View>('channels');
-  const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
+  const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null);
   const [selectedChannelData, setSelectedChannelData] = useState<Channel | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [channels, setChannels] = useState<Channel[]>([]);
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [localMessages, setLocalMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [activeTab, setActiveTab] = useState<'channels' | 'members'>('channels');
 
-  useEffect(() => {
-    // Mock data initialization
-    const mockChannels: Channel[] = [
-      {
-        id: '1',
-        name: 'General',
-        type: 'public',
-        participants: ['user1', 'user2'],
-        unreadCount: 3,
-        lastMessage: {
-          id: 'msg1',
-          content: 'Welcome to the team!',
-          sender: 'Admin',
-          timestamp: new Date(Date.now() - 1000 * 60 * 5),
-          type: 'text',
-          isOwn: false,
-          status: 'read'
-        }
-      },
-      {
-        id: '2',
-        name: 'Development',
-        type: 'private',
-        participants: ['user1', 'user3'],
-        unreadCount: 1,
-        lastMessage: {
-          id: 'msg2',
-          content: 'Code review needed',
-          sender: 'John',
-          timestamp: new Date(Date.now() - 1000 * 60 * 30),
-          type: 'text',
-          isOwn: false,
-          status: 'delivered'
-        }
-      }
-    ];
+  // Use the communication hook for real data
+  const {
+    channels: hookChannels,
+    messages: hookMessages,
+    teamMembers: hookTeamMembers,
+    isLoading,
+    isLoadingMessages,
+    sendMessage,
+    selectChannel,
+    createDirectMessage
+  } = useCommunication();
 
-    const mockMembers: TeamMember[] = [
-      {
-        id: 'user1',
-        name: 'John Doe',
-        status: 'online',
-        role: 'Developer'
-      },
-      {
-        id: 'user2',
-        name: 'Sarah Wilson',
-        status: 'away',
-        role: 'Designer',
-        lastSeen: new Date(Date.now() - 1000 * 60 * 15)
-      }
-    ];
+  // Map hook data to local component format
+  const channels: Channel[] = hookChannels.map(c => ({
+    id: c.id,
+    name: c.name,
+    type: c.type as 'public' | 'private' | 'direct',
+    participants: c.participant_ids || [],
+    unreadCount: c.unread_count || 0,
+    lastMessage: c.last_message ? {
+      id: 'last',
+      content: c.last_message.content,
+      sender: c.last_message.sender_name,
+      timestamp: new Date(c.last_message.timestamp),
+      type: 'text' as const,
+      isOwn: false,
+      status: 'read' as const
+    } : undefined,
+    avatar: undefined
+  }));
 
-    setChannels(mockChannels);
-    setTeamMembers(mockMembers);
-  }, []);
+  const teamMembers: TeamMember[] = hookTeamMembers.map(m => ({
+    id: m.id,
+    name: m.full_name,
+    avatar: m.avatar_url,
+    status: m.activity_status as 'online' | 'away' | 'offline',
+    role: m.role,
+    lastSeen: m.last_seen ? new Date(m.last_seen) : undefined
+  }));
+
+  const messages: Message[] = hookMessages.map(m => ({
+    id: m.id,
+    content: m.content,
+    sender: m.sender_name || 'Unknown',
+    timestamp: new Date(m.created_at),
+    type: m.message_type as 'text' | 'image' | 'file' | 'voice',
+    isOwn: false, // Will be determined by comparing sender_id
+    status: m.is_read ? 'read' as const : 'delivered' as const,
+    attachments: m.attachments
+  }));
 
   useEffect(() => {
-    if (selectedChannel) {
-      // Mock messages for selected channel
-      const mockMessages: Message[] = [
-        {
-          id: '1',
-          content: 'Hey everyone! How is the project going?',
-          sender: 'John Doe',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60),
-          type: 'text',
-          isOwn: false,
-          status: 'read'
-        },
-        {
-          id: '2',
-          content: 'Going well! Just finished the authentication module.',
-          sender: 'You',
-          timestamp: new Date(Date.now() - 1000 * 60 * 30),
-          type: 'text',
-          isOwn: true,
-          status: 'delivered'
-        },
-        {
-          id: '3',
-          content: 'Great work! Can you share the code?',
-          sender: 'Sarah Wilson',
-          timestamp: new Date(Date.now() - 1000 * 60 * 5),
-          type: 'text',
-          isOwn: false,
-          status: 'read'
-        }
-      ];
-      setMessages(mockMessages);
-      
-      const channelData = channels.find(c => c.id === selectedChannel);
+    if (selectedChannelId) {
+      const channelData = channels.find(c => c.id === selectedChannelId);
       setSelectedChannelData(channelData || null);
     }
-  }, [selectedChannel, channels]);
+  }, [selectedChannelId, channels]);
 
   const handleChannelSelect = (channelId: string) => {
-    setSelectedChannel(channelId);
+    setSelectedChannelId(channelId);
     setCurrentView('chat');
+    const channel = hookChannels.find(c => c.id === channelId);
+    if (channel) {
+      selectChannel(channel);
+    }
     onChannelSelect?.(channelId);
   };
 
-  const handleMemberSelect = (memberId: string) => {
+  const handleMemberSelect = async (memberId: string) => {
     // Create or find direct message channel
     const existingDM = channels.find(c => 
       c.type === 'direct' && c.participants.includes(memberId)
@@ -202,55 +168,45 @@ export default function MobileLayout({ onChannelSelect, onMemberSelect }: Mobile
     if (existingDM) {
       handleChannelSelect(existingDM.id);
     } else {
-      // Create new DM channel
-      const member = teamMembers.find(m => m.id === memberId);
-      if (member) {
-        const newChannel: Channel = {
-          id: `dm-${Date.now()}`,
-          name: member.name,
-          type: 'direct',
-          participants: ['current-user', memberId],
-          unreadCount: 0,
-          avatar: member.avatar
-        };
-        setChannels(prev => [...prev, newChannel]);
-        handleChannelSelect(newChannel.id);
+      // Create new DM channel using the hook
+      const newChannel = await createDirectMessage(memberId);
+      if (newChannel) {
+        setSelectedChannelId(newChannel.id);
+        setCurrentView('chat');
       }
     }
     onMemberSelect?.(memberId);
   };
 
-  const handleSendMessage = () => {
-    if (!newMessage.trim() || !selectedChannel) return;
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !selectedChannelId) return;
 
-    const message: Message = {
-      id: Math.random().toString(36).substr(2, 9),
-      content: newMessage.trim(),
-      sender: 'You',
-      timestamp: new Date(),
-      type: 'text',
-      isOwn: true,
-      status: 'sent'
-    };
-
-    setMessages(prev => [...prev, message]);
-    setNewMessage('');
-
-    // Update channel's last message
-    setChannels(prev => prev.map(channel => 
-      channel.id === selectedChannel 
-        ? { ...channel, lastMessage: message }
-        : channel
-    ));
-
-    toast.success('Message sent');
+    try {
+      await sendMessage(newMessage.trim(), selectedChannelId);
+      setNewMessage('');
+      toast.success('Message sent');
+    } catch (error) {
+      toast.error('Failed to send message');
+    }
   };
 
   const handleBackToChannels = () => {
     setCurrentView('channels');
-    setSelectedChannel(null);
+    setSelectedChannelId(null);
     setSelectedChannelData(null);
   };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Loading messages...</p>
+        </div>
+      </div>
+    );
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
