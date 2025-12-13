@@ -7768,6 +7768,16 @@ export type Database = {
           total_score: number
         }[]
       }
+      get_public_coin_rates: {
+        Args: never
+        Returns: {
+          change_percentage: number
+          organization_id: string
+          organization_name: string
+          rate: number
+          rate_date: string
+        }[]
+      }
       get_public_stats: { Args: never; Returns: Json }
       get_sla_metrics: {
         Args: { p_end_date?: string; p_org_id: string; p_start_date?: string }
