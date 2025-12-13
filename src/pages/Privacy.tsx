@@ -240,19 +240,19 @@ export default function Privacy() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-8 mt-12">
+      <footer className="bg-muted/80 dark:bg-muted/20 border-t border-border py-8 mt-12">
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
               <Coins className="h-4 w-4 text-white" />
             </div>
-            <span className="text-lg font-bold">
+            <span className="text-lg font-bold text-foreground">
               <span className="font-black">SLT</span>
-              <span className="font-normal text-gray-400"> work </span>
+              <span className="font-normal text-muted-foreground"> work </span>
               <span className="font-black">HuB</span>
             </span>
           </div>
-          <p className="text-gray-400 text-sm">
+          <p className="text-muted-foreground text-sm">
             © 2025 SLT work HuB. All rights reserved.
           </p>
         </div>
