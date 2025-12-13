@@ -3,24 +3,44 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Coins, TrendingUp, TrendingDown, Shield, Users, BarChart3, MessageSquare, BookOpen, Award, ArrowRight, CheckCircle, Menu } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Coins, TrendingUp, TrendingDown, Shield, Users, BarChart3, MessageSquare, BookOpen, Award, ArrowRight, CheckCircle, Menu, Building2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [selectedOrgId, setSelectedOrgId] = useState<string>('all');
 
-  // Fetch latest coin rate
-  const { data: latestRate } = useQuery({
-    queryKey: ['latest-coin-rate'],
+  // Fetch organizations with coin rates
+  const { data: organizations } = useQuery({
+    queryKey: ['public-organizations-with-rates'],
     queryFn: async () => {
       const { data, error } = await supabase
+        .from('organizations')
+        .select('id, name, subdomain')
+        .order('name');
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  // Fetch latest coin rate based on selected organization
+  const { data: latestRate } = useQuery({
+    queryKey: ['latest-coin-rate', selectedOrgId],
+    queryFn: async () => {
+      let query = supabase
         .from('coin_rates')
-        .select('*')
+        .select('*, organizations(name)')
         .order('rate_date', { ascending: false })
-        .limit(1)
-        .single();
+        .limit(1);
+      
+      if (selectedOrgId !== 'all') {
+        query = query.eq('organization_id', selectedOrgId);
+      }
+      
+      const { data, error } = await query.maybeSingle();
       if (error) throw error;
       return data;
     }
@@ -195,18 +215,42 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* Compact Coin Rate Display */}
+          {/* Compact Coin Rate Display with Organization Selector */}
           <div className="mt-10 sm:mt-16 mx-auto max-w-sm sm:max-w-md animate-fade-in px-4" style={{
             animationDelay: '300ms'
           }}>
             <Card className="border-2 border-emerald-200 shadow-xl overflow-hidden hover-lift" role="region" aria-label="Current SLT coin rate">
               <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 p-4 sm:p-6 text-white text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
+                <div className="flex items-center justify-center gap-2 mb-3">
                   <Coins className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
                   <h3 className="text-base sm:text-lg font-semibold">SLT Coin Rate</h3>
                 </div>
-                {latestRate && (
+                
+                {/* Organization Dropdown */}
+                {organizations && organizations.length > 0 && (
+                  <div className="mb-4">
+                    <Select value={selectedOrgId} onValueChange={setSelectedOrgId}>
+                      <SelectTrigger className="bg-white/20 border-white/30 text-white w-full max-w-[200px] mx-auto text-sm">
+                        <Building2 className="h-4 w-4 mr-2" />
+                        <SelectValue placeholder="Select Company" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Companies</SelectItem>
+                        {organizations.map((org) => (
+                          <SelectItem key={org.id} value={org.id}>
+                            {org.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {latestRate ? (
                   <div>
+                    {(latestRate as any).organizations?.name && selectedOrgId !== 'all' && (
+                      <p className="text-xs text-emerald-100 mb-1">{(latestRate as any).organizations.name}</p>
+                    )}
                     <div className="text-2xl sm:text-4xl font-bold mb-2" aria-label={`Current rate: ${Number(latestRate.rate).toFixed(4)} rupees`}>
                       ₹{Number(latestRate.rate).toFixed(4)}
                     </div>
@@ -218,12 +262,14 @@ export default function Landing() {
                       {Number(latestRate.change_percentage) >= 0 ? (
                         <TrendingUp className="h-3 w-3 mr-1 inline" />
                       ) : (
-                        <></>
+                        <TrendingDown className="h-3 w-3 mr-1 inline" />
                       )}
                       {Number(latestRate.change_percentage) >= 0 ? '+' : ''}
                       {Number(latestRate.change_percentage).toFixed(2)}% (24h)
                     </Badge>
                   </div>
+                ) : (
+                  <p className="text-sm text-emerald-100">No rate available for this company</p>
                 )}
               </div>
             </Card>
