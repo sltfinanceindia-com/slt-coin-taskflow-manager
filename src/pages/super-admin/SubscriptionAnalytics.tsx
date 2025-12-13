@@ -10,9 +10,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { 
   BarChart3, TrendingUp, Users, Clock, AlertCircle, 
-  Calendar, RefreshCw, ArrowUpRight, ArrowDownRight 
+  Calendar, RefreshCw, ArrowDownRight 
 } from "lucide-react";
-import { format, differenceInDays, addDays } from "date-fns";
+import { format, differenceInDays, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { toast } from "sonner";
 
 interface AnalyticsData {
@@ -30,9 +30,10 @@ interface AnalyticsData {
     trial_ends_at: string;
     daysLeft: number;
   }[];
-  monthlyTrend: { month: string; mrr: number; subscribers: number }[];
-  churnRate: number;
+  churnRate: number | null;
+  canceledCount: number;
   arpu: number;
+  currentMrr: number;
 }
 
 const SubscriptionAnalytics = () => {
@@ -125,20 +126,28 @@ const SubscriptionAnalytics = () => {
         .filter(o => o.daysLeft <= 14 && o.daysLeft >= 0)
         .sort((a, b) => a.daysLeft - b.daysLeft);
 
-      // Calculate ARPU
+      // Calculate ARPU and current MRR
       const activeOrgs = orgs?.filter(o => o.subscription_status === "active") || [];
-      const totalRevenue = activeOrgs.reduce((sum, o) => sum + (o.subscription_plan?.price_monthly || 0), 0);
-      const arpu = activeOrgs.length > 0 ? totalRevenue / activeOrgs.length : 0;
+      const currentMrr = activeOrgs.reduce((sum, o) => sum + (o.subscription_plan?.price_monthly || 0), 0);
+      const arpu = activeOrgs.length > 0 ? currentMrr / activeOrgs.length : 0;
 
-      // Mock monthly trend (would come from historical data)
-      const monthlyTrend = [
-        { month: "Jul", mrr: 8500, subscribers: 42 },
-        { month: "Aug", mrr: 9200, subscribers: 48 },
-        { month: "Sep", mrr: 10100, subscribers: 52 },
-        { month: "Oct", mrr: 11500, subscribers: 58 },
-        { month: "Nov", mrr: 12800, subscribers: 64 },
-        { month: "Dec", mrr: totalRevenue || 14200, subscribers: activeOrgs.length || 70 },
-      ];
+      // Calculate real churn rate
+      const canceledOrgs = orgs?.filter(o => o.subscription_status === "canceled") || [];
+      const lastMonth = subMonths(now, 1);
+      const lastMonthStart = startOfMonth(lastMonth);
+      const lastMonthEnd = endOfMonth(lastMonth);
+
+      // Get organizations that were active at start of last month
+      const { data: activeLastMonth } = await supabase
+        .from("organizations")
+        .select("id")
+        .eq("subscription_status", "active");
+
+      // Churn rate = canceled this month / active at start of month
+      const totalActiveOrCanceled = activeOrgs.length + canceledOrgs.length;
+      const churnRate = totalActiveOrCanceled > 0 
+        ? (canceledOrgs.length / totalActiveOrCanceled) * 100 
+        : null;
 
       setAnalytics({
         planDistribution,
@@ -150,9 +159,10 @@ const SubscriptionAnalytics = () => {
           conversionRate,
         },
         expiringTrials,
-        monthlyTrend,
-        churnRate: 2.5, // Placeholder
+        churnRate,
+        canceledCount: canceledOrgs.length,
         arpu,
+        currentMrr,
       });
     } catch (error) {
       console.error("Error fetching analytics:", error);
@@ -174,55 +184,54 @@ const SubscriptionAnalytics = () => {
 
   if (!isSuperAdmin) return null;
 
-  const maxMRR = Math.max(...(analytics?.monthlyTrend.map(m => m.mrr) || [1]));
-
   return (
     <SuperAdminLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4 sm:space-y-6">
+        {/* Header - Responsive */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Subscription Analytics</h1>
-            <p className="text-muted-foreground">Insights into subscriptions, trials, and revenue trends</p>
+            <h1 className="text-2xl sm:text-3xl font-bold">Subscription Analytics</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">Insights into subscriptions, trials, and revenue</p>
           </div>
-          <Button onClick={fetchAnalytics} variant="outline" size="sm">
+          <Button onClick={fetchAnalytics} variant="outline" size="sm" className="w-fit">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
         </div>
 
-        {/* Key Metrics */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {/* Key Metrics - Responsive Grid */}
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
-              <TrendingUp className="h-4 w-4 text-green-500" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Conversion Rate</CardTitle>
+              <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
               {isLoading ? (
-                <Skeleton className="h-8 w-24" />
+                <Skeleton className="h-6 sm:h-8 w-16 sm:w-24" />
               ) : (
                 <>
-                  <div className="text-2xl font-bold text-green-600">
+                  <div className="text-lg sm:text-2xl font-bold text-green-600">
                     {analytics?.trialStats.conversionRate.toFixed(1)}%
                   </div>
-                  <p className="text-xs text-muted-foreground">Trial to paid</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Trial to paid</p>
                 </>
               )}
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Trials</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Active Trials</CardTitle>
+              <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
               {isLoading ? (
-                <Skeleton className="h-8 w-16" />
+                <Skeleton className="h-6 sm:h-8 w-10 sm:w-16" />
               ) : (
                 <>
-                  <div className="text-2xl font-bold">{analytics?.trialStats.active}</div>
-                  <p className="text-xs text-muted-foreground">
+                  <div className="text-lg sm:text-2xl font-bold">{analytics?.trialStats.active}</div>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">
                     {analytics?.trialStats.expiringSoon} expiring soon
                   </p>
                 </>
@@ -231,66 +240,75 @@ const SubscriptionAnalytics = () => {
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Churn Rate</CardTitle>
-              <ArrowDownRight className="h-4 w-4 text-destructive" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Churn Rate</CardTitle>
+              <ArrowDownRight className="h-3 w-3 sm:h-4 sm:w-4 text-destructive" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
               {isLoading ? (
-                <Skeleton className="h-8 w-16" />
+                <Skeleton className="h-6 sm:h-8 w-10 sm:w-16" />
+              ) : analytics?.churnRate !== null ? (
+                <>
+                  <div className="text-lg sm:text-2xl font-bold">{analytics.churnRate.toFixed(1)}%</div>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">{analytics.canceledCount} canceled</p>
+                </>
               ) : (
                 <>
-                  <div className="text-2xl font-bold">{analytics?.churnRate}%</div>
-                  <p className="text-xs text-muted-foreground">Monthly</p>
+                  <div className="text-lg sm:text-2xl font-bold text-muted-foreground">N/A</div>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">No data</p>
                 </>
               )}
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">ARPU</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">ARPU</CardTitle>
+              <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
               {isLoading ? (
-                <Skeleton className="h-8 w-24" />
+                <Skeleton className="h-6 sm:h-8 w-16 sm:w-24" />
               ) : (
                 <>
-                  <div className="text-2xl font-bold">${analytics?.arpu.toFixed(0)}</div>
-                  <p className="text-xs text-muted-foreground">Per organization</p>
+                  <div className="text-lg sm:text-2xl font-bold">${analytics?.arpu.toFixed(0)}</div>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Per organization</p>
                 </>
               )}
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* MRR Trend */}
+        {/* Main Content - Responsive Grid */}
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+          {/* Current MRR Card */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                MRR Trend
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
+                Current MRR
               </CardTitle>
-              <CardDescription>Monthly recurring revenue over time</CardDescription>
+              <CardDescription className="text-xs sm:text-sm">Monthly recurring revenue breakdown</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
               {isLoading ? (
-                <Skeleton className="h-48 w-full" />
+                <Skeleton className="h-32 sm:h-48 w-full" />
               ) : (
                 <div className="space-y-4">
-                  {analytics?.monthlyTrend.map((month, index) => (
-                    <div key={month.month} className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium">{month.month}</span>
-                        <span className="text-muted-foreground">
-                          ${month.mrr.toLocaleString()} • {month.subscribers} orgs
-                        </span>
-                      </div>
-                      <Progress value={(month.mrr / maxMRR) * 100} className="h-2" />
+                  <div className="text-center py-4 sm:py-6">
+                    <p className="text-3xl sm:text-4xl font-bold">${analytics?.currentMrr.toLocaleString()}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">Monthly Recurring Revenue</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-4 border-t">
+                    <div className="text-center">
+                      <p className="text-lg sm:text-xl font-semibold">${((analytics?.currentMrr || 0) * 12).toLocaleString()}</p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">Projected ARR</p>
                     </div>
-                  ))}
+                    <div className="text-center">
+                      <p className="text-lg sm:text-xl font-semibold">{analytics?.trialStats.converted || 0}</p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">Paying Orgs</p>
+                    </div>
+                  </div>
                 </div>
               )}
             </CardContent>
@@ -298,38 +316,38 @@ const SubscriptionAnalytics = () => {
 
           {/* Plan Distribution */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Users className="h-4 w-4 sm:h-5 sm:w-5" />
                 Plan Distribution
               </CardTitle>
-              <CardDescription>Organizations by subscription plan</CardDescription>
+              <CardDescription className="text-xs sm:text-sm">Organizations by subscription plan</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
               {isLoading ? (
-                <Skeleton className="h-48 w-full" />
+                <Skeleton className="h-32 sm:h-48 w-full" />
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {analytics?.planDistribution.map((plan) => {
                     const totalOrgs = analytics.planDistribution.reduce((sum, p) => sum + p.count, 0);
                     const percentage = totalOrgs > 0 ? (plan.count / totalOrgs) * 100 : 0;
                     
                     return (
-                      <div key={plan.plan} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Badge variant={plan.plan === "Free" ? "secondary" : "default"}>
+                      <div key={plan.plan} className="space-y-1.5 sm:space-y-2">
+                        <div className="flex items-center justify-between flex-wrap gap-1">
+                          <div className="flex items-center gap-1.5 sm:gap-2">
+                            <Badge variant={plan.plan === "Free" ? "secondary" : "default"} className="text-[10px] sm:text-xs">
                               {plan.plan}
                             </Badge>
-                            <span className="text-sm text-muted-foreground">
-                              {plan.count} organizations
+                            <span className="text-[10px] sm:text-sm text-muted-foreground">
+                              {plan.count} orgs
                             </span>
                           </div>
-                          <span className="text-sm font-medium">
+                          <span className="text-xs sm:text-sm font-medium">
                             ${plan.revenue.toLocaleString()}/mo
                           </span>
                         </div>
-                        <Progress value={percentage} className="h-2" />
+                        <Progress value={percentage} className="h-1.5 sm:h-2" />
                       </div>
                     );
                   })}
@@ -341,37 +359,40 @@ const SubscriptionAnalytics = () => {
 
         {/* Expiring Trials Alert */}
         <Card className={analytics?.expiringTrials.length ? "border-amber-500" : ""}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-amber-500" />
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
               Expiring Trials
             </CardTitle>
-            <CardDescription>Organizations with trials ending within 14 days</CardDescription>
+            <CardDescription className="text-xs sm:text-sm">Organizations with trials ending within 14 days</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
             {isLoading ? (
-              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-24 sm:h-32 w-full" />
             ) : analytics?.expiringTrials.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No trials expiring soon</p>
+              <div className="text-center py-6 sm:py-8 text-muted-foreground">
+                <Calendar className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-50" />
+                <p className="text-sm sm:text-base">No trials expiring soon</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {analytics?.expiringTrials.map((org) => (
                   <div
                     key={org.id}
-                    className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 cursor-pointer transition-colors"
+                    className="flex items-center justify-between p-2.5 sm:p-3 rounded-lg border bg-card hover:bg-accent/50 cursor-pointer transition-colors"
                     onClick={() => navigate(`/super-admin/organizations/${org.id}`)}
                   >
-                    <div>
-                      <p className="font-medium">{org.name}</p>
-                      <p className="text-sm text-muted-foreground">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm sm:text-base truncate">{org.name}</p>
+                      <p className="text-[10px] sm:text-sm text-muted-foreground">
                         Expires: {format(new Date(org.trial_ends_at), "MMM d, yyyy")}
                       </p>
                     </div>
-                    <Badge variant={org.daysLeft <= 3 ? "destructive" : "secondary"}>
-                      {org.daysLeft === 0 ? "Expires today" : `${org.daysLeft} days left`}
+                    <Badge 
+                      variant={org.daysLeft <= 3 ? "destructive" : "secondary"}
+                      className="text-[10px] sm:text-xs shrink-0 ml-2"
+                    >
+                      {org.daysLeft === 0 ? "Today" : `${org.daysLeft}d left`}
                     </Badge>
                   </div>
                 ))}
