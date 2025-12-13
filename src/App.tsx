@@ -29,6 +29,9 @@ import CreateOrganization from "./pages/super-admin/CreateOrganization";
 import OrganizationDetail from "./pages/super-admin/OrganizationDetail";
 import SuperAdminUsers from "./pages/super-admin/SuperAdminUsers";
 import SuperAdminSettings from "./pages/super-admin/SuperAdminSettings";
+import BillingDashboard from "./pages/super-admin/BillingDashboard";
+import SubscriptionAnalytics from "./pages/super-admin/SubscriptionAnalytics";
+import PlansManagement from "./pages/super-admin/PlansManagement";
 import OrganizationSettings from "./pages/admin/OrganizationSettings";
 
 const queryClient = new QueryClient();
@@ -81,6 +84,9 @@ function AppContent() {
           <Route path="/super-admin/organizations/new" element={<ProtectedRoute><CreateOrganization /></ProtectedRoute>} />
           <Route path="/super-admin/organizations/:id" element={<ProtectedRoute><OrganizationDetail /></ProtectedRoute>} />
           <Route path="/super-admin/users" element={<ProtectedRoute><SuperAdminUsers /></ProtectedRoute>} />
+          <Route path="/super-admin/billing" element={<ProtectedRoute><BillingDashboard /></ProtectedRoute>} />
+          <Route path="/super-admin/analytics" element={<ProtectedRoute><SubscriptionAnalytics /></ProtectedRoute>} />
+          <Route path="/super-admin/plans" element={<ProtectedRoute><PlansManagement /></ProtectedRoute>} />
           <Route path="/super-admin/settings" element={<ProtectedRoute><SuperAdminSettings /></ProtectedRoute>} />
           
           {/* Admin Routes */}
