@@ -97,12 +97,7 @@ export default function Signup() {
     if (!formData.companyName.trim()) {
       newErrors.companyName = 'Company name is required';
     }
-    if (!formData.subdomain || formData.subdomain.length < 3) {
-      newErrors.subdomain = 'Subdomain must be at least 3 characters';
-    }
-    if (subdomainAvailable === false) {
-      newErrors.subdomain = 'This subdomain is already taken';
-    }
+    // Subdomain is auto-generated, no validation needed for regular signups
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -301,37 +296,7 @@ export default function Signup() {
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="subdomain">
-                      <Globe className="h-4 w-4 inline mr-2" />
-                      Subdomain
-                    </Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        id="subdomain"
-                        value={formData.subdomain}
-                        onChange={(e) => handleSubdomainChange(e.target.value)}
-                        placeholder="acme"
-                        className={`flex-1 ${errors.subdomain ? 'border-destructive' : ''}`}
-                      />
-                      <span className="text-muted-foreground text-sm">.sltworkhub.com</span>
-                      {checkingSubdomain && (
-                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                      )}
-                      {!checkingSubdomain && subdomainAvailable === true && (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                      )}
-                      {!checkingSubdomain && subdomainAvailable === false && (
-                        <AlertCircle className="h-4 w-4 text-destructive" />
-                      )}
-                    </div>
-                    {errors.subdomain && (
-                      <p className="text-sm text-destructive">{errors.subdomain}</p>
-                    )}
-                    {subdomainAvailable === true && (
-                      <p className="text-sm text-green-600">This subdomain is available!</p>
-                    )}
-                  </div>
+                  {/* Subdomain is auto-generated and only visible for enterprise plans */}
                 </>
               )}
 
