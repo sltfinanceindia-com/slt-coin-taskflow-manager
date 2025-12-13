@@ -37,7 +37,7 @@ export default function Landing() {
         console.error('Stats fetch error:', error);
         throw error;
       }
-      return data as { totalUsers: number; completedTasks: number; totalCoins: number };
+      return data as { totalOrganizations: number; completedTasks: number; totalCoins: number };
     },
     staleTime: 30000,
     refetchOnMount: true,
@@ -85,8 +85,8 @@ export default function Landing() {
 
   const stats = [
     {
-      value: statsLoading ? "..." : (statsError ? "N/A" : statsData?.totalUsers?.toString() || '0'),
-      label: 'Active Users'
+      value: statsLoading ? "..." : (statsError ? "N/A" : statsData?.totalOrganizations?.toString() || '0'),
+      label: 'Organizations'
     },
     {
       value: statsLoading ? "..." : (statsError ? "N/A" : `${statsData?.completedTasks || 0}+`),
