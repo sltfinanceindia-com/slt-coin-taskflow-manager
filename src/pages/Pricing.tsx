@@ -115,9 +115,11 @@ export default function Pricing() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex h-14 sm:h-16 items-center justify-between">
             <Link to="/" className="flex items-center gap-2 sm:gap-3">
-              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
-                <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-              </div>
+              <img 
+                src="/slt-hub-icon.png" 
+                alt="SLT work HuB"
+                className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg object-contain"
+              />
               <span className="text-sm sm:text-lg font-bold">
                 <span className="font-black">SLT</span>
                 <span className="font-normal text-muted-foreground"> work </span>
@@ -315,9 +317,11 @@ export default function Pricing() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between sm:gap-6">
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
-                <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-              </div>
+              <img 
+                src="/slt-hub-icon.png" 
+                alt="SLT work HuB"
+                className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg object-contain"
+              />
               <span className="text-sm sm:text-lg font-bold text-foreground">
                 <span className="font-black">SLT</span>
                 <span className="font-normal text-muted-foreground"> work </span>

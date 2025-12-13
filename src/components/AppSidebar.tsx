@@ -35,6 +35,7 @@ import {
   Gauge,
   Inbox
 } from "lucide-react"
+import { useOrganization } from "@/hooks/useOrganization"
 import { cn } from "@/lib/utils"
 
 import {
@@ -174,6 +175,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
   const { profile } = useAuth()
   const { isSuperAdmin, isAdmin, role, isLoading: roleLoading } = useUserRole()
   const { isViewingSuperAdmin, isViewingOrgAdmin } = useViewMode()
+  const { organization } = useOrganization()
   
   const navGroups = isAdmin ? adminNavGroups : internNavGroups
   const collapsed = state === "collapsed"
@@ -240,7 +242,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <img 
-                src="/lovable-uploads/56d5dd03-2808-4b88-9f9c-cc8932c46fe8.png" 
+                src="/slt-hub-icon.png" 
                 alt="SLT work HuB"
                 className="h-9 w-auto object-contain shrink-0"
               />
@@ -282,6 +284,11 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
                     {profile?.total_coins || 0}
                   </span>
                 </div>
+                {organization?.name && (
+                  <p className="text-xs text-muted-foreground truncate">
+                    {organization.name}
+                  </p>
+                )}
               </div>
             </div>
           </div>

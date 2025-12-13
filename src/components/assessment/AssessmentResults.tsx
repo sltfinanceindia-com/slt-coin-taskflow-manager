@@ -23,8 +23,8 @@ export function AssessmentResults({ assessment, attempt, onReturnToTraining }: A
         <CardHeader className="text-center space-y-3 sm:space-y-4 p-4 sm:p-6">
           <div className="flex items-center justify-center mb-2 sm:mb-4">
             <img 
-              src="/lovable-uploads/56d5dd03-2808-4b88-9f9c-cc8932c46fe8.png" 
-              alt="SLT Finance India"
+              src="/slt-hub-icon.png" 
+              alt="SLT work HuB"
               className="h-12 sm:h-16 w-auto object-contain"
             />
           </div>
