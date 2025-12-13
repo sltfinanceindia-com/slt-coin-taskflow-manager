@@ -13,38 +13,20 @@ export default function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedOrgId, setSelectedOrgId] = useState<string>('all');
 
-  // Fetch organizations with coin rates
-  const { data: organizations } = useQuery({
-    queryKey: ['public-organizations-with-rates'],
+  // Fetch organizations with coin rates using public RPC function
+  const { data: coinRates } = useQuery({
+    queryKey: ['public-coin-rates'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('organizations')
-        .select('id, name, subdomain')
-        .order('name');
+      const { data, error } = await supabase.rpc('get_public_coin_rates');
       if (error) throw error;
       return data || [];
     }
   });
 
-  // Fetch latest coin rate based on selected organization
-  const { data: latestRate } = useQuery({
-    queryKey: ['latest-coin-rate', selectedOrgId],
-    queryFn: async () => {
-      let query = supabase
-        .from('coin_rates')
-        .select('*, organizations(name)')
-        .order('rate_date', { ascending: false })
-        .limit(1);
-      
-      if (selectedOrgId !== 'all') {
-        query = query.eq('organization_id', selectedOrgId);
-      }
-      
-      const { data, error } = await query.maybeSingle();
-      if (error) throw error;
-      return data;
-    }
-  });
+  // Get the selected rate based on organization selection
+  const selectedRate = selectedOrgId === 'all' 
+    ? coinRates?.[0] 
+    : coinRates?.find((r: any) => r.organization_id === selectedOrgId);
 
   // Fetch real statistics using RPC function that bypasses RLS
   const { data: statsData, isLoading: statsLoading, error: statsError } = useQuery({
@@ -227,7 +209,7 @@ export default function Landing() {
                 </div>
                 
                 {/* Organization Dropdown */}
-                {organizations && organizations.length > 0 && (
+                {coinRates && coinRates.length > 0 && (
                   <div className="mb-4">
                     <Select value={selectedOrgId} onValueChange={setSelectedOrgId}>
                       <SelectTrigger className="bg-white/20 border-white/30 text-white w-full max-w-[200px] mx-auto text-sm">
@@ -236,9 +218,9 @@ export default function Landing() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Companies</SelectItem>
-                        {organizations.map((org) => (
-                          <SelectItem key={org.id} value={org.id}>
-                            {org.name}
+                        {coinRates.map((rate: any) => (
+                          <SelectItem key={rate.organization_id} value={rate.organization_id}>
+                            {rate.organization_name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -246,30 +228,30 @@ export default function Landing() {
                   </div>
                 )}
 
-                {latestRate ? (
+                {selectedRate ? (
                   <div>
-                    {(latestRate as any).organizations?.name && selectedOrgId !== 'all' && (
-                      <p className="text-xs text-emerald-100 mb-1">{(latestRate as any).organizations.name}</p>
+                    {selectedOrgId !== 'all' && (
+                      <p className="text-xs text-emerald-100 mb-1">{selectedRate.organization_name}</p>
                     )}
-                    <div className="text-2xl sm:text-4xl font-bold mb-2" aria-label={`Current rate: ${Number(latestRate.rate).toFixed(4)} rupees`}>
-                      ₹{Number(latestRate.rate).toFixed(4)}
+                    <div className="text-2xl sm:text-4xl font-bold mb-2" aria-label={`Current rate: ${Number(selectedRate.rate).toFixed(4)} rupees`}>
+                      ₹{Number(selectedRate.rate).toFixed(4)}
                     </div>
                     <Badge 
-                      variant={Number(latestRate.change_percentage) >= 0 ? 'success' : 'destructive'} 
+                      variant={Number(selectedRate.change_percentage) >= 0 ? 'success' : 'destructive'} 
                       className="text-xs sm:text-sm"
-                      aria-label={`24 hour change: ${Number(latestRate.change_percentage) >= 0 ? 'increased' : 'decreased'} by ${Math.abs(Number(latestRate.change_percentage)).toFixed(2)} percent`}
+                      aria-label={`24 hour change: ${Number(selectedRate.change_percentage) >= 0 ? 'increased' : 'decreased'} by ${Math.abs(Number(selectedRate.change_percentage)).toFixed(2)} percent`}
                     >
-                      {Number(latestRate.change_percentage) >= 0 ? (
+                      {Number(selectedRate.change_percentage) >= 0 ? (
                         <TrendingUp className="h-3 w-3 mr-1 inline" />
                       ) : (
                         <TrendingDown className="h-3 w-3 mr-1 inline" />
                       )}
-                      {Number(latestRate.change_percentage) >= 0 ? '+' : ''}
-                      {Number(latestRate.change_percentage).toFixed(2)}% (24h)
+                      {Number(selectedRate.change_percentage) >= 0 ? '+' : ''}
+                      {Number(selectedRate.change_percentage).toFixed(2)}% (24h)
                     </Badge>
                   </div>
                 ) : (
-                  <p className="text-sm text-emerald-100">No rate available for this company</p>
+                  <p className="text-sm text-emerald-100">No rate available</p>
                 )}
               </div>
             </Card>
