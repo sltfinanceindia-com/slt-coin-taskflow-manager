@@ -60,6 +60,7 @@ import { useViewMode } from "@/hooks/useViewMode"
 import { Badge } from "@/components/ui/badge"
 import { NotificationCenter } from "@/components/NotificationCenter"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 
 // Navigation structure with groups
 const adminNavGroups = [
@@ -264,15 +265,20 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
         {!collapsed && (
           <div className="px-4 py-3 border-b border-sidebar-border shrink-0">
             <div className="flex items-center gap-2">
-              <div className={cn(
-                "h-8 w-8 rounded-full flex items-center justify-center shrink-0",
-                isSuperAdmin ? "bg-purple-100 dark:bg-purple-900" : "bg-emerald-100 dark:bg-emerald-900"
-              )}>
-                <RoleIcon className={cn(
-                  "h-4 w-4",
-                  isSuperAdmin ? "text-purple-600 dark:text-purple-400" : "text-emerald-600 dark:text-emerald-400"
-                )} />
-              </div>
+              <Avatar className="h-8 w-8 shrink-0">
+                <AvatarImage 
+                  src={profile?.avatar_url} 
+                  alt={profile?.full_name || 'User'} 
+                />
+                <AvatarFallback className={cn(
+                  "text-sm font-medium",
+                  isSuperAdmin 
+                    ? "bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400" 
+                    : "bg-emerald-100 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-400"
+                )}>
+                  {profile?.full_name?.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-sidebar-foreground truncate">
                   {profile?.full_name}

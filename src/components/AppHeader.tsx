@@ -2,6 +2,7 @@ import { Moon, Sun, Bell, LogOut, Shield } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { OnlineIndicator } from "@/components/ui/online-indicator"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -122,10 +123,16 @@ export function AppHeader() {
                 className="flex items-center gap-2 h-9 sm:h-10 px-2 sm:px-3 rounded-lg hover:bg-muted transition-all duration-200 focus-ring"
                 aria-label="Open user menu"
               >
-                <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-gradient-secondary flex items-center justify-center text-secondary-foreground text-sm sm:text-base font-medium relative">
-                  {profile?.full_name?.charAt(0).toUpperCase()}
+                <Avatar className="h-7 w-7 sm:h-8 sm:w-8 relative">
+                  <AvatarImage 
+                    src={profile?.avatar_url} 
+                    alt={profile?.full_name || 'User'} 
+                  />
+                  <AvatarFallback className="bg-gradient-secondary text-secondary-foreground text-sm sm:text-base font-medium">
+                    {profile?.full_name?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
                   <OnlineIndicator online={true} className="absolute bottom-0 right-0" />
-                </div>
+                </Avatar>
                 <span className="text-sm font-medium hidden md:block max-w-24 lg:max-w-32 truncate">{profile?.full_name}</span>
               </Button>
             </DropdownMenuTrigger>
