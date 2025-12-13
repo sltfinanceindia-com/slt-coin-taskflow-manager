@@ -23,7 +23,7 @@ import { Building2, ArrowLeft, Loader2, Check, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsSuperAdmin } from '@/hooks/useUserRole';
 import { useAuth } from '@/hooks/useAuth';
-import { SuperAdminLayout } from '@/components/super-admin/SuperAdminLayout';
+import SuperAdminLayout from '@/components/super-admin/SuperAdminLayout';
 import { toast } from 'sonner';
 
 interface SubscriptionPlan {

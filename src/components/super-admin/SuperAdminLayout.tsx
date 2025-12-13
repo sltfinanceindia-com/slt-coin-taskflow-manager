@@ -8,7 +8,10 @@ import {
   Crown,
   LogOut,
   Menu,
-  X
+  X,
+  CreditCard,
+  BarChart3,
+  Package
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -19,6 +22,9 @@ const navItems = [
   { title: 'Dashboard', url: '/super-admin', icon: LayoutDashboard },
   { title: 'Organizations', url: '/super-admin/organizations', icon: Building2 },
   { title: 'All Users', url: '/super-admin/users', icon: Users },
+  { title: 'Billing', url: '/super-admin/billing', icon: CreditCard },
+  { title: 'Analytics', url: '/super-admin/analytics', icon: BarChart3 },
+  { title: 'Plans', url: '/super-admin/plans', icon: Package },
   { title: 'Settings', url: '/super-admin/settings', icon: Settings },
 ];
 
@@ -26,7 +32,7 @@ interface SuperAdminLayoutProps {
   children: React.ReactNode;
 }
 
-export function SuperAdminLayout({ children }: SuperAdminLayoutProps) {
+export default function SuperAdminLayout({ children }: SuperAdminLayoutProps) {
   const location = useLocation();
   const { profile, signOut } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
