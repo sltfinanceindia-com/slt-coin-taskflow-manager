@@ -7,6 +7,41 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Input sanitization and validation utilities
+function sanitizeString(input: string, maxLength = 100): string {
+  if (typeof input !== 'string') return '';
+  return input
+    .replace(/<[^>]*>/g, '') // Remove HTML tags
+    .replace(/[<>'"`;]/g, '') // Remove potentially dangerous characters
+    .trim()
+    .substring(0, maxLength);
+}
+
+function validateEmail(email: string): boolean {
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return emailRegex.test(email) && email.length <= 255;
+}
+
+function validateName(name: string): boolean {
+  const nameRegex = /^[a-zA-Z\s'-]{2,100}$/;
+  return nameRegex.test(name);
+}
+
+function validateCompanyName(name: string): boolean {
+  const companyRegex = /^[a-zA-Z0-9\s&'-]{2,100}$/;
+  return companyRegex.test(name);
+}
+
+function validatePassword(password: string): { valid: boolean; error?: string } {
+  if (password.length < 8) {
+    return { valid: false, error: 'Password must be at least 8 characters' };
+  }
+  if (password.length > 128) {
+    return { valid: false, error: 'Password must be less than 128 characters' };
+  }
+  return { valid: true };
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -14,9 +49,15 @@ serve(async (req) => {
   }
 
   try {
-    const { companyName, fullName, email, password } = await req.json();
+    const body = await req.json();
+    
+    // Extract and sanitize inputs
+    const companyName = sanitizeString(body.companyName || '', 100);
+    const fullName = sanitizeString(body.fullName || '', 100);
+    const email = (body.email || '').trim().toLowerCase().substring(0, 255);
+    const password = body.password || '';
 
-    // Validate inputs
+    // Comprehensive validation
     if (!companyName || !fullName || !email || !password) {
       return new Response(
         JSON.stringify({ error: 'All fields are required' }),
@@ -24,21 +65,36 @@ serve(async (req) => {
       );
     }
 
-    if (password.length < 8) {
+    if (!validateCompanyName(companyName)) {
       return new Response(
-        JSON.stringify({ error: 'Password must be at least 8 characters' }),
+        JSON.stringify({ error: 'Company name must be 2-100 characters and contain only letters, numbers, spaces, and basic punctuation' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!validateName(fullName)) {
       return new Response(
-        JSON.stringify({ error: 'Invalid email address' }),
+        JSON.stringify({ error: 'Full name must be 2-100 characters and contain only letters, spaces, hyphens, and apostrophes' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    if (!validateEmail(email)) {
+      return new Response(
+        JSON.stringify({ error: 'Please enter a valid email address' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+      return new Response(
+        JSON.stringify({ error: passwordValidation.error }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('Validated inputs - proceeding with organization signup');
 
     // Create Supabase admin client with service role key
     const supabaseAdmin = createClient(

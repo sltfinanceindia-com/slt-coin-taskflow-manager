@@ -14,9 +14,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Users, Plus, Coins, Trash, Eye, UserCheck, UserX, AlertTriangle, Crown } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from '@/hooks/use-toast';
 import { InternDetailView } from '@/components/InternDetailView';
 import { SkeletonCard } from '@/components/ui/skeleton';
+import { internFormSchema, type InternFormData } from '@/utils/validation-schemas';
 
 interface Profile {
   id: string;
@@ -39,14 +41,6 @@ interface Profile {
   organization_id?: string;
 }
 
-interface InternFormData {
-  email: string;
-  password: string;
-  full_name: string;
-  department?: string;
-  employee_id?: string;
-}
-
 export function InternManagement() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -56,7 +50,16 @@ export function InternManagement() {
   const { profile } = useAuth();
   const { organization, userCount } = useOrganization();
   
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<InternFormData>();
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<InternFormData>({
+    resolver: zodResolver(internFormSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      full_name: '',
+      department: '',
+      employee_id: '',
+    }
+  });
 
   // Calculate subscription limits
   const maxUsers = organization?.max_users || 5;
@@ -230,7 +233,7 @@ export function InternManagement() {
                 <Label htmlFor="full_name">Full Name</Label>
                 <Input
                   id="full_name"
-                  {...register('full_name', { required: 'Full name is required' })}
+                  {...register('full_name')}
                   placeholder="Enter full name"
                 />
                 {errors.full_name && (
@@ -243,13 +246,7 @@ export function InternManagement() {
                 <Input
                   id="email"
                   type="email"
-                  {...register('email', { 
-                    required: 'Email is required',
-                    pattern: {
-                      value: /^\S+@\S+$/i,
-                      message: 'Invalid email address'
-                    }
-                  })}
+                  {...register('email')}
                   placeholder="user@company.com"
                 />
                 {errors.email && (
@@ -262,14 +259,8 @@ export function InternManagement() {
                 <Input
                   id="password"
                   type="password"
-                  {...register('password', { 
-                    required: 'Password is required',
-                    minLength: {
-                      value: 6,
-                      message: 'Password must be at least 6 characters'
-                    }
-                  })}
-                  placeholder="Enter secure password"
+                  {...register('password')}
+                  placeholder="Enter secure password (min 8 characters)"
                 />
                 {errors.password && (
                   <p className="text-sm text-destructive mt-1">{errors.password.message}</p>
