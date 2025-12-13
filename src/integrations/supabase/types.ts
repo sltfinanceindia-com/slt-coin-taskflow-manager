@@ -2596,6 +2596,65 @@ export type Database = {
           },
         ]
       }
+      invoices: {
+        Row: {
+          amount_due: number
+          amount_paid: number | null
+          created_at: string
+          currency: string
+          due_date: string | null
+          id: string
+          invoice_number: string
+          invoice_pdf_url: string | null
+          line_items: Json | null
+          organization_id: string | null
+          paid_at: string | null
+          status: string
+          stripe_invoice_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_due: number
+          amount_paid?: number | null
+          created_at?: string
+          currency?: string
+          due_date?: string | null
+          id?: string
+          invoice_number: string
+          invoice_pdf_url?: string | null
+          line_items?: Json | null
+          organization_id?: string | null
+          paid_at?: string | null
+          status?: string
+          stripe_invoice_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_due?: number
+          amount_paid?: number | null
+          created_at?: string
+          currency?: string
+          due_date?: string | null
+          id?: string
+          invoice_number?: string
+          invoice_pdf_url?: string | null
+          line_items?: Json | null
+          organization_id?: string | null
+          paid_at?: string | null
+          status?: string
+          stripe_invoice_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kanban_events: {
         Row: {
           analytics_data: Json | null
@@ -4104,6 +4163,7 @@ export type Database = {
       organizations: {
         Row: {
           address: string | null
+          autopay_enabled: boolean | null
           billing_email: string | null
           contact_email: string | null
           contact_phone: string | null
@@ -4114,18 +4174,24 @@ export type Database = {
           logo_url: string | null
           max_users: number
           name: string
+          payment_failed_at: string | null
           primary_color: string | null
           secondary_color: string | null
+          service_suspended_at: string | null
           slug: string | null
           status: Database["public"]["Enums"]["organization_status"]
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
           subdomain: string
           subscription_plan_id: string | null
+          subscription_status: string | null
           tax_id: string | null
           trial_ends_at: string | null
           updated_at: string
         }
         Insert: {
           address?: string | null
+          autopay_enabled?: boolean | null
           billing_email?: string | null
           contact_email?: string | null
           contact_phone?: string | null
@@ -4136,18 +4202,24 @@ export type Database = {
           logo_url?: string | null
           max_users?: number
           name: string
+          payment_failed_at?: string | null
           primary_color?: string | null
           secondary_color?: string | null
+          service_suspended_at?: string | null
           slug?: string | null
           status?: Database["public"]["Enums"]["organization_status"]
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           subdomain: string
           subscription_plan_id?: string | null
+          subscription_status?: string | null
           tax_id?: string | null
           trial_ends_at?: string | null
           updated_at?: string
         }
         Update: {
           address?: string | null
+          autopay_enabled?: boolean | null
           billing_email?: string | null
           contact_email?: string | null
           contact_phone?: string | null
@@ -4158,12 +4230,17 @@ export type Database = {
           logo_url?: string | null
           max_users?: number
           name?: string
+          payment_failed_at?: string | null
           primary_color?: string | null
           secondary_color?: string | null
+          service_suspended_at?: string | null
           slug?: string | null
           status?: Database["public"]["Enums"]["organization_status"]
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           subdomain?: string
           subscription_plan_id?: string | null
+          subscription_status?: string | null
           tax_id?: string | null
           trial_ends_at?: string | null
           updated_at?: string
@@ -4174,6 +4251,109 @@ export type Database = {
             columns: ["subscription_plan_id"]
             isOneToOne: false
             referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_methods: {
+        Row: {
+          card_brand: string | null
+          card_exp_month: number | null
+          card_exp_year: number | null
+          card_last4: string | null
+          created_at: string
+          id: string
+          is_default: boolean | null
+          organization_id: string | null
+          stripe_payment_method_id: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          card_brand?: string | null
+          card_exp_month?: number | null
+          card_exp_year?: number | null
+          card_last4?: string | null
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          organization_id?: string | null
+          stripe_payment_method_id?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          card_brand?: string | null
+          card_exp_month?: number | null
+          card_exp_year?: number | null
+          card_last4?: string | null
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          organization_id?: string | null
+          stripe_payment_method_id?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_methods_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          metadata: Json | null
+          organization_id: string | null
+          payment_method: string | null
+          status: string
+          stripe_invoice_id: string | null
+          stripe_payment_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          organization_id?: string | null
+          payment_method?: string | null
+          status?: string
+          stripe_invoice_id?: string | null
+          stripe_payment_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          organization_id?: string | null
+          payment_method?: string | null
+          status?: string
+          stripe_invoice_id?: string | null
+          stripe_payment_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -5784,6 +5964,57 @@ export type Database = {
             columns: ["request_id"]
             isOneToOne: false
             referencedRelation: "work_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_history: {
+        Row: {
+          change_type: string
+          changed_by: string | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          new_plan: string | null
+          organization_id: string | null
+          previous_plan: string | null
+          reason: string | null
+        }
+        Insert: {
+          change_type: string
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          new_plan?: string | null
+          organization_id?: string | null
+          previous_plan?: string | null
+          reason?: string | null
+        }
+        Update: {
+          change_type?: string
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          new_plan?: string | null
+          organization_id?: string | null
+          previous_plan?: string | null
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_history_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]

@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import Features from "@/pages/Features";
 import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
+import Contact from "@/pages/Contact";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -72,6 +73,7 @@ function AppContent() {
           <Route path="/features" element={<Features />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
+          <Route path="/contact" element={<Contact />} />
           
           {/* Super Admin Routes */}
           <Route path="/super-admin" element={<ProtectedRoute><SuperAdminDashboard /></ProtectedRoute>} />

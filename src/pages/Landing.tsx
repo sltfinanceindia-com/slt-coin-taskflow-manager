@@ -117,18 +117,18 @@ export default function Landing() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/50">
       {/* Header */}
-      <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white/80 backdrop-blur-sm" role="banner">
+      <header className="sticky top-0 z-40 w-full border-b border-border bg-background/80 backdrop-blur-sm" role="banner">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex h-14 sm:h-16 items-center justify-between" aria-label="Main navigation">
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center" aria-hidden="true">
                 <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
               </div>
-              <span className="text-sm sm:text-lg font-bold text-gray-900">
+              <span className="text-sm sm:text-lg font-bold text-foreground">
                 <span className="font-black">SLT</span>
-                <span className="font-normal text-gray-600"> work </span>
+                <span className="font-normal text-muted-foreground"> work </span>
                 <span className="font-black">HuB</span>
               </span>
             </div>
@@ -159,19 +159,19 @@ export default function Landing() {
       </header>
 
       {/* Hero Section */}
-      <section aria-labelledby="hero-heading" className="relative overflow-hidden py-12 sm:py-20 lg:py-32 bg-white">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-white to-blue-50 opacity-70" aria-hidden="true" />
+      <section aria-labelledby="hero-heading" className="relative overflow-hidden py-12 sm:py-20 lg:py-32 bg-background">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 via-background to-blue-50/50 dark:from-emerald-950/20 dark:via-background dark:to-blue-950/20 opacity-70" aria-hidden="true" />
         <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
-            <Badge className="mb-3 sm:mb-4 bg-emerald-100 text-emerald-800 border-emerald-200 animate-bounce-subtle text-xs sm:text-sm">
+            <Badge className="mb-3 sm:mb-4 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-700 animate-bounce-subtle text-xs sm:text-sm">
               <TrendingUp className="mr-1 h-3 w-3" aria-hidden="true" />
               Now Live - Real-time Coin Trading
             </Badge>
-            <h1 id="hero-heading" className="mb-4 sm:mb-6 text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight text-gray-900 leading-tight animate-fade-in">
+            <h1 id="hero-heading" className="mb-4 sm:mb-6 text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight text-foreground leading-tight animate-fade-in">
               The Complete Workplace
-              <span className="block text-emerald-600">Management Platform</span>
+              <span className="block text-emerald-600 dark:text-emerald-400">Management Platform</span>
             </h1>
-            <p className="mb-6 sm:mb-8 text-sm sm:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed animate-fade-in px-4" style={{
+            <p className="mb-6 sm:mb-8 text-sm sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed animate-fade-in px-4" style={{
               animationDelay: '100ms'
             }}>
               Streamline your workflow with task management, team collaboration, 
@@ -232,23 +232,23 @@ export default function Landing() {
       </section>
 
       {/* Features Section */}
-      <section className="py-12 sm:py-20 bg-white" aria-labelledby="features-heading">
+      <section className="py-12 sm:py-20 bg-background" aria-labelledby="features-heading">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <header className="text-center mb-10 sm:mb-16">
-            <h2 id="features-heading" className="text-xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 leading-tight">
+            <h2 id="features-heading" className="text-xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-3 sm:mb-4 leading-tight">
               Everything You Need to Succeed
             </h2>
-            <p className="text-sm sm:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed px-4">
+            <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed px-4">
               Powerful features designed to boost productivity and engagement
             </p>
           </header>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8" role="list">
             {features.map((feature, index) => (
-              <Card key={index} className="hover-scale border-gray-200 transition-all duration-200 animate-fade-in bg-card" style={{
+              <Card key={index} className="hover-scale border-border transition-all duration-200 animate-fade-in bg-card" style={{
                 animationDelay: `${index * 100}ms`
               }} role="listitem">
                 <CardContent className="p-4 sm:p-6">
-                  <div className={`h-10 w-10 sm:h-12 sm:w-12 rounded-lg ${feature.bgColor} flex items-center justify-center mb-3 sm:mb-4 transition-transform duration-200`} aria-hidden="true">
+                  <div className={`h-10 w-10 sm:h-12 sm:w-12 rounded-lg ${feature.bgColor} dark:opacity-80 flex items-center justify-center mb-3 sm:mb-4 transition-transform duration-200`} aria-hidden="true">
                     <feature.icon className={`h-5 w-5 sm:h-6 sm:w-6 ${feature.color}`} />
                   </div>
                   <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1.5 sm:mb-2 leading-snug">
@@ -265,23 +265,23 @@ export default function Landing() {
       </section>
 
       {/* Pricing Preview Section */}
-      <section className="py-12 sm:py-20 bg-white" aria-labelledby="pricing-heading">
+      <section className="py-12 sm:py-20 bg-muted/30" aria-labelledby="pricing-heading">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <header className="text-center mb-8 sm:mb-12">
-            <h2 id="pricing-heading" className="text-xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
+            <h2 id="pricing-heading" className="text-xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-3 sm:mb-4">
               Simple, Transparent Pricing
             </h2>
-            <p className="text-sm sm:text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto">
               Start free and scale as you grow
             </p>
           </header>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 max-w-5xl mx-auto">
-            <Card className="border-gray-200 text-center">
+            <Card className="border-border text-center bg-card">
               <CardContent className="p-4 sm:p-6">
-                <h3 className="font-semibold text-base sm:text-lg mb-2">Free</h3>
-                <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">₹0<span className="text-xs sm:text-sm font-normal text-gray-500">/month</span></div>
-                <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">For small teams getting started</p>
-                <ul className="text-xs sm:text-sm text-gray-600 space-y-1.5 sm:space-y-2 mb-4 sm:mb-6">
+                <h3 className="font-semibold text-base sm:text-lg mb-2 text-foreground">Free</h3>
+                <div className="text-2xl sm:text-3xl font-bold text-foreground mb-3 sm:mb-4">₹0<span className="text-xs sm:text-sm font-normal text-muted-foreground">/month</span></div>
+                <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">For small teams getting started</p>
+                <ul className="text-xs sm:text-sm text-muted-foreground space-y-1.5 sm:space-y-2 mb-4 sm:mb-6">
                   <li>Up to 5 users</li>
                   <li>Basic features</li>
                 </ul>
@@ -290,13 +290,13 @@ export default function Landing() {
                 </Link>
               </CardContent>
             </Card>
-            <Card className="border-emerald-500 border-2 text-center relative">
+            <Card className="border-emerald-500 border-2 text-center relative bg-card">
               <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-600 text-xs">Popular</Badge>
               <CardContent className="p-4 sm:p-6">
-                <h3 className="font-semibold text-base sm:text-lg mb-2">Professional</h3>
-                <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">₹7,999<span className="text-xs sm:text-sm font-normal text-gray-500">/month</span></div>
-                <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">For growing businesses</p>
-                <ul className="text-xs sm:text-sm text-gray-600 space-y-1.5 sm:space-y-2 mb-4 sm:mb-6">
+                <h3 className="font-semibold text-base sm:text-lg mb-2 text-foreground">Professional</h3>
+                <div className="text-2xl sm:text-3xl font-bold text-foreground mb-3 sm:mb-4">₹7,999<span className="text-xs sm:text-sm font-normal text-muted-foreground">/month</span></div>
+                <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">For growing businesses</p>
+                <ul className="text-xs sm:text-sm text-muted-foreground space-y-1.5 sm:space-y-2 mb-4 sm:mb-6">
                   <li>Up to 100 users</li>
                   <li>All features</li>
                 </ul>
@@ -305,7 +305,7 @@ export default function Landing() {
                 </Link>
               </CardContent>
             </Card>
-            <Card className="border-gray-200 dark:border-gray-700 text-center sm:col-span-2 lg:col-span-1 bg-card">
+            <Card className="border-border text-center sm:col-span-2 lg:col-span-1 bg-card">
               <CardContent className="p-4 sm:p-6">
                 <h3 className="font-semibold text-base sm:text-lg mb-2 text-foreground">Enterprise</h3>
                 <div className="text-2xl sm:text-3xl font-bold text-foreground mb-3 sm:mb-4">Custom</div>
@@ -321,7 +321,7 @@ export default function Landing() {
             </Card>
           </div>
           <div className="text-center mt-6 sm:mt-8">
-            <Link to="/pricing" className="text-emerald-600 hover:text-emerald-700 font-medium text-sm sm:text-base">
+            <Link to="/pricing" className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 font-medium text-sm sm:text-base">
               View full pricing details →
             </Link>
           </div>
@@ -350,15 +350,15 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 sm:py-20 bg-gray-50" aria-labelledby="cta-heading">
+      <section className="py-12 sm:py-20 bg-muted/50" aria-labelledby="cta-heading">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <Card className="max-w-4xl mx-auto bg-gradient-to-br from-emerald-50 to-blue-50 border-2 border-emerald-200 hover-lift animate-fade-in">
+          <Card className="max-w-4xl mx-auto bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-emerald-950/30 dark:to-blue-950/30 border-2 border-emerald-200 dark:border-emerald-800 hover-lift animate-fade-in">
             <CardContent className="p-6 sm:p-8 lg:p-12 text-center">
-              <CheckCircle className="h-12 w-12 sm:h-16 sm:w-16 text-emerald-600 mx-auto mb-4 sm:mb-6 animate-bounce-subtle" aria-hidden="true" />
-              <h2 id="cta-heading" className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-3 sm:mb-4 leading-tight">
+              <CheckCircle className="h-12 w-12 sm:h-16 sm:w-16 text-emerald-600 dark:text-emerald-400 mx-auto mb-4 sm:mb-6 animate-bounce-subtle" aria-hidden="true" />
+              <h2 id="cta-heading" className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground mb-3 sm:mb-4 leading-tight">
                 Ready to Transform Your Workflow?
               </h2>
-              <p className="text-sm sm:text-base lg:text-lg text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-sm sm:text-base lg:text-lg text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed">
                 Join thousands of teams already using SLTwork Hub to manage tasks, 
                 collaborate effectively, and reward productivity.
               </p>
