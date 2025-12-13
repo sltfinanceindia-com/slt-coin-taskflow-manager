@@ -28,38 +28,37 @@ export function useAuthEmailNotifications() {
             startSession();
           }, 0);
 
-          // Login notification emails disabled per user request
-          // setTimeout(async () => {
-          //   const currentProfile = profileRef.current;
-          //   if (currentProfile) {
-          //     try {
-          //       await emailNotifications.sendLoginNotificationEmail({
-          //         to: currentProfile.email,
-          //         recipientName: currentProfile.full_name,
-          //       });
-          //     } catch (error) {
-          //       console.error('Failed to send login notification:', error);
-          //     }
-          //   }
-          // }, 2000);
+          // Send login notification email
+          setTimeout(async () => {
+            const currentProfile = profileRef.current;
+            if (currentProfile) {
+              try {
+                await emailNotifications.sendLoginNotificationEmail({
+                  to: currentProfile.email,
+                  recipientName: currentProfile.full_name,
+                });
+              } catch (error) {
+                console.error('Failed to send login notification:', error);
+              }
+            }
+          }, 2000);
         }
 
         if (event === 'SIGNED_OUT') {
-          // Logout notification emails disabled per user request
-          // const currentProfile = profileRef.current;
-          // if (currentProfile) {
-          //   // Send logout notification immediately
-          //   setTimeout(async () => {
-          //     try {
-          //       await emailNotifications.sendLogoutNotificationEmail({
-          //         to: currentProfile.email,
-          //         recipientName: currentProfile.full_name,
-          //       });
-          //     } catch (error) {
-          //       console.error('Failed to send logout notification:', error);
-          //     }
-          //   }, 0);
-          // }
+          // Send logout notification
+          const currentProfile = profileRef.current;
+          if (currentProfile) {
+            setTimeout(async () => {
+              try {
+                await emailNotifications.sendLogoutNotificationEmail({
+                  to: currentProfile.email,
+                  recipientName: currentProfile.full_name,
+                });
+              } catch (error) {
+                console.error('Failed to send logout notification:', error);
+              }
+            }, 0);
+          }
 
           // End session if we have an active session
           if (currentSessionId.current) {
