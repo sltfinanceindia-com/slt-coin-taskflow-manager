@@ -15,11 +15,12 @@ export interface FileAttachment {
 }
 
 export const useFileUpload = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [uploading, setUploading] = useState(false);
 
   const uploadFile = async (file: File, messageId: string): Promise<FileAttachment | null> => {
-    if (!user) {
+    if (!user || !profile) {
+      console.error('[FileUpload] No user or profile found');
       toast({
         title: "Error",
         description: "You must be logged in to upload files",
@@ -28,12 +29,18 @@ export const useFileUpload = () => {
       return null;
     }
 
+    console.log('[FileUpload] Starting upload for message:', messageId);
+    console.log('[FileUpload] User ID (auth):', user.id);
+    console.log('[FileUpload] Profile ID:', profile.id);
+
     setUploading(true);
     try {
-      // Generate unique file path with user ID for RLS
+      // Generate unique file path with auth user ID for storage RLS
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `${user.id}/${fileName}`;
+
+      console.log('[FileUpload] Uploading to path:', filePath);
 
       // Upload file to storage
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -44,11 +51,13 @@ export const useFileUpload = () => {
         });
 
       if (uploadError) {
-        console.error('Storage upload error:', uploadError);
+        console.error('[FileUpload] Storage upload error:', uploadError);
         throw uploadError;
       }
 
-      // Save file metadata to database
+      console.log('[FileUpload] Storage upload success:', uploadData.path);
+
+      // Save file metadata to database - use profile.id for RLS policy
       const { data: attachmentData, error: dbError } = await supabase
         .from('file_attachments')
         .insert({
@@ -57,12 +66,17 @@ export const useFileUpload = () => {
           file_size: file.size,
           file_type: file.type,
           storage_path: uploadData.path,
-          uploaded_by: user.id
+          uploaded_by: profile.id
         })
         .select()
         .single();
 
-      if (dbError) throw dbError;
+      if (dbError) {
+        console.error('[FileUpload] Database insert error:', dbError);
+        throw dbError;
+      }
+
+      console.log('[FileUpload] Attachment saved:', attachmentData);
 
       toast({
         title: "Success",
@@ -71,7 +85,7 @@ export const useFileUpload = () => {
 
       return attachmentData;
     } catch (error) {
-      console.error('Error uploading file:', error);
+      console.error('[FileUpload] Error uploading file:', error);
       toast({
         title: "Error",
         description: "Failed to upload file",
