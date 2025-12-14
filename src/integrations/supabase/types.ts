@@ -7953,7 +7953,7 @@ export type Database = {
           p_feedback_response_id: string
           p_user_email: string
           p_user_name: string
-          p_user_phone: string
+          p_user_phone?: string
         }
         Returns: {
           card_id: string
