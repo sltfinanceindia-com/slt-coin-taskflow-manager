@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BottomNavigation } from '@/components/BottomNavigation';
 import { Check, X, Coins, ArrowRight, Sparkles, Building2, Users, Menu } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -334,6 +335,12 @@ export default function Pricing() {
           </div>
         </div>
       </footer>
+
+      {/* Bottom Navigation for Mobile */}
+      <BottomNavigation variant="public" />
+      
+      {/* Add padding at bottom for mobile nav */}
+      <div className="h-16 md:hidden" />
     </div>
   );
 }
