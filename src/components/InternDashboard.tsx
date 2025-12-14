@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, Clock, Trophy, BookOpen } from 'lucide-react';
+import { Calendar, Clock, Trophy, BookOpen, MessageCircle } from 'lucide-react';
 import { TaskList } from '@/components/TaskList';
 import { ProfileSettings } from '@/components/ProfileSettings';
 import { useAuth } from '@/hooks/useAuth';
@@ -10,6 +10,7 @@ import { TrainingCenter } from '@/components/TrainingCenter';
 import { useCoinRates } from '@/hooks/useCoinRates';
 import { formatINR, formatCoinRate } from '@/lib/currency';
 import { supabase } from '@/integrations/supabase/client';
+import FeedbackForm from '@/components/feedback/FeedbackForm';
 
 export function InternDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -81,10 +82,11 @@ export function InternDashboard() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="training">Training</TabsTrigger>
+          <TabsTrigger value="feedback">Feedback</TabsTrigger>
           <TabsTrigger value="profile">Profile</TabsTrigger>
         </TabsList>
 
@@ -159,6 +161,10 @@ export function InternDashboard() {
 
         <TabsContent value="training">
           <TrainingCenter />
+        </TabsContent>
+
+        <TabsContent value="feedback">
+          <FeedbackForm userEmail={profile?.email} userName={profile?.full_name} />
         </TabsContent>
 
         <TabsContent value="profile">

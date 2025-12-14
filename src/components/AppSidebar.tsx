@@ -127,6 +127,7 @@ const adminNavGroups = [
     items: [
       { title: "Training", url: "training", icon: BookOpen },
       { title: "Communication", url: "communication", icon: MessageSquare },
+      { title: "App Feedback", url: "app-feedback", icon: MessageCircle },
     ]
   },
 ]
@@ -162,6 +163,7 @@ const internNavGroups = [
       { title: "Communication", url: "communication", icon: MessageSquare },
       { title: "My Coins", url: "my-coins", icon: Coins },
       { title: "Analytics", url: "analytics", icon: BarChart3 },
+      { title: "Feedback", url: "feedback", icon: MessageCircle },
     ]
   },
 ]

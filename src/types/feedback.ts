@@ -86,6 +86,46 @@ export interface FeatureRating {
   comments?: number;
   timeLog?: number;
   feedback?: string;
+  // Coins feature ratings
+  earning?: number;
+  leaderboard?: number;
+  value?: number;
+  motivation?: string;
+  // Communication feature ratings
+  directMessage?: number;
+  channels?: number;
+  status?: number;
+  fileSharing?: number;
+  preference?: string;
+  // Workforce feature ratings
+  attendance?: number;
+  leave?: number;
+  shifts?: number;
+  wfh?: number;
+  mostValuable?: string;
+  // Performance feature ratings
+  okr?: number;
+  feedback360?: number;
+  oneOnOne?: number;
+  pip?: number;
+  helpfulness?: string;
+  // Training feature ratings
+  courseManagement?: number;
+  videoModules?: number;
+  assessments?: number;
+  progress?: number;
+  primaryPlatform?: string;
+  // Analytics feature ratings
+  dashboard?: number;
+  taskAnalytics?: number;
+  timeTracking?: number;
+  usefulness?: string;
+  // Admin feature ratings
+  employeeManagement?: number;
+  announcements?: number;
+  roleManagement?: number;
+  orgSettings?: number;
+  multiOrg?: string;
 }
 
 export interface ScratchCard {
@@ -93,13 +133,18 @@ export interface ScratchCard {
   feedback_response_id: string;
   user_email: string;
   user_name: string;
+  user_phone?: string;
   card_type: 'high_value' | 'medium_value' | 'better_luck';
   card_value: number;
   card_code?: string;
   is_scratched: boolean;
   scratch_date?: string;
   is_claimed: boolean;
+  claim_date?: string;
   verification_status: 'pending' | 'verified' | 'rejected' | 'expired';
+  verification_notes?: string;
+  verified_by?: string;
+  verified_at?: string;
   expiry_date: string;
   created_at: string;
 }

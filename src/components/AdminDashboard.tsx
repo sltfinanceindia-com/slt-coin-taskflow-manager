@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, CheckSquare, Trophy, BookOpen, Calendar as CalendarIcon, Coins, Settings, Building2 } from 'lucide-react';
+import { Users, CheckSquare, Trophy, BookOpen, Calendar as CalendarIcon, Coins, Settings, Building2, MessageCircle } from 'lucide-react';
 import { TaskManager } from '@/components/TaskManager';
 import { InternManager } from '@/components/InternManager';
 import { ProfileSettings } from '@/components/ProfileSettings';
@@ -12,6 +12,7 @@ import { TrainingAdmin } from '@/components/TrainingAdmin';
 import { CertificateGenerator } from '@/components/CertificateGenerator';
 import { CoinRateManagement } from '@/components/CoinRateManagement';
 import { CompactCoinRate } from '@/components/CompactCoinRate';
+import FeedbackForm from '@/components/feedback/FeedbackForm';
 import Calendar from '@/components/Calendar';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/hooks/useOrganization';
@@ -105,6 +106,7 @@ export function AdminDashboard() {
             <TabsTrigger value="training">Training</TabsTrigger>
             <TabsTrigger value="certificates">Certificates</TabsTrigger>
             <TabsTrigger value="calendar">Calendar</TabsTrigger>
+            <TabsTrigger value="feedback">Feedback</TabsTrigger>
             <TabsTrigger value="profile">Profile</TabsTrigger>
           </TabsList>
         </div>
@@ -254,6 +256,10 @@ export function AdminDashboard() {
 
         <TabsContent value="calendar">
           <Calendar />
+        </TabsContent>
+
+        <TabsContent value="feedback">
+          <FeedbackForm userEmail={profile?.email} userName={profile?.full_name} />
         </TabsContent>
 
         <TabsContent value="profile">

@@ -17,7 +17,12 @@ import { Loader2, Star, ArrowLeft, ArrowRight, Send } from 'lucide-react';
 
 const TOTAL_SECTIONS = 12;
 
-export default function FeedbackForm() {
+interface FeedbackFormProps {
+  userEmail?: string;
+  userName?: string;
+}
+
+export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps) {
   const [currentSection, setCurrentSection] = useState(1);
   const [formData, setFormData] = useState<Partial<FeedbackFormData>>({
     features: {
@@ -29,7 +34,9 @@ export default function FeedbackForm() {
       training: {},
       analytics: {},
       admin: {}
-    }
+    },
+    email: userEmail || '',
+    name: userName || ''
   });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -142,10 +149,10 @@ export default function FeedbackForm() {
       const { data: feedbackData, error: feedbackError } = await supabase
         .from('feedback_responses')
         .insert({
-          user_email: formData.email!,
-          user_name: formData.name!,
+          user_email: formData.email as string,
+          user_name: formData.name as string,
           user_phone: formData.phone || null,
-          response_data: formData,
+          response_data: formData as any,
           completion_time_seconds: completionTime,
           referral_source: formData.referral_source || null,
           referred_by_name: formData.referred_by_name || null,
@@ -1518,7 +1525,10 @@ export default function FeedbackForm() {
             value={formData.name || ''}
             onChange={(e) => updateField('name', e.target.value)}
             required
+            readOnly={!!userName}
+            className={userName ? 'bg-muted' : ''}
           />
+          {userName && <p className="text-xs text-muted-foreground">Pre-filled from your profile</p>}
           {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
         </div>
 
@@ -1530,7 +1540,10 @@ export default function FeedbackForm() {
             value={formData.email || ''}
             onChange={(e) => updateField('email', e.target.value)}
             required
+            readOnly={!!userEmail}
+            className={userEmail ? 'bg-muted' : ''}
           />
+          {userEmail && <p className="text-xs text-muted-foreground">Pre-filled from your profile</p>}
           {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
         </div>
 

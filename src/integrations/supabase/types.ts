@@ -2294,51 +2294,51 @@ export type Database = {
       }
       feedback_responses: {
         Row: {
-          comment: string | null
+          completion_time_seconds: number | null
           created_at: string
           id: string
-          organization_id: string | null
-          question_category: string
-          question_text: string
-          rating: number | null
-          request_id: string
+          ip_address: string | null
+          referral_source: string | null
+          referred_by_name: string | null
+          response_data: Json
+          submission_date: string
+          updated_at: string
+          user_agent: string | null
+          user_email: string
+          user_name: string
+          user_phone: string | null
         }
         Insert: {
-          comment?: string | null
+          completion_time_seconds?: number | null
           created_at?: string
           id?: string
-          organization_id?: string | null
-          question_category: string
-          question_text: string
-          rating?: number | null
-          request_id: string
+          ip_address?: string | null
+          referral_source?: string | null
+          referred_by_name?: string | null
+          response_data?: Json
+          submission_date?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_email: string
+          user_name: string
+          user_phone?: string | null
         }
         Update: {
-          comment?: string | null
+          completion_time_seconds?: number | null
           created_at?: string
           id?: string
-          organization_id?: string | null
-          question_category?: string
-          question_text?: string
-          rating?: number | null
-          request_id?: string
+          ip_address?: string | null
+          referral_source?: string | null
+          referred_by_name?: string | null
+          response_data?: Json
+          submission_date?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_email?: string
+          user_name?: string
+          user_phone?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "feedback_responses_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "feedback_responses_request_id_fkey"
-            columns: ["request_id"]
-            isOneToOne: false
-            referencedRelation: "feedback_requests"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       file_annotations: {
         Row: {
@@ -5495,6 +5495,50 @@ export type Database = {
           },
         ]
       }
+      referral_tracking: {
+        Row: {
+          created_at: string
+          feedback_response_id: string
+          id: string
+          referee_email: string | null
+          referee_name: string
+          referee_signed_up: boolean | null
+          referrer_email: string
+          referrer_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          feedback_response_id: string
+          id?: string
+          referee_email?: string | null
+          referee_name: string
+          referee_signed_up?: boolean | null
+          referrer_email: string
+          referrer_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          feedback_response_id?: string
+          id?: string
+          referee_email?: string | null
+          referee_name?: string
+          referee_signed_up?: boolean | null
+          referrer_email?: string
+          referrer_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_tracking_feedback_response_id_fkey"
+            columns: ["feedback_response_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_responses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       request_routing_rules: {
         Row: {
           assign_to_team: string | null
@@ -5777,6 +5821,119 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scratch_card_inventory: {
+        Row: {
+          card_type: Database["public"]["Enums"]["card_type_enum"]
+          created_at: string
+          id: string
+          remaining_count: number
+          total_count: number
+          updated_at: string
+          value_max: number
+          value_min: number
+        }
+        Insert: {
+          card_type: Database["public"]["Enums"]["card_type_enum"]
+          created_at?: string
+          id?: string
+          remaining_count: number
+          total_count: number
+          updated_at?: string
+          value_max: number
+          value_min: number
+        }
+        Update: {
+          card_type?: Database["public"]["Enums"]["card_type_enum"]
+          created_at?: string
+          id?: string
+          remaining_count?: number
+          total_count?: number
+          updated_at?: string
+          value_max?: number
+          value_min?: number
+        }
+        Relationships: []
+      }
+      scratch_cards: {
+        Row: {
+          card_code: string | null
+          card_type: Database["public"]["Enums"]["card_type_enum"]
+          card_value: number
+          claim_date: string | null
+          created_at: string
+          expiry_date: string
+          feedback_response_id: string
+          id: string
+          is_claimed: boolean | null
+          is_scratched: boolean | null
+          scratch_date: string | null
+          screenshot_urls: string[] | null
+          updated_at: string
+          user_email: string
+          user_name: string
+          user_phone: string | null
+          verification_notes: string | null
+          verification_status: Database["public"]["Enums"]["verification_status_enum"]
+          verified_at: string | null
+          verified_by: string | null
+          whatsapp_submission_date: string | null
+        }
+        Insert: {
+          card_code?: string | null
+          card_type: Database["public"]["Enums"]["card_type_enum"]
+          card_value: number
+          claim_date?: string | null
+          created_at?: string
+          expiry_date?: string
+          feedback_response_id: string
+          id?: string
+          is_claimed?: boolean | null
+          is_scratched?: boolean | null
+          scratch_date?: string | null
+          screenshot_urls?: string[] | null
+          updated_at?: string
+          user_email: string
+          user_name: string
+          user_phone?: string | null
+          verification_notes?: string | null
+          verification_status?: Database["public"]["Enums"]["verification_status_enum"]
+          verified_at?: string | null
+          verified_by?: string | null
+          whatsapp_submission_date?: string | null
+        }
+        Update: {
+          card_code?: string | null
+          card_type?: Database["public"]["Enums"]["card_type_enum"]
+          card_value?: number
+          claim_date?: string | null
+          created_at?: string
+          expiry_date?: string
+          feedback_response_id?: string
+          id?: string
+          is_claimed?: boolean | null
+          is_scratched?: boolean | null
+          scratch_date?: string | null
+          screenshot_urls?: string[] | null
+          updated_at?: string
+          user_email?: string
+          user_name?: string
+          user_phone?: string | null
+          verification_notes?: string | null
+          verification_status?: Database["public"]["Enums"]["verification_status_enum"]
+          verified_at?: string | null
+          verified_by?: string | null
+          whatsapp_submission_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scratch_cards_feedback_response_id_fkey"
+            columns: ["feedback_response_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_responses"
             referencedColumns: ["id"]
           },
         ]
@@ -7685,7 +7842,29 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      feedback_analytics: {
+        Row: {
+          avg_nps: number | null
+          avg_satisfaction: number | null
+          referred_users: number | null
+          total_responses: number | null
+          unique_referral_sources: number | null
+          would_pay_count: number | null
+        }
+        Relationships: []
+      }
+      scratch_card_stats: {
+        Row: {
+          card_type: Database["public"]["Enums"]["card_type_enum"] | null
+          paid_value: number | null
+          pending_count: number | null
+          scratched_count: number | null
+          total_issued: number | null
+          total_value: number | null
+          verified_count: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       apply_routing_rules: {
@@ -7767,7 +7946,22 @@ export type Database = {
         Returns: string
       }
       detect_early_warnings: { Args: { p_org_id: string }; Returns: number }
+      expire_old_scratch_cards: { Args: never; Returns: number }
       extract_video_duration: { Args: { video_url: string }; Returns: number }
+      generate_scratch_card: {
+        Args: {
+          p_feedback_response_id: string
+          p_user_email: string
+          p_user_name: string
+          p_user_phone: string
+        }
+        Returns: {
+          card_id: string
+          card_type: Database["public"]["Enums"]["card_type_enum"]
+          card_value: number
+          message: string
+        }[]
+      }
       get_channel_display_name: {
         Args: { channel_id: string; current_user_id: string }
         Returns: string
@@ -7878,6 +8072,7 @@ export type Database = {
       }
       is_org_admin: { Args: { _org_id?: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      mark_card_scratched: { Args: { p_card_id: string }; Returns: boolean }
       send_notification: {
         Args: {
           p_data?: Json
@@ -7928,9 +8123,19 @@ export type Database = {
         Returns: undefined
       }
       user_belongs_to_org: { Args: { _org_id: string }; Returns: boolean }
+      verify_scratch_card: {
+        Args: {
+          p_card_id: string
+          p_notes: string
+          p_status: Database["public"]["Enums"]["verification_status_enum"]
+          p_verified_by: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "intern" | "employee" | "super_admin" | "org_admin"
+      card_type_enum: "high_value" | "medium_value" | "better_luck"
       organization_status:
         | "active"
         | "suspended"
@@ -7946,6 +8151,7 @@ export type Database = {
         | "verified"
         | "rejected"
       user_role: "admin" | "intern" | "super_admin" | "org_admin" | "employee"
+      verification_status_enum: "pending" | "verified" | "rejected" | "expired"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -8074,6 +8280,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "intern", "employee", "super_admin", "org_admin"],
+      card_type_enum: ["high_value", "medium_value", "better_luck"],
       organization_status: [
         "active",
         "suspended",
@@ -8091,6 +8298,7 @@ export const Constants = {
         "rejected",
       ],
       user_role: ["admin", "intern", "super_admin", "org_admin", "employee"],
+      verification_status_enum: ["pending", "verified", "rejected", "expired"],
     },
   },
 } as const

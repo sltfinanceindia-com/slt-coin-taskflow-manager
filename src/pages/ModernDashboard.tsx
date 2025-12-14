@@ -49,6 +49,7 @@ import { ScoringHub } from '@/components/scoring/ScoringHub';
 import { AuditHub } from '@/components/audit/AuditHub';
 import { LifecycleHub } from '@/components/lifecycle/LifecycleHub';
 import { BottomNavigation } from '@/components/BottomNavigation';
+import FeedbackForm from '@/components/feedback/FeedbackForm';
 
 import { Coins, Clock, CheckCircle, Plus, Crown, ArrowRight, Shield, Building2 } from 'lucide-react';
 
@@ -307,6 +308,10 @@ export default function ModernDashboard() {
       
       case 'lifecycle':
         return isAdmin ? <LifecycleHub /> : null;
+      
+      case 'app-feedback':
+      case 'feedback':
+        return <FeedbackForm userEmail={profile?.email} userName={profile?.full_name} />;
       
       default:
         return <EnhancedDashboardWidgets />;
