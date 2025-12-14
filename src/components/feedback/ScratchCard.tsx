@@ -192,8 +192,8 @@ export default function ScratchCard({ card }: ScratchCardProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-background dark:via-background dark:to-muted/30 flex items-center justify-center p-4">
-      <Card className="max-w-lg w-full shadow-2xl">
+    <>
+      <Card className="max-w-lg w-full shadow-2xl mx-auto">
         <CardHeader className="text-center pb-2">
           <CardTitle className="text-2xl sm:text-3xl font-bold">
             {isScratched ? (
@@ -300,6 +300,6 @@ export default function ScratchCard({ card }: ScratchCardProps) {
           prizeAmount={card.card_value}
         />
       )}
-    </div>
+    </>
   );
 }
