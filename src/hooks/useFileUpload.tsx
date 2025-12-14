@@ -66,7 +66,8 @@ export const useFileUpload = () => {
           file_size: file.size,
           file_type: file.type,
           storage_path: uploadData.path,
-          uploaded_by: profile.id
+          uploaded_by: profile.id,
+          organization_id: profile.organization_id
         })
         .select()
         .single();
