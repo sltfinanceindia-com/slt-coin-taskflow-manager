@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { BottomNavigation } from '@/components/BottomNavigation';
 import { 
   Users, 
   GraduationCap, 
@@ -356,6 +357,12 @@ export default function Features() {
           </div>
         </div>
       </footer>
+
+      {/* Bottom Navigation for Mobile */}
+      <BottomNavigation variant="public" />
+      
+      {/* Add padding at bottom for mobile nav */}
+      <div className="h-16 md:hidden" />
     </div>
   );
 }
