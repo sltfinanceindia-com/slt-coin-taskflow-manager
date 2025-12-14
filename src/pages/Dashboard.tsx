@@ -49,18 +49,25 @@ export default function Dashboard() {
   }
 
   const handleSignOut = async () => {
-    const { error } = await signOut();
-    if (error) {
-      toast({
-        title: "Sign Out Failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
+    try {
+      const { error } = await signOut();
+      
+      // Always show success and redirect - state is cleared regardless of API response
       toast({
         title: "Signed Out",
         description: "You have been successfully signed out.",
       });
+      
+      // Force navigation to auth page after sign out
+      window.location.href = '/auth';
+    } catch (error) {
+      console.error('Unexpected sign out error:', error);
+      // Even on error, force redirect to ensure clean state
+      toast({
+        title: "Signed Out",
+        description: "Session ended. Redirecting to login.",
+      });
+      window.location.href = '/auth';
     }
   };
 
