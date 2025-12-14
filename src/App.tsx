@@ -59,12 +59,21 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function AppContent() {
   useAuthEmailNotifications();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { isSuperAdmin } = useUserRole();
   const [showSplash, setShowSplash] = useState(true);
+  const [minTimeElapsed, setMinTimeElapsed] = useState(false);
 
-  if (showSplash) {
-    return <SplashScreen onComplete={() => setShowSplash(false)} />;
+  // Show splash for minimum 2.5 seconds AND until auth is loaded
+  useState(() => {
+    const timer = setTimeout(() => setMinTimeElapsed(true), 2500);
+    return () => clearTimeout(timer);
+  });
+
+  const shouldShowSplash = showSplash && (!minTimeElapsed || loading);
+
+  if (shouldShowSplash) {
+    return <SplashScreen onComplete={() => setShowSplash(false)} minDuration={2500} />;
   }
 
   return (
