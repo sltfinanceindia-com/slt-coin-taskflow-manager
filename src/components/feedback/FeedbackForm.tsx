@@ -49,9 +49,18 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
 
-  // Check for existing submission on mount
+  // Check for existing submission on mount - with timeout to prevent infinite loading
   useEffect(() => {
+    let isMounted = true;
+    const timeoutId = setTimeout(() => {
+      if (isMounted && checkingExisting) {
+        console.log('Timeout reached, stopping check');
+        setCheckingExisting(false);
+      }
+    }, 5000); // 5 second timeout
+
     const checkExistingSubmission = async () => {
+      // If no email provided, stop loading immediately
       if (!userEmail) {
         setCheckingExisting(false);
         return;
@@ -65,6 +74,8 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
           .eq('user_email', userEmail)
           .limit(1)
           .maybeSingle();
+
+        if (!isMounted) return;
 
         if (feedbackError) {
           console.error('Error checking existing feedback:', feedbackError);
@@ -83,6 +94,8 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
             .eq('feedback_response_id', existingFeedback.id)
             .maybeSingle();
 
+          if (!isMounted) return;
+
           if (cardError) {
             console.error('Error fetching scratch card:', cardError);
           }
@@ -98,11 +111,18 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
       } catch (error) {
         console.error('Error checking existing submission:', error);
       } finally {
-        setCheckingExisting(false);
+        if (isMounted) {
+          setCheckingExisting(false);
+        }
       }
     };
 
     checkExistingSubmission();
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timeoutId);
+    };
   }, [userEmail]);
 
   // Auto-save to localStorage (only if not already submitted)
