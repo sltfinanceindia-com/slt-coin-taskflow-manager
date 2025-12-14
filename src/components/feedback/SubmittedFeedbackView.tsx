@@ -1,10 +1,13 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useRef } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { CheckCircle, Star, Calendar, Clock } from 'lucide-react';
+import { CheckCircle, Star, Calendar, Clock, Share2, MessageCircle, Download } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
+import html2canvas from 'html2canvas';
 
 interface SubmittedFeedbackViewProps {
   feedbackData: {
@@ -19,6 +22,63 @@ interface SubmittedFeedbackViewProps {
 
 export default function SubmittedFeedbackView({ feedbackData }: SubmittedFeedbackViewProps) {
   const data = feedbackData.response_data || {};
+  const cardRef = useRef<HTMLDivElement>(null);
+  const WHATSAPP_NUMBER = '919948397386';
+
+  const handleDownloadScreenshot = async () => {
+    if (!cardRef.current) return;
+    
+    try {
+      toast.loading('Generating screenshot...');
+      const canvas = await html2canvas(cardRef.current, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+      });
+      
+      const link = document.createElement('a');
+      link.download = `slt-feedback-${feedbackData.user_name.replace(/\s+/g, '-')}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      
+      toast.dismiss();
+      toast.success('Screenshot downloaded! Send it to WhatsApp.');
+    } catch (error) {
+      toast.dismiss();
+      toast.error('Failed to generate screenshot');
+      console.error('Screenshot error:', error);
+    }
+  };
+
+  const openWhatsApp = () => {
+    const message = encodeURIComponent(
+      `Hi! I've completed the SLT Work Hub feedback survey.\n\n` +
+      `📧 Email: ${feedbackData.user_email}\n` +
+      `👤 Name: ${feedbackData.user_name}\n` +
+      `📅 Submitted: ${format(new Date(feedbackData.submission_date), 'MMM d, yyyy')}\n\n` +
+      `I've shared with friends and attached my feedback screenshot for verification.`
+    );
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
+  };
+
+  const handleShare = async () => {
+    const shareData = {
+      title: 'SLT Work Hub - Amazing Work Management Platform',
+      text: 'I just submitted my feedback for SLT Work Hub - an amazing platform for task management, team communication, and workforce management. Check it out!',
+      url: window.location.origin,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        toast.success('Thanks for sharing!');
+      } else {
+        await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+        toast.success('Link copied! Share with your friends.');
+      }
+    } catch (error) {
+      console.error('Share error:', error);
+    }
+  };
 
   const renderStars = (rating: number | undefined) => {
     if (!rating) return <span className="text-muted-foreground text-sm">Not rated</span>;
@@ -76,7 +136,7 @@ export default function SubmittedFeedbackView({ feedbackData }: SubmittedFeedbac
   };
 
   return (
-    <Card className="max-w-2xl mx-auto shadow-lg">
+    <Card className="max-w-2xl mx-auto shadow-lg" ref={cardRef}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
@@ -216,6 +276,26 @@ export default function SubmittedFeedbackView({ feedbackData }: SubmittedFeedbac
           </div>
         </ScrollArea>
       </CardContent>
+      
+      <CardFooter className="flex flex-col gap-3 pt-4 border-t">
+        <p className="text-sm text-muted-foreground text-center">
+          Share with 2+ friends & send screenshot to claim your reward
+        </p>
+        <div className="flex flex-col sm:flex-row gap-2 w-full">
+          <Button onClick={handleShare} variant="outline" className="flex-1">
+            <Share2 className="h-4 w-4 mr-2" />
+            Share with Friends
+          </Button>
+          <Button onClick={handleDownloadScreenshot} variant="outline" className="flex-1">
+            <Download className="h-4 w-4 mr-2" />
+            Download Screenshot
+          </Button>
+          <Button onClick={openWhatsApp} className="flex-1 bg-green-600 hover:bg-green-700">
+            <MessageCircle className="h-4 w-4 mr-2" />
+            Send to WhatsApp
+          </Button>
+        </div>
+      </CardFooter>
     </Card>
   );
 }
