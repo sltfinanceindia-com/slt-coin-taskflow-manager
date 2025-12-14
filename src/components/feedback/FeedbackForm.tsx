@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { FeedbackFormData, ScratchCard } from '@/types/feedback';
 import ProgressBar from './ProgressBar';
 import ScratchCardComponent from './ScratchCard';
+import SubmittedFeedbackView from './SubmittedFeedbackView';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,7 +14,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Star, ArrowLeft, ArrowRight, Send } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2, Star, ArrowLeft, ArrowRight, Send, Gift, FileText } from 'lucide-react';
 
 const TOTAL_SECTIONS = 12;
 
@@ -42,6 +44,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
   const [checkingExisting, setCheckingExisting] = useState(true);
   const [submitted, setSubmitted] = useState(false);
   const [scratchCard, setScratchCard] = useState<ScratchCard | null>(null);
+  const [existingFeedbackData, setExistingFeedbackData] = useState<any>(null);
   const [startTime] = useState(Date.now());
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
@@ -58,7 +61,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         // Check if user already submitted feedback
         const { data: existingFeedback, error: feedbackError } = await supabase
           .from('feedback_responses')
-          .select('id')
+          .select('*')
           .eq('user_email', userEmail)
           .limit(1)
           .maybeSingle();
@@ -70,6 +73,9 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         }
 
         if (existingFeedback) {
+          // Store the full feedback data for viewing
+          setExistingFeedbackData(existingFeedback);
+          
           // User already submitted, check for their scratch card
           const { data: existingCard, error: cardError } = await supabase
             .from('scratch_cards')
@@ -83,10 +89,11 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
 
           if (existingCard) {
             setScratchCard(existingCard);
-            setSubmitted(true);
-            localStorage.removeItem('slt_feedback_draft');
-            toast.info('You have already submitted feedback. Here is your scratch card!');
           }
+          
+          setSubmitted(true);
+          localStorage.removeItem('slt_feedback_draft');
+          toast.info('Welcome back! View your submitted feedback below.');
         }
       } catch (error) {
         console.error('Error checking existing submission:', error);
@@ -271,8 +278,45 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
     );
   }
 
-  if (submitted && scratchCard) {
-    return <ScratchCardComponent card={scratchCard} />;
+  if (submitted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-background dark:via-background dark:to-muted/30 py-6 sm:py-12 px-3 sm:px-4">
+        <div className="max-w-2xl mx-auto">
+          <Tabs defaultValue="scratch-card" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="scratch-card" className="flex items-center gap-2">
+                <Gift className="h-4 w-4" />
+                Scratch Card
+              </TabsTrigger>
+              <TabsTrigger value="feedback" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                My Answers
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="scratch-card">
+              {scratchCard ? (
+                <ScratchCardComponent card={scratchCard} />
+              ) : (
+                <Card className="p-8 text-center">
+                  <p className="text-muted-foreground">No scratch card found. Please contact support.</p>
+                </Card>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="feedback">
+              {existingFeedbackData ? (
+                <SubmittedFeedbackView feedbackData={existingFeedbackData} />
+              ) : (
+                <Card className="p-8 text-center">
+                  <p className="text-muted-foreground">Unable to load your feedback data.</p>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+    );
   }
 
   return (
