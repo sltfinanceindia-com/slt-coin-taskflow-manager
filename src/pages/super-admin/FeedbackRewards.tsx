@@ -127,17 +127,19 @@ export default function FeedbackRewards() {
   };
 
   const fetchFeedbackResponses = async () => {
-    const { data, error } = await supabase
+    console.log('Fetching feedback responses as super admin...');
+    const { data, error, count } = await supabase
       .from('feedback_responses')
-      .select('*')
+      .select('*', { count: 'exact' })
       .order('submission_date', { ascending: false });
 
     if (error) {
       console.error('Error fetching feedback responses:', error);
-      toast.error('Failed to load feedback responses');
+      toast.error(`Failed to load feedback responses: ${error.message}`);
       return;
     }
 
+    console.log(`Loaded ${data?.length || 0} feedback responses (count: ${count})`);
     setFeedbackResponses(data || []);
   };
 
