@@ -34,26 +34,22 @@ export function AppHeader() {
     try {
       const { error } = await signOut();
       
-      if (error) {
-        console.error('Sign out error:', error);
-        toast({
-          title: "Sign Out Failed",
-          description: error.message || "An error occurred during sign out",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Signed Out",
-          description: "You have been successfully signed out.",
-        });
-      }
+      // Always show success and redirect - state is cleared regardless of API response
+      toast({
+        title: "Signed Out",
+        description: "You have been successfully signed out.",
+      });
+      
+      // Force navigation to auth page after sign out
+      window.location.href = '/auth';
     } catch (error) {
       console.error('Unexpected sign out error:', error);
+      // Even on error, force redirect to ensure clean state
       toast({
-        title: "Sign Out Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
+        title: "Signed Out",
+        description: "Session ended. Redirecting to login.",
       });
+      window.location.href = '/auth';
     }
   }
 
