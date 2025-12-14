@@ -280,7 +280,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
   function renderUserProfile() {
     return (
       <div className="space-y-6">
-        <h3 className="text-xl font-semibold">About You</h3>
+        <h3 className="text-xl font-semibold text-foreground">About You</h3>
 
         <div className="space-y-2">
           <Label>What is your role? *</Label>
@@ -363,7 +363,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
   function renderOverallExperience() {
     return (
       <div className="space-y-6">
-        <h3 className="text-xl font-semibold">Overall Experience</h3>
+        <h3 className="text-xl font-semibold text-foreground">Overall Experience</h3>
 
         <div className="space-y-2">
           <Label>Overall, how satisfied are you with SLT Work Hub? *</Label>
@@ -399,7 +399,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
                 className={`w-10 h-10 rounded border font-semibold transition-all ${
                   formData.nps_score === score
                     ? 'bg-indigo-600 text-white border-indigo-600 scale-110'
-                    : 'bg-white text-gray-700 border-gray-300 hover:border-indigo-400'
+                    : 'bg-card text-foreground border-border hover:border-indigo-400'
                 }`}
               >
                 {score}
@@ -455,7 +455,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
   function renderOnboarding() {
     return (
       <div className="space-y-6">
-        <h3 className="text-xl font-semibold">Onboarding & Setup</h3>
+        <h3 className="text-xl font-semibold text-foreground">Onboarding & Setup</h3>
 
         <div className="space-y-2">
           <Label>How easy was it to sign up and create your organization?</Label>
@@ -535,8 +535,8 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   function renderFeatureRatings() {
     const StarRating = ({ value, onChange, label }: any) => (
-      <div className="flex items-center justify-between py-2 border-b last:border-0">
-        <span className="text-sm">{label}</span>
+      <div className="flex items-center justify-between py-2 border-b border-border last:border-0">
+        <span className="text-sm text-foreground font-medium">{label}</span>
         <div className="flex gap-1">
           {[1, 2, 3, 4, 5].map(rating => (
             <button
@@ -544,7 +544,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
               type="button"
               onClick={() => onChange(rating)}
               className={`text-2xl ${
-                value && value >= rating ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-200'
+                value && value >= rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600 hover:text-yellow-200'
               }`}
             >
               ★
@@ -553,7 +553,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
           <button
             type="button"
             onClick={() => onChange(-1)}
-            className="ml-2 text-xs text-muted-foreground hover:text-gray-700"
+            className="ml-2 text-xs text-muted-foreground hover:text-foreground"
           >
             N/A
           </button>
@@ -563,14 +563,14 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
 
     return (
       <div className="space-y-6">
-        <h3 className="text-xl font-semibold">Feature Ratings</h3>
+        <h3 className="text-xl font-semibold text-foreground">Feature Ratings</h3>
         <p className="text-sm text-muted-foreground">
           Rate the features you've used. Select N/A if you haven't tried it yet.
         </p>
 
         {/* A. TASK MANAGEMENT */}
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <h4 className="font-semibold mb-3 text-indigo-700">📋 Task Management</h4>
+        <div className="border border-border rounded-lg p-4 bg-muted/50">
+          <h4 className="font-semibold mb-3 text-indigo-600 dark:text-indigo-400">📋 Task Management</h4>
           <StarRating
             label="Kanban Board (drag & drop)"
             value={formData.features?.tasks?.kanban}
@@ -609,8 +609,8 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         </div>
 
         {/* B. COIN SYSTEM */}
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <h4 className="font-semibold mb-3 text-indigo-700">🪙 SLT Coin System</h4>
+        <div className="border border-border rounded-lg p-4 bg-muted/50">
+          <h4 className="font-semibold mb-3 text-indigo-600 dark:text-indigo-400">🪙 SLT Coin System</h4>
           <StarRating
             label="Earning coins for completed tasks"
             value={formData.features?.coins?.earning}
@@ -653,8 +653,8 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         </div>
 
         {/* C. COMMUNICATION */}
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <h4 className="font-semibold mb-3 text-indigo-700">💬 Team Communication</h4>
+        <div className="border border-border rounded-lg p-4 bg-muted/50">
+          <h4 className="font-semibold mb-3 text-indigo-600 dark:text-indigo-400">💬 Team Communication</h4>
           <StarRating
             label="Direct Messaging"
             value={formData.features?.communication?.directMessage}
@@ -702,8 +702,8 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         </div>
 
         {/* D. WORKFORCE MANAGEMENT */}
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <h4 className="font-semibold mb-3 text-indigo-700">👥 Workforce Management</h4>
+        <div className="border border-border rounded-lg p-4 bg-muted/50">
+          <h4 className="font-semibold mb-3 text-indigo-600 dark:text-indigo-400">👥 Workforce Management</h4>
           <StarRating
             label="Attendance (Clock in/out with geo-fencing)"
             value={formData.features?.workforce?.attendance}
@@ -751,8 +751,8 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         </div>
 
         {/* E. PERFORMANCE MANAGEMENT */}
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <h4 className="font-semibold mb-3 text-indigo-700">📊 Performance Management</h4>
+        <div className="border border-border rounded-lg p-4 bg-muted/50">
+          <h4 className="font-semibold mb-3 text-indigo-600 dark:text-indigo-400">📊 Performance Management</h4>
           <StarRating
             label="OKR (Objectives & Key Results) Tracking"
             value={formData.features?.performance?.okr}
@@ -800,8 +800,8 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         </div>
 
         {/* F. TRAINING CENTER */}
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <h4 className="font-semibold mb-3 text-indigo-700">🎓 Training Center</h4>
+        <div className="border border-border rounded-lg p-4 bg-muted/50">
+          <h4 className="font-semibold mb-3 text-indigo-600 dark:text-indigo-400">🎓 Training Center</h4>
           <StarRating
             label="Course Creation & Management"
             value={formData.features?.training?.courseManagement}
@@ -849,8 +849,8 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         </div>
 
         {/* G. ANALYTICS & REPORTING */}
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <h4 className="font-semibold mb-3 text-indigo-700">📈 Analytics & Reporting</h4>
+        <div className="border border-border rounded-lg p-4 bg-muted/50">
+          <h4 className="font-semibold mb-3 text-indigo-600 dark:text-indigo-400">📈 Analytics & Reporting</h4>
           <StarRating
             label="Dashboard Widgets & Metrics"
             value={formData.features?.analytics?.dashboard}
@@ -894,8 +894,8 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
 
         {/* H. ADMIN FEATURES */}
         {(formData.role === 'super_admin' || formData.role === 'org_admin' || formData.role === 'manager') && (
-          <div className="border rounded-lg p-4 bg-gray-50">
-            <h4 className="font-semibold mb-3 text-indigo-700">⚙️ Admin Features</h4>
+          <div className="border border-border rounded-lg p-4 bg-muted/50">
+            <h4 className="font-semibold mb-3 text-indigo-600 dark:text-indigo-400">⚙️ Admin Features</h4>
             <StarRating
               label="Employee Management"
               value={formData.features?.admin?.employeeManagement}
@@ -945,7 +945,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
   function renderUsability() {
     return (
       <div className="space-y-6">
-        <h3 className="text-xl font-semibold">Usability & Design</h3>
+        <h3 className="text-xl font-semibold text-foreground">Usability & Design</h3>
 
         <div className="space-y-2">
           <Label>How easy is it to navigate SLT Work Hub?</Label>
@@ -1055,7 +1055,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
   function renderPainPoints() {
     return (
       <div className="space-y-6">
-        <h3 className="text-xl font-semibold">Pain Points & Bugs</h3>
+        <h3 className="text-xl font-semibold text-foreground">Pain Points & Bugs</h3>
 
         <div className="space-y-2">
           <Label>Have you encountered any bugs or errors?</Label>
@@ -1143,7 +1143,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
   function renderFeatureRequests() {
     return (
       <div className="space-y-6">
-        <h3 className="text-xl font-semibold">Feature Requests</h3>
+        <h3 className="text-xl font-semibold text-foreground">Feature Requests</h3>
 
         <div className="space-y-2">
           <Label>What feature is SLT Work Hub missing that you need?</Label>
@@ -1214,7 +1214,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
 
     return (
       <div className="space-y-6">
-        <h3 className="text-xl font-semibold">Comparison & Value</h3>
+        <h3 className="text-xl font-semibold text-foreground">Comparison & Value</h3>
 
         <div className="space-y-2">
           <Label>What tools were you using before SLT Work Hub? (Select all that apply)</Label>
@@ -1305,7 +1305,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
 
     return (
       <div className="space-y-6">
-        <h3 className="text-xl font-semibold">Pricing & Business Decision</h3>
+        <h3 className="text-xl font-semibold text-foreground">Pricing & Business Decision</h3>
 
         <div className="space-y-2">
           <Label>Would your organization pay for SLT Work Hub?</Label>
@@ -1395,7 +1395,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
   function renderFinalThoughts() {
     return (
       <div className="space-y-6">
-        <h3 className="text-xl font-semibold">Final Thoughts</h3>
+        <h3 className="text-xl font-semibold text-foreground">Final Thoughts</h3>
 
         <div className="space-y-2">
           <Label>What do you LOVE most about SLT Work Hub? *</Label>
@@ -1462,7 +1462,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
   function renderReferralSource() {
     return (
       <div className="space-y-6">
-        <h3 className="text-xl font-semibold">How Did You Hear About Us?</h3>
+        <h3 className="text-xl font-semibold text-foreground">How Did You Hear About Us?</h3>
 
         <div className="space-y-2">
           <Label>How did you hear about SLT Work Hub? *</Label>
@@ -1514,7 +1514,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
   function renderFollowUp() {
     return (
       <div className="space-y-6">
-        <h3 className="text-xl font-semibold">Contact Information</h3>
+        <h3 className="text-xl font-semibold text-foreground">Contact Information</h3>
         <p className="text-sm text-muted-foreground">
           We need your contact info to send you the scratch card reward! 🎁
         </p>
