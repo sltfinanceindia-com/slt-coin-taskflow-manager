@@ -121,17 +121,51 @@ export default function EnhancedMessageArea({
   };
 
   /**
-   * Send a message
+   * Send a message - directly insert to DB to get message ID for attachments
    */
   const handleSendMessage = async (content: string, attachments?: File[], messageId?: string): Promise<string | void> => {
-    if (replyToMessage) {
-      // TODO: Handle reply logic with backend
-      console.log('Replying to message:', replyToMessage.id);
+    if (!profile?.id || !channel?.id || !content.trim()) {
+      console.error('Missing required data for sending message:', { profileId: profile?.id, channelId: channel?.id, content: !!content.trim() });
+      return;
     }
-    
-    const newMessageId = await onSendMessage(content);
-    setReplyToMessage(null);
-    return newMessageId;
+
+    try {
+      // Insert message directly to get the message ID
+      const { data: newMessage, error } = await supabase
+        .from('messages')
+        .insert({
+          channel_id: channel.id,
+          sender_id: profile.id,
+          content: content.trim(),
+          message_type: 'text',
+          organization_id: profile.organization_id
+        })
+        .select('id')
+        .single();
+
+      if (error) {
+        console.error('Error sending message:', error);
+        toast.error('Failed to send message');
+        return;
+      }
+
+      // Update channel's last_message_at
+      await supabase
+        .from('communication_channels')
+        .update({ last_message_at: new Date().toISOString() })
+        .eq('id', channel.id);
+
+      if (replyToMessage) {
+        console.log('Replying to message:', replyToMessage.id);
+      }
+      
+      setReplyToMessage(null);
+      return newMessage.id;
+    } catch (err) {
+      console.error('Error in handleSendMessage:', err);
+      toast.error('Failed to send message');
+      return;
+    }
   };
 
   /**
