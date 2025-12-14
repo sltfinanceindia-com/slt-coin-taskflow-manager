@@ -83,7 +83,7 @@ const SplashScreen = ({ onComplete, minDuration = 2000 }: SplashScreenProps) => 
                 <motion.img
                   src="/slt-hub-icon.png"
                   alt="SLT work HuB"
-                  className="w-24 h-24 md:w-32 md:h-32 object-contain drop-shadow-2xl"
+                  className="w-24 h-24 md:w-32 md:h-32 object-contain drop-shadow-2xl rounded-3xl"
                   animate={{ 
                     filter: ['drop-shadow(0 0 20px rgba(255,255,255,0.3))', 'drop-shadow(0 0 40px rgba(255,255,255,0.5))', 'drop-shadow(0 0 20px rgba(255,255,255,0.3))']
                   }}
