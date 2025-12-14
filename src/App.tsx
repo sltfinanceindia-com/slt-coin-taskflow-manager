@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import Features from "@/pages/Features";
 import Terms from "@/pages/Terms";
@@ -14,6 +15,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { SkipLink } from "@/components/SkipLink";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import SplashScreen from "@/components/SplashScreen";
 import Landing from "./pages/Landing";
 import ModernDashboard from "./pages/ModernDashboard";
 import Auth from "./pages/Auth";
@@ -59,6 +61,11 @@ function AppContent() {
   useAuthEmailNotifications();
   const { user } = useAuth();
   const { isSuperAdmin } = useUserRole();
+  const [showSplash, setShowSplash] = useState(true);
+
+  if (showSplash) {
+    return <SplashScreen onComplete={() => setShowSplash(false)} />;
+  }
 
   return (
     <TooltipProvider>
