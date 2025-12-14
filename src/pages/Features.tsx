@@ -160,31 +160,31 @@ export default function Features() {
     <div className="min-h-screen bg-background">
       {/* Navigation */}
       <header className="border-b bg-background/95 backdrop-blur sticky top-0 z-50">
-        <div className="container mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
+        <div className="container mx-auto px-3 sm:px-4 h-12 sm:h-14 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-1.5">
             <img 
               src="/slt-hub-icon.png" 
               alt="SLT work HuB"
-              className="w-8 h-8 rounded-lg object-contain"
+              className="w-6 h-6 sm:w-7 sm:h-7 rounded-md object-contain"
             />
-            <span className="text-lg sm:text-xl">
-              <span className="font-black">SLT</span>
+            <span className="text-sm sm:text-base">
+              <span className="font-bold">SLT</span>
               <span className="font-normal text-muted-foreground"> work </span>
-              <span className="font-black">HuB</span>
+              <span className="font-bold">HuB</span>
             </span>
           </Link>
-          <nav className="hidden md:flex items-center gap-6">
-            <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">Home</Link>
-            <Link to="/features" className="text-foreground font-medium">Features</Link>
-            <Link to="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</Link>
+          <nav className="hidden md:flex items-center gap-4">
+            <Link to="/" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Home</Link>
+            <Link to="/features" className="text-xs text-foreground font-medium">Features</Link>
+            <Link to="/pricing" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Pricing</Link>
           </nav>
           
           {/* Desktop Actions */}
-          <div className="hidden sm:flex items-center gap-3">
-            <Button variant="ghost" asChild>
+          <div className="hidden sm:flex items-center gap-2">
+            <Button variant="ghost" size="sm" className="h-8 text-xs" asChild>
               <Link to="/auth">Login</Link>
             </Button>
-            <Button asChild>
+            <Button size="sm" className="h-8 text-xs" asChild>
               <Link to="/signup">Start Free Trial</Link>
             </Button>
           </div>
@@ -193,28 +193,28 @@ export default function Features() {
           <div className="sm:hidden">
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9">
-                  <Menu className="h-5 w-5" />
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Menu className="h-4 w-4" />
                   <span className="sr-only">Open menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[280px] pt-12">
-                <div className="flex flex-col gap-4">
-                  <Link to="/" onClick={() => setMobileMenuOpen(false)} className="text-foreground hover:text-primary transition-colors py-2">
+              <SheetContent side="right" className="w-[240px] pt-10">
+                <div className="flex flex-col gap-3">
+                  <Link to="/" onClick={() => setMobileMenuOpen(false)} className="text-sm text-foreground hover:text-primary transition-colors py-1.5">
                     Home
                   </Link>
-                  <Link to="/features" onClick={() => setMobileMenuOpen(false)} className="text-primary font-medium py-2">
+                  <Link to="/features" onClick={() => setMobileMenuOpen(false)} className="text-sm text-primary font-medium py-1.5">
                     Features
                   </Link>
-                  <Link to="/pricing" onClick={() => setMobileMenuOpen(false)} className="text-foreground hover:text-primary transition-colors py-2">
+                  <Link to="/pricing" onClick={() => setMobileMenuOpen(false)} className="text-sm text-foreground hover:text-primary transition-colors py-1.5">
                     Pricing
                   </Link>
-                  <hr className="my-2" />
+                  <hr className="my-1.5" />
                   <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="outline" className="w-full">Login</Button>
+                    <Button variant="outline" size="sm" className="w-full text-xs">Login</Button>
                   </Link>
                   <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
-                    <Button className="w-full">Start Free Trial</Button>
+                    <Button size="sm" className="w-full text-xs">Start Free Trial</Button>
                   </Link>
                 </div>
               </SheetContent>
@@ -224,56 +224,56 @@ export default function Features() {
       </header>
 
       {/* Hero */}
-      <section className="py-20 px-4 bg-gradient-to-b from-primary/5 to-background">
-        <div className="container mx-auto text-center max-w-3xl">
-          <Badge variant="secondary" className="mb-4">All Features</Badge>
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+      <section className="py-10 sm:py-14 px-3 sm:px-4 bg-gradient-to-b from-primary/5 to-background">
+        <div className="container mx-auto text-center max-w-2xl">
+          <Badge variant="secondary" className="mb-3 text-xs">All Features</Badge>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-4">
             Everything You Need to Manage Your Team
           </h1>
-          <p className="text-xl text-muted-foreground mb-8">
+          <p className="text-sm sm:text-base text-muted-foreground mb-6">
             From employee management to training, assessments, task tracking, and rewards - 
             SLT Work Hub provides a complete solution for modern teams.
           </p>
-          <Button size="lg" asChild>
+          <Button size="sm" className="h-9" asChild>
             <Link to="/signup">
               Start Free Trial
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
             </Link>
           </Button>
         </div>
       </section>
 
       {/* Main Features */}
-      <section className="py-20 px-4">
+      <section className="py-10 sm:py-14 px-3 sm:px-4">
         <div className="container mx-auto">
-          <div className="space-y-24">
+          <div className="space-y-12 sm:space-y-16">
             {features.map((feature, index) => (
               <div 
                 key={feature.title}
-                className={`flex flex-col ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} gap-12 items-center`}
+                className={`flex flex-col ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} gap-6 sm:gap-8 items-center`}
               >
                 <div className="flex-1">
-                  <div className={`w-14 h-14 rounded-xl ${feature.color} flex items-center justify-center mb-6`}>
-                    <feature.icon className="h-7 w-7 text-white" />
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg ${feature.color} flex items-center justify-center mb-4`}>
+                    <feature.icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                   </div>
-                  <h2 className="text-3xl font-bold mb-4">{feature.title}</h2>
-                  <p className="text-lg text-muted-foreground mb-6">{feature.description}</p>
-                  <ul className="space-y-3">
+                  <h2 className="text-xl sm:text-2xl font-bold mb-2">{feature.title}</h2>
+                  <p className="text-sm text-muted-foreground mb-4">{feature.description}</p>
+                  <ul className="space-y-2">
                     {feature.benefits.map((benefit) => (
-                      <li key={benefit} className="flex items-center gap-3">
-                        <div className="w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                          <Check className="h-3 w-3 text-green-600" />
+                      <li key={benefit} className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
+                          <Check className="h-2.5 w-2.5 text-green-600" />
                         </div>
-                        <span>{benefit}</span>
+                        <span className="text-xs sm:text-sm">{benefit}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
-                <div className="flex-1">
-                  <Card className="border-2">
-                    <CardContent className="p-8">
-                      <div className="aspect-video bg-gradient-to-br from-muted to-muted/50 rounded-lg flex items-center justify-center">
-                        <feature.icon className="h-20 w-20 text-muted-foreground/50" />
+                <div className="flex-1 w-full">
+                  <Card className="border">
+                    <CardContent className="p-4 sm:p-6">
+                      <div className="aspect-video bg-gradient-to-br from-muted to-muted/50 rounded-md flex items-center justify-center">
+                        <feature.icon className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground/50" />
                       </div>
                     </CardContent>
                   </Card>
@@ -285,26 +285,22 @@ export default function Features() {
       </section>
 
       {/* Additional Features Grid */}
-      <section className="py-20 px-4 bg-muted/30">
+      <section className="py-10 sm:py-14 px-3 sm:px-4 bg-muted/30">
         <div className="container mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-3xl font-bold mb-4">And Much More...</h2>
-            <p className="text-muted-foreground">
+          <div className="text-center max-w-xl mx-auto mb-8">
+            <h2 className="text-xl sm:text-2xl font-bold mb-2">And Much More...</h2>
+            <p className="text-xs sm:text-sm text-muted-foreground">
               Built with enterprise-grade infrastructure to support teams of any size.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {additionalFeatures.map((feature) => (
-              <Card key={feature.title}>
-                <CardHeader>
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
-                    <feature.icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <CardTitle className="text-lg">{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>{feature.description}</CardDescription>
-                </CardContent>
+              <Card key={feature.title} className="p-3 sm:p-4">
+                <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center mb-2">
+                  <feature.icon className="h-4 w-4 text-primary" />
+                </div>
+                <h3 className="text-sm font-semibold mb-1">{feature.title}</h3>
+                <p className="text-xs text-muted-foreground">{feature.description}</p>
               </Card>
             ))}
           </div>
@@ -312,21 +308,21 @@ export default function Features() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-4">
+      <section className="py-10 sm:py-14 px-3 sm:px-4">
         <div className="container mx-auto">
           <Card className="bg-gradient-to-r from-primary to-primary/80 border-0">
-            <CardContent className="py-16 text-center">
-              <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
+            <CardContent className="py-10 sm:py-12 text-center px-4">
+              <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-2">
                 Ready to Transform Your Workplace?
               </h2>
-              <p className="text-primary-foreground/80 text-lg mb-8 max-w-2xl mx-auto">
+              <p className="text-primary-foreground/80 text-xs sm:text-sm mb-6 max-w-xl mx-auto">
                 Start your 14-day free trial today. No credit card required.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" variant="secondary" asChild>
+              <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                <Button size="sm" variant="secondary" className="h-9 text-xs" asChild>
                   <Link to="/signup">Start Free Trial</Link>
                 </Button>
-                <Button size="lg" variant="outline" className="bg-transparent text-primary-foreground border-primary-foreground/30 hover:bg-primary-foreground/10" asChild>
+                <Button size="sm" variant="outline" className="h-9 text-xs bg-transparent text-primary-foreground border-primary-foreground/30 hover:bg-primary-foreground/10" asChild>
                   <Link to="/pricing">View Pricing</Link>
                 </Button>
               </div>
@@ -336,22 +332,22 @@ export default function Features() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-12 px-4">
+      <footer className="border-t py-8 px-3 sm:px-4">
         <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-3">
+            <div className="flex items-center gap-1.5">
               <img 
                 src="/slt-hub-icon.png" 
                 alt="SLT work HuB"
-                className="w-8 h-8 rounded-lg object-contain"
+                className="w-6 h-6 rounded-md object-contain"
               />
-              <span className="font-bold">
-                <span className="font-black">SLT</span>
+              <span className="text-sm font-bold">
+                <span className="font-bold">SLT</span>
                 <span className="font-normal text-muted-foreground"> work </span>
-                <span className="font-black">HuB</span>
+                <span className="font-bold">HuB</span>
               </span>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               © {new Date().getFullYear()} SLT Work Hub. All rights reserved.
             </p>
           </div>
@@ -362,7 +358,7 @@ export default function Features() {
       <BottomNavigation variant="public" />
       
       {/* Add padding at bottom for mobile nav */}
-      <div className="h-16 md:hidden" />
+      <div className="h-14 md:hidden" />
     </div>
   );
 }
