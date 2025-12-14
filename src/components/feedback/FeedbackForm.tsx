@@ -39,31 +39,96 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
     name: userName || ''
   });
   const [loading, setLoading] = useState(false);
+  const [checkingExisting, setCheckingExisting] = useState(true);
   const [submitted, setSubmitted] = useState(false);
   const [scratchCard, setScratchCard] = useState<ScratchCard | null>(null);
   const [startTime] = useState(Date.now());
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
 
-  // Auto-save to localStorage
+  // Check for existing submission on mount
   useEffect(() => {
+    const checkExistingSubmission = async () => {
+      if (!userEmail) {
+        setCheckingExisting(false);
+        return;
+      }
+
+      try {
+        // Check if user already submitted feedback
+        const { data: existingFeedback, error: feedbackError } = await supabase
+          .from('feedback_responses')
+          .select('id')
+          .eq('user_email', userEmail)
+          .limit(1)
+          .maybeSingle();
+
+        if (feedbackError) {
+          console.error('Error checking existing feedback:', feedbackError);
+          setCheckingExisting(false);
+          return;
+        }
+
+        if (existingFeedback) {
+          // User already submitted, check for their scratch card
+          const { data: existingCard, error: cardError } = await supabase
+            .from('scratch_cards')
+            .select('*')
+            .eq('feedback_response_id', existingFeedback.id)
+            .maybeSingle();
+
+          if (cardError) {
+            console.error('Error fetching scratch card:', cardError);
+          }
+
+          if (existingCard) {
+            setScratchCard(existingCard);
+            setSubmitted(true);
+            localStorage.removeItem('slt_feedback_draft');
+            toast.info('You have already submitted feedback. Here is your scratch card!');
+          }
+        }
+      } catch (error) {
+        console.error('Error checking existing submission:', error);
+      } finally {
+        setCheckingExisting(false);
+      }
+    };
+
+    checkExistingSubmission();
+  }, [userEmail]);
+
+  // Auto-save to localStorage (only if not already submitted)
+  useEffect(() => {
+    if (submitted || checkingExisting) return;
+    
     const saved = localStorage.getItem('slt_feedback_draft');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        setFormData(parsed);
-        toast.info('Draft restored');
+        // Restore section progress
+        if (parsed.currentSection && parsed.currentSection > 1) {
+          setCurrentSection(parsed.currentSection);
+        }
+        setFormData(parsed.formData || parsed);
+        toast.info('Draft restored - continue where you left off');
       } catch (e) {
         console.error('Failed to load draft:', e);
       }
     }
-  }, []);
+  }, [submitted, checkingExisting]);
 
   useEffect(() => {
+    if (submitted || checkingExisting) return;
+    
     if (Object.keys(formData).length > 0) {
-      localStorage.setItem('slt_feedback_draft', JSON.stringify(formData));
+      // Save both form data and current section
+      localStorage.setItem('slt_feedback_draft', JSON.stringify({
+        formData,
+        currentSection
+      }));
     }
-  }, [formData]);
+  }, [formData, currentSection, submitted, checkingExisting]);
 
   const updateField = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -193,6 +258,18 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
       setLoading(false);
     }
   };
+
+  // Show loading while checking for existing submission
+  if (checkingExisting) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-background dark:via-background dark:to-muted/30 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto text-indigo-600" />
+          <p className="text-lg text-muted-foreground">Checking your submission status...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (submitted && scratchCard) {
     return <ScratchCardComponent card={scratchCard} />;
