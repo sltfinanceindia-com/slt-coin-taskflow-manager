@@ -38,6 +38,21 @@ import OrganizationSettings from "./pages/admin/OrganizationSettings";
 
 const queryClient = new QueryClient();
 
+import FeedbackPage from './pages/Feedback';
+import FeedbackRewards from './pages/super-admin/FeedbackRewards';
+
+// In your Routes (make sure it's under super-admin protection):
+<Route path="/super-admin">
+  <Route path="dashboard" element={<SuperAdminDashboard />} />
+  <Route path="feedback-rewards" element={<FeedbackRewards />} />  {/* NEW */}
+  <Route path="organizations" element={<Organizations />} />
+  {/* other super admin routes */}
+</Route>
+
+// Public feedback form (anyone can access)
+<Route path="/feedback" element={<FeedbackPage />} />
+
+
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
