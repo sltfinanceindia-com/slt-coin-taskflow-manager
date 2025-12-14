@@ -1599,7 +1599,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
           <AlertDescription>
             <p className="font-semibold text-green-800 mb-2">🎁 Almost there!</p>
             <p className="text-sm text-green-700">
-              After submitting, you'll instantly receive a scratch card worth ₹10-₹100! 
+              After submitting, you'll instantly receive a scratch card worth ₹10-₹500! 
               Share with friends to claim your reward.
             </p>
           </AlertDescription>
