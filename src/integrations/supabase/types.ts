@@ -8071,7 +8071,9 @@ export type Database = {
         Returns: boolean
       }
       is_org_admin: { Args: { _org_id?: string }; Returns: boolean }
-      is_super_admin: { Args: never; Returns: boolean }
+      is_super_admin:
+        | { Args: never; Returns: boolean }
+        | { Args: { check_user_id: string }; Returns: boolean }
       mark_card_scratched: { Args: { p_card_id: string }; Returns: boolean }
       send_notification: {
         Args: {
