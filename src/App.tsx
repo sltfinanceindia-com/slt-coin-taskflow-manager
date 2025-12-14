@@ -41,17 +41,6 @@ const queryClient = new QueryClient();
 import FeedbackPage from './pages/Feedback';
 import FeedbackRewards from './pages/super-admin/FeedbackRewards';
 
-// In your Routes (make sure it's under super-admin protection):
-<Route path="/super-admin">
-  <Route path="dashboard" element={<SuperAdminDashboard />} />
-  <Route path="feedback-rewards" element={<FeedbackRewards />} />  {/* NEW */}
-  <Route path="organizations" element={<Organizations />} />
-  {/* other super admin routes */}
-</Route>
-
-// Public feedback form (anyone can access)
-<Route path="/feedback" element={<FeedbackPage />} />
-
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -119,6 +108,10 @@ function AppContent() {
           <Route path="/super-admin/analytics" element={<ProtectedRoute><SubscriptionAnalytics /></ProtectedRoute>} />
           <Route path="/super-admin/plans" element={<ProtectedRoute><PlansManagement /></ProtectedRoute>} />
           <Route path="/super-admin/settings" element={<ProtectedRoute><SuperAdminSettings /></ProtectedRoute>} />
+          <Route path="/super-admin/feedback-rewards" element={<ProtectedRoute><FeedbackRewards /></ProtectedRoute>} />
+          
+          {/* Public Routes */}
+          <Route path="/feedback" element={<FeedbackPage />} />
           
           {/* Admin Routes */}
           <Route path="/admin/settings" element={<ProtectedRoute><OrganizationSettings /></ProtectedRoute>} />
