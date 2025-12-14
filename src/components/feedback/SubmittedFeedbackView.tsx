@@ -61,22 +61,31 @@ export default function SubmittedFeedbackView({ feedbackData }: SubmittedFeedbac
   };
 
   const handleShare = async () => {
-    const shareData = {
-      title: 'SLT Work Hub - Amazing Work Management Platform',
-      text: 'I just submitted my feedback for SLT Work Hub - an amazing platform for task management, team communication, and workforce management. Check it out!',
-      url: window.location.origin,
-    };
+    const shareText = `🚀 I just submitted my feedback for SLT Work Hub - an amazing platform for task management, team communication, and workforce management!\n\nCheck it out: ${window.location.origin}`;
 
     try {
-      if (navigator.share) {
-        await navigator.share(shareData);
+      // Try native share API first (works on mobile)
+      if (navigator.share && navigator.canShare?.({ text: shareText })) {
+        await navigator.share({
+          title: 'SLT Work Hub - Amazing Work Management Platform',
+          text: shareText,
+        });
         toast.success('Thanks for sharing!');
       } else {
-        await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
-        toast.success('Link copied! Share with your friends.');
+        // Fallback to clipboard
+        await navigator.clipboard.writeText(shareText);
+        toast.success('Link copied to clipboard! Share with your friends.');
       }
-    } catch (error) {
-      console.error('Share error:', error);
+    } catch (error: any) {
+      // If share was cancelled or failed, try clipboard
+      if (error.name !== 'AbortError') {
+        try {
+          await navigator.clipboard.writeText(shareText);
+          toast.success('Link copied to clipboard! Share with your friends.');
+        } catch {
+          toast.error('Could not copy link. Please share manually.');
+        }
+      }
     }
   };
 
