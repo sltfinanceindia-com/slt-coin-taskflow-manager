@@ -194,7 +194,17 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         break;
       case 2:
         if (!formData.overall_satisfaction) newErrors.overall_satisfaction = 'Please rate your satisfaction';
-        if (formData.nps_score === undefined) newErrors.nps_score = 'Please provide NPS score';
+        if (formData.nps_score === undefined || formData.nps_score === null) newErrors.nps_score = 'Please provide NPS score';
+        break;
+      case 3:
+        if (!formData.signup_ease) newErrors.signup_ease = 'Please rate signup ease';
+        break;
+      case 5:
+        if (!formData.navigation_ease) newErrors.navigation_ease = 'Please rate navigation ease';
+        if (!formData.mobile_experience) newErrors.mobile_experience = 'Please rate mobile experience';
+        break;
+      case 11:
+        if (!formData.referral_source) newErrors.referral_source = 'Please select how you heard about us';
         break;
       case 12:
         if (!formData.email) newErrors.email = 'Email is required';
@@ -599,7 +609,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         <h3 className="text-xl font-semibold text-foreground">Onboarding & Setup</h3>
 
         <div className="space-y-2">
-          <Label>How easy was it to sign up and create your organization?</Label>
+          <Label>How easy was it to sign up and create your organization? *</Label>
           <div className="flex gap-2">
             {[1, 2, 3, 4, 5].map(rating => (
               <button
@@ -617,6 +627,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
             ))}
           </div>
           <p className="text-xs text-muted-foreground">1 = Very Difficult, 5 = Very Easy</p>
+          {errors.signup_ease && <p className="text-sm text-red-600">{errors.signup_ease}</p>}
         </div>
 
         <div className="space-y-2">
@@ -1089,7 +1100,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         <h3 className="text-xl font-semibold text-foreground">Usability & Design</h3>
 
         <div className="space-y-2">
-          <Label>How easy is it to navigate SLT Work Hub?</Label>
+          <Label>How easy is it to navigate SLT Work Hub? *</Label>
           <div className="flex gap-2">
             {[1, 2, 3, 4, 5].map(rating => (
               <button
@@ -1107,6 +1118,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
             ))}
           </div>
           <p className="text-xs text-muted-foreground">1 = Very Confusing, 5 = Very Intuitive</p>
+          {errors.navigation_ease && <p className="text-sm text-red-600">{errors.navigation_ease}</p>}
         </div>
 
         <div className="space-y-2">
@@ -1128,7 +1140,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         </div>
 
         <div className="space-y-2">
-          <Label>Mobile Experience (if you've used on phone/tablet)</Label>
+          <Label>Mobile Experience (if you've used on phone/tablet) *</Label>
           <div className="flex gap-2">
             {[1, 2, 3, 4, 5].map(rating => (
               <button
@@ -1152,7 +1164,8 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
               N/A
             </button>
           </div>
-          <p className="text-xs text-muted-foreground">1 = Very Poor, 5 = Excellent</p>
+          <p className="text-xs text-muted-foreground">1 = Very Poor, 5 = Excellent (or select N/A)</p>
+          {errors.mobile_experience && <p className="text-sm text-red-600">{errors.mobile_experience}</p>}
         </div>
 
         <div className="space-y-2">
@@ -1626,6 +1639,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
               </div>
             ))}
           </RadioGroup>
+          {errors.referral_source && <p className="text-sm text-red-600">{errors.referral_source}</p>}
         </div>
 
         {formData.referral_source === 'Friend or colleague referral' && (
