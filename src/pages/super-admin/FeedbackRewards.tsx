@@ -8,7 +8,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import { useIsSuperAdmin } from '@/hooks/useUserRole';
+import { useAuth } from '@/hooks/useAuth';
+import SuperAdminLayout from '@/components/super-admin/SuperAdminLayout';
 import { 
   TrendingUp, 
   Users, 
@@ -41,9 +44,8 @@ interface ScratchCardStats {
 }
 
 export default function FeedbackRewards() {
-  const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const { isSuperAdmin, isLoading: roleLoading } = useIsSuperAdmin();
+  const { loading: authLoading } = useAuth();
   
   const [pendingCards, setPendingCards] = useState<ScratchCard[]>([]);
   const [verifiedCards, setVerifiedCards] = useState<ScratchCard[]>([]);
@@ -54,48 +56,17 @@ export default function FeedbackRewards() {
   const [verificationNotes, setVerificationNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isDataLoading, setIsDataLoading] = useState(true);
   
   const [feedbackStats, setFeedbackStats] = useState<FeedbackStats | null>(null);
   const [scratchCardStats, setScratchCardStats] = useState<ScratchCardStats[]>([]);
 
-  // Check if user is super admin
+  // Fetch data when super admin is confirmed
   useEffect(() => {
-    checkSuperAdminAccess();
-  }, []);
-
-  const checkSuperAdminAccess = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast.error('Please login to access this page');
-        navigate('/login');
-        return;
-      }
-
-      // Check if user is super admin
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      if (error || profile?.role !== 'super_admin') {
-        toast.error('Access denied. Super admin only.');
-        navigate('/');
-        return;
-      }
-
-      setIsSuperAdmin(true);
-      await fetchAllData();
-    } catch (error: any) {
-      console.error('Access check error:', error);
-      toast.error('Access verification failed');
-      navigate('/');
-    } finally {
-      setIsLoading(false);
+    if (isSuperAdmin && !roleLoading) {
+      fetchAllData();
     }
-  };
+  }, [isSuperAdmin, roleLoading]);
 
   const fetchAllData = async () => {
     await Promise.all([
@@ -266,7 +237,7 @@ export default function FeedbackRewards() {
     window.URL.revokeObjectURL(url);
   };
 
-  if (isLoading) {
+  if (authLoading || roleLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -278,7 +249,7 @@ export default function FeedbackRewards() {
   }
 
   if (!isSuperAdmin) {
-    return null;
+    return <Navigate to="/dashboard" replace />;
   }
 
   const filteredPendingCards = pendingCards.filter(card =>
@@ -287,6 +258,7 @@ export default function FeedbackRewards() {
   );
 
   return (
+    <SuperAdminLayout>
     <div className="p-8 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8">
@@ -706,5 +678,6 @@ export default function FeedbackRewards() {
         </div>
       )}
     </div>
+    </SuperAdminLayout>
   );
 }
