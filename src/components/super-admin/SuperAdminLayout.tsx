@@ -11,7 +11,8 @@ import {
   X,
   CreditCard,
   BarChart3,
-  Package
+  Package,
+  Gift
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ const navItems = [
   { title: 'Dashboard', url: '/super-admin', icon: LayoutDashboard },
   { title: 'Organizations', url: '/super-admin/organizations', icon: Building2 },
   { title: 'All Users', url: '/super-admin/users', icon: Users },
+  { title: 'Feedback Rewards', url: '/super-admin/feedback-rewards', icon: Gift },
   { title: 'Billing', url: '/super-admin/billing', icon: CreditCard },
   { title: 'Analytics', url: '/super-admin/analytics', icon: BarChart3 },
   { title: 'Plans', url: '/super-admin/plans', icon: Package },

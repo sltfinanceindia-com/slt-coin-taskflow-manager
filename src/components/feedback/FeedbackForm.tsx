@@ -199,33 +199,33 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-background dark:via-background dark:to-muted/30 py-6 sm:py-12 px-3 sm:px-4">
       <div className="max-w-3xl mx-auto">
         <ProgressBar current={currentSection} total={TOTAL_SECTIONS} />
 
-        <Card className="mt-8 shadow-xl">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center text-indigo-700">
+        <Card className="mt-4 sm:mt-8 shadow-xl">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-lg sm:text-2xl font-bold text-center text-indigo-700 dark:text-indigo-400">
               SLT Work Hub Feedback Survey
             </CardTitle>
-            <CardDescription className="text-center">
+            <CardDescription className="text-center text-xs sm:text-sm">
               Section {currentSection} of {TOTAL_SECTIONS} • Estimated time: ~15 minutes
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 pt-0 sm:pt-0">
             {renderSection()}
 
-            <div className="flex justify-between pt-6 border-t gap-4">
+            <div className="flex flex-col sm:flex-row justify-between pt-4 sm:pt-6 border-t gap-3 sm:gap-4">
               {currentSection > 1 && (
-                <Button variant="outline" onClick={prevSection} className="flex-1 max-w-[200px]">
+                <Button variant="outline" onClick={prevSection} className="w-full sm:flex-1 sm:max-w-[200px] order-2 sm:order-1">
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Back
                 </Button>
               )}
               
               {currentSection < TOTAL_SECTIONS ? (
-                <Button onClick={nextSection} className="flex-1 max-w-[200px] ml-auto">
+                <Button onClick={nextSection} className="w-full sm:flex-1 sm:max-w-[200px] sm:ml-auto order-1 sm:order-2">
                   Next
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
@@ -233,7 +233,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
                 <Button 
                   onClick={submitFeedback} 
                   disabled={loading}
-                  className="flex-1 max-w-[200px] ml-auto bg-green-600 hover:bg-green-700"
+                  className="w-full sm:flex-1 sm:max-w-[200px] sm:ml-auto bg-green-600 hover:bg-green-700 order-1 sm:order-2"
                 >
                   {loading ? (
                     <>
@@ -242,7 +242,8 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
                     </>
                   ) : (
                     <>
-                      Submit & Claim Reward
+                      <span className="hidden sm:inline">Submit & Claim Reward</span>
+                      <span className="sm:hidden">Submit</span>
                       <Send className="h-4 w-4 ml-2" />
                     </>
                   )}
