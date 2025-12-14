@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Phone, Video, FileText, MessageCircle, Calendar, Mail } from 'lucide-react';
+import { FileText, MessageCircle, Calendar, Mail } from 'lucide-react';
 import type { TeamMember } from '@/hooks/useCommunication';
 import { usePresence } from '@/hooks/usePresence';
 import { formatDistanceToNow } from 'date-fns';
@@ -99,30 +99,6 @@ export default function UserProfileModal({
             <h3 className="text-sm font-medium text-muted-foreground">Quick Actions</h3>
             
             <div className="grid grid-cols-2 gap-2">
-              <Button
-                variant="outline"
-                className="flex items-center gap-2"
-                onClick={() => {
-                  onStartCall?.('voice');
-                  onClose();
-                }}
-              >
-                <Phone className="h-4 w-4" />
-                Call
-              </Button>
-              
-              <Button
-                variant="outline"
-                className="flex items-center gap-2"
-                onClick={() => {
-                  onStartCall?.('video');
-                  onClose();
-                }}
-              >
-                <Video className="h-4 w-4" />
-                Video
-              </Button>
-              
               <Button
                 variant="outline"
                 className="flex items-center gap-2"

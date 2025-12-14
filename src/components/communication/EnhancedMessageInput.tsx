@@ -57,11 +57,17 @@ export default function EnhancedMessageInput({
     
     setIsSending(true);
     try {
-      // Send message first to get message ID
-      const messageId = await onSendMessage(message.trim(), [], undefined);
+      // Always send message content (or empty string if only attachments)
+      const messageContent = message.trim() || (attachments.length > 0 ? '[Attachment]' : '');
       
-      // Upload attachments if any
+      // Send message first to get message ID
+      const messageId = await onSendMessage(messageContent, [], undefined);
+      
+      console.log('[MessageInput] Message sent, ID:', messageId);
+      
+      // Upload attachments if any and messageId exists
       if (attachments.length > 0 && messageId) {
+        console.log('[MessageInput] Uploading', attachments.length, 'attachments for message:', messageId);
         for (const attachment of attachments) {
           setAttachments(prev => 
             prev.map(att => 
@@ -71,16 +77,25 @@ export default function EnhancedMessageInput({
             )
           );
           
-          await uploadFile(attachment.file, messageId);
-          
-          setAttachments(prev => 
-            prev.map(att => 
-              att.id === attachment.id 
-                ? { ...att, uploading: false, progress: 100 }
-                : att
-            )
-          );
+          try {
+            const result = await uploadFile(attachment.file, messageId);
+            console.log('[MessageInput] Upload result:', result);
+            
+            setAttachments(prev => 
+              prev.map(att => 
+                att.id === attachment.id 
+                  ? { ...att, uploading: false, progress: 100 }
+                  : att
+              )
+            );
+          } catch (uploadError) {
+            console.error('[MessageInput] Upload failed:', uploadError);
+            toast.error(`Failed to upload ${attachment.name}`);
+          }
         }
+      } else if (attachments.length > 0 && !messageId) {
+        console.error('[MessageInput] No message ID returned, cannot upload attachments');
+        toast.error('Failed to send message with attachments');
       }
       
       setMessage('');
@@ -88,7 +103,7 @@ export default function EnhancedMessageInput({
       setShowEmojiPicker(false);
       inputRef.current?.focus();
     } catch (error) {
-      console.error('Failed to send message:', error);
+      console.error('[MessageInput] Failed to send message:', error);
       toast.error('Failed to send message');
     } finally {
       setIsSending(false);

@@ -232,7 +232,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
   return (
     <Sidebar
       className={cn(
-        "transition-all duration-300 ease-in-out border-r border-sidebar-border shadow-sm",
+        "transition-all duration-300 ease-in-out border-r border-sidebar-border shadow-sm hidden md:flex",
         collapsed ? "w-16" : "w-64"
       )}
       collapsible="icon"
