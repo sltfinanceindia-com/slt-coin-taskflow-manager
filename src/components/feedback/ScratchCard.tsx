@@ -4,8 +4,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import ShareModal from './ShareModal';
 import confetti from 'canvas-confetti';
+import { MessageCircle, Share2, CheckCircle } from 'lucide-react';
 
 interface ScratchCardProps {
   card: ScratchCardType;
@@ -14,10 +16,24 @@ interface ScratchCardProps {
 export default function ScratchCard({ card }: ScratchCardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isScratched, setIsScratched] = useState(false);
+  // Initialize scratched state from card data
+  const [isScratched, setIsScratched] = useState(card.is_scratched || false);
   const [isScratching, setIsScratching] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [canvasSize, setCanvasSize] = useState({ width: 400, height: 250 });
+
+  const WHATSAPP_NUMBER = '919948397386';
+
+  const openWhatsApp = () => {
+    const message = encodeURIComponent(
+      `Hi! I've completed the SLT Work Hub feedback survey.\n\n` +
+      `🎫 Card Value: ₹${card.card_value}\n` +
+      `📧 Email: ${card.user_email}\n` +
+      `👤 Name: ${card.user_name}\n\n` +
+      `I've shared with friends and attached my screenshots for verification.`
+    );
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
+  };
 
   // Initialize canvas with proper sizing
   useEffect(() => {
@@ -248,30 +264,55 @@ export default function ScratchCard({ card }: ScratchCardProps) {
 
           {isScratched && (
             <div className="space-y-4 text-center">
+              {/* Card Status Badge */}
+              {card.is_scratched && (
+                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  Already Revealed
+                </Badge>
+              )}
+
               {card.card_value > 0 ? (
                 <>
-                  <h3 className="text-lg font-semibold">💰 To Claim Your Reward:</h3>
-                  <ol className="text-left space-y-2 max-w-md mx-auto text-sm">
-                    <li>1️⃣ Share SLT Work Hub with 3-5 friends</li>
-                    <li>2️⃣ Take screenshots of your shares</li>
-                    <li>3️⃣ Write a genuine review on Google/Social</li>
-                    <li>4️⃣ Send ALL screenshots to WhatsApp:</li>
+                  <h3 className="text-lg font-semibold">💰 To Claim Your ₹{card.card_value} Reward:</h3>
+                  <ol className="text-left space-y-2 max-w-md mx-auto text-sm bg-muted/50 p-4 rounded-lg">
+                    <li className="flex items-start gap-2">
+                      <span className="text-lg">1️⃣</span>
+                      <span>Share SLT Work Hub with 2+ friends</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-lg">2️⃣</span>
+                      <span>Take screenshots of your shares</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-lg">3️⃣</span>
+                      <span>Send screenshots to WhatsApp below</span>
+                    </li>
                   </ol>
-                  <div className="bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-lg p-4 inline-block">
-                    <p className="text-xl font-bold text-green-700 dark:text-green-400">
-                      📱 +91 9948397386
-                    </p>
+                  
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <Button 
+                      onClick={() => setShowShareModal(true)}
+                      size="lg"
+                      className="bg-indigo-600 hover:bg-indigo-700"
+                    >
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Share with Friends
+                    </Button>
+                    
+                    <Button 
+                      onClick={openWhatsApp}
+                      size="lg"
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                      Send to WhatsApp
+                    </Button>
                   </div>
+                  
                   <p className="text-xs text-muted-foreground">
                     ⚠️ Valid for 7 days only! Verified within 48 hours.
                   </p>
-                  <Button 
-                    onClick={() => setShowShareModal(true)}
-                    size="lg"
-                    className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
-                  >
-                    Share SLT Work Hub Now
-                  </Button>
                 </>
               ) : (
                 <>
@@ -279,13 +320,26 @@ export default function ScratchCard({ card }: ScratchCardProps) {
                   <p className="text-sm text-muted-foreground">
                     Share with 5+ friends and get a GUARANTEED ₹50 card!
                   </p>
-                  <Button 
-                    onClick={() => setShowShareModal(true)}
-                    size="lg"
-                    className="bg-indigo-600 hover:bg-indigo-700 w-full sm:w-auto"
-                  >
-                    Share Now
-                  </Button>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <Button 
+                      onClick={() => setShowShareModal(true)}
+                      size="lg"
+                      className="bg-indigo-600 hover:bg-indigo-700"
+                    >
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Share Now
+                    </Button>
+                    
+                    <Button 
+                      onClick={openWhatsApp}
+                      size="lg"
+                      variant="outline"
+                      className="border-green-600 text-green-600 hover:bg-green-50"
+                    >
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                      Contact on WhatsApp
+                    </Button>
+                  </div>
                 </>
               )}
             </div>
