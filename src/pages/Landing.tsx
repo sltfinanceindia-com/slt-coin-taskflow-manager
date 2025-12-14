@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Coins, TrendingUp, TrendingDown, Shield, Users, BarChart3, MessageSquare, BookOpen, Award, ArrowRight, CheckCircle, Menu, Building2, Gift, Sparkles } from 'lucide-react';
+import { TrendingUp, TrendingDown, Shield, Users, BarChart3, MessageSquare, BookOpen, Award, ArrowRight, CheckCircle, Menu, Building2, Gift, Sparkles, IndianRupee, Coins } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -262,6 +262,63 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Feedback Rewards Section - Moved to top */}
+      <section className="py-12 sm:py-20 bg-gradient-to-br from-purple-50 via-background to-indigo-50 dark:from-purple-950/20 dark:via-background dark:to-indigo-950/20" aria-labelledby="feedback-heading">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
+            <Badge className="mb-4 bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200 border-purple-200 dark:border-purple-700 text-xs sm:text-sm">
+              <Gift className="mr-1 h-3 w-3" aria-hidden="true" />
+              Limited Time Offer
+            </Badge>
+            <h2 id="feedback-heading" className="text-xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-4 leading-tight">
+              Share Your Feedback & Win
+              <span className="block text-purple-600 dark:text-purple-400">Exciting Rewards!</span>
+            </h2>
+            <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-8 leading-relaxed px-4">
+              Complete our feedback survey and get a chance to win scratch cards with exclusive rewards including cash prizes, discounts, and special prizes!
+            </p>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8 max-w-3xl mx-auto">
+              <Card className="bg-card border-purple-200 dark:border-purple-800">
+                <CardContent className="p-4 sm:p-6 text-center">
+                  <div className="h-12 w-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-3">
+                    <IndianRupee className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  </div>
+                  <h3 className="font-semibold text-foreground mb-1 text-sm sm:text-base">Cash Rewards</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Win up to ₹500</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-card border-purple-200 dark:border-purple-800">
+                <CardContent className="p-4 sm:p-6 text-center">
+                  <div className="h-12 w-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-3">
+                    <Award className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <h3 className="font-semibold text-foreground mb-1 text-sm sm:text-base">Discounts</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Get exclusive discounts</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-card border-purple-200 dark:border-purple-800 sm:col-span-1">
+                <CardContent className="p-4 sm:p-6 text-center">
+                  <div className="h-12 w-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mx-auto mb-3">
+                    <Sparkles className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <h3 className="font-semibold text-foreground mb-1 text-sm sm:text-base">Special Prizes</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Mystery rewards await</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Link to="/signup">
+              <Button size="lg" className="bg-purple-600 hover:bg-purple-700 h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base transition-all duration-200 hover-grow focus-ring">
+                <Gift className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                Sign Up & Participate
+                <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="py-12 sm:py-20 bg-background" aria-labelledby="features-heading">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -380,62 +437,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Feedback Rewards Section */}
-      <section className="py-12 sm:py-20 bg-gradient-to-br from-purple-50 via-background to-indigo-50 dark:from-purple-950/20 dark:via-background dark:to-indigo-950/20" aria-labelledby="feedback-heading">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <Badge className="mb-4 bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200 border-purple-200 dark:border-purple-700 text-xs sm:text-sm">
-              <Gift className="mr-1 h-3 w-3" aria-hidden="true" />
-              Limited Time Offer
-            </Badge>
-            <h2 id="feedback-heading" className="text-xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-4 leading-tight">
-              Share Your Feedback & Win
-              <span className="block text-purple-600 dark:text-purple-400">Exciting Rewards!</span>
-            </h2>
-            <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-8 leading-relaxed px-4">
-              Complete our feedback survey and get a chance to win scratch cards with exclusive rewards including SLT coins, discounts, and special prizes!
-            </p>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8 max-w-3xl mx-auto">
-              <Card className="bg-card border-purple-200 dark:border-purple-800">
-                <CardContent className="p-4 sm:p-6 text-center">
-                  <div className="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto mb-3">
-                    <Coins className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-                  </div>
-                  <h3 className="font-semibold text-foreground mb-1 text-sm sm:text-base">SLT Coins</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Win up to 1000 coins</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-card border-purple-200 dark:border-purple-800">
-                <CardContent className="p-4 sm:p-6 text-center">
-                  <div className="h-12 w-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-3">
-                    <Award className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <h3 className="font-semibold text-foreground mb-1 text-sm sm:text-base">Discounts</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Get exclusive discounts</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-card border-purple-200 dark:border-purple-800 sm:col-span-1">
-                <CardContent className="p-4 sm:p-6 text-center">
-                  <div className="h-12 w-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mx-auto mb-3">
-                    <Sparkles className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <h3 className="font-semibold text-foreground mb-1 text-sm sm:text-base">Special Prizes</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Mystery rewards await</p>
-                </CardContent>
-              </Card>
-            </div>
-
-            <Link to="/signup">
-              <Button size="lg" className="bg-purple-600 hover:bg-purple-700 h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base transition-all duration-200 hover-grow focus-ring">
-                <Gift className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                Sign Up & Participate
-                <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
 
       {/* CTA Section */}
       <section className="py-12 sm:py-20 bg-muted/50" aria-labelledby="cta-heading">
