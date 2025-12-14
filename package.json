@@ -54,6 +54,7 @@
     "dompurify": "^3.2.6",
     "embla-carousel-react": "^8.3.0",
     "emoji-picker-react": "^4.13.3",
+    "framer-motion": "^12.23.26",
     "html2canvas": "^1.4.1",
     "input-otp": "^1.2.4",
     "jspdf": "^3.0.1",
