@@ -262,7 +262,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Feedback Rewards Section - Moved to top */}
+      {/* Feedback Rewards Section */}
       <section className="py-12 sm:py-20 bg-gradient-to-br from-purple-50 via-background to-indigo-50 dark:from-purple-950/20 dark:via-background dark:to-indigo-950/20" aria-labelledby="feedback-heading">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
@@ -278,6 +278,45 @@ export default function Landing() {
               Complete our feedback survey and get a chance to win scratch cards with exclusive rewards including cash prizes, discounts, and special prizes!
             </p>
             
+            {/* How It Works - 4 Step Process */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-foreground mb-6">How It Works</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+                <div className="relative">
+                  <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mx-auto mb-3 border-2 border-purple-300 dark:border-purple-700">
+                    <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <div className="absolute top-6 left-[60%] w-[80%] h-0.5 bg-purple-200 dark:bg-purple-800 hidden sm:block" />
+                  <p className="font-semibold text-foreground text-sm mb-1">1. Sign Up</p>
+                  <p className="text-xs text-muted-foreground">Create your free account</p>
+                </div>
+                <div className="relative">
+                  <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mx-auto mb-3 border-2 border-blue-300 dark:border-blue-700">
+                    <MessageSquare className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div className="absolute top-6 left-[60%] w-[80%] h-0.5 bg-blue-200 dark:bg-blue-800 hidden sm:block" />
+                  <p className="font-semibold text-foreground text-sm mb-1">2. Complete Survey</p>
+                  <p className="text-xs text-muted-foreground">Share honest feedback (~15 min)</p>
+                </div>
+                <div className="relative">
+                  <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto mb-3 border-2 border-amber-300 dark:border-amber-700">
+                    <Gift className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <div className="absolute top-6 left-[60%] w-[80%] h-0.5 bg-amber-200 dark:bg-amber-800 hidden sm:block" />
+                  <p className="font-semibold text-foreground text-sm mb-1">3. Scratch Card</p>
+                  <p className="text-xs text-muted-foreground">Get instant reward card</p>
+                </div>
+                <div>
+                  <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-3 border-2 border-green-300 dark:border-green-700">
+                    <IndianRupee className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  </div>
+                  <p className="font-semibold text-foreground text-sm mb-1">4. Claim Prize</p>
+                  <p className="text-xs text-muted-foreground">Win ₹10 - ₹500 cash</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Reward Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8 max-w-3xl mx-auto">
               <Card className="bg-card border-purple-200 dark:border-purple-800">
                 <CardContent className="p-4 sm:p-6 text-center">
