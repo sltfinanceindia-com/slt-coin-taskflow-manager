@@ -8,6 +8,7 @@ import { Coins, TrendingUp, TrendingDown, Shield, Users, BarChart3, MessageSquar
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { BottomNavigation } from '@/components/BottomNavigation';
 
 export default function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -439,6 +440,12 @@ export default function Landing() {
           </div>
         </div>
       </footer>
+
+      {/* Bottom Navigation for Mobile */}
+      <BottomNavigation variant="public" />
+      
+      {/* Add padding at bottom for mobile nav */}
+      <div className="h-16 md:hidden" />
     </div>
   );
 }

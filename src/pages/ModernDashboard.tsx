@@ -48,6 +48,7 @@ import { ChangeRequestHub } from '@/components/changes/ChangeRequestHub';
 import { ScoringHub } from '@/components/scoring/ScoringHub';
 import { AuditHub } from '@/components/audit/AuditHub';
 import { LifecycleHub } from '@/components/lifecycle/LifecycleHub';
+import { BottomNavigation } from '@/components/BottomNavigation';
 
 import { Coins, Clock, CheckCircle, Plus, Crown, ArrowRight, Shield, Building2 } from 'lucide-react';
 
@@ -331,7 +332,7 @@ export default function ModernDashboard() {
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           <AppHeader />
           
-          <main id="main-content" className="flex-1 overflow-auto" role="main">
+          <main id="main-content" className="flex-1 overflow-auto pb-20 md:pb-0" role="main">
             {/* Full-screen communication on mobile */}
             {activeTab === 'communication' && isMobile ? (
               <div className="h-full">
@@ -368,6 +369,9 @@ export default function ModernDashboard() {
             )}
           </main>
         </div>
+        
+        {/* Bottom Navigation for Mobile */}
+        <BottomNavigation variant="private" activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
     </SidebarProvider>
   );
