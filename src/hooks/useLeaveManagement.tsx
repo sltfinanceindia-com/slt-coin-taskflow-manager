@@ -96,10 +96,13 @@ export const useLeaveManagement = () => {
       const { data, error } = await supabase
         .from('leave_balances')
         .select(`*, leave_type:leave_types(*), employee:profiles!inner(full_name, email, organization_id)`)
-        .eq('employee.organization_id', profile.organization_id)
         .eq('year', currentYear);
       if (error) throw error;
-      return data as LeaveBalance[];
+      // Filter by employee's organization client-side
+      const filtered = (data || []).filter((balance: any) => 
+        balance.employee?.organization_id === profile.organization_id
+      );
+      return filtered as LeaveBalance[];
     },
     enabled: profile?.role === 'admin' && !!profile?.organization_id,
   });
@@ -128,10 +131,13 @@ export const useLeaveManagement = () => {
       const { data, error } = await supabase
         .from('leave_requests')
         .select(`*, leave_type:leave_types(*), employee:profiles!leave_requests_employee_id_fkey!inner(full_name, email, avatar_url, organization_id), reviewer:profiles!leave_requests_reviewed_by_fkey(full_name)`)
-        .eq('employee.organization_id', profile.organization_id)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data as LeaveRequest[];
+      // Filter by employee's organization client-side
+      const filtered = (data || []).filter((request: any) => 
+        request.employee?.organization_id === profile.organization_id
+      );
+      return filtered as LeaveRequest[];
     },
     enabled: profile?.role === 'admin' && !!profile?.organization_id,
   });
