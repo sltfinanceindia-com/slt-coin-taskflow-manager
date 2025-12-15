@@ -60,13 +60,13 @@ export function ChangeRequestHub() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:inline-grid">
-          <TabsTrigger value="requests" className="gap-2">
-            <List className="h-4 w-4" />
-            <span className="hidden sm:inline">Requests</span>
+          <TabsTrigger value="requests" className="gap-1.5 px-2 sm:px-3">
+            <List className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm">Requests</span>
           </TabsTrigger>
-          <TabsTrigger value="log" className="gap-2">
-            <History className="h-4 w-4" />
-            <span className="hidden sm:inline">Change Log</span>
+          <TabsTrigger value="log" className="gap-1.5 px-2 sm:px-3">
+            <History className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm">Log</span>
           </TabsTrigger>
         </TabsList>
 

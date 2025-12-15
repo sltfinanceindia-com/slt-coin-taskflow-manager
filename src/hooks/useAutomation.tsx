@@ -81,14 +81,17 @@ export const useAutomation = () => {
   const queryClient = useQueryClient();
 
   const { data: rules = [], isLoading } = useQuery({
-    queryKey: ['automation-rules'],
+    queryKey: ['automation-rules', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
+      
       const { data, error } = await supabase
         .from('automation_rules')
         .select(`
           *,
           creator:profiles!automation_rules_created_by_fkey(full_name)
         `)
+        .eq('organization_id', profile.organization_id)
         .order('priority', { ascending: true })
         .order('created_at', { ascending: false });
 
@@ -99,7 +102,7 @@ export const useAutomation = () => {
         actions: (item.actions || []) as unknown as AutomationAction[],
       })) as AutomationRule[];
     },
-    enabled: !!profile,
+    enabled: !!profile?.organization_id,
   });
 
   const createRule = useMutation({
@@ -209,14 +212,17 @@ export const useAutomationLogs = (ruleId?: string) => {
   const { profile } = useAuth();
 
   const { data: logs = [], isLoading } = useQuery({
-    queryKey: ['automation-logs', ruleId],
+    queryKey: ['automation-logs', ruleId, profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
+      
       let query = supabase
         .from('automation_logs')
         .select(`
           *,
           rule:automation_rules(name)
         `)
+        .eq('organization_id', profile.organization_id)
         .order('created_at', { ascending: false })
         .limit(100);
 
@@ -228,7 +234,7 @@ export const useAutomationLogs = (ruleId?: string) => {
       if (error) throw error;
       return data as AutomationLog[];
     },
-    enabled: !!profile,
+    enabled: !!profile?.organization_id,
   });
 
   return {

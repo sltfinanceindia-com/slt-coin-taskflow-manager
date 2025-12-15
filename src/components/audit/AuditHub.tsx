@@ -76,22 +76,22 @@ export function AuditHub() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:w-auto lg:inline-grid">
-          <TabsTrigger value="generator" className="gap-2">
-            <Package className="h-4 w-4" />
-            <span className="hidden sm:inline">Generator</span>
+        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+          <TabsTrigger value="generator" className="gap-1.5 px-2 sm:px-3">
+            <Package className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm truncate">Gen</span>
           </TabsTrigger>
-          <TabsTrigger value="templates" className="gap-2">
-            <FileCheck className="h-4 w-4" />
-            <span className="hidden sm:inline">Templates</span>
+          <TabsTrigger value="templates" className="gap-1.5 px-2 sm:px-3">
+            <FileCheck className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm truncate">Tmpl</span>
           </TabsTrigger>
-          <TabsTrigger value="checklist" className="gap-2">
-            <ClipboardCheck className="h-4 w-4" />
-            <span className="hidden sm:inline">Checklist</span>
+          <TabsTrigger value="checklist" className="gap-1.5 px-2 sm:px-3">
+            <ClipboardCheck className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm truncate">Check</span>
           </TabsTrigger>
-          <TabsTrigger value="export" className="gap-2">
-            <Download className="h-4 w-4" />
-            <span className="hidden sm:inline">Export</span>
+          <TabsTrigger value="export" className="gap-1.5 px-2 sm:px-3">
+            <Download className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm truncate">Export</span>
           </TabsTrigger>
         </TabsList>
 

@@ -84,14 +84,14 @@ export const ApprovalCenter: React.FC = () => {
       </div>
 
       <Tabs defaultValue="pending" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="pending" className="gap-2">
-            <Clock className="h-4 w-4" />
-            My Pending ({myPendingApprovals.length})
+        <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:inline-grid">
+          <TabsTrigger value="pending" className="gap-1.5 px-2 sm:px-3">
+            <Clock className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm">Pending ({myPendingApprovals.length})</span>
           </TabsTrigger>
-          <TabsTrigger value="all" className="gap-2">
-            <FileCheck className="h-4 w-4" />
-            All Requests
+          <TabsTrigger value="all" className="gap-1.5 px-2 sm:px-3">
+            <FileCheck className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm">All</span>
           </TabsTrigger>
         </TabsList>
 

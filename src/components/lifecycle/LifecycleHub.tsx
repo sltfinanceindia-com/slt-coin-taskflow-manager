@@ -19,22 +19,22 @@ export function LifecycleHub() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:w-auto lg:inline-grid">
-          <TabsTrigger value="onboarding" className="gap-2">
-            <UserPlus className="h-4 w-4" />
-            <span className="hidden sm:inline">Onboarding</span>
+        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+          <TabsTrigger value="onboarding" className="gap-1.5 px-2 sm:px-3">
+            <UserPlus className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm truncate">Onboard</span>
           </TabsTrigger>
-          <TabsTrigger value="offboarding" className="gap-2">
-            <UserMinus className="h-4 w-4" />
-            <span className="hidden sm:inline">Offboarding</span>
+          <TabsTrigger value="offboarding" className="gap-1.5 px-2 sm:px-3">
+            <UserMinus className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm truncate">Offboard</span>
           </TabsTrigger>
-          <TabsTrigger value="playbooks" className="gap-2">
-            <BookOpen className="h-4 w-4" />
-            <span className="hidden sm:inline">Playbooks</span>
+          <TabsTrigger value="playbooks" className="gap-1.5 px-2 sm:px-3">
+            <BookOpen className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm truncate">Books</span>
           </TabsTrigger>
-          <TabsTrigger value="assets" className="gap-2">
-            <Laptop className="h-4 w-4" />
-            <span className="hidden sm:inline">Assets</span>
+          <TabsTrigger value="assets" className="gap-1.5 px-2 sm:px-3">
+            <Laptop className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm truncate">Assets</span>
           </TabsTrigger>
         </TabsList>
 

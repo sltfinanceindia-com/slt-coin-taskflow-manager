@@ -22,26 +22,26 @@ export function CapacityHub() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 lg:w-auto lg:inline-grid">
-          <TabsTrigger value="workload" className="gap-2">
-            <Users className="h-4 w-4" />
-            <span className="hidden sm:inline">Workload</span>
+        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+          <TabsTrigger value="workload" className="gap-1.5 px-2 sm:px-3">
+            <Users className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm truncate">Load</span>
           </TabsTrigger>
-          <TabsTrigger value="skills" className="gap-2">
-            <GraduationCap className="h-4 w-4" />
-            <span className="hidden sm:inline">Skills</span>
+          <TabsTrigger value="skills" className="gap-1.5 px-2 sm:px-3">
+            <GraduationCap className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm truncate">Skills</span>
           </TabsTrigger>
-          <TabsTrigger value="forecast" className="gap-2">
-            <TrendingUp className="h-4 w-4" />
-            <span className="hidden sm:inline">Forecast</span>
+          <TabsTrigger value="forecast" className="gap-1.5 px-2 sm:px-3">
+            <TrendingUp className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm truncate">Cast</span>
           </TabsTrigger>
-          <TabsTrigger value="scenarios" className="gap-2">
-            <FlaskConical className="h-4 w-4" />
-            <span className="hidden sm:inline">Scenarios</span>
+          <TabsTrigger value="scenarios" className="gap-1.5 px-2 sm:px-3">
+            <FlaskConical className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm truncate">What-If</span>
           </TabsTrigger>
-          <TabsTrigger value="alerts" className="gap-2">
-            <AlertTriangle className="h-4 w-4" />
-            <span className="hidden sm:inline">Alerts</span>
+          <TabsTrigger value="alerts" className="gap-1.5 px-2 sm:px-3">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm truncate">Alerts</span>
           </TabsTrigger>
         </TabsList>
 

@@ -25,26 +25,26 @@ export function ProjectBaselineHub() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 lg:w-auto lg:inline-grid">
-          <TabsTrigger value="baselines" className="gap-2">
-            <GitBranch className="h-4 w-4" />
-            <span className="hidden sm:inline">Baselines</span>
+        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+          <TabsTrigger value="baselines" className="gap-1.5 px-2 sm:px-3">
+            <GitBranch className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm truncate">Base</span>
           </TabsTrigger>
-          <TabsTrigger value="variance" className="gap-2">
-            <TrendingUp className="h-4 w-4" />
-            <span className="hidden sm:inline">Variance</span>
+          <TabsTrigger value="variance" className="gap-1.5 px-2 sm:px-3">
+            <TrendingUp className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm truncate">Var</span>
           </TabsTrigger>
-          <TabsTrigger value="earned-value" className="gap-2">
-            <Activity className="h-4 w-4" />
-            <span className="hidden sm:inline">Earned Value</span>
+          <TabsTrigger value="earned-value" className="gap-1.5 px-2 sm:px-3">
+            <Activity className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm truncate">EV</span>
           </TabsTrigger>
-          <TabsTrigger value="health" className="gap-2">
-            <Heart className="h-4 w-4" />
-            <span className="hidden sm:inline">Health</span>
+          <TabsTrigger value="health" className="gap-1.5 px-2 sm:px-3">
+            <Heart className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm truncate">Health</span>
           </TabsTrigger>
-          <TabsTrigger value="comparison" className="gap-2">
-            <BarChart3 className="h-4 w-4" />
-            <span className="hidden sm:inline">Compare</span>
+          <TabsTrigger value="comparison" className="gap-1.5 px-2 sm:px-3">
+            <BarChart3 className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm truncate">Comp</span>
           </TabsTrigger>
         </TabsList>
 

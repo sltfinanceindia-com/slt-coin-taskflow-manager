@@ -7,9 +7,23 @@ import {
   LayoutDashboard,
   CheckSquare,
   MessageSquare,
-  User
+  User,
+  MoreHorizontal,
+  Calendar,
+  FolderKanban,
+  Clock,
+  TrendingUp,
+  GraduationCap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from '@/components/ui/dropdown-menu';
 
 interface NavItem {
   icon: React.ElementType;
@@ -26,12 +40,21 @@ const publicNavItems: NavItem[] = [
   { icon: LogIn, label: 'Sign In', path: '/auth' }
 ];
 
-// After Login Navigation Items
+// After Login Navigation Items - Main items shown in bottom nav
 const privateNavItems: NavItem[] = [
-  { icon: LayoutDashboard, label: 'Overview', tab: 'overview' },
+  { icon: LayoutDashboard, label: 'Home', tab: 'overview' },
   { icon: CheckSquare, label: 'Tasks', tab: 'tasks' },
   { icon: MessageSquare, label: 'Chat', tab: 'communication' },
   { icon: User, label: 'Profile', path: '/profile' }
+];
+
+// More menu items for quick access to other features
+const moreMenuItems: NavItem[] = [
+  { icon: FolderKanban, label: 'Projects', tab: 'projects' },
+  { icon: Calendar, label: 'Calendar', tab: 'calendar' },
+  { icon: Clock, label: 'Time Logs', tab: 'time-logs' },
+  { icon: TrendingUp, label: 'Analytics', tab: 'analytics' },
+  { icon: GraduationCap, label: 'Training', tab: 'training' },
 ];
 
 interface BottomNavigationProps {
@@ -43,6 +66,7 @@ interface BottomNavigationProps {
 export function BottomNavigation({ variant, activeTab, onTabChange }: BottomNavigationProps) {
   const location = useLocation();
   const items = variant === 'public' ? publicNavItems : privateNavItems;
+  const isPrivate = variant === 'private';
 
   return (
     <nav 
@@ -64,14 +88,14 @@ export function BottomNavigation({ variant, activeTab, onTabChange }: BottomNavi
                 key={item.label}
                 to={item.path}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[64px]",
+                  "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[56px]",
                   isActive 
                     ? "text-primary" 
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 <Icon className={cn("h-5 w-5", isActive && "text-primary")} />
-                <span className="text-xs font-medium">{item.label}</span>
+                <span className="text-[10px] font-medium">{item.label}</span>
               </NavLink>
             );
           }
@@ -81,17 +105,59 @@ export function BottomNavigation({ variant, activeTab, onTabChange }: BottomNavi
               key={item.label}
               onClick={() => item.tab && onTabChange?.(item.tab)}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[64px]",
+                "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[56px]",
                 isActive 
                   ? "text-primary" 
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
               <Icon className={cn("h-5 w-5", isActive && "text-primary")} />
-              <span className="text-xs font-medium">{item.label}</span>
+              <span className="text-[10px] font-medium">{item.label}</span>
             </button>
           );
         })}
+        
+        {/* More menu for private navigation */}
+        {isPrivate && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className={cn(
+                  "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[56px]",
+                  moreMenuItems.some(item => item.tab === activeTab)
+                    ? "text-primary" 
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <MoreHorizontal className="h-5 w-5" />
+                <span className="text-[10px] font-medium">More</span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" side="top" className="w-48 mb-2">
+              <DropdownMenuLabel className="text-xs text-muted-foreground">
+                Quick Access
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {moreMenuItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = item.tab === activeTab;
+                return (
+                  <DropdownMenuItem
+                    key={item.label}
+                    onClick={() => item.tab && onTabChange?.(item.tab)}
+                    className={cn(
+                      "gap-2 cursor-pointer",
+                      isActive && "bg-primary/10 text-primary"
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{item.label}</span>
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
     </nav>
   );

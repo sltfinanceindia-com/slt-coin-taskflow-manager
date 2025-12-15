@@ -38,9 +38,12 @@ export const useTemplates = () => {
   const projectTemplatesQuery = useQuery({
     queryKey: ['project-templates', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
+      
       const { data, error } = await supabase
         .from('project_templates')
         .select('*')
+        .eq('organization_id', profile.organization_id)
         .eq('is_active', true)
         .order('name');
       
@@ -53,9 +56,12 @@ export const useTemplates = () => {
   const taskTemplatesQuery = useQuery({
     queryKey: ['task-templates', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
+      
       const { data, error } = await supabase
         .from('task_templates')
         .select('*')
+        .eq('organization_id', profile.organization_id)
         .eq('is_active', true)
         .order('name');
       

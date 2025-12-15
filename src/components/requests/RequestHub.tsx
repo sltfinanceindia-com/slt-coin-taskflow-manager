@@ -21,24 +21,24 @@ export function RequestHub() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 lg:w-auto lg:inline-grid">
-          <TabsTrigger value="submit" className="gap-2">
-            <FileText className="h-4 w-4" />
-            <span className="hidden sm:inline">Submit</span>
+        <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-4' : 'grid-cols-1'} lg:w-auto lg:inline-grid`}>
+          <TabsTrigger value="submit" className="gap-1.5 px-2 sm:px-3">
+            <FileText className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm truncate">Submit</span>
           </TabsTrigger>
           {isAdmin && (
             <>
-              <TabsTrigger value="triage" className="gap-2">
-                <Inbox className="h-4 w-4" />
-                <span className="hidden sm:inline">Triage</span>
+              <TabsTrigger value="triage" className="gap-1.5 px-2 sm:px-3">
+                <Inbox className="h-4 w-4 shrink-0" />
+                <span className="text-xs sm:text-sm truncate">Triage</span>
               </TabsTrigger>
-              <TabsTrigger value="sla" className="gap-2">
-                <BarChart3 className="h-4 w-4" />
-                <span className="hidden sm:inline">SLA</span>
+              <TabsTrigger value="sla" className="gap-1.5 px-2 sm:px-3">
+                <BarChart3 className="h-4 w-4 shrink-0" />
+                <span className="text-xs sm:text-sm truncate">SLA</span>
               </TabsTrigger>
-              <TabsTrigger value="routing" className="gap-2">
-                <Settings2 className="h-4 w-4" />
-                <span className="hidden sm:inline">Routing</span>
+              <TabsTrigger value="routing" className="gap-1.5 px-2 sm:px-3">
+                <Settings2 className="h-4 w-4 shrink-0" />
+                <span className="text-xs sm:text-sm truncate">Rules</span>
               </TabsTrigger>
             </>
           )}

@@ -65,8 +65,10 @@ export const useWorkHealth = () => {
 
   // Fetch all risk assessments
   const { data: riskAssessments = [], isLoading: loadingAssessments } = useQuery({
-    queryKey: ['risk-assessments'],
+    queryKey: ['risk-assessments', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
+      
       const { data, error } = await supabase
         .from('risk_assessments')
         .select(`
@@ -74,18 +76,21 @@ export const useWorkHealth = () => {
           project:projects(name),
           assessor:profiles!risk_assessments_assessor_id_fkey(full_name)
         `)
+        .eq('organization_id', profile.organization_id)
         .order('assessment_date', { ascending: false });
 
       if (error) throw error;
       return data as RiskAssessment[];
     },
-    enabled: !!profile,
+    enabled: !!profile?.organization_id,
   });
 
   // Fetch early warnings
   const { data: earlyWarnings = [], isLoading: loadingWarnings, refetch: refetchWarnings } = useQuery({
-    queryKey: ['early-warnings'],
+    queryKey: ['early-warnings', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
+      
       const { data, error } = await supabase
         .from('early_warnings')
         .select(`
@@ -93,13 +98,14 @@ export const useWorkHealth = () => {
           project:projects(name),
           task:tasks(title)
         `)
+        .eq('organization_id', profile.organization_id)
         .eq('is_resolved', false)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data as EarlyWarning[];
     },
-    enabled: !!profile,
+    enabled: !!profile?.organization_id,
   });
 
   // Create risk assessment

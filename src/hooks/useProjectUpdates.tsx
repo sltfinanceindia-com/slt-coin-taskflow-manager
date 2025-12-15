@@ -45,8 +45,10 @@ export const useProjectUpdates = (projectId?: string, taskId?: string) => {
   const queryClient = useQueryClient();
 
   const { data: updates = [], isLoading, refetch } = useQuery({
-    queryKey: ['project-updates', projectId, taskId],
+    queryKey: ['project-updates', projectId, taskId, profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
+      
       let query = supabase
         .from('project_updates')
         .select(`
@@ -55,6 +57,7 @@ export const useProjectUpdates = (projectId?: string, taskId?: string) => {
           project:projects(name),
           task:tasks(title)
         `)
+        .eq('organization_id', profile.organization_id)
         .order('created_at', { ascending: false })
         .limit(50);
 
@@ -69,7 +72,7 @@ export const useProjectUpdates = (projectId?: string, taskId?: string) => {
       if (error) throw error;
       return data as ProjectUpdate[];
     },
-    enabled: !!profile,
+    enabled: !!profile?.organization_id,
   });
 
   const createUpdate = useMutation({

@@ -145,17 +145,21 @@ export const WorkHealthDashboard = () => {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="warnings">
-            Early Warnings
+        <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
+          <TabsTrigger value="overview" className="gap-1.5 px-2 sm:px-3">
+            <span className="text-xs sm:text-sm">Overview</span>
+          </TabsTrigger>
+          <TabsTrigger value="warnings" className="gap-1.5 px-2 sm:px-3">
+            <span className="text-xs sm:text-sm">Warnings</span>
             {summaryStats.unacknowledged > 0 && (
-              <Badge variant="destructive" className="ml-2 h-5 w-5 p-0 text-xs">
+              <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 text-xs">
                 {summaryStats.unacknowledged}
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="assessments">Risk Assessments</TabsTrigger>
+          <TabsTrigger value="assessments" className="gap-1.5 px-2 sm:px-3">
+            <span className="text-xs sm:text-sm">Assess</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
