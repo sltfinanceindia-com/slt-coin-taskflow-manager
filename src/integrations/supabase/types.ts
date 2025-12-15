@@ -7963,7 +7963,7 @@ export type Database = {
         }[]
       }
       get_channel_display_name: {
-        Args: { channel_id: string; current_user_id: string }
+        Args: { p_channel_id: string; p_user_id: string }
         Returns: string
       }
       get_chat_partner_name: {
@@ -8062,7 +8062,7 @@ export type Database = {
       }
       get_user_profile_id: { Args: never; Returns: string }
       increment_user_coins: {
-        Args: { coin_amount: number; user_profile_id: string }
+        Args: { p_coins: number; p_user_id: string }
         Returns: undefined
       }
       is_any_admin: { Args: { p_user_id?: string }; Returns: boolean }
