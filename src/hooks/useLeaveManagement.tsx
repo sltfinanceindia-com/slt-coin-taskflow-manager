@@ -87,7 +87,7 @@ export const useLeaveManagement = () => {
     enabled: !!profile?.id,
   });
 
-  // Fetch all leave balances (admin)
+  // Fetch all leave balances (admin) - filter by employee's organization
   const { data: allBalances = [], isLoading: loadingAllBalances } = useQuery({
     queryKey: ['all-leave-balances', profile?.organization_id],
     queryFn: async () => {
@@ -95,8 +95,8 @@ export const useLeaveManagement = () => {
       const currentYear = new Date().getFullYear();
       const { data, error } = await supabase
         .from('leave_balances')
-        .select(`*, leave_type:leave_types(*), employee:profiles(full_name, email)`)
-        .eq('organization_id', profile.organization_id)
+        .select(`*, leave_type:leave_types(*), employee:profiles!inner(full_name, email, organization_id)`)
+        .eq('employee.organization_id', profile.organization_id)
         .eq('year', currentYear);
       if (error) throw error;
       return data as LeaveBalance[];
@@ -120,15 +120,15 @@ export const useLeaveManagement = () => {
     enabled: !!profile?.id,
   });
 
-  // Fetch all leave requests (admin)
+  // Fetch all leave requests (admin) - filter by employee's organization
   const { data: allRequests = [], isLoading: loadingAllRequests } = useQuery({
     queryKey: ['all-leave-requests', profile?.organization_id],
     queryFn: async () => {
       if (!profile?.organization_id) return [];
       const { data, error } = await supabase
         .from('leave_requests')
-        .select(`*, leave_type:leave_types(*), employee:profiles!leave_requests_employee_id_fkey(full_name, email, avatar_url), reviewer:profiles!leave_requests_reviewed_by_fkey(full_name)`)
-        .eq('organization_id', profile.organization_id)
+        .select(`*, leave_type:leave_types(*), employee:profiles!leave_requests_employee_id_fkey!inner(full_name, email, avatar_url, organization_id), reviewer:profiles!leave_requests_reviewed_by_fkey(full_name)`)
+        .eq('employee.organization_id', profile.organization_id)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data as LeaveRequest[];
