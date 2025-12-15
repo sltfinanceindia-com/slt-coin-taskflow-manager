@@ -47,8 +47,8 @@ export function useVerifyTask() {
 
         // Update user's total coins
         const { error: updateError } = await supabase.rpc('increment_user_coins', {
-          user_profile_id: taskData.assigned_to,
-          coin_amount: coinValue
+          p_user_id: taskData.assigned_to,
+          p_coins: coinValue
         });
 
         if (updateError) {
