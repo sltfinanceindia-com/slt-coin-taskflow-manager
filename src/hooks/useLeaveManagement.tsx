@@ -55,16 +55,19 @@ export const useLeaveManagement = () => {
 
   // Fetch leave types
   const { data: leaveTypes = [], isLoading: loadingTypes } = useQuery({
-    queryKey: ['leave-types'],
+    queryKey: ['leave-types', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
       const { data, error } = await supabase
         .from('leave_types')
         .select('*')
+        .eq('organization_id', profile.organization_id)
         .eq('is_active', true)
         .order('name');
       if (error) throw error;
       return data as LeaveType[];
     },
+    enabled: !!profile?.organization_id,
   });
 
   // Fetch user's leave balances
@@ -86,17 +89,19 @@ export const useLeaveManagement = () => {
 
   // Fetch all leave balances (admin)
   const { data: allBalances = [], isLoading: loadingAllBalances } = useQuery({
-    queryKey: ['all-leave-balances'],
+    queryKey: ['all-leave-balances', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
       const currentYear = new Date().getFullYear();
       const { data, error } = await supabase
         .from('leave_balances')
         .select(`*, leave_type:leave_types(*), employee:profiles(full_name, email)`)
+        .eq('organization_id', profile.organization_id)
         .eq('year', currentYear);
       if (error) throw error;
       return data as LeaveBalance[];
     },
-    enabled: profile?.role === 'admin',
+    enabled: profile?.role === 'admin' && !!profile?.organization_id,
   });
 
   // Fetch user's leave requests
@@ -117,16 +122,18 @@ export const useLeaveManagement = () => {
 
   // Fetch all leave requests (admin)
   const { data: allRequests = [], isLoading: loadingAllRequests } = useQuery({
-    queryKey: ['all-leave-requests'],
+    queryKey: ['all-leave-requests', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
       const { data, error } = await supabase
         .from('leave_requests')
         .select(`*, leave_type:leave_types(*), employee:profiles!leave_requests_employee_id_fkey(full_name, email, avatar_url), reviewer:profiles!leave_requests_reviewed_by_fkey(full_name)`)
+        .eq('organization_id', profile.organization_id)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data as LeaveRequest[];
     },
-    enabled: profile?.role === 'admin',
+    enabled: profile?.role === 'admin' && !!profile?.organization_id,
   });
 
   // Create leave request

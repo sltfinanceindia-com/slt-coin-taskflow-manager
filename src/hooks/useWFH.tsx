@@ -32,17 +32,20 @@ export const useWFH = () => {
 
   // Fetch WFH policy
   const { data: policy } = useQuery({
-    queryKey: ['wfh-policy'],
+    queryKey: ['wfh-policy', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return null;
       const { data, error } = await supabase
         .from('wfh_policies')
         .select('*')
+        .eq('organization_id', profile.organization_id)
         .eq('is_active', true)
         .limit(1)
         .maybeSingle();
       if (error) throw error;
       return data as WFHPolicy | null;
     },
+    enabled: !!profile?.organization_id,
   });
 
   // Fetch user's WFH requests
@@ -63,16 +66,18 @@ export const useWFH = () => {
 
   // Fetch all WFH requests (admin)
   const { data: allRequests = [], isLoading: loadingAllRequests } = useQuery({
-    queryKey: ['all-wfh-requests'],
+    queryKey: ['all-wfh-requests', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
       const { data, error } = await supabase
         .from('wfh_requests')
         .select(`*, employee:profiles!wfh_requests_employee_id_fkey(full_name, email, avatar_url), reviewer:profiles!wfh_requests_reviewed_by_fkey(full_name)`)
+        .eq('organization_id', profile.organization_id)
         .order('request_date', { ascending: false });
       if (error) throw error;
       return data as WFHRequest[];
     },
-    enabled: profile?.role === 'admin',
+    enabled: profile?.role === 'admin' && !!profile?.organization_id,
   });
 
   // Get user's WFH count for current month
