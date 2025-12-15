@@ -133,6 +133,11 @@ export function EnhancedDashboardWidgets() {
     },
   ];
 
+  const navigateToTab = (tab: string, filter?: string) => {
+    const event = new CustomEvent('navigate-to-tab', { detail: { tab, filter } });
+    window.dispatchEvent(event);
+  };
+
   const quickActions = [
     { 
       title: 'Tasks Due Today', 
@@ -142,19 +147,22 @@ export function EnhancedDashboardWidgets() {
         return new Date(task.end_date).toDateString() === today;
       }).length,
       icon: AlertCircle,
-      color: 'text-warning'
+      color: 'text-warning',
+      onClick: () => navigateToTab('tasks', 'due-today')
     },
     { 
       title: 'High Priority', 
       count: myTasks.filter(task => task.priority === 'high' || task.priority === 'urgent').length,
       icon: TrendingUp,
-      color: 'text-destructive'
+      color: 'text-destructive',
+      onClick: () => navigateToTab('tasks', 'high-priority')
     },
     { 
       title: 'Verified Tasks', 
       count: myTasks.filter(task => task.status === 'verified').length,
       icon: CheckCircle,
-      color: 'text-success'
+      color: 'text-success',
+      onClick: () => navigateToTab('tasks', 'verified')
     },
   ];
 
@@ -196,7 +204,11 @@ export function EnhancedDashboardWidgets() {
       {/* Quick Action Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {quickActions.map((action, index) => (
-          <Card key={index} className="hover-scale">
+          <Card 
+            key={index} 
+            className="hover-scale cursor-pointer transition-all hover:ring-2 hover:ring-primary/20"
+            onClick={action.onClick}
+          >
             <CardContent className="p-3 sm:p-4">
               <div className="flex items-center gap-2 sm:gap-3">
                 <action.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${action.color} shrink-0`} />
@@ -204,6 +216,7 @@ export function EnhancedDashboardWidgets() {
                   <p className="text-xs sm:text-sm font-medium truncate">{action.title}</p>
                   <p className={`text-base sm:text-lg font-bold ${action.color}`}>{action.count}</p>
                 </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
               </div>
             </CardContent>
           </Card>

@@ -13,7 +13,8 @@ import {
   BarChart3,
   Activity,
   Monitor,
-  Users
+  Users,
+  ArrowRight
 } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
@@ -145,6 +146,11 @@ export function EnhancedOverview() {
     },
   ];
 
+  const navigateToTab = (tab: string, filter?: string) => {
+    const event = new CustomEvent('navigate-to-tab', { detail: { tab, filter } });
+    window.dispatchEvent(event);
+  };
+
   const quickActions = [
     { 
       title: 'Due Today', 
@@ -154,19 +160,22 @@ export function EnhancedOverview() {
         return new Date(task.end_date).toDateString() === today;
       }).length,
       icon: AlertCircle,
-      color: 'text-warning'
+      color: 'text-warning',
+      onClick: () => navigateToTab('tasks', 'due-today')
     },
     { 
       title: 'High Priority', 
       count: myTasks.filter(task => task.priority === 'high' || task.priority === 'urgent').length,
       icon: TrendingUp,
-      color: 'text-destructive'
+      color: 'text-destructive',
+      onClick: () => navigateToTab('tasks', 'high-priority')
     },
     { 
       title: 'Verified', 
       count: myTasks.filter(task => task.status === 'verified').length,
       icon: CheckCircle,
-      color: 'text-success'
+      color: 'text-success',
+      onClick: () => navigateToTab('tasks', 'verified')
     },
   ];
 
@@ -213,14 +222,20 @@ export function EnhancedOverview() {
       {/* Quick Action Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6" role="group" aria-label="Quick actions">
         {quickActions.map((action, index) => (
-          <Card key={index} className="hover-scale min-h-[100px] animate-fade-in" style={{ animationDelay: `${(index + 4) * 50}ms` }}>
+          <Card 
+            key={index} 
+            className="hover-scale min-h-[100px] animate-fade-in cursor-pointer transition-all hover:ring-2 hover:ring-primary/20" 
+            style={{ animationDelay: `${(index + 4) * 50}ms` }}
+            onClick={action.onClick}
+          >
             <CardContent className="p-4 flex items-center justify-center h-full">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 w-full">
                 <action.icon className={`h-5 w-5 ${action.color}`} aria-hidden="true" />
-                <div>
+                <div className="flex-1">
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{action.title}</p>
                   <p className={`text-lg font-bold ${action.color}`}>{action.count}</p>
                 </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
               </div>
             </CardContent>
           </Card>
