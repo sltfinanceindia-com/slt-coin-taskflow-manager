@@ -9,16 +9,17 @@ export function useFeedbackCycles() {
   const queryClient = useQueryClient();
 
   const { data: cycles = [], isLoading } = useQuery({
-    queryKey: ['feedback-cycles'],
+    queryKey: ['feedback-cycles', profile?.organization_id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('feedback_cycles')
         .select('*, created_by_profile:profiles!feedback_cycles_created_by_fkey(full_name)')
+        .eq('organization_id', profile?.organization_id)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
     },
-    enabled: !!profile,
+    enabled: !!profile?.organization_id,
   });
 
   const createCycle = useMutation({
@@ -63,7 +64,7 @@ export function useFeedbackRequests(cycleId?: string) {
   const queryClient = useQueryClient();
 
   const { data: requests = [], isLoading } = useQuery({
-    queryKey: ['feedback-requests', cycleId],
+    queryKey: ['feedback-requests', cycleId, profile?.organization_id],
     queryFn: async () => {
       let query = supabase
         .from('feedback_requests')
@@ -73,6 +74,7 @@ export function useFeedbackRequests(cycleId?: string) {
           reviewer:profiles!feedback_requests_reviewer_id_fkey(id, full_name, avatar_url),
           cycle:feedback_cycles(name)
         `)
+        .eq('organization_id', profile?.organization_id)
         .order('created_at', { ascending: false });
 
       if (cycleId) query = query.eq('cycle_id', cycleId);
@@ -81,7 +83,7 @@ export function useFeedbackRequests(cycleId?: string) {
       if (error) throw error;
       return data;
     },
-    enabled: !!profile,
+    enabled: !!profile?.organization_id,
   });
 
   const createRequest = useMutation({
@@ -126,7 +128,7 @@ export function useObjectives() {
   const queryClient = useQueryClient();
 
   const { data: objectives = [], isLoading } = useQuery({
-    queryKey: ['objectives'],
+    queryKey: ['objectives', profile?.organization_id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('objectives')
@@ -135,11 +137,12 @@ export function useObjectives() {
           owner:profiles!objectives_owner_id_fkey(id, full_name, avatar_url),
           key_results(*)
         `)
+        .eq('organization_id', profile?.organization_id)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
     },
-    enabled: !!profile,
+    enabled: !!profile?.organization_id,
   });
 
   const createObjective = useMutation({
@@ -200,11 +203,12 @@ export function useKeyResults(objectiveId?: string) {
   const queryClient = useQueryClient();
 
   const { data: keyResults = [], isLoading } = useQuery({
-    queryKey: ['key-results', objectiveId],
+    queryKey: ['key-results', objectiveId, profile?.organization_id],
     queryFn: async () => {
       let query = supabase
         .from('key_results')
         .select('*')
+        .eq('organization_id', profile?.organization_id)
         .order('created_at', { ascending: true });
 
       if (objectiveId) query = query.eq('objective_id', objectiveId);
@@ -213,7 +217,7 @@ export function useKeyResults(objectiveId?: string) {
       if (error) throw error;
       return data;
     },
-    enabled: !!profile,
+    enabled: !!profile?.organization_id,
   });
 
   const createKeyResult = useMutation({
@@ -261,7 +265,7 @@ export function useOneOnOneMeetings() {
   const queryClient = useQueryClient();
 
   const { data: meetings = [], isLoading } = useQuery({
-    queryKey: ['one-on-one-meetings'],
+    queryKey: ['one-on-one-meetings', profile?.organization_id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('one_on_one_meetings')
@@ -270,11 +274,12 @@ export function useOneOnOneMeetings() {
           manager:profiles!one_on_one_meetings_manager_id_fkey(id, full_name, avatar_url),
           employee:profiles!one_on_one_meetings_employee_id_fkey(id, full_name, avatar_url)
         `)
+        .eq('organization_id', profile?.organization_id)
         .order('scheduled_at', { ascending: false });
       if (error) throw error;
       return data;
     },
-    enabled: !!profile,
+    enabled: !!profile?.organization_id,
   });
 
   const createMeeting = useMutation({
@@ -430,7 +435,7 @@ export function usePerformanceImprovementPlans() {
   const queryClient = useQueryClient();
 
   const { data: pips = [], isLoading } = useQuery({
-    queryKey: ['pips'],
+    queryKey: ['pips', profile?.organization_id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('performance_improvement_plans')
@@ -440,11 +445,12 @@ export function usePerformanceImprovementPlans() {
           manager:profiles!performance_improvement_plans_manager_id_fkey(id, full_name, avatar_url),
           pip_goals(*)
         `)
+        .eq('organization_id', profile?.organization_id)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
     },
-    enabled: !!profile,
+    enabled: !!profile?.organization_id,
   });
 
   const createPIP = useMutation({

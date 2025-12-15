@@ -8071,6 +8071,8 @@ export type Database = {
         Returns: boolean
       }
       is_org_admin: { Args: { _org_id?: string }; Returns: boolean }
+      is_same_org_admin: { Args: { target_org_id: string }; Returns: boolean }
+      is_same_org_user: { Args: { target_org_id: string }; Returns: boolean }
       is_super_admin:
         | { Args: never; Returns: boolean }
         | { Args: { check_user_id: string }; Returns: boolean }

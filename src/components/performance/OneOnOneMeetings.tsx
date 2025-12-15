@@ -28,16 +28,18 @@ export function OneOnOneMeetings() {
   const [activeTab, setActiveTab] = useState('upcoming');
 
   const { data: employees = [] } = useQuery({
-    queryKey: ['employees-list'],
+    queryKey: ['employees-list', profile?.organization_id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, avatar_url')
         .eq('is_active', true)
+        .eq('organization_id', profile?.organization_id)
         .order('full_name');
       if (error) throw error;
       return data;
     },
+    enabled: !!profile?.organization_id,
   });
 
   const [formData, setFormData] = useState({
