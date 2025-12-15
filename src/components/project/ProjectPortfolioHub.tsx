@@ -84,21 +84,21 @@ export const ProjectPortfolioHub: React.FC = () => {
           className="w-full"
         >
           <TabsList className="grid w-full max-w-md grid-cols-4">
-            <TabsTrigger value="overview" className="gap-1.5">
-              <BarChart3 className="h-4 w-4 hidden sm:block" />
-              <span>Overview</span>
+            <TabsTrigger value="overview" className="gap-1.5 px-2 sm:px-3">
+              <BarChart3 className="h-4 w-4 shrink-0" />
+              <span className="text-xs sm:text-sm truncate">View</span>
             </TabsTrigger>
-            <TabsTrigger value="portfolios" className="gap-1.5">
-              <Briefcase className="h-4 w-4 hidden sm:block" />
-              <span>Portfolios</span>
+            <TabsTrigger value="portfolios" className="gap-1.5 px-2 sm:px-3">
+              <Briefcase className="h-4 w-4 shrink-0" />
+              <span className="text-xs sm:text-sm truncate">Folios</span>
             </TabsTrigger>
-            <TabsTrigger value="programs" className="gap-1.5">
-              <Layers className="h-4 w-4 hidden sm:block" />
-              <span>Programs</span>
+            <TabsTrigger value="programs" className="gap-1.5 px-2 sm:px-3">
+              <Layers className="h-4 w-4 shrink-0" />
+              <span className="text-xs sm:text-sm truncate">Progs</span>
             </TabsTrigger>
-            <TabsTrigger value="projects" className="gap-1.5">
-              <FolderOpen className="h-4 w-4 hidden sm:block" />
-              <span>Projects</span>
+            <TabsTrigger value="projects" className="gap-1.5 px-2 sm:px-3">
+              <FolderOpen className="h-4 w-4 shrink-0" />
+              <span className="text-xs sm:text-sm truncate">Projs</span>
             </TabsTrigger>
           </TabsList>
 

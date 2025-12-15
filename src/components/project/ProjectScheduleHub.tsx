@@ -39,20 +39,17 @@ export function ProjectScheduleHub() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
-          <TabsTrigger value="gantt" className="gap-2">
-            <Calendar className="h-4 w-4" />
-            <span className="hidden sm:inline">Gantt Chart</span>
-            <span className="sm:hidden">Gantt</span>
+          <TabsTrigger value="gantt" className="gap-1.5 px-2 sm:px-3">
+            <Calendar className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm">Gantt</span>
           </TabsTrigger>
-          <TabsTrigger value="dependencies" className="gap-2">
-            <Link2 className="h-4 w-4" />
-            <span className="hidden sm:inline">Dependencies</span>
-            <span className="sm:hidden">Links</span>
+          <TabsTrigger value="dependencies" className="gap-1.5 px-2 sm:px-3">
+            <Link2 className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm">Deps</span>
           </TabsTrigger>
-          <TabsTrigger value="critical-path" className="gap-2">
-            <Route className="h-4 w-4" />
-            <span className="hidden sm:inline">Critical Path</span>
-            <span className="sm:hidden">Critical</span>
+          <TabsTrigger value="critical-path" className="gap-1.5 px-2 sm:px-3">
+            <Route className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm">Critical</span>
           </TabsTrigger>
         </TabsList>
 
