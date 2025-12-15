@@ -209,16 +209,49 @@ export default function FeedbackRewards() {
 
   const fetchFeedbackStats = async () => {
     const { data, error } = await supabase
-      .from('feedback_analytics')
-      .select('*')
-      .single();
+      .from('feedback_responses')
+      .select('response_data');
 
     if (error) {
       console.error('Error fetching feedback stats:', error);
       return;
     }
 
-    setFeedbackStats(data);
+    if (!data || data.length === 0) {
+      setFeedbackStats({
+        total_responses: 0,
+        avg_satisfaction: 0,
+        avg_nps: 0,
+        would_pay_count: 0,
+        unique_referral_sources: 0,
+        referred_users: 0
+      });
+      return;
+    }
+
+    // Calculate stats from raw data
+    const satisfactionScores = data
+      .map(r => (r.response_data as Record<string, unknown>)?.satisfaction)
+      .filter((s): s is number => typeof s === 'number');
+    const npsScores = data
+      .map(r => (r.response_data as Record<string, unknown>)?.nps)
+      .filter((s): s is number => typeof s === 'number');
+    const referralSources = new Set(
+      data.map(r => (r.response_data as Record<string, unknown>)?.referral_source).filter(Boolean)
+    );
+
+    setFeedbackStats({
+      total_responses: data.length,
+      avg_satisfaction: satisfactionScores.length > 0 
+        ? satisfactionScores.reduce((a, b) => a + b, 0) / satisfactionScores.length 
+        : 0,
+      avg_nps: npsScores.length > 0 
+        ? npsScores.reduce((a, b) => a + b, 0) / npsScores.length 
+        : 0,
+      would_pay_count: data.filter(r => (r.response_data as Record<string, unknown>)?.would_pay === true).length,
+      unique_referral_sources: referralSources.size,
+      referred_users: data.filter(r => (r.response_data as Record<string, unknown>)?.referred_by).length
+    });
   };
 
   const fetchScratchCardStats = async () => {
