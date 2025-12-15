@@ -23,14 +23,30 @@ export const useChatUsers = () => {
   const [loading, setLoading] = useState(true);
   const [currentUserStatus, setCurrentUserStatus] = useState<string>('offline');
 
-  // Fetch all users from profiles table (including all interns/admins)
+  // Fetch all users from profiles table (including all interns/admins) - filtered by organization
   const fetchChatUsers = async () => {
+    if (!user) return;
+    
     try {
-      // Get all active profiles (including admins and interns)
+      // Get current user's profile to get organization_id
+      const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('organization_id')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (!currentProfile?.organization_id) {
+        console.error('No organization found for current user');
+        setLoading(false);
+        return;
+      }
+      
+      // Get all active profiles in the same organization
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
         .eq('is_active', true)
+        .eq('organization_id', currentProfile.organization_id)
         .order('full_name');
 
       if (profilesError) throw profilesError;
