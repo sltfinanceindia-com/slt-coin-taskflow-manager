@@ -7844,12 +7844,9 @@ export type Database = {
     Views: {
       feedback_analytics: {
         Row: {
-          avg_nps: number | null
-          avg_satisfaction: number | null
-          referred_users: number | null
+          avg_rating: number | null
+          response_date: string | null
           total_responses: number | null
-          unique_referral_sources: number | null
-          would_pay_count: number | null
         }
         Relationships: []
       }
@@ -7858,6 +7855,7 @@ export type Database = {
           card_type: Database["public"]["Enums"]["card_type_enum"] | null
           paid_value: number | null
           pending_count: number | null
+          redeemed_value: number | null
           scratched_count: number | null
           total_issued: number | null
           total_value: number | null
