@@ -117,7 +117,7 @@ const adminNavGroups = [
       { title: "Audit Packs", url: "audit", icon: FileBox },
       { title: "Lifecycle", url: "lifecycle", icon: Users2 },
       { title: "Coins", url: "coins", icon: Coins },
-      { title: "Interns", url: "interns", icon: Users },
+      { title: "Employees", url: "interns", icon: Users },
       { title: "Analytics", url: "analytics", icon: BarChart3 },
     ]
   },

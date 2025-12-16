@@ -12,8 +12,9 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Users, Plus, Coins, Trash, Eye, UserCheck, UserX, AlertTriangle, Crown } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from '@/hooks/use-toast';
 import { InternDetailView } from '@/components/InternDetailView';
@@ -50,7 +51,7 @@ export function InternManagement() {
   const { profile } = useAuth();
   const { organization, userCount } = useOrganization();
   
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<InternFormData>({
+  const { register, handleSubmit, reset, control, formState: { errors } } = useForm<InternFormData>({
     resolver: zodResolver(internFormSchema),
     defaultValues: {
       email: '',
@@ -58,6 +59,7 @@ export function InternManagement() {
       full_name: '',
       department: '',
       employee_id: '',
+      role: 'employee',
     }
   });
 
@@ -103,7 +105,7 @@ export function InternManagement() {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
             full_name: formData.full_name,
-            role: 'intern',
+            role: formData.role,
             department: formData.department,
             employee_id: formData.employee_id,
             organization_id: profile?.organization_id,
@@ -265,6 +267,26 @@ export function InternManagement() {
                 {errors.password && (
                   <p className="text-sm text-destructive mt-1">{errors.password.message}</p>
                 )}
+              </div>
+
+              <div>
+                <Label htmlFor="role">Role</Label>
+                <Controller
+                  name="role"
+                  control={control}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="employee">Employee</SelectItem>
+                        <SelectItem value="intern">Intern</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                <p className="text-xs text-muted-foreground mt-1">This will be shown in their profile.</p>
               </div>
 
               <div>
