@@ -155,7 +155,7 @@ export function useCommunication() {
         id: profileData.id,
         full_name: profileData.full_name || 'Unknown',
         email: profileData.email || '',
-        role: profileData.role || 'intern',
+        role: profileData.role || 'employee',
         avatar_url: profileData.avatar_url,
         department: profileData.department,
         organization_id: profileData.organization_id,

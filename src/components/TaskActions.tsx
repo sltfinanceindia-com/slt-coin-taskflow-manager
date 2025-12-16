@@ -42,7 +42,7 @@ export function TaskActions({ task, onUpdateStatus, onVerifyTask }: TaskActionsP
 
   return (
     <div className="space-y-4">
-      {/* Intern Actions */}
+      {/* Employee Actions */}
       {isAssignedToMe && task.status === 'assigned' && (
         <Button 
           onClick={handleStartTask} 

@@ -157,7 +157,7 @@ export default function ModernDashboard() {
                 <h3 className="text-xl sm:text-2xl font-bold">Time Logs</h3>
                 <p className="text-muted-foreground text-sm">Track your working hours across tasks</p>
               </div>
-              {role === 'intern' && (
+              {(role === 'intern' || role === 'employee') && (
                 <div className="flex-shrink-0">
                   <TimeLogDialog onLogTime={logTime} isLogging={isLogging} />
                 </div>
@@ -218,7 +218,7 @@ export default function ModernDashboard() {
         return isAdmin ? <InternManagement /> : null;
       
       case 'my-coins':
-        return role === 'intern' ? <MyCoins /> : null;
+        return (role === 'intern' || role === 'employee') ? <MyCoins /> : null;
       
       case 'analytics':
         return <AnalyticsPage />;
@@ -310,7 +310,6 @@ export default function ModernDashboard() {
         return isAdmin ? <LifecycleHub /> : null;
       
       case 'app-feedback':
-      case 'feedback':
         return <FeedbackForm userEmail={profile?.email} userName={profile?.full_name} />;
       
       default:

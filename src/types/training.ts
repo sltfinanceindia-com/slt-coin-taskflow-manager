@@ -34,7 +34,7 @@ export interface Profile {
   user_id: string;
   full_name: string;
   email: string;
-  role: 'admin' | 'intern';
+  role: 'admin' | 'employee' | 'intern';
   department?: string;
   employee_id?: string;
   avatar_url?: string;
