@@ -243,6 +243,9 @@ export const useLeaveManagement = () => {
   // Initialize leave balances for an employee
   const initializeBalances = useMutation({
     mutationFn: async (employeeId: string) => {
+      if (!profile?.organization_id) throw new Error('No organization');
+      if (leaveTypes.length === 0) throw new Error('No leave types configured. Please add leave types first.');
+      
       const currentYear = new Date().getFullYear();
       const balances = leaveTypes.map(type => ({
         employee_id: employeeId,
@@ -252,6 +255,7 @@ export const useLeaveManagement = () => {
         used_days: 0,
         pending_days: 0,
         carried_forward: 0,
+        organization_id: profile.organization_id,
       }));
 
       const { error } = await supabase
@@ -263,7 +267,7 @@ export const useLeaveManagement = () => {
       queryClient.invalidateQueries({ queryKey: ['all-leave-balances'] });
       toast.success('Leave balances initialized');
     },
-    onError: (error) => toast.error(error.message),
+    onError: (error: Error) => toast.error(error.message),
   });
 
   return {

@@ -45,6 +45,9 @@ const departmentSchema = z
   .optional()
   .or(z.literal(''));
 
+// Role schema for team members
+const roleSchema = z.enum(['employee', 'intern']).default('employee');
+
 // Signup schema for new team members
 export const internFormSchema = z.object({
   email: emailSchema,
@@ -52,6 +55,7 @@ export const internFormSchema = z.object({
   full_name: nameSchema,
   department: departmentSchema,
   employee_id: employeeIdSchema,
+  role: roleSchema,
 });
 
 export type InternFormData = z.infer<typeof internFormSchema>;

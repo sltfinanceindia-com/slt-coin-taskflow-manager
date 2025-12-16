@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Coins, User, Calendar, Edit, MessageSquare } from 'lucide-react';
+import { Coins, User, Calendar, Edit } from 'lucide-react';
 import { Task } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -25,137 +25,119 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
   const { profile } = useAuth();
   const { isAdmin } = useUserRole();
 
-  const isAssignedToMe = task.assigned_to === profile?.id;
-
   const getStatusColor = (status: Task['status']) => {
     switch (status) {
-      case 'assigned': return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'in_progress': return 'bg-yellow-50 text-yellow-700 border-yellow-200';
-      case 'completed': return 'bg-purple-50 text-purple-700 border-purple-200';
-      case 'verified': return 'bg-green-50 text-green-700 border-green-200';
-      case 'rejected': return 'bg-red-50 text-red-700 border-red-200';
+      case 'assigned': return 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20';
+      case 'in_progress': return 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20';
+      case 'completed': return 'bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20';
+      case 'verified': return 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20';
+      case 'rejected': return 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20';
       default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
   const getPriorityColor = (priority: Task['priority']) => {
     switch (priority) {
-      case 'urgent': return 'bg-red-50 text-red-700 border-red-200';
-      case 'high': return 'bg-orange-50 text-orange-700 border-orange-200';
-      case 'medium': return 'bg-yellow-50 text-yellow-700 border-yellow-200';
-      case 'low': return 'bg-green-50 text-green-700 border-green-200';
+      case 'urgent': return 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20';
+      case 'high': return 'bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/20';
+      case 'medium': return 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20';
+      case 'low': return 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20';
       default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
   return (
     <article 
-      className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 space-y-3 hover-lift"
+      className="bg-card border border-border rounded-lg p-2.5 sm:p-3 shadow-sm hover:shadow-md transition-all duration-200 space-y-2"
       aria-label={`Task: ${task.title}`}
     >
-      {/* Header with Task Title and ID - Always Visible */}
-      <div className="space-y-2">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
+      {/* Header - Task ID, Title, Coins */}
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0 space-y-1">
+          {/* Task ID and Title */}
+          <div className="flex items-center gap-1.5 flex-wrap">
             {task.task_number && (
-              <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded mb-1 inline-block">
+              <span className="text-[10px] font-mono text-muted-foreground bg-muted/50 px-1 py-0.5 rounded shrink-0">
                 {task.task_number}
               </span>
             )}
-            <h3 className="font-semibold text-foreground text-xs sm:text-sm leading-tight line-clamp-2 mb-1">
-              {task.title}
-            </h3>
-            <div className="flex flex-wrap gap-1">
-              <Badge className={`${getStatusColor(task.status)} text-xs font-medium border px-1 py-0`}>
-                {task.status.replace('_', ' ')}
-              </Badge>
-              <Badge className={`${getPriorityColor(task.priority)} text-xs font-medium border px-1 py-0`}>
-                {task.priority}
-              </Badge>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <div className="flex items-center bg-gradient-to-r from-primary/10 to-secondary/10 px-1 py-0.5 rounded border border-primary/20">
-              <Coins className="h-2 w-2 text-primary mr-0.5" aria-hidden="true" />
+            <div className="flex items-center gap-1 shrink-0">
+              <Coins className="h-3 w-3 text-primary" />
               <span className="font-bold text-primary text-xs">{task.slt_coin_value}</span>
             </div>
-            {isAdmin && (
-              <div className="flex gap-0.5">
-                <TaskDetailDialog task={task} />
-                {onUpdateTask && (
-                  <TaskEditDialog 
-                    task={task} 
-                    onUpdateTask={onUpdateTask} 
-                    isUpdating={isUpdating || false} 
-                  />
-                )}
-              </div>
+          </div>
+          <h3 className="font-semibold text-foreground text-sm leading-snug line-clamp-2">
+            {task.title}
+          </h3>
+        </div>
+        
+        {/* Admin Actions */}
+        {isAdmin && (
+          <div className="flex gap-0.5 shrink-0">
+            <TaskDetailDialog task={task} />
+            {onUpdateTask && (
+              <TaskEditDialog task={task} onUpdateTask={onUpdateTask} isUpdating={isUpdating || false} />
             )}
           </div>
+        )}
+      </div>
+
+      {/* Badges */}
+      <div className="flex flex-wrap gap-1">
+        <Badge className={`${getStatusColor(task.status)} text-[10px] font-medium border h-5 px-1.5`}>
+          {task.status.replace('_', ' ')}
+        </Badge>
+        <Badge className={`${getPriorityColor(task.priority)} text-[10px] font-medium border h-5 px-1.5`}>
+          {task.priority}
+        </Badge>
+      </div>
+
+      {/* Compact Details Row */}
+      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1 min-w-0">
+          <User className="h-3 w-3 shrink-0" />
+          <span className="truncate">{task.assigned_profile?.full_name || 'Unassigned'}</span>
+        </div>
+        <div className="flex items-center gap-1 shrink-0">
+          <Calendar className="h-3 w-3" />
+          <time dateTime={task.end_date}>{format(new Date(task.end_date), 'MMM dd')}</time>
         </div>
       </div>
 
-      {/* Task Details */}
-      <div className="space-y-2 text-xs">
-        <div className="flex items-center gap-1">
-          <User className="h-3 w-3 text-muted-foreground flex-shrink-0" aria-hidden="true" />
-          <div className="min-w-0 flex-1">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Assigned to</p>
-            <p className="font-medium text-foreground truncate text-xs">{task.assigned_profile?.full_name}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-1">
-          <Calendar className="h-3 w-3 text-muted-foreground flex-shrink-0" aria-hidden="true" />
-          <div className="min-w-0 flex-1">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Due Date</p>
-            <time dateTime={task.end_date} className="font-medium text-foreground text-xs">
-              {format(new Date(task.end_date), 'MMM dd, yyyy')}
-            </time>
-          </div>
-        </div>
-      </div>
-
-      {/* Description */}
+      {/* Description - Collapsible */}
       <TaskDescription description={task.description} />
 
-      {/* Submission Notes */}
+      {/* Notes - Compact */}
       {task.submission_notes && (
-        <div className="bg-blue-50 border-l-4 border-blue-400 p-2 rounded-r-md">
-          <p className="text-xs font-semibold text-blue-800 mb-1">Submission Notes:</p>
-          <p className="text-xs text-blue-700 whitespace-pre-wrap leading-relaxed">{task.submission_notes}</p>
+        <div className="bg-blue-500/5 border-l-2 border-blue-500 p-1.5 rounded-r text-xs">
+          <span className="font-medium text-blue-700 dark:text-blue-400">Submitted: </span>
+          <span className="text-blue-600 dark:text-blue-300 line-clamp-2">{task.submission_notes}</span>
         </div>
       )}
-
-      {/* Admin Feedback */}
       {task.admin_feedback && (
-        <div className="bg-orange-50 border-l-4 border-orange-400 p-2 rounded-r-md">
-          <p className="text-xs font-semibold text-orange-800 mb-1">Admin Feedback:</p>
-          <p className="text-xs text-orange-700 whitespace-pre-wrap leading-relaxed">{task.admin_feedback}</p>
+        <div className="bg-orange-500/5 border-l-2 border-orange-500 p-1.5 rounded-r text-xs">
+          <span className="font-medium text-orange-700 dark:text-orange-400">Feedback: </span>
+          <span className="text-orange-600 dark:text-orange-300 line-clamp-2">{task.admin_feedback}</span>
         </div>
       )}
 
-      {/* Task Actions */}
+      {/* Actions */}
       <TaskActions task={task} onUpdateStatus={onUpdateStatus} onVerifyTask={onVerifyTask} />
-
-      {/* Status Messages */}
       <TaskStatusIndicator status={task.status} coinValue={task.slt_coin_value} />
 
-      {/* Admin Override */}
+      {/* Admin Override - Compact */}
       {isAdmin && onAdminOverride && (
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
           onClick={() => onAdminOverride(task)}
-          aria-label="Override task status as admin"
-          className="w-full gap-1 hover:bg-muted/50 transition-all duration-200 text-xs h-7 focus-ring"
+          className="w-full h-6 text-[10px] text-muted-foreground hover:text-foreground"
         >
-          <Edit className="h-3 w-3" aria-hidden="true" />
-          Admin Override Status
+          <Edit className="h-3 w-3 mr-1" />
+          Admin Override
         </Button>
       )}
 
-      {/* Comments Section - Collapsible */}
       <TaskComments taskId={task.id} />
     </article>
   );
