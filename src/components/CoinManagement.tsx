@@ -356,7 +356,7 @@ export function CoinManagement() {
             <DialogTitle>{approveAction ? "Approve Task" : "Reject Task"}</DialogTitle>
             <DialogDescription>
               {approveAction
-                ? "Approve this task and award SLT coins to the intern."
+                ? "Approve this task and award SLT coins to the employee."
                 : "Reject this task and provide feedback for improvement."}
             </DialogDescription>
           </DialogHeader>

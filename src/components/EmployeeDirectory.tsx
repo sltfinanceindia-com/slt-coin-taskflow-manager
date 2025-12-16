@@ -9,12 +9,14 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   Search, Users, Grid3X3, List, Mail, MessageSquare, 
-  Coins, Calendar, Building2, User
+  Coins, Calendar, Building2, User, Download
 } from 'lucide-react';
 import { useEmployeeDirectory } from '@/hooks/useEmployeeDirectory';
 import { useAchievements } from '@/hooks/useAchievements';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { exportToCSV } from '@/lib/export';
+import { toast } from 'sonner';
 
 interface EmployeeProfileModalProps {
   employee: any;
@@ -142,6 +144,24 @@ export function EmployeeDirectory() {
               <Badge variant="secondary">{employees.length}</Badge>
             </CardTitle>
             <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => {
+                  exportToCSV(filteredEmployees.map(e => ({
+                    Name: e.full_name,
+                    Email: e.email,
+                    Role: e.role,
+                    Department: e.department?.name || '',
+                    'Total Coins': e.total_coins || 0,
+                    'Joined': e.created_at ? format(new Date(e.created_at), 'yyyy-MM-dd') : '',
+                  })), 'employee_directory');
+                  toast.success('Exported employee directory');
+                }}
+              >
+                <Download className="h-4 w-4" />
+              </Button>
               <Button
                 variant={viewMode === 'grid' ? 'default' : 'outline'}
                 size="icon"
