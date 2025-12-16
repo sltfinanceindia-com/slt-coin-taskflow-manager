@@ -107,16 +107,22 @@ export const useEnhancedProjects = (programId?: string) => {
         const projectTasks = tasks?.filter(t => t.project_id === project.id) || [];
         const completedTasks = projectTasks.filter(t => t.status === 'verified' || t.status === 'completed').length;
         
+        // Safely parse kpis - it could be various JSON types
+        let parsedKpis: Array<{ name: string; target: number; current: number; unit: string }> = [];
+        if (Array.isArray(project.kpis)) {
+          parsedKpis = project.kpis as any[];
+        }
+        
         return {
           ...project,
-          kpis: project.kpis || [],
+          kpis: parsedKpis,
           tasks_count: projectTasks.length,
           completed_tasks_count: completedTasks,
           completion_rate: projectTasks.length > 0 
             ? Math.round((completedTasks / projectTasks.length) * 100) 
             : 0
-        };
-      }) as EnhancedProject[];
+        } as EnhancedProject;
+      });
     },
     enabled: !!profile?.organization_id,
   });

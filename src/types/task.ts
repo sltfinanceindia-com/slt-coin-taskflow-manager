@@ -1,5 +1,6 @@
 export interface Task {
   id: string;
+  task_number?: string;
   title: string;
   description: string;
   assigned_to: string;

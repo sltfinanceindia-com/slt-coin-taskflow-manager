@@ -2,11 +2,14 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, Medal, Award, TrendingUp, Coins, CheckCircle2, Crown, Flame } from 'lucide-react';
+import { Trophy, Medal, Award, TrendingUp, Coins, CheckCircle2, Crown, Flame, Download } from 'lucide-react';
 import { useLeaderboard, LeaderboardPeriod } from '@/hooks/useLeaderboard';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+import { exportToCSV } from '@/lib/export';
+import { toast } from 'sonner';
 
 const getRankIcon = (rank: number) => {
   switch (rank) {
@@ -73,13 +76,32 @@ export function Leaderboard() {
             <Trophy className="h-5 w-5 text-yellow-500" />
             Leaderboard
           </CardTitle>
-          <Tabs value={period} onValueChange={(v) => setPeriod(v as LeaderboardPeriod)}>
-            <TabsList className="h-8">
-              <TabsTrigger value="week" className="text-xs px-2">Week</TabsTrigger>
-              <TabsTrigger value="month" className="text-xs px-2">Month</TabsTrigger>
-              <TabsTrigger value="all" className="text-xs px-2">All Time</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                exportToCSV(leaderboard.map(e => ({
+                  Rank: e.rank,
+                  Name: e.full_name,
+                  Role: e.role,
+                  'Total Coins': e.total_coins,
+                  'Tasks Completed': e.tasks_completed,
+                })), `leaderboard_${period}`);
+                toast.success('Exported leaderboard');
+              }}
+              className="h-8"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
+            <Tabs value={period} onValueChange={(v) => setPeriod(v as LeaderboardPeriod)}>
+              <TabsList className="h-8">
+                <TabsTrigger value="week" className="text-xs px-2">Week</TabsTrigger>
+                <TabsTrigger value="month" className="text-xs px-2">Month</TabsTrigger>
+                <TabsTrigger value="all" className="text-xs px-2">All Time</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">

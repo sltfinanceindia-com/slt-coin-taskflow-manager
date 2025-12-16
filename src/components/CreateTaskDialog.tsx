@@ -39,14 +39,15 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
     end_date: '',
   });
 
-  // Fetch intern profiles
-  const { data: interns } = useQuery({
-    queryKey: ['interns'],
+  // Fetch employee profiles (including interns)
+  const { data: employees } = useQuery({
+    queryKey: ['assignable-employees'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, email')
-        .eq('role', 'intern')
+        .in('role', ['intern', 'employee'])
+        .eq('is_active', true)
         .order('full_name');
 
       if (error) throw error;
@@ -70,7 +71,7 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
 
     // Additional validations
     if (formData.assigned_to.length === 0) {
-      errors.push('At least one intern must be assigned to the task');
+      errors.push('At least one employee must be assigned to the task');
     }
 
     if (!formData.end_date) {
@@ -106,24 +107,24 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
     });
   };
 
-  const handleInternToggle = (internId: string) => {
+  const handleEmployeeToggle = (employeeId: string) => {
     setFormData(prev => ({
       ...prev,
-      assigned_to: prev.assigned_to.includes(internId) 
-        ? prev.assigned_to.filter(id => id !== internId)
-        : [...prev.assigned_to, internId]
+      assigned_to: prev.assigned_to.includes(employeeId) 
+        ? prev.assigned_to.filter(id => id !== employeeId)
+        : [...prev.assigned_to, employeeId]
     }));
   };
 
-  const removeIntern = (internId: string) => {
+  const removeEmployee = (employeeId: string) => {
     setFormData(prev => ({
       ...prev,
-      assigned_to: prev.assigned_to.filter(id => id !== internId)
+      assigned_to: prev.assigned_to.filter(id => id !== employeeId)
     }));
   };
 
-  const getInternName = (internId: string) => {
-    return interns?.find(intern => intern.id === internId)?.full_name || 'Unknown';
+  const getEmployeeName = (employeeId: string) => {
+    return employees?.find(emp => emp.id === employeeId)?.full_name || 'Unknown';
   };
 
   return (
@@ -183,19 +184,19 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Assign to Interns *</Label>
+              <Label>Assign to Employees *</Label>
               <div className="space-y-3">
-                {/* Selected Interns */}
+                {/* Selected Employees */}
                 {formData.assigned_to.length > 0 && (
                   <div className="space-y-2">
                     <p className="text-xs text-muted-foreground">Selected:</p>
                     <div className="flex flex-wrap gap-2">
-                      {formData.assigned_to.map(internId => (
-                        <Badge key={internId} variant="secondary" className="flex items-center gap-1">
-                          {getInternName(internId)}
+                      {formData.assigned_to.map(employeeId => (
+                        <Badge key={employeeId} variant="secondary" className="flex items-center gap-1">
+                          {getEmployeeName(employeeId)}
                           <X 
                             className="h-3 w-3 cursor-pointer" 
-                            onClick={() => removeIntern(internId)}
+                            onClick={() => removeEmployee(employeeId)}
                           />
                         </Badge>
                       ))}
@@ -203,23 +204,23 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
                   </div>
                 )}
                 
-                {/* Intern Selection */}
+                {/* Employee Selection */}
                 <div className="border rounded-md p-3 max-h-40 overflow-y-auto space-y-2">
-                  {interns?.map((intern) => (
-                    <div key={intern.id} className="flex items-center gap-3 min-h-[44px] py-1">
+                  {employees?.map((employee) => (
+                    <div key={employee.id} className="flex items-center gap-3 min-h-[44px] py-1">
                       <Checkbox
-                        id={intern.id}
-                        checked={formData.assigned_to.includes(intern.id)}
-                        onCheckedChange={() => handleInternToggle(intern.id)}
+                        id={employee.id}
+                        checked={formData.assigned_to.includes(employee.id)}
+                        onCheckedChange={() => handleEmployeeToggle(employee.id)}
                         className="h-5 w-5"
                       />
-                      <Label htmlFor={intern.id} className="flex-1 cursor-pointer text-sm">
-                        {intern.full_name}
+                      <Label htmlFor={employee.id} className="flex-1 cursor-pointer text-sm">
+                        {employee.full_name}
                       </Label>
                     </div>
                   ))}
-                  {(!interns || interns.length === 0) && (
-                    <p className="text-sm text-muted-foreground py-2">No interns available</p>
+                  {(!employees || employees.length === 0) && (
+                    <p className="text-sm text-muted-foreground py-2">No employees available</p>
                   )}
                 </div>
               </div>

@@ -53,10 +53,15 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
       className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 space-y-3 hover-lift"
       aria-label={`Task: ${task.title}`}
     >
-      {/* Header with Task Title - Always Visible */}
+      {/* Header with Task Title and ID - Always Visible */}
       <div className="space-y-2">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
+            {task.task_number && (
+              <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded mb-1 inline-block">
+                {task.task_number}
+              </span>
+            )}
             <h3 className="font-semibold text-foreground text-xs sm:text-sm leading-tight line-clamp-2 mb-1">
               {task.title}
             </h3>

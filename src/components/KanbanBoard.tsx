@@ -166,10 +166,10 @@ export function KanbanBoard({
   };
 
   const canUserUpdateStatus = (task: Task, newStatus: Task['status']): boolean => {
-    // Admins can change any status and override any intern updates
+    // Admins can change any status and override any employee updates
     if (profile?.role === 'admin') return true;
     
-    // Interns can only update their own tasks to specific statuses
+    // Employees can only update their own tasks to specific statuses
     if (task.assigned_to === profile?.id) {
       return ['in_progress', 'completed'].includes(newStatus);
     }

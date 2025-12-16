@@ -7,24 +7,30 @@ import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, Users } from 'lucide-react';
+import { RefreshCw, Users, Download } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
+import { exportToCSV } from '@/lib/export';
 
 export const LeaveBalances: React.FC = () => {
+  const { profile } = useAuth();
   const { leaveTypes, allBalances, isAdminLoading, initializeBalances } = useLeaveManagement();
 
-  // Fetch all employees
+  // Fetch all employees filtered by organization
   const { data: employees = [] } = useQuery({
-    queryKey: ['all-employees'],
+    queryKey: ['all-employees', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
       const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, email')
         .eq('is_active', true)
+        .eq('organization_id', profile.organization_id)
         .order('full_name');
       if (error) throw error;
       return data;
     },
+    enabled: !!profile?.organization_id,
   });
 
   // Group balances by employee
@@ -72,10 +78,35 @@ export const LeaveBalances: React.FC = () => {
           </CardTitle>
           <CardDescription className="text-xs sm:text-sm">Manage leave balances for all employees</CardDescription>
         </div>
-        <Button onClick={handleInitializeAll} variant="outline" size="sm" className="w-full sm:w-auto">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Initialize All
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => {
+              const exportData = employeeBalances.flatMap(emp => 
+                emp.balances.map(b => ({
+                  Employee: emp.full_name,
+                  Email: emp.email,
+                  'Leave Type': leaveTypes.find(t => t.id === b.leave_type_id)?.name || '',
+                  Total: Number(b.total_days),
+                  Used: Number(b.used_days),
+                  Available: Number(b.total_days) - Number(b.used_days),
+                  Pending: Number(b.pending_days),
+                }))
+              );
+              exportToCSV(exportData, 'leave_balances');
+              toast.success('Exported leave balances');
+            }}
+            className="w-full sm:w-auto"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+          <Button onClick={handleInitializeAll} variant="outline" size="sm" className="w-full sm:w-auto">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Initialize All
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         {/* Mobile Card View */}

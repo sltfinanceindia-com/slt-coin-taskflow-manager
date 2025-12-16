@@ -9,8 +9,10 @@ import { Label } from '@/components/ui/label';
 import { useLeaveManagement, LeaveRequest } from '@/hooks/useLeaveManagement';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
-import { CheckCircle, XCircle, Clock, Calendar, X, Eye } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Calendar, X, Eye, Download } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { exportToCSV } from '@/lib/export';
+import { toast } from 'sonner';
 
 const statusConfig = {
   pending: { label: 'Pending', variant: 'secondary' as const, icon: Clock },
@@ -65,10 +67,32 @@ export const LeaveRequests: React.FC = () => {
   return (
     <Card>
       <CardHeader className="pb-3 sm:pb-6">
-        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-          <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
-          {isAdmin ? 'All Leave Requests' : 'My Leave Requests'}
-        </CardTitle>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
+            {isAdmin ? 'All Leave Requests' : 'My Leave Requests'}
+          </CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              exportToCSV(requests.map(r => ({
+                Employee: r.employee?.full_name || '',
+                'Leave Type': r.leave_type?.name || '',
+                'Start Date': format(new Date(r.start_date), 'yyyy-MM-dd'),
+                'End Date': format(new Date(r.end_date), 'yyyy-MM-dd'),
+                'Total Days': r.total_days,
+                Status: r.status,
+                Reason: r.reason || '',
+              })), 'leave_requests');
+              toast.success('Exported leave requests');
+            }}
+            className="h-8"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         {requests.length === 0 ? (

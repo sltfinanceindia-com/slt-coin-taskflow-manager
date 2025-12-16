@@ -2,15 +2,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Task } from '@/hooks/useTasks';
+import { Task } from '@/types/task';
 import { format } from 'date-fns';
-import { Eye, CheckCircle, XCircle, Clock, AlertCircle, Edit, User, Calendar, Coins, BarChart3 } from 'lucide-react';
+import { Eye, CheckCircle, XCircle, Clock, AlertCircle, Edit, User, Calendar, Coins, BarChart3, Download } from 'lucide-react';
 import { TaskEditDialog } from '@/components/TaskEditDialog';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
 import { useSessionLogs } from '@/hooks/useSessionLogs';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useState } from 'react';
+import { exportToCSV } from '@/lib/export';
+import { toast } from 'sonner';
 
 interface KanbanTableViewProps {
   tasks: Task[];
@@ -68,8 +70,28 @@ export function KanbanTableView({ tasks, onUpdateStatus, onVerifyTask }: KanbanT
     );
   };
 
+  const handleExport = () => {
+    exportToCSV(tasks.map(t => ({
+      'Task ID': t.task_number || t.id.slice(0, 8),
+      Title: t.title,
+      Status: t.status,
+      Priority: t.priority,
+      'Assigned To': t.assigned_profile?.full_name || '',
+      'Due Date': format(new Date(t.end_date), 'yyyy-MM-dd'),
+      'SLT Coins': t.slt_coin_value,
+      Description: t.description || '',
+    })), 'tasks');
+    toast.success('Exported tasks');
+  };
+
   return (
     <>
+      <div className="flex justify-end mb-2">
+        <Button variant="outline" size="sm" onClick={handleExport} className="gap-2">
+          <Download className="h-4 w-4" />
+          Export Tasks
+        </Button>
+      </div>
       <div className="border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <Table>

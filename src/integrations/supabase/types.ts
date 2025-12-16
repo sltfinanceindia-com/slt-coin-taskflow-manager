@@ -5343,6 +5343,7 @@ export type Database = {
           organization_id: string | null
           priority: string | null
           program_id: string | null
+          project_number: string | null
           spent_budget: number | null
           sponsor_id: string | null
           stage: string | null
@@ -5366,6 +5367,7 @@ export type Database = {
           organization_id?: string | null
           priority?: string | null
           program_id?: string | null
+          project_number?: string | null
           spent_budget?: number | null
           sponsor_id?: string | null
           stage?: string | null
@@ -5389,6 +5391,7 @@ export type Database = {
           organization_id?: string | null
           priority?: string | null
           program_id?: string | null
+          project_number?: string | null
           spent_budget?: number | null
           sponsor_id?: string | null
           stage?: string | null
@@ -6698,6 +6701,7 @@ export type Database = {
           start_date: string | null
           status: Database["public"]["Enums"]["task_status"]
           submission_notes: string | null
+          task_number: string | null
           task_type: string | null
           title: string
           updated_at: string
@@ -6727,6 +6731,7 @@ export type Database = {
           start_date?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           submission_notes?: string | null
+          task_number?: string | null
           task_type?: string | null
           title: string
           updated_at?: string
@@ -6756,6 +6761,7 @@ export type Database = {
           start_date?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           submission_notes?: string | null
+          task_number?: string | null
           task_type?: string | null
           title?: string
           updated_at?: string
