@@ -303,7 +303,7 @@ export function AdvancedTeamCommunication() {
           id: msg.sender_id,
           full_name: msg.sender_name || 'Unknown User',
           avatar_url: '',
-          role: msg.sender_role || 'intern'
+          role: msg.sender_role || 'employee'
         }
       })) || [];
 

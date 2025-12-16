@@ -76,8 +76,8 @@ export default function Profile() {
                 </div>
                 <CardTitle className="text-lg sm:text-2xl truncate">{profile?.full_name}</CardTitle>
                 <CardDescription className="text-base sm:text-lg mt-1">
-                  <Badge variant={profile?.role === 'admin' ? 'default' : 'secondary'} className="text-xs sm:text-sm">
-                    {profile?.role === 'admin' ? 'Administrator' : 'Intern'}
+                <Badge variant={profile?.role === 'admin' ? 'default' : 'secondary'} className="text-xs sm:text-sm">
+                    {profile?.role === 'admin' ? 'Administrator' : 'Employee'}
                   </Badge>
                 </CardDescription>
               </CardHeader>

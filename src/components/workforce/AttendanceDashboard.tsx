@@ -2,10 +2,12 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import { useGeoAttendance } from '@/hooks/useGeoAttendance';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Users, Clock, AlertTriangle, CheckCircle2, Download } from 'lucide-react';
+import { exportToCSV } from '@/lib/export';
 
 export const AttendanceDashboard: React.FC = () => {
   const { allAttendance, isAdminLoading } = useGeoAttendance();
@@ -43,6 +45,28 @@ export const AttendanceDashboard: React.FC = () => {
       </div>
     );
   }
+
+  const handleExportCSV = () => {
+    const exportData = allAttendance.map(record => ({
+      employee_name: record.employee?.full_name || 'Unknown',
+      email: record.employee?.email || '',
+      date: format(new Date(record.attendance_date), 'yyyy-MM-dd'),
+      clock_in: record.clock_in_time ? format(new Date(record.clock_in_time), 'HH:mm') : '-',
+      clock_out: record.clock_out_time ? format(new Date(record.clock_out_time), 'HH:mm') : '-',
+      status: record.status,
+      total_hours: record.total_hours || 0,
+    }));
+    
+    exportToCSV(exportData, 'attendance_report', [
+      { key: 'employee_name', label: 'Employee Name' },
+      { key: 'email', label: 'Email' },
+      { key: 'date', label: 'Date' },
+      { key: 'clock_in', label: 'Clock In' },
+      { key: 'clock_out', label: 'Clock Out' },
+      { key: 'status', label: 'Status' },
+      { key: 'total_hours', label: 'Total Hours' },
+    ]);
+  };
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -95,8 +119,12 @@ export const AttendanceDashboard: React.FC = () => {
 
       {/* Today's Attendance List */}
       <Card>
-        <CardHeader className="pb-3 sm:pb-6">
+        <CardHeader className="pb-3 sm:pb-6 flex flex-row items-center justify-between">
           <CardTitle className="text-base sm:text-lg">Today's Attendance - {format(new Date(), 'MMM d, yyyy')}</CardTitle>
+          <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={allAttendance.length === 0}>
+            <Download className="h-4 w-4 mr-2" />
+            Export CSV
+          </Button>
         </CardHeader>
         <CardContent>
           {allAttendance.length === 0 ? (

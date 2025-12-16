@@ -25,7 +25,7 @@ const ROLE_PRIORITY: Record<AppRole, number> = {
 };
 
 function getHighestPriorityRole(roles: AppRole[]): AppRole {
-  if (roles.length === 0) return 'intern';
+  if (roles.length === 0) return 'employee';
   return roles.reduce((highest, current) => 
     ROLE_PRIORITY[current] > ROLE_PRIORITY[highest] ? current : highest
   , roles[0]);
@@ -34,7 +34,7 @@ function getHighestPriorityRole(roles: AppRole[]): AppRole {
 export function useUserRole(): UserRoleData {
   const { user, profile } = useAuth();
   const [roleData, setRoleData] = useState<UserRoleData>({
-    role: 'intern',
+    role: 'employee',
     allRoles: [],
     organizationId: null,
     isSuperAdmin: false,
@@ -48,7 +48,7 @@ export function useUserRole(): UserRoleData {
     const fetchUserRole = async () => {
       if (!user) {
         setRoleData({
-          role: 'intern',
+          role: 'employee',
           allRoles: [],
           organizationId: null,
           isSuperAdmin: false,
@@ -77,7 +77,7 @@ export function useUserRole(): UserRoleData {
         // Get the highest privilege role
         const highestRole = allRoles.length > 0 
           ? getHighestPriorityRole(allRoles) 
-          : (profile?.role as AppRole) || 'intern';
+          : (profile?.role as AppRole) || 'employee';
 
         // Get organization_id (prefer from user_roles, fallback to profile)
         const organizationId = roleRecords?.[0]?.organization_id || profile?.organization_id || null;
@@ -101,7 +101,7 @@ export function useUserRole(): UserRoleData {
       } catch (error) {
         console.error('Error in useUserRole:', error);
         // Fallback to profile role if user_roles fails
-        const fallbackRole = (profile?.role as AppRole) || 'intern';
+        const fallbackRole = (profile?.role as AppRole) || 'employee';
         setRoleData({
           role: fallbackRole,
           allRoles: [fallbackRole],
