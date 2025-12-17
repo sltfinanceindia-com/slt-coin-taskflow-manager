@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Plus, FolderOpen, Users, Calendar } from 'lucide-react';
+import { Plus, FolderOpen, Users, Calendar, Download } from 'lucide-react';
 import { useProjects } from '@/hooks/useProjects';
 import { useTasks } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
@@ -14,6 +14,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { format } from 'date-fns';
 import { EmptyState } from '@/components/ui/empty-state';
+import { exportToCSV, formatDateForExport } from '@/lib/export';
 
 export function ProjectManagement() {
   const { profile } = useAuth();
@@ -56,6 +57,32 @@ export function ProjectManagement() {
     }
   };
 
+  const handleExportProjects = () => {
+    const exportData = projects.map(project => {
+      const projectTasks = getProjectTasks(project.id);
+      const progress = getProjectProgress(project.id);
+      return {
+        name: project.name,
+        description: project.description || '',
+        status: project.status,
+        progress: `${progress}%`,
+        task_count: projectTasks.length,
+        created_at: formatDateForExport(project.created_at),
+        created_by: project.creator_profile?.full_name || 'Unknown',
+      };
+    });
+
+    exportToCSV(exportData, 'projects_export', [
+      { key: 'name', label: 'Project Name' },
+      { key: 'description', label: 'Description' },
+      { key: 'status', label: 'Status' },
+      { key: 'progress', label: 'Progress' },
+      { key: 'task_count', label: 'Tasks' },
+      { key: 'created_at', label: 'Created Date' },
+      { key: 'created_by', label: 'Created By' },
+    ]);
+  };
+
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
@@ -66,60 +93,66 @@ export function ProjectManagement() {
             Organize and track your tasks within projects
           </p>
         </div>
-        {isAdmin && (
-          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="w-full sm:w-auto">
-                <Plus className="h-4 w-4 mr-2" />
-                New Project
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Project</DialogTitle>
-                <DialogDescription>
-                  Start a new project to organize related tasks together.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-6 px-6 py-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                <div className="space-y-2">
-                  <Label htmlFor="project-name">Project Name</Label>
-                  <Input
-                    id="project-name"
-                    placeholder="Enter project name..."
-                    value={newProject.name}
-                    onChange={(e) => setNewProject(prev => ({ ...prev, name: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="project-description">Description</Label>
-                  <Textarea
-                    id="project-description"
-                    placeholder="Project description (optional)..."
-                    value={newProject.description}
-                    onChange={(e) => setNewProject(prev => ({ ...prev, description: e.target.value }))}
-                    rows={3}
-                  />
-                </div>
-              </div>
-              <div className="flex gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-800/50">
-                <Button
-                  onClick={handleCreateProject}
-                  disabled={!newProject.name.trim() || isCreating}
-                  className="flex-1"
-                >
-                  {isCreating ? 'Creating...' : 'Create Project'}
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={handleExportProjects}>
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+          {isAdmin && (
+            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="w-full sm:w-auto">
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Project
                 </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowCreateDialog(false)}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create New Project</DialogTitle>
+                  <DialogDescription>
+                    Start a new project to organize related tasks together.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-6 px-6 py-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                  <div className="space-y-2">
+                    <Label htmlFor="project-name">Project Name</Label>
+                    <Input
+                      id="project-name"
+                      placeholder="Enter project name..."
+                      value={newProject.name}
+                      onChange={(e) => setNewProject(prev => ({ ...prev, name: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="project-description">Description</Label>
+                    <Textarea
+                      id="project-description"
+                      placeholder="Project description (optional)..."
+                      value={newProject.description}
+                      onChange={(e) => setNewProject(prev => ({ ...prev, description: e.target.value }))}
+                      rows={3}
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-800/50">
+                  <Button
+                    onClick={handleCreateProject}
+                    disabled={!newProject.name.trim() || isCreating}
+                    className="flex-1"
+                  >
+                    {isCreating ? 'Creating...' : 'Create Project'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowCreateDialog(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
       </div>
 
       {/* Projects Grid */}

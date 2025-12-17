@@ -28,16 +28,19 @@ export function PIPManagement() {
   const [selectedPIP, setSelectedPIP] = useState<string | null>(null);
 
   const { data: employees = [] } = useQuery({
-    queryKey: ['employees-list'],
+    queryKey: ['employees-list', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
       const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, avatar_url')
+        .eq('organization_id', profile.organization_id)
         .eq('is_active', true)
         .order('full_name');
       if (error) throw error;
       return data;
     },
+    enabled: !!profile?.organization_id,
   });
 
   const [formData, setFormData] = useState({
