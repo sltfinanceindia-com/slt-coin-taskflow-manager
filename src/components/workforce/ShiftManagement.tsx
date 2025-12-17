@@ -1,22 +1,55 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CalendarDays, Clock, Users, ArrowLeftRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { CalendarDays, Clock, Users, ArrowLeftRight, Download } from 'lucide-react';
 import { ShiftScheduler } from './ShiftScheduler';
 import { ShiftTypeManager } from './ShiftTypeManager';
 import { ShiftSwapRequests } from './ShiftSwapRequests';
 import { ShiftOverview } from './ShiftOverview';
+import { useShiftSchedules, useShiftSwapRequests, useShiftTypes } from '@/hooks/useShifts';
+import { exportToCSV, formatDateForExport } from '@/lib/export';
 
 export function ShiftManagement() {
   const [activeTab, setActiveTab] = useState('overview');
+  const { schedules } = useShiftSchedules();
+  const { swapRequests } = useShiftSwapRequests();
+  const { shiftTypes } = useShiftTypes();
+
+  const handleExportShifts = () => {
+    const exportData = schedules.map(schedule => ({
+      employee: schedule.employee?.full_name || 'Unknown',
+      shift_type: schedule.shift_type?.name || 'Unknown',
+      date: formatDateForExport(schedule.schedule_date),
+      start_time: schedule.shift_type?.start_time || '',
+      end_time: schedule.shift_type?.end_time || '',
+      status: schedule.status,
+      notes: schedule.notes || '',
+    }));
+
+    exportToCSV(exportData, 'shifts_export', [
+      { key: 'employee', label: 'Employee' },
+      { key: 'shift_type', label: 'Shift Type' },
+      { key: 'date', label: 'Date' },
+      { key: 'start_time', label: 'Start Time' },
+      { key: 'end_time', label: 'End Time' },
+      { key: 'status', label: 'Status' },
+      { key: 'notes', label: 'Notes' },
+    ]);
+  };
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">Shift Management</h1>
-        <p className="text-muted-foreground text-xs sm:text-sm">
-          Create schedules, assign shifts, and manage swap requests
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">Shift Management</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm">
+            Create schedules, assign shifts, and manage swap requests
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={handleExportShifts}>
+          <Download className="h-4 w-4 mr-2" />
+          Export
+        </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">

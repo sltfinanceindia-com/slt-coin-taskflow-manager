@@ -87,7 +87,7 @@ export const useLeaveManagement = () => {
     enabled: !!profile?.id,
   });
 
-  // Fetch all leave balances (admin) - filter by employee's organization
+  // Fetch all leave balances (admin) - filter by organization server-side
   const { data: allBalances = [], isLoading: loadingAllBalances } = useQuery({
     queryKey: ['all-leave-balances', profile?.organization_id],
     queryFn: async () => {
@@ -96,13 +96,10 @@ export const useLeaveManagement = () => {
       const { data, error } = await supabase
         .from('leave_balances')
         .select(`*, leave_type:leave_types(*), employee:profiles!inner(full_name, email, organization_id)`)
+        .eq('organization_id', profile.organization_id)
         .eq('year', currentYear);
       if (error) throw error;
-      // Filter by employee's organization client-side
-      const filtered = (data || []).filter((balance: any) => 
-        balance.employee?.organization_id === profile.organization_id
-      );
-      return filtered as LeaveBalance[];
+      return (data || []) as LeaveBalance[];
     },
     enabled: profile?.role === 'admin' && !!profile?.organization_id,
   });
@@ -123,7 +120,7 @@ export const useLeaveManagement = () => {
     enabled: !!profile?.id,
   });
 
-  // Fetch all leave requests (admin) - filter by employee's organization
+  // Fetch all leave requests (admin) - filter by organization server-side
   const { data: allRequests = [], isLoading: loadingAllRequests } = useQuery({
     queryKey: ['all-leave-requests', profile?.organization_id],
     queryFn: async () => {
@@ -131,13 +128,10 @@ export const useLeaveManagement = () => {
       const { data, error } = await supabase
         .from('leave_requests')
         .select(`*, leave_type:leave_types(*), employee:profiles!leave_requests_employee_id_fkey!inner(full_name, email, avatar_url, organization_id), reviewer:profiles!leave_requests_reviewed_by_fkey(full_name)`)
+        .eq('organization_id', profile.organization_id)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      // Filter by employee's organization client-side
-      const filtered = (data || []).filter((request: any) => 
-        request.employee?.organization_id === profile.organization_id
-      );
-      return filtered as LeaveRequest[];
+      return (data || []) as LeaveRequest[];
     },
     enabled: profile?.role === 'admin' && !!profile?.organization_id,
   });

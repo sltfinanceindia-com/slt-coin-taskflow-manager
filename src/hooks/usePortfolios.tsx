@@ -52,12 +52,15 @@ export const usePortfolios = () => {
   const portfoliosQuery = useQuery({
     queryKey: ['portfolios', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
+      
       const { data, error } = await supabase
         .from('portfolios')
         .select(`
           *,
           owner:profiles!portfolios_owner_id_fkey(id, full_name, avatar_url)
         `)
+        .eq('organization_id', profile.organization_id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -98,12 +101,16 @@ export const usePortfolios = () => {
 
   const createPortfolioMutation = useMutation({
     mutationFn: async (data: CreatePortfolioData) => {
+      // Handle empty owner_id - convert empty string to null
+      const insertData = {
+        ...data,
+        owner_id: data.owner_id && data.owner_id.trim() !== '' ? data.owner_id : null,
+        organization_id: profile?.organization_id,
+      };
+      
       const { data: result, error } = await supabase
         .from('portfolios')
-        .insert({
-          ...data,
-          organization_id: profile?.organization_id,
-        })
+        .insert(insertData)
         .select()
         .single();
 

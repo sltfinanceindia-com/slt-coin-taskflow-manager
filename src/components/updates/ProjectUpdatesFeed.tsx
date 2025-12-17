@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -18,10 +17,12 @@ import {
   Filter,
   Star,
   Trash2,
-  RefreshCw
+  RefreshCw,
+  Download
 } from 'lucide-react';
 import { useProjectUpdates, ProjectUpdate } from '@/hooks/useProjectUpdates';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, format } from 'date-fns';
+import { exportToCSV } from '@/lib/export';
 
 const UPDATE_TYPE_CONFIG: Record<string, { icon: React.ElementType; label: string; color: string }> = {
   comment: { icon: MessageSquare, label: 'Comment', color: 'bg-blue-500/10 text-blue-500' },
@@ -64,6 +65,28 @@ export const ProjectUpdatesFeed = ({ projectId, taskId, compact = false }: Proje
   const filteredUpdates = filterType === 'all' 
     ? updates 
     : updates.filter(u => u.update_type === filterType);
+
+  const handleExportUpdates = () => {
+    const exportData = filteredUpdates.map(update => ({
+      type: UPDATE_TYPE_CONFIG[update.update_type]?.label || update.update_type,
+      content: update.content || '',
+      user: update.user?.full_name || 'Unknown',
+      project: update.project?.name || '',
+      task: update.task?.title || '',
+      is_important: update.is_important ? 'Yes' : 'No',
+      created_at: format(new Date(update.created_at), 'yyyy-MM-dd HH:mm'),
+    }));
+
+    exportToCSV(exportData, 'updates_export', [
+      { key: 'type', label: 'Type' },
+      { key: 'content', label: 'Content' },
+      { key: 'user', label: 'User' },
+      { key: 'project', label: 'Project' },
+      { key: 'task', label: 'Task' },
+      { key: 'is_important', label: 'Important' },
+      { key: 'created_at', label: 'Date' },
+    ]);
+  };
 
   const renderUpdate = (update: ProjectUpdate) => {
     const config = UPDATE_TYPE_CONFIG[update.update_type] || UPDATE_TYPE_CONFIG.comment;
@@ -223,6 +246,9 @@ export const ProjectUpdatesFeed = ({ projectId, taskId, compact = false }: Proje
                   ))}
                 </SelectContent>
               </Select>
+              <Button variant="outline" size="icon" onClick={handleExportUpdates} title="Export">
+                <Download className="h-4 w-4" />
+              </Button>
               <Button variant="ghost" size="icon" onClick={() => refetch()}>
                 <RefreshCw className="h-4 w-4" />
               </Button>
