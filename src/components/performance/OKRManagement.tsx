@@ -16,8 +16,9 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { Plus, Target, ChevronDown, ChevronRight, Building2, Users, User, Trash2 } from 'lucide-react';
+import { Plus, Target, ChevronDown, ChevronRight, Building2, Users, User, Trash2, Download } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { exportToCSV, formatDateForExport } from '@/lib/export';
 
 export function OKRManagement() {
   const { objectives, isLoading, createObjective, updateObjective, deleteObjective } = useObjectives();
@@ -26,17 +27,21 @@ export function OKRManagement() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
 
+  // Fixed: Add organization_id filter to prevent cross-org data leakage
   const { data: employees = [] } = useQuery({
-    queryKey: ['employees-list'],
+    queryKey: ['employees-list', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
       const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, avatar_url')
+        .eq('organization_id', profile.organization_id)
         .eq('is_active', true)
         .order('full_name');
       if (error) throw error;
       return data;
     },
+    enabled: !!profile?.organization_id,
   });
 
   const [formData, setFormData] = useState({
@@ -104,6 +109,37 @@ export function OKRManagement() {
     );
   }
 
+  // Export OKRs to CSV
+  const handleExportOKRs = () => {
+    const exportData = filteredObjectives.map((obj: any) => ({
+      title: obj.title,
+      description: obj.description || '',
+      level: obj.level,
+      status: obj.status,
+      progress: obj.progress_percentage,
+      owner: obj.owner?.full_name || 'Unassigned',
+      quarter: obj.quarter || '',
+      year: obj.year,
+      start_date: formatDateForExport(obj.start_date),
+      end_date: formatDateForExport(obj.end_date),
+      key_results_count: obj.key_results?.length || 0,
+    }));
+
+    exportToCSV(exportData, 'okrs', [
+      { key: 'title', label: 'Objective' },
+      { key: 'description', label: 'Description' },
+      { key: 'level', label: 'Level' },
+      { key: 'status', label: 'Status' },
+      { key: 'progress', label: 'Progress %' },
+      { key: 'owner', label: 'Owner' },
+      { key: 'quarter', label: 'Quarter' },
+      { key: 'year', label: 'Year' },
+      { key: 'start_date', label: 'Start Date' },
+      { key: 'end_date', label: 'End Date' },
+      { key: 'key_results_count', label: 'Key Results' },
+    ]);
+  };
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4">
@@ -113,7 +149,7 @@ export function OKRManagement() {
             Set objectives and track key results across your organization
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Select value={selectedLevel} onValueChange={setSelectedLevel}>
             <SelectTrigger className="w-32 sm:w-40 text-xs sm:text-sm h-9 sm:h-10">
               <SelectValue placeholder="Filter by level" />
@@ -125,6 +161,11 @@ export function OKRManagement() {
               <SelectItem value="individual">Individual</SelectItem>
             </SelectContent>
           </Select>
+
+          <Button variant="outline" onClick={handleExportOKRs} disabled={filteredObjectives.length === 0}>
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
 
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
