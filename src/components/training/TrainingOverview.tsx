@@ -1,17 +1,46 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { TrendingUp, Calendar, FileText } from 'lucide-react';
+import { TrendingUp, Calendar, FileText, Download } from 'lucide-react';
 import { TrainingSection } from '@/types/training';
 import { TrainingStats } from './TrainingStats';
+import { exportToCSV } from '@/lib/export';
 
 interface TrainingOverviewProps {
   sections: TrainingSection[];
 }
 
 export function TrainingOverview({ sections }: TrainingOverviewProps) {
+  // Export training progress to CSV
+  const handleExportTraining = () => {
+    const exportData = sections.map(section => ({
+      title: section.title,
+      description: section.description || '',
+      videos_count: section.training_videos?.length || 0,
+      assignments_count: section.training_assignments?.length || 0,
+      is_published: section.is_published ? 'Yes' : 'No',
+      order: section.order_index,
+    }));
+
+    exportToCSV(exportData, 'training_sections', [
+      { key: 'title', label: 'Section Title' },
+      { key: 'description', label: 'Description' },
+      { key: 'videos_count', label: 'Videos' },
+      { key: 'assignments_count', label: 'Assignments' },
+      { key: 'is_published', label: 'Published' },
+      { key: 'order', label: 'Order' },
+    ]);
+  };
+
   return (
     <div className="space-y-6">
-      <TrainingStats sections={sections} />
+      <div className="flex justify-between items-center">
+        <TrainingStats sections={sections} />
+        <Button variant="outline" onClick={handleExportTraining} disabled={sections.length === 0}>
+          <Download className="h-4 w-4 mr-2" />
+          Export
+        </Button>
+      </div>
 
       {/* Progress Overview */}
       <Card className="card-gradient">

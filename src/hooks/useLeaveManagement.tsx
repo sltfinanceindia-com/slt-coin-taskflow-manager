@@ -136,7 +136,7 @@ export const useLeaveManagement = () => {
     enabled: profile?.role === 'admin' && !!profile?.organization_id,
   });
 
-  // Create leave request
+  // Create leave request with notification
   const createRequest = useMutation({
     mutationFn: async (data: {
       leave_type_id: string;
@@ -148,12 +148,41 @@ export const useLeaveManagement = () => {
       half_day_type?: 'first_half' | 'second_half';
     }) => {
       if (!profile?.id) throw new Error('Not authenticated');
-      const { error } = await supabase.from('leave_requests').insert({
+      const { data: newRequest, error } = await supabase.from('leave_requests').insert({
         employee_id: profile.id,
         organization_id: profile.organization_id,
         ...data,
-      });
+      }).select().single();
       if (error) throw error;
+
+      // Send notification to admins
+      const leaveType = leaveTypes.find(lt => lt.id === data.leave_type_id);
+      try {
+        // Get admin users in the organization
+        const { data: admins } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('organization_id', profile.organization_id)
+          .eq('role', 'admin')
+          .eq('is_active', true);
+
+        if (admins && admins.length > 0) {
+          const notifications = admins.map(admin => ({
+            user_id: admin.id,
+            organization_id: profile.organization_id,
+            type: 'leave_request',
+            title: 'New Leave Request',
+            message: `${profile.full_name} has requested ${data.total_days} days of ${leaveType?.name || 'leave'} from ${data.start_date} to ${data.end_date}`,
+            data: { request_id: newRequest.id },
+          }));
+
+          await supabase.from('notifications').insert(notifications);
+        }
+      } catch (notifError) {
+        console.error('Failed to send leave request notification:', notifError);
+      }
+
+      return newRequest;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-leave-requests'] });
@@ -183,27 +212,42 @@ export const useLeaveManagement = () => {
       if (error) throw error;
 
       // If approved, update leave balance
-      if (data.status === 'approved') {
-        const request = allRequests.find(r => r.id === data.id);
-        if (request) {
-          const currentYear = new Date().getFullYear();
-          const { data: balance } = await supabase
-            .from('leave_balances')
-            .select('*')
-            .eq('employee_id', request.employee_id)
-            .eq('leave_type_id', request.leave_type_id)
-            .eq('year', currentYear)
-            .single();
+      const request = allRequests.find(r => r.id === data.id);
+      if (data.status === 'approved' && request) {
+        const currentYear = new Date().getFullYear();
+        const { data: balance } = await supabase
+          .from('leave_balances')
+          .select('*')
+          .eq('employee_id', request.employee_id)
+          .eq('leave_type_id', request.leave_type_id)
+          .eq('year', currentYear)
+          .single();
 
-          if (balance) {
-            await supabase
-              .from('leave_balances')
-              .update({
-                used_days: Number(balance.used_days) + Number(request.total_days),
-                pending_days: Math.max(0, Number(balance.pending_days) - Number(request.total_days)),
-              })
-              .eq('id', balance.id);
-          }
+        if (balance) {
+          await supabase
+            .from('leave_balances')
+            .update({
+              used_days: Number(balance.used_days) + Number(request.total_days),
+              pending_days: Math.max(0, Number(balance.pending_days) - Number(request.total_days)),
+            })
+            .eq('id', balance.id);
+        }
+      }
+
+      // Send notification to employee about status change
+      if (request) {
+        try {
+          const leaveType = leaveTypes.find(lt => lt.id === request.leave_type_id);
+          await supabase.from('notifications').insert({
+            user_id: request.employee_id,
+            organization_id: profile?.organization_id,
+            type: 'leave_status',
+            title: `Leave Request ${data.status === 'approved' ? 'Approved' : 'Rejected'}`,
+            message: `Your ${leaveType?.name || 'leave'} request from ${request.start_date} to ${request.end_date} has been ${data.status}${data.review_notes ? ': ' + data.review_notes : ''}`,
+            data: { request_id: data.id, status: data.status },
+          });
+        } catch (notifError) {
+          console.error('Failed to send leave status notification:', notifError);
         }
       }
     },
