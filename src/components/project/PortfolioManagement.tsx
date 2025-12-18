@@ -114,15 +114,16 @@ const PortfolioForm: React.FC<PortfolioFormProps> = ({ portfolio, onSubmit, onCl
         </div>
 
         <div>
-          <Label htmlFor="owner">Owner</Label>
+          <Label htmlFor="owner">Owner (Optional)</Label>
           <Select
-            value={formData.owner_id}
-            onValueChange={(value) => setFormData({ ...formData, owner_id: value })}
+            value={formData.owner_id || 'none'}
+            onValueChange={(value) => setFormData({ ...formData, owner_id: value === 'none' ? '' : value })}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select owner" />
+              <SelectValue placeholder="Select owner (optional)" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="none">No Owner</SelectItem>
               {employees.map((emp) => (
                 <SelectItem key={emp.id} value={emp.id}>
                   {emp.full_name}
