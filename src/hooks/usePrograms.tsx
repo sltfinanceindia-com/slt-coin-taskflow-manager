@@ -95,10 +95,13 @@ export const usePrograms = (portfolioId?: string) => {
 
   const createProgramMutation = useMutation({
     mutationFn: async (data: CreateProgramData) => {
-      // Handle empty owner_id - convert empty string to null
+      // Handle empty strings - convert to null for UUIDs and dates
       const insertData = {
         ...data,
         owner_id: data.owner_id && data.owner_id.trim() !== '' ? data.owner_id : null,
+        portfolio_id: data.portfolio_id && data.portfolio_id.trim() !== '' ? data.portfolio_id : null,
+        start_date: data.start_date && data.start_date.trim() !== '' ? data.start_date : null,
+        target_end_date: data.target_end_date && data.target_end_date.trim() !== '' ? data.target_end_date : null,
         organization_id: profile?.organization_id,
       };
       
@@ -123,13 +126,21 @@ export const usePrograms = (portfolioId?: string) => {
 
   const updateProgramMutation = useMutation({
     mutationFn: async ({ id, ...data }: UpdateProgramData) => {
-      // Handle empty owner_id - convert empty string to null
-      const updateData = {
-        ...data,
-        owner_id: data.owner_id !== undefined 
-          ? (data.owner_id && data.owner_id.trim() !== '' ? data.owner_id : null)
-          : undefined,
-      };
+      // Handle empty strings - convert to null for UUIDs and dates
+      const updateData: Record<string, unknown> = { ...data };
+      
+      if (data.owner_id !== undefined) {
+        updateData.owner_id = data.owner_id && data.owner_id.trim() !== '' ? data.owner_id : null;
+      }
+      if (data.portfolio_id !== undefined) {
+        updateData.portfolio_id = data.portfolio_id && data.portfolio_id.trim() !== '' ? data.portfolio_id : null;
+      }
+      if (data.start_date !== undefined) {
+        updateData.start_date = data.start_date && data.start_date.trim() !== '' ? data.start_date : null;
+      }
+      if (data.target_end_date !== undefined) {
+        updateData.target_end_date = data.target_end_date && data.target_end_date.trim() !== '' ? data.target_end_date : null;
+      }
       
       const { data: result, error } = await supabase
         .from('programs')

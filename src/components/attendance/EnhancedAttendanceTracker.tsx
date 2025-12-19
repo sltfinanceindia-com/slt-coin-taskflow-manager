@@ -16,6 +16,7 @@ import { format, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { SimpleBarChart, SimpleLineChart } from '@/components/SimpleChart';
 import { toast } from '@/hooks/use-toast';
+import { useUserRole } from '@/hooks/useUserRole';
 
 interface Profile {
   id: string;
@@ -26,6 +27,7 @@ interface Profile {
 
 export function EnhancedAttendanceTracker() {
   const { profile } = useAuth();
+  const { isAdmin } = useUserRole();
   const { 
     loading, 
     getAttendanceByDateRange,
@@ -42,8 +44,6 @@ export function EnhancedAttendanceTracker() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<'overview' | 'details' | 'charts'>('overview');
   const [isClosingStaleSessions, setIsClosingStaleSessions] = useState(false);
-
-  const isAdmin = profile?.role === 'admin';
 
   // Fetch all users for admin
   useEffect(() => {

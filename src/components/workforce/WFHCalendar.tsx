@@ -3,15 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useWFH } from '@/hooks/useWFH';
-import { useAuth } from '@/hooks/useAuth';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, isWeekend } from 'date-fns';
-import { Calendar, Home, Users } from 'lucide-react';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, isWeekend } from 'date-fns';
+import { Calendar, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const WFHCalendar: React.FC = () => {
-  const { profile } = useAuth();
   const { allRequests } = useWFH();
-  const isAdmin = profile?.role === 'admin';
 
   const now = new Date();
   const monthStart = startOfMonth(now);

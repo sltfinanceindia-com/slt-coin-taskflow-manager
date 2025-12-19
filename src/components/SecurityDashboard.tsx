@@ -17,8 +17,8 @@ import {
   Database,
   Lock
 } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
+import { useUserRole } from '@/hooks/useUserRole';
 
 interface AuditLog {
   id: string;
@@ -43,11 +43,11 @@ interface SecurityMetric {
 }
 
 export function SecurityDashboard() {
-  const { profile } = useAuth();
+  const { isAdmin } = useUserRole();
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Only show to admins
-  if (profile?.role !== 'admin') {
+  if (!isAdmin) {
     return (
       <Card>
         <CardContent className="p-6">

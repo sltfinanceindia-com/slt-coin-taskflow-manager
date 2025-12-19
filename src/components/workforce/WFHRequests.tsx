@@ -7,12 +7,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useWFH, WFHRequest } from '@/hooks/useWFH';
-import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
 import { CheckCircle, XCircle, Clock, Home, X, Eye, Download } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { exportToCSV } from '@/lib/export';
 import { toast } from 'sonner';
+import { useUserRole } from '@/hooks/useUserRole';
 
 const statusConfig = {
   pending: { label: 'Pending', variant: 'secondary' as const, icon: Clock },
@@ -22,9 +22,8 @@ const statusConfig = {
 };
 
 export const WFHRequests: React.FC = () => {
-  const { profile } = useAuth();
+  const { isAdmin } = useUserRole();
   const { myRequests, allRequests, isLoading, isAdminLoading, reviewRequest, cancelRequest } = useWFH();
-  const isAdmin = profile?.role === 'admin';
   
   const [selectedRequest, setSelectedRequest] = useState<WFHRequest | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');
