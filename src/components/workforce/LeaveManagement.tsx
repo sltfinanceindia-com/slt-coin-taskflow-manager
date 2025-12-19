@@ -1,16 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/hooks/useAuth';
 import { LeaveOverview } from './LeaveOverview';
 import { LeaveRequestForm } from './LeaveRequestForm';
 import { LeaveRequests } from './LeaveRequests';
 import { LeaveBalances } from './LeaveBalances';
 import { Calendar, FileText, Clock, Settings } from 'lucide-react';
+import { useUserRole } from '@/hooks/useUserRole';
 
 export const LeaveManagement: React.FC = () => {
-  const { profile } = useAuth();
-  const isAdmin = profile?.role === 'admin';
+  const { isAdmin } = useUserRole();
 
   return (
     <div className="space-y-4 sm:space-y-6">

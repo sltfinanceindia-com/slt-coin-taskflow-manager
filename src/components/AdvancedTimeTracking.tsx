@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { SimpleLineChart, SimpleBarChart } from '@/components/SimpleChart';
+import { useUserRole } from '@/hooks/useUserRole';
 
 interface SystemActivity {
   timestamp: string;
@@ -35,6 +36,7 @@ interface AdvancedTimeTrackingProps {
 
 export function AdvancedTimeTracking({ userId }: AdvancedTimeTrackingProps) {
   const { profile } = useAuth();
+  const { isAdmin } = useUserRole();
   const [isTracking, setIsTracking] = useState(true);
   const [activityData, setActivityData] = useState<SystemActivity[]>([]);
   const [currentSession, setCurrentSession] = useState({
@@ -44,7 +46,6 @@ export function AdvancedTimeTracking({ userId }: AdvancedTimeTrackingProps) {
     focusScore: 85,
   });
 
-  const isAdmin = profile?.role === 'admin';
   const canViewTracking = isAdmin || userId === profile?.id;
 
   useEffect(() => {

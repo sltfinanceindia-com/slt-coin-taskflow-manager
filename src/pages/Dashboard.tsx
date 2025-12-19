@@ -24,9 +24,11 @@ import { AttendanceTracker } from '@/components/attendance/AttendanceTracker';
 import { Coins, LogOut, User, Clock, CheckCircle, BarChart3, Users, Plus, UserCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
+import { useUserRole } from '@/hooks/useUserRole';
 
 export default function Dashboard() {
   const { user, profile, signOut, loading } = useAuth();
+  const { isAdmin } = useUserRole();
   const { tasks, createTask, updateTaskStatus, verifyTask, updateTask, isCreating, isUpdating } = useTasks();
   const { startSession } = useSessionLogs();
   const { timeLogs, logTime, isLogging, getWeeklyHours } = useTimeLogs();
@@ -74,7 +76,7 @@ export default function Dashboard() {
   // Calculate stats
   const weeklyHours = getWeeklyHours();
   const myTasks = tasks.filter(task => 
-    profile?.role === 'admin' ? true : task.assigned_to === profile?.id
+    isAdmin ? true : task.assigned_to === profile?.id
   );
   const completedTasksCount = myTasks.filter(task => task.status === 'verified').length;
   const pendingCoins = getPendingCoins();
@@ -101,8 +103,8 @@ export default function Dashboard() {
                   <p className="text-xs text-muted-foreground">Task Management System</p>
                 </div>
               </div>
-              <Badge variant={profile?.role === 'admin' ? 'default' : 'secondary'} className="text-xs">
-                {profile?.role === 'admin' ? 'Admin' : 'Intern'}
+              <Badge variant={isAdmin ? 'default' : 'secondary'} className="text-xs">
+                {isAdmin ? 'Admin' : 'Intern'}
               </Badge>
             </div>
             
@@ -147,7 +149,7 @@ export default function Dashboard() {
             <span className="font-bold">{profile?.full_name}</span>!
           </h2>
           <p className="text-base text-gray-600 dark:text-gray-400">
-            {profile?.role === 'admin' 
+            {isAdmin 
               ? 'Manage tasks, track progress, and assign SLT Coins to your team.'
               : 'View your assigned tasks, log your hours, and earn SLT Coins.'
             }
@@ -156,19 +158,19 @@ export default function Dashboard() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="w-full overflow-x-auto">
-            <TabsList className={`grid w-full min-w-max ${profile?.role === 'admin' ? 'grid-cols-9' : 'grid-cols-7'} ${profile?.role === 'admin' ? 'max-w-6xl' : 'max-w-4xl'} mx-auto`}>
+            <TabsList className={`grid w-full min-w-max ${isAdmin ? 'grid-cols-9' : 'grid-cols-7'} ${isAdmin ? 'max-w-6xl' : 'max-w-4xl'} mx-auto`}>
               <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 sm:px-4">Overview</TabsTrigger>
               <TabsTrigger value="tasks" className="text-xs sm:text-sm px-2 sm:px-4">Tasks</TabsTrigger>
               <TabsTrigger value="projects" className="text-xs sm:text-sm px-2 sm:px-4">Projects</TabsTrigger>
               <TabsTrigger value="attendance" className="text-xs sm:text-sm px-2 sm:px-4">Attendance</TabsTrigger>
               <TabsTrigger value="time" className="text-xs sm:text-sm px-2 sm:px-4">Time Logs</TabsTrigger>
-              {profile?.role === 'admin' && (
+              {isAdmin && (
                 <>
                   <TabsTrigger value="coins" className="text-xs sm:text-sm px-2 sm:px-4">Coins</TabsTrigger>
                   <TabsTrigger value="interns" className="text-xs sm:text-sm px-2 sm:px-4">Interns</TabsTrigger>
                 </>
               )}
-              {profile?.role === 'intern' && (
+              {!isAdmin && (
                 <TabsTrigger value="my-coins" className="text-xs sm:text-sm px-2 sm:px-4">My Coins</TabsTrigger>
               )}
               <TabsTrigger value="analytics" className="text-xs sm:text-sm px-2 sm:px-4">Analytics</TabsTrigger>
@@ -183,9 +185,9 @@ export default function Dashboard() {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-2xl font-bold">
-                  {profile?.role === 'admin' ? 'All Tasks' : 'My Tasks'}
+                  {isAdmin ? 'All Tasks' : 'My Tasks'}
                 </h3>
-                {profile?.role === 'admin' && (
+                {isAdmin && (
                   <div className="flex gap-2">
                     <CreateTaskDialog onCreateTask={createTask} isCreating={isCreating} />
                   </div>
@@ -210,7 +212,7 @@ export default function Dashboard() {
                       <CheckCircle className="h-12 w-12 text-muted-foreground mb-4" />
                       <h3 className="text-lg font-semibold mb-2">No tasks yet</h3>
                       <p className="text-muted-foreground text-center max-w-md">
-                        {profile?.role === 'admin' 
+                        {isAdmin 
                           ? "Start by creating tasks for your team members."
                           : "No tasks have been assigned to you yet. Check back later!"
                         }
@@ -234,7 +236,7 @@ export default function Dashboard() {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-2xl font-bold">Time Logs</h3>
-                {profile?.role === 'intern' && (
+                {!isAdmin && (
                   <TimeLogDialog onLogTime={logTime} isLogging={isLogging} />
                 )}
               </div>
@@ -248,7 +250,7 @@ export default function Dashboard() {
                   {timeLogs.length > 0 ? (
                     <div className="space-y-4">
                       {timeLogs
-                        .filter(log => profile?.role === 'admin' || log.user_id === profile?.id)
+                        .filter(log => isAdmin || log.user_id === profile?.id)
                         .slice(0, 10)
                         .map((log) => (
                           <div key={log.id} className="flex items-center justify-between p-4 border rounded-lg">
@@ -257,7 +259,7 @@ export default function Dashboard() {
                               <p className="text-sm text-muted-foreground">
                                 {log.description || 'No description'}
                               </p>
-                              {profile?.role === 'admin' && (
+                              {isAdmin && (
                                 <p className="text-xs text-muted-foreground">
                                   By: {log.user_profile?.full_name}
                                 </p>
@@ -286,7 +288,7 @@ export default function Dashboard() {
             </div>
           </TabsContent>
 
-          {profile?.role === 'admin' && (
+          {isAdmin && (
             <>
               <TabsContent value="coins">
                 <CoinManagement />
@@ -298,7 +300,7 @@ export default function Dashboard() {
             </>
           )}
 
-          {profile?.role === 'intern' && (
+          {!isAdmin && (
             <TabsContent value="my-coins">
               <MyCoins />
             </TabsContent>

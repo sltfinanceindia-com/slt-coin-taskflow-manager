@@ -25,9 +25,11 @@ import { useSessionLogs } from '@/hooks/useSessionLogs';
 import { SimpleLineChart } from '@/components/SimpleChart';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useUserRole } from '@/hooks/useUserRole';
 
 export function EnhancedOverview() {
   const { profile } = useAuth();
+  const { isAdmin } = useUserRole();
   const { stats } = useProfile();
   const { tasks } = useTasks();
   const { getWeeklyHours } = useTimeLogs();
@@ -35,7 +37,7 @@ export function EnhancedOverview() {
   const { getUserSessionStats } = useSessionLogs();
 
   const myTasks = tasks.filter(task => 
-    profile?.role === 'admin' ? true : task.assigned_to === profile?.id
+    isAdmin ? true : task.assigned_to === profile?.id
   );
   
   const pendingTasks = myTasks.filter(task => 
@@ -291,7 +293,7 @@ export function EnhancedOverview() {
       </div>
 
       {/* Session Stats for Admins */}
-      {profile?.role === 'admin' && (
+      {isAdmin && (
         <Card className="card-gradient animate-fade-in" style={{ animationDelay: '550ms' }}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

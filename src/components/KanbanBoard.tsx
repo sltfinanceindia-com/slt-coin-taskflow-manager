@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useUserRole } from '@/hooks/useUserRole';
 
 interface KanbanBoardProps {
   tasks: Task[];
@@ -45,6 +46,7 @@ export function KanbanBoard({
   isUpdating 
 }: KanbanBoardProps) {
   const { profile } = useAuth();
+  const { isAdmin } = useUserRole();
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<KanbanFilters>({
@@ -167,7 +169,7 @@ export function KanbanBoard({
 
   const canUserUpdateStatus = (task: Task, newStatus: Task['status']): boolean => {
     // Admins can change any status and override any employee updates
-    if (profile?.role === 'admin') return true;
+    if (isAdmin) return true;
     
     // Employees can only update their own tasks to specific statuses
     if (task.assigned_to === profile?.id) {
