@@ -95,12 +95,16 @@ export const usePrograms = (portfolioId?: string) => {
 
   const createProgramMutation = useMutation({
     mutationFn: async (data: CreateProgramData) => {
+      // Handle empty owner_id - convert empty string to null
+      const insertData = {
+        ...data,
+        owner_id: data.owner_id && data.owner_id.trim() !== '' ? data.owner_id : null,
+        organization_id: profile?.organization_id,
+      };
+      
       const { data: result, error } = await supabase
         .from('programs')
-        .insert({
-          ...data,
-          organization_id: profile?.organization_id,
-        })
+        .insert(insertData)
         .select()
         .single();
 
@@ -119,9 +123,17 @@ export const usePrograms = (portfolioId?: string) => {
 
   const updateProgramMutation = useMutation({
     mutationFn: async ({ id, ...data }: UpdateProgramData) => {
+      // Handle empty owner_id - convert empty string to null
+      const updateData = {
+        ...data,
+        owner_id: data.owner_id !== undefined 
+          ? (data.owner_id && data.owner_id.trim() !== '' ? data.owner_id : null)
+          : undefined,
+      };
+      
       const { data: result, error } = await supabase
         .from('programs')
-        .update(data)
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();

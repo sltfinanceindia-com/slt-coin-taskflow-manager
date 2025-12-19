@@ -43,31 +43,34 @@ serve(async (req) => {
 
     console.log('✅ User authenticated:', user.id);
 
-    // Check if user has admin role using profiles table
-    const { data: profile, error: roleError } = await supabaseClient
-      .from('profiles')
+    // Check if user has admin role using user_roles table (proper role checking)
+    const { data: userRoles, error: roleError } = await supabaseClient
+      .from('user_roles')
       .select('role')
-      .eq('user_id', user.id)
-      .maybeSingle();
+      .eq('user_id', user.id);
 
-    console.log('Profile lookup result:', { profile, roleError: roleError?.message });
+    console.log('User roles lookup result:', { userRoles, roleError: roleError?.message });
 
     if (roleError) {
       console.error('❌ Database error checking admin role:', roleError);
       throw new Error('Unauthorized: Admin access required');
     }
 
-    if (!profile) {
-      console.error('❌ No profile found for user:', user.id);
+    if (!userRoles || userRoles.length === 0) {
+      console.error('❌ No roles found for user:', user.id);
       throw new Error('Unauthorized: Admin access required');
     }
 
-    if (profile.role !== 'admin') {
-      console.error('❌ User is not an admin. Role:', profile.role);
+    const hasAdminRole = userRoles.some(r => 
+      r.role === 'admin' || r.role === 'org_admin' || r.role === 'super_admin'
+    );
+
+    if (!hasAdminRole) {
+      console.error('❌ User does not have admin role. Roles:', userRoles.map(r => r.role));
       throw new Error('Unauthorized: Admin access required');
     }
 
-    console.log('✅ Admin role verified');
+    console.log('✅ Admin role verified via user_roles table');
 
     // Parse request body
     const body = await req.json();
