@@ -128,9 +128,17 @@ export const usePortfolios = () => {
 
   const updatePortfolioMutation = useMutation({
     mutationFn: async ({ id, ...data }: UpdatePortfolioData) => {
+      // Handle empty owner_id - convert empty string to null
+      const updateData = {
+        ...data,
+        owner_id: data.owner_id !== undefined 
+          ? (data.owner_id && data.owner_id.trim() !== '' ? data.owner_id : null)
+          : undefined,
+      };
+      
       const { data: result, error } = await supabase
         .from('portfolios')
-        .update(data)
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();

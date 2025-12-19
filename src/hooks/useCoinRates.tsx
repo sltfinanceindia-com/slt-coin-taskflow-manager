@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 
 export interface CoinRate {
   id: string;
@@ -11,15 +12,17 @@ export interface CoinRate {
   market_cap: number | null;
   notes: string | null;
   created_by: string | null;
+  organization_id: string | null;
   created_at: string;
   updated_at: string;
 }
 
 export function useCoinRates() {
   const queryClient = useQueryClient();
+  const { profile } = useAuth();
   
   const coinRatesQuery = useQuery({
-    queryKey: ['coin-rates'],
+    queryKey: ['coin-rates', profile?.organization_id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('coin_rates')
@@ -29,24 +32,26 @@ export function useCoinRates() {
       if (error) throw error;
       return data as CoinRate[];
     },
+    enabled: !!profile?.organization_id,
     staleTime: 0,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
   });
 
   const latestRateQuery = useQuery({
-    queryKey: ['latest-coin-rate'],
+    queryKey: ['latest-coin-rate', profile?.organization_id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('coin_rates')
         .select('*')
         .order('rate_date', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      return data as CoinRate;
+      return data as CoinRate | null;
     },
+    enabled: !!profile?.organization_id,
     staleTime: 0,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
