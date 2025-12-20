@@ -51,7 +51,7 @@ interface PermissionsData {
 
 export function usePermissions(): PermissionsData {
   const { profile } = useAuth();
-  const { isSuperAdmin, isOrgAdmin, isAdmin, role } = useUserRole();
+  const { isSuperAdmin, isOrgAdmin, isAdmin, isManager, isTeamLead, role } = useUserRole();
   const [permissions, setPermissions] = useState<ModulePermission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -62,8 +62,9 @@ export function usePermissions(): PermissionsData {
     }
 
     try {
-      // If super admin or org admin, grant full permissions
-      if (isSuperAdmin || isOrgAdmin) {
+      // If super admin, org admin, or admin - grant full permissions
+      // Note: org_admin and admin have the SAME privileges
+      if (isSuperAdmin || isOrgAdmin || isAdmin) {
         const fullPermissions: ModulePermission[] = [
           'tasks', 'attendance', 'leave', 'time_logs', 'projects', 
           'employees', 'reports', 'coins', 'settings', 'communication', 
@@ -121,7 +122,7 @@ export function usePermissions(): PermissionsData {
     } finally {
       setIsLoading(false);
     }
-  }, [profile?.id, isSuperAdmin, isOrgAdmin, role]);
+  }, [profile?.id, isSuperAdmin, isOrgAdmin, isAdmin, role]);
 
   useEffect(() => {
     fetchPermissions();
@@ -132,45 +133,46 @@ export function usePermissions(): PermissionsData {
   }, [permissions]);
 
   const canView = useCallback((module: ModuleName): boolean => {
-    if (isSuperAdmin || isOrgAdmin) return true;
+    if (isSuperAdmin || isOrgAdmin || isAdmin) return true;
     return getPermission(module)?.can_view ?? false;
-  }, [getPermission, isSuperAdmin, isOrgAdmin]);
+  }, [getPermission, isSuperAdmin, isOrgAdmin, isAdmin]);
 
   const canCreate = useCallback((module: ModuleName): boolean => {
-    if (isSuperAdmin || isOrgAdmin) return true;
+    if (isSuperAdmin || isOrgAdmin || isAdmin) return true;
     return getPermission(module)?.can_create ?? false;
-  }, [getPermission, isSuperAdmin, isOrgAdmin]);
+  }, [getPermission, isSuperAdmin, isOrgAdmin, isAdmin]);
 
   const canEdit = useCallback((module: ModuleName): boolean => {
-    if (isSuperAdmin || isOrgAdmin) return true;
+    if (isSuperAdmin || isOrgAdmin || isAdmin) return true;
     return getPermission(module)?.can_edit ?? false;
-  }, [getPermission, isSuperAdmin, isOrgAdmin]);
+  }, [getPermission, isSuperAdmin, isOrgAdmin, isAdmin]);
 
   const canDelete = useCallback((module: ModuleName): boolean => {
-    if (isSuperAdmin || isOrgAdmin) return true;
+    if (isSuperAdmin || isOrgAdmin || isAdmin) return true;
     return getPermission(module)?.can_delete ?? false;
-  }, [getPermission, isSuperAdmin, isOrgAdmin]);
+  }, [getPermission, isSuperAdmin, isOrgAdmin, isAdmin]);
 
   const canApprove = useCallback((module: ModuleName): boolean => {
-    if (isSuperAdmin || isOrgAdmin) return true;
+    if (isSuperAdmin || isOrgAdmin || isAdmin) return true;
     return getPermission(module)?.can_approve ?? false;
-  }, [getPermission, isSuperAdmin, isOrgAdmin]);
+  }, [getPermission, isSuperAdmin, isOrgAdmin, isAdmin]);
 
   const canExport = useCallback((module: ModuleName): boolean => {
-    if (isSuperAdmin || isOrgAdmin) return true;
+    if (isSuperAdmin || isOrgAdmin || isAdmin) return true;
     return getPermission(module)?.can_export ?? false;
-  }, [getPermission, isSuperAdmin, isOrgAdmin]);
+  }, [getPermission, isSuperAdmin, isOrgAdmin, isAdmin]);
 
   const getVisibilityScope = useCallback((module: ModuleName): VisibilityScope => {
-    if (isSuperAdmin || isOrgAdmin) return 'all';
+    if (isSuperAdmin || isOrgAdmin || isAdmin) return 'all';
     return getPermission(module)?.visibility_scope ?? 'own';
-  }, [getPermission, isSuperAdmin, isOrgAdmin]);
+  }, [getPermission, isSuperAdmin, isOrgAdmin, isAdmin]);
 
   const hasAnyPermission = useCallback((module: ModuleName): boolean => {
+    if (isSuperAdmin || isOrgAdmin || isAdmin) return true;
     const perm = getPermission(module);
-    if (!perm) return isSuperAdmin || isOrgAdmin;
+    if (!perm) return false;
     return perm.can_view || perm.can_create || perm.can_edit || perm.can_delete || perm.can_approve;
-  }, [getPermission, isSuperAdmin, isOrgAdmin]);
+  }, [getPermission, isSuperAdmin, isOrgAdmin, isAdmin]);
 
   return {
     permissions,
