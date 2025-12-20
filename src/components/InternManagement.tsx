@@ -301,7 +301,7 @@ export function InternManagement() {
               </div>
 
               <div>
-                <Label htmlFor="employee_id">Employee ID (Optional)</Label>
+                <Label htmlFor="employee_id">Employee ID</Label>
                 <Input
                   id="employee_id"
                   {...register('employee_id')}
@@ -310,7 +310,7 @@ export function InternManagement() {
               </div>
 
               <div>
-                <Label htmlFor="department">Department (Optional)</Label>
+                <Label htmlFor="department">Department</Label>
                 <Input
                   id="department"
                   {...register('department')}
