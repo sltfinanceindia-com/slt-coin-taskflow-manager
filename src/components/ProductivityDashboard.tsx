@@ -15,6 +15,7 @@ import {
   Calendar
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import { useSessionLogs } from '@/hooks/useSessionLogs';
 import { useTasks } from '@/hooks/useTasks';
 import { SimpleLineChart, SimpleBarChart } from '@/components/SimpleChart';
@@ -26,11 +27,11 @@ interface ProductivityDashboardProps {
 
 export function ProductivityDashboard({ userId }: ProductivityDashboardProps) {
   const { profile } = useAuth();
+  const { isAdmin } = useUserRole();
   const { getUserSessionStats } = useSessionLogs();
   const { tasks } = useTasks();
 
   const targetUserId = userId || profile?.id;
-  const isAdmin = profile?.role === 'admin';
   const isOwnDashboard = !userId || userId === profile?.id;
 
   const sessionStats = getUserSessionStats(targetUserId);

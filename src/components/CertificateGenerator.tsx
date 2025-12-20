@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Download, Award, FileText, Share2, Calendar } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import jsPDF from 'jspdf';
@@ -36,6 +37,7 @@ interface CertificateGeneratorProps {
 
 export function CertificateGenerator({ internData, onClose }: CertificateGeneratorProps) {
   const { profile } = useAuth();
+  const { isAdmin } = useUserRole();
   const certificateRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [template, setTemplate] = useState('formal');
@@ -60,7 +62,6 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
     authorityName: 'Rajesh Kumar',
   });
 
-  const isAdmin = profile?.role === 'admin';
   const isIntern = profile?.role === 'intern';
   
   // Check eligibility for interns

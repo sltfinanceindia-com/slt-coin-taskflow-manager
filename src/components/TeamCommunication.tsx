@@ -29,6 +29,7 @@ import {
   Clock
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import { toast } from '@/hooks/use-toast';
 import { format, isToday, isYesterday, formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
@@ -88,6 +89,7 @@ interface Profile {
 
 export function TeamCommunication() {
   const { profile } = useAuth();
+  const { isAdmin } = useUserRole();
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -415,7 +417,7 @@ export function TeamCommunication() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Team Communication</h2>
               <div className="flex items-center gap-1">
-                {profile?.role === 'admin' && channels.length === 0 && (
+                {isAdmin && channels.length === 0 && (
                   <Button size="sm" variant="ghost" onClick={createDefaultChannels}>
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -495,7 +497,7 @@ export function TeamCommunication() {
                   <div className="text-center py-12">
                     <MessageSquare className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
                     <p className="text-sm text-muted-foreground">
-                      {profile?.role === 'admin' 
+                      {isAdmin 
                         ? 'Click + to create the first channel'
                         : 'No channels available yet'
                       }

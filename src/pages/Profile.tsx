@@ -1,4 +1,5 @@
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +11,7 @@ import { useState } from 'react';
 
 export default function Profile() {
   const { user, profile, loading } = useAuth();
+  const { isAdmin } = useUserRole();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
 
@@ -76,8 +78,8 @@ export default function Profile() {
                 </div>
                 <CardTitle className="text-lg sm:text-2xl truncate">{profile?.full_name}</CardTitle>
                 <CardDescription className="text-base sm:text-lg mt-1">
-                <Badge variant={profile?.role === 'admin' ? 'default' : 'secondary'} className="text-xs sm:text-sm">
-                    {profile?.role === 'admin' ? 'Administrator' : 'Employee'}
+                <Badge variant={isAdmin ? 'default' : 'secondary'} className="text-xs sm:text-sm">
+                    {isAdmin ? 'Administrator' : profile?.role || 'Employee'}
                   </Badge>
                 </CardDescription>
               </CardHeader>

@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Clock, CheckCircle, AlertTriangle, XCircle, Send } from 'lucide-react';
 import { Task } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 
 interface TaskActionsProps {
   task: Task;
@@ -14,13 +15,13 @@ interface TaskActionsProps {
 
 export function TaskActions({ task, onUpdateStatus, onVerifyTask }: TaskActionsProps) {
   const { profile } = useAuth();
+  const { isAdmin } = useUserRole();
   const [submissionNotes, setSubmissionNotes] = useState('');
   const [adminFeedback, setAdminFeedback] = useState('');
   const [showSubmissionForm, setShowSubmissionForm] = useState(false);
   const [showVerificationForm, setShowVerificationForm] = useState(false);
 
   const isAssignedToMe = task.assigned_to === profile?.id;
-  const isAdmin = profile?.role === 'admin';
 
   const handleStartTask = () => {
     onUpdateStatus(task.id, 'in_progress');

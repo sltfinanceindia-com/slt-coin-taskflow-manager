@@ -24,6 +24,7 @@ import {
   Filter
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import { useTasks } from '@/hooks/useTasks';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
 import { ProductivityDashboard } from '@/components/ProductivityDashboard';
@@ -39,10 +40,10 @@ interface EnhancedDashboardProps {
 
 export function EnhancedDashboard({ userId }: EnhancedDashboardProps) {
   const { profile } = useAuth();
+  const { isAdmin } = useUserRole();
   const { tasks } = useTasks();
   const { timeLogs, getWeeklyHours, getMonthlyHours } = useTimeLogs();
 
-  const isAdmin = profile?.role === 'admin';
   const targetUserId = userId || profile?.id;
   
   // Calculate user-specific metrics
