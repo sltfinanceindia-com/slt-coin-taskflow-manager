@@ -496,85 +496,87 @@ export default function FeedbackRewards() {
 
   return (
     <SuperAdminLayout>
-      <div className="p-8 max-w-7xl mx-auto">
+      <div className="space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Feedback & Rewards Management</h1>
-          <p className="text-muted-foreground">Manage user feedback and scratch card verifications</p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Feedback & Rewards</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">Manage user feedback and scratch card verifications</p>
+          </div>
         </div>
 
         {/* Stats Dashboard */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Feedback</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-6 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Total Feedback</CardTitle>
+              <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{feedbackResponses.length}</div>
-              <p className="text-xs text-muted-foreground">
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-lg sm:text-2xl font-bold">{feedbackResponses.length}</div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">
                 {feedbackStats?.referred_users || 0} via referral
               </p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Avg NPS Score</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-6 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Avg NPS Score</CardTitle>
+              <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-lg sm:text-2xl font-bold">
                 {feedbackStats?.avg_nps?.toFixed(1) || '0.0'}/10
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[10px] sm:text-xs text-muted-foreground">
                 Satisfaction: {feedbackStats?.avg_satisfaction?.toFixed(1) || '0.0'}/5
               </p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Pending Verification</CardTitle>
-              <Clock className="h-4 w-4 text-yellow-600" />
+            <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-6 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Pending</CardTitle>
+              <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-600" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">{pendingCards.length}</div>
-              <p className="text-xs text-muted-foreground">
-                Total value: ₹{pendingCards.reduce((sum, card) => sum + card.card_value, 0)}
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-lg sm:text-2xl font-bold text-yellow-600">{pendingCards.length}</div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">
+                ₹{pendingCards.reduce((sum, card) => sum + card.card_value, 0)}
               </p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Payout</CardTitle>
-              <Gift className="h-4 w-4 text-green-600" />
+            <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-6 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Total Payout</CardTitle>
+              <Gift className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-600" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-lg sm:text-2xl font-bold text-green-600">
                 ₹{scratchCardStats.reduce((sum, stat) => sum + stat.paid_value, 0)}
               </div>
-              <p className="text-xs text-muted-foreground">
-                {verifiedCards.length} cards verified
+              <p className="text-[10px] sm:text-xs text-muted-foreground">
+                {verifiedCards.length} verified
               </p>
             </CardContent>
           </Card>
         </div>
 
         {/* Scratch Card Stats */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Scratch Card Statistics</CardTitle>
+        <Card>
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-base sm:text-lg">Scratch Card Statistics</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               {scratchCardStats.map(stat => (
-                <div key={stat.card_type} className="border rounded-lg p-4">
-                  <h4 className="font-semibold mb-2 capitalize">
+                <div key={stat.card_type} className="border rounded-lg p-3 sm:p-4">
+                  <h4 className="font-semibold mb-2 capitalize text-sm sm:text-base">
                     {stat.card_type.replace('_', ' ')}
                   </h4>
-                  <div className="space-y-1 text-sm">
+                  <div className="space-y-1 text-xs sm:text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Issued:</span>
                       <span className="font-medium">{stat.total_issued}</span>
@@ -604,50 +606,89 @@ export default function FeedbackRewards() {
 
         {/* Tabs */}
         <Tabs defaultValue="feedback" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="feedback">
-              <FileText className="h-4 w-4 mr-2" />
-              All Feedback ({feedbackResponses.length})
-            </TabsTrigger>
-            <TabsTrigger value="pending">
-              Pending Cards ({pendingCards.length})
-            </TabsTrigger>
-            <TabsTrigger value="verified">
-              Verified ({verifiedCards.length})
-            </TabsTrigger>
-            <TabsTrigger value="rejected">
-              Rejected ({rejectedCards.length})
-            </TabsTrigger>
-            <TabsTrigger value="expired">
-              Expired ({expiredCards.length})
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+            <TabsList className="inline-flex w-auto min-w-full sm:w-auto gap-1">
+              <TabsTrigger value="feedback" className="text-xs sm:text-sm whitespace-nowrap px-2 sm:px-3">
+                <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                Feedback ({feedbackResponses.length})
+              </TabsTrigger>
+              <TabsTrigger value="pending" className="text-xs sm:text-sm whitespace-nowrap px-2 sm:px-3">
+                Pending ({pendingCards.length})
+              </TabsTrigger>
+              <TabsTrigger value="verified" className="text-xs sm:text-sm whitespace-nowrap px-2 sm:px-3">
+                Verified ({verifiedCards.length})
+              </TabsTrigger>
+              <TabsTrigger value="rejected" className="text-xs sm:text-sm whitespace-nowrap px-2 sm:px-3">
+                Rejected ({rejectedCards.length})
+              </TabsTrigger>
+              <TabsTrigger value="expired" className="text-xs sm:text-sm whitespace-nowrap px-2 sm:px-3">
+                Expired ({expiredCards.length})
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* FEEDBACK TAB - COMPLETE */}
           <TabsContent value="feedback">
             <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>All Feedback Responses ({feedbackResponses.length})</CardTitle>
-                  <div className="flex gap-2">
+              <CardHeader className="p-4 sm:p-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
+                  <CardTitle className="text-base sm:text-lg">All Feedback ({feedbackResponses.length})</CardTitle>
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <div className="relative">
                       <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                       <Input
                         placeholder="Search feedback..."
                         value={feedbackSearchQuery}
                         onChange={(e) => setFeedbackSearchQuery(e.target.value)}
-                        className="pl-8 w-64"
+                        className="pl-8 w-full sm:w-64 h-10"
                       />
                     </div>
-                    <Button variant="outline" size="sm" onClick={exportFeedbackToCSV}>
+                    <Button variant="outline" size="sm" onClick={exportFeedbackToCSV} className="h-10 w-full sm:w-auto">
                       <Download className="h-4 w-4 mr-2" />
-                      Export All
+                      Export
                     </Button>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="rounded-md border">
+              <CardContent className="p-0">
+                {/* Mobile Card View */}
+                <div className="block md:hidden divide-y">
+                  {filteredFeedback.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground p-4">
+                      {feedbackSearchQuery ? 'No feedback matches your search' : 'No feedback responses yet'}
+                    </div>
+                  ) : (
+                    filteredFeedback.map(fb => {
+                      const data = fb.response_data || {};
+                      return (
+                        <div key={fb.id} className="p-4 space-y-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="font-medium truncate">{fb.user_name}</p>
+                              <p className="text-xs text-muted-foreground truncate">{fb.user_email}</p>
+                            </div>
+                            <Button variant="ghost" size="sm" onClick={() => setSelectedFeedback(fb)}>
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <div className="flex flex-wrap gap-2 text-xs">
+                            <Badge variant="outline" className="capitalize">
+                              {data.role?.replace('_', ' ') || 'N/A'}
+                            </Badge>
+                            {renderNPSBadge(data.nps_score)}
+                          </div>
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <span>{data.industry || 'N/A'}</span>
+                            <span>{new Date(fb.submission_date).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -776,30 +817,30 @@ export default function FeedbackRewards() {
           {/* PENDING CARDS TAB */}
           <TabsContent value="pending">
             <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>Pending Verification</CardTitle>
-                  <div className="flex gap-2">
+              <CardHeader className="p-4 sm:p-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
+                  <CardTitle className="text-base sm:text-lg">Pending Verification</CardTitle>
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <div className="relative">
                       <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                       <Input
                         placeholder="Search..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-8 w-64"
+                        className="pl-8 w-full sm:w-64 h-10"
                       />
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => exportToCSV(pendingCards, 'pending-cards.csv')}>
+                    <Button variant="outline" size="sm" onClick={() => exportToCSV(pendingCards, 'pending-cards.csv')} className="h-10 w-full sm:w-auto">
                       <Download className="h-4 w-4 mr-2" />
                       Export
                     </Button>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <div className="space-y-3 sm:space-y-4">
                   {filteredPendingCards.map(card => (
-                    <div key={card.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                    <div key={card.id} className="border rounded-lg p-3 sm:p-4 hover:bg-muted/50 transition-colors">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
