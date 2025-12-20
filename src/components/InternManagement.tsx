@@ -97,13 +97,15 @@ export function InternManagement() {
       // Create a map of user_id to role
       const roleMap = new Map(rolesData?.map(r => [r.user_id, r.role]) || []);
       
-      // Merge profiles with roles from user_roles table, filter out super_admin and admin
+      // Merge profiles with roles from user_roles table
+      // Filter out super_admin but keep org_admin (they are normal admins for the org)
       const mergedData = (profilesData || [])
         .map(p => ({
           ...p,
-          role: roleMap.get(p.id) || p.role || 'intern'
+          // Use user_id to look up role since that's what user_roles uses
+          role: roleMap.get(p.user_id) || roleMap.get(p.id) || p.role || 'intern'
         }))
-        .filter(p => !['admin', 'super_admin'].includes(p.role));
+        .filter(p => p.role !== 'super_admin');
       
       return mergedData as Profile[];
     },
