@@ -186,11 +186,15 @@ export function InternManagement() {
     },
   });
 
-  // Delete intern mutation
+  // Delete intern mutation - uses secure edge function instead of client-side admin API
   const deleteInternMutation = useMutation({
     mutationFn: async (userId: string) => {
-      const { error } = await supabase.auth.admin.deleteUser(userId);
+      const { data, error } = await supabase.functions.invoke('admin-delete-user', {
+        body: { userId }
+      });
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['interns'] });
