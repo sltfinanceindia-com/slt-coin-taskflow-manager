@@ -5,6 +5,7 @@ import { useViewMode } from '@/hooks/useViewMode';
 import { useTasks } from '@/hooks/useTasks';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useOrganization } from '@/hooks/useOrganization';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -59,9 +60,12 @@ export default function ModernDashboard() {
   const { isViewingSuperAdmin, isViewingOrgAdmin, canSwitchView } = useViewMode();
   const { tasks, createTask, updateTaskStatus, verifyTask, updateTask, isCreating, isUpdating } = useTasks();
   const { timeLogs, logTime, isLogging } = useTimeLogs();
+  const { organization } = useOrganization();
   const [activeTab, setActiveTab] = useState('overview');
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  
+  const coinName = organization?.coin_name || 'SLT Coins';
 
   // Listen for navigation events from dashboard widgets
   useEffect(() => {
@@ -369,8 +373,8 @@ export default function ModernDashboard() {
                     </div>
                     <p className="text-muted-foreground text-xs sm:text-sm lg:text-base leading-relaxed">
                       {isAdmin 
-                        ? 'Manage tasks, track progress, and assign SLT Coins to your team.'
-                        : 'View your assigned tasks, log your hours, and earn SLT Coins.'
+                        ? `Manage tasks, track progress, and assign ${coinName} to your team.`
+                        : `View your assigned tasks, log your hours, and earn ${coinName}.`
                       }
                     </p>
                   </header>

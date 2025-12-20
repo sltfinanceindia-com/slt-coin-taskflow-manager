@@ -8447,6 +8447,10 @@ export type Database = {
         Args: { p_created_by?: string; p_org_id: string }
         Returns: undefined
       }
+      is_admin_user: {
+        Args: { _organization_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_any_admin: { Args: { p_user_id?: string }; Returns: boolean }
       is_channel_member: {
         Args: { p_channel_id: string; p_profile_id: string }

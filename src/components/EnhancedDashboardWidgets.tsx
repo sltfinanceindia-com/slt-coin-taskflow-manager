@@ -23,6 +23,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useTasks } from '@/hooks/useTasks';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
 import { useCoinTransactions } from '@/hooks/useCoinTransactions';
+import { useOrganization } from '@/hooks/useOrganization';
 import { SimpleLineChart } from '@/components/SimpleChart';
 import { useCommunication } from '@/hooks/useCommunication';
 
@@ -34,6 +35,9 @@ export function EnhancedDashboardWidgets() {
   const { getTotalEarned, getPendingCoins } = useCoinTransactions();
   const { isAdmin } = useUserRole();
   const { channels, teamMembers, status: commStatus } = useCommunication();
+  const { organization } = useOrganization();
+  
+  const coinName = organization?.coin_name || 'SLT Coins';
 
   // Calculate unread messages
   const unreadCount = channels.reduce((acc, channel) => acc + (channel.unread_count || 0), 0);
@@ -105,7 +109,7 @@ export function EnhancedDashboardWidgets() {
       trending: completedThisWeek.length > 0,
     },
     {
-      title: 'SLT Coins Earned',
+      title: `${coinName} Earned`,
       value: totalEarned,
       icon: Coins,
       color: 'text-coin-gold',

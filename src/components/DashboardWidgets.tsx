@@ -7,13 +7,17 @@ import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { useTasks } from '@/hooks/useTasks';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
+import { useOrganization } from '@/hooks/useOrganization';
 
 export function DashboardWidgets() {
   const { profile } = useAuth();
   const { stats } = useProfile();
   const { tasks } = useTasks();
   const { getWeeklyHours } = useTimeLogs();
+  const { organization } = useOrganization();
 
+  const coinName = organization?.coin_name || 'SLT Coins';
+  
   const myTasks = tasks.filter(task => task.assigned_to === profile?.id);
   const pendingTasks = myTasks.filter(task => 
     task.status === 'assigned' || task.status === 'in_progress'
@@ -23,7 +27,7 @@ export function DashboardWidgets() {
 
   const widgets = [
     {
-      title: 'SLT Coins Earned',
+      title: `${coinName} Earned`,
       value: stats?.totalCoins || 0,
       icon: Coins,
       color: 'text-yellow-500',

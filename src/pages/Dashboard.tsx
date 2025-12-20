@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTasks } from '@/hooks/useTasks';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
 import { useCoinTransactions } from '@/hooks/useCoinTransactions';
+import { useOrganization } from '@/hooks/useOrganization';
 import { Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,7 +34,10 @@ export default function Dashboard() {
   const { startSession } = useSessionLogs();
   const { timeLogs, logTime, isLogging, getWeeklyHours } = useTimeLogs();
   const { getTotalEarned, getPendingCoins } = useCoinTransactions();
+  const { organization } = useOrganization();
   const [activeTab, setActiveTab] = useState('overview');
+  
+  const coinName = organization?.coin_name || 'SLT Coins';
 
   if (loading) {
     return (
@@ -114,7 +118,7 @@ export default function Dashboard() {
                 <Coins className="h-4 w-4 text-coin-gold" />
                 <span className="font-semibold text-coin-gold text-sm sm:text-base">
                   {profile?.total_coins || 0}
-                  <span className="hidden sm:inline"> SLT Coins</span>
+                  <span className="hidden sm:inline"> {coinName}</span>
                 </span>
                 {pendingCoins > 0 && (
                   <Badge variant="outline" className="text-xs">
@@ -150,8 +154,8 @@ export default function Dashboard() {
           </h2>
           <p className="text-base text-gray-600 dark:text-gray-400">
             {isAdmin 
-              ? 'Manage tasks, track progress, and assign SLT Coins to your team.'
-              : 'View your assigned tasks, log your hours, and earn SLT Coins.'
+              ? `Manage tasks, track progress, and assign ${coinName} to your team.`
+              : `View your assigned tasks, log your hours, and earn ${coinName}.`
             }
           </p>
         </div>
