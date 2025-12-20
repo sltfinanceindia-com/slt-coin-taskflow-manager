@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Coins, X, AlertCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { validateTaskData } from '@/utils/security';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -39,13 +40,18 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
     end_date: '',
   });
 
-  // Fetch employee profiles (including interns)
+  const { profile } = useAuth();
+
+  // Fetch employee profiles (including interns) from the same organization
   const { data: employees } = useQuery({
-    queryKey: ['assignable-employees'],
+    queryKey: ['assignable-employees', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, email')
+        .eq('organization_id', profile.organization_id)
         .in('role', ['intern', 'employee'])
         .eq('is_active', true)
         .order('full_name');
@@ -53,6 +59,7 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
       if (error) throw error;
       return data;
     },
+    enabled: !!profile?.organization_id,
   });
 
   const handleSubmit = (e: React.FormEvent) => {

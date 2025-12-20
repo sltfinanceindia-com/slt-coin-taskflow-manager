@@ -33,23 +33,29 @@ export function CoinRateManagement() {
     notes: "",
   });
 
-  // Fetch coin rates
+  // Fetch coin rates for this organization only
   const { data: rates, isLoading } = useQuery({
-    queryKey: ["coin-rates"],
+    queryKey: ["coin-rates", profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
+      
       const { data, error } = await supabase
         .from("coin_rates")
         .select("*, created_by:profiles(full_name)")
+        .eq("organization_id", profile.organization_id)
         .order("rate_date", { ascending: false });
 
       if (error) throw error;
       return data;
     },
+    enabled: !!profile?.organization_id,
   });
 
   // Add new rate mutation
   const addRateMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
+      if (!profile?.organization_id) throw new Error("No organization found");
+      
       const { error } = await supabase.from("coin_rates").insert({
         rate: parseFloat(data.rate),
         change_percentage: data.change_percentage ? parseFloat(data.change_percentage) : null,
@@ -57,6 +63,7 @@ export function CoinRateManagement() {
         market_cap: data.market_cap ? parseFloat(data.market_cap) : null,
         notes: data.notes || null,
         created_by: profile?.id,
+        organization_id: profile.organization_id,
       });
 
       if (error) throw error;
