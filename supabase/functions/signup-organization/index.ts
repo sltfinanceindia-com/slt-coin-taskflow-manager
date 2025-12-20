@@ -247,6 +247,15 @@ serve(async (req) => {
       onConflict: 'user_id'
     });
 
+    // 7. Initialize organization defaults (request types, leave types, attendance settings)
+    try {
+      await supabaseAdmin.rpc('initialize_organization_defaults', { p_org_id: orgData.id });
+      console.log('Organization defaults initialized for:', orgData.id);
+    } catch (initError) {
+      console.error('Failed to initialize organization defaults:', initError);
+      // Non-critical - continue even if defaults fail
+    }
+
     console.log('Signup completed successfully for:', email);
 
     return new Response(

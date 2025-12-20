@@ -24,9 +24,12 @@ export function useCoinRates() {
   const coinRatesQuery = useQuery({
     queryKey: ['coin-rates', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
+      
       const { data, error } = await supabase
         .from('coin_rates')
         .select('*')
+        .eq('organization_id', profile.organization_id)
         .order('rate_date', { ascending: false });
 
       if (error) throw error;
@@ -41,9 +44,12 @@ export function useCoinRates() {
   const latestRateQuery = useQuery({
     queryKey: ['latest-coin-rate', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return null;
+      
       const { data, error } = await supabase
         .from('coin_rates')
         .select('*')
+        .eq('organization_id', profile.organization_id)
         .order('rate_date', { ascending: false })
         .limit(1)
         .maybeSingle();
