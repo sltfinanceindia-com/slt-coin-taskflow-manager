@@ -34,6 +34,9 @@ import SuperAdminSettings from "./pages/super-admin/SuperAdminSettings";
 import BillingDashboard from "./pages/super-admin/BillingDashboard";
 import SubscriptionAnalytics from "./pages/super-admin/SubscriptionAnalytics";
 import PlansManagement from "./pages/super-admin/PlansManagement";
+import SystemHealth from "./pages/super-admin/SystemHealth";
+import AuditTrail from "./pages/super-admin/AuditTrail";
+import PlatformAnnouncements from "./pages/super-admin/PlatformAnnouncements";
 import OrganizationSettings from "./pages/admin/OrganizationSettings";
 import RolesPermissions from "./pages/settings/RolesPermissions";
 import OrgChartPage from "./pages/organization/OrgChart";
@@ -111,6 +114,9 @@ function AppContent() {
           <Route path="/super-admin/plans" element={<ProtectedRoute><PlansManagement /></ProtectedRoute>} />
           <Route path="/super-admin/settings" element={<ProtectedRoute><SuperAdminSettings /></ProtectedRoute>} />
           <Route path="/super-admin/feedback-rewards" element={<ProtectedRoute><FeedbackRewards /></ProtectedRoute>} />
+          <Route path="/super-admin/health" element={<ProtectedRoute><SystemHealth /></ProtectedRoute>} />
+          <Route path="/super-admin/audit" element={<ProtectedRoute><AuditTrail /></ProtectedRoute>} />
+          <Route path="/super-admin/announcements" element={<ProtectedRoute><PlatformAnnouncements /></ProtectedRoute>} />
           
           {/* Public Routes */}
           <Route path="/feedback" element={<FeedbackPage />} />

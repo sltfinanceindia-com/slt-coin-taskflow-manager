@@ -16,7 +16,11 @@ export function ProfileDashboard() {
   const navigate = useNavigate();
   const { profile: currentProfile } = useAuth();
   const { profile, stats, updateProfile, isUpdating } = useProfile();
+  const { role } = useUserRole();
   const [isEditing, setIsEditing] = useState(false);
+  
+  // Use role from useUserRole (authoritative) or fallback
+  const displayRole = role || profile?.role || 'employee';
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || '',
     bio: profile?.bio || '',
@@ -93,8 +97,8 @@ export function ProfileDashboard() {
                   <div className="min-w-0">
                     <CardTitle className="text-xl sm:text-2xl truncate">{profile.full_name}</CardTitle>
                     <CardDescription className="text-sm sm:text-base truncate">{profile.email}</CardDescription>
-                    <Badge variant="secondary" className="mt-2 text-xs">
-                      {profile.role === 'admin' ? 'Administrator' : 'Intern'}
+                    <Badge variant={getRoleBadgeVariant(displayRole)} className="mt-2 text-xs">
+                      {roleDisplayNames[displayRole] || displayRole}
                     </Badge>
                   </div>
                   <Button
