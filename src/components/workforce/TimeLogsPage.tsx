@@ -7,21 +7,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
 import { useTasks } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useWFHMode } from '@/hooks/useWFHMode';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { exportToCSV, formatDateForExport } from '@/lib/export';
 import { format, subDays, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
-import { Clock, Download, Search, Filter, Calendar } from 'lucide-react';
+import { Clock, Download, Search, Filter, Calendar, Home } from 'lucide-react';
 
 export function TimeLogsPage() {
   const { timeLogs, isLoading, getWeeklyHours, getMonthlyHours } = useTimeLogs();
   const { tasks } = useTasks();
   const { profile } = useAuth();
   const { isAdmin } = useUserRole();
+  const { isWFH, canExport } = useWFHMode();
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -151,10 +154,28 @@ export function TimeLogsPage() {
           <h1 className="text-2xl font-bold tracking-tight">Time Logs</h1>
           <p className="text-muted-foreground text-sm">Track and manage working hours</p>
         </div>
-        <Button onClick={handleExport} variant="outline" disabled={filteredLogs.length === 0}>
-          <Download className="h-4 w-4 mr-2" />
-          Export CSV
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <Button 
+                  onClick={handleExport} 
+                  variant="outline" 
+                  disabled={filteredLogs.length === 0 || !canExport}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export CSV
+                  {isWFH && !canExport && <Home className="h-3 w-3 ml-1 text-muted-foreground" />}
+                </Button>
+              </span>
+            </TooltipTrigger>
+            {isWFH && !canExport && (
+              <TooltipContent>
+                <p>Export is disabled while working from home</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       {/* Stats Cards */}
