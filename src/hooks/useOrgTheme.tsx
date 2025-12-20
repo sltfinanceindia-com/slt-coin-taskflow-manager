@@ -48,7 +48,7 @@ export function useOrgTheme(): OrgThemeColors & { isLoading: boolean } {
   return {
     primary: organization?.primary_color || undefined,
     secondary: organization?.secondary_color || undefined,
-    coinName: organization?.coin_name || 'SLT Coin',
+    coinName: organization?.coin_name || 'Coins',
     coinRate: organization?.coin_rate || 1.0,
     isLoading,
   };

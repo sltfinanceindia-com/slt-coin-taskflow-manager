@@ -2,6 +2,7 @@ import { useCoinTransactions } from '@/hooks/useCoinTransactions';
 import { useTasks } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
 import { useCoinRates } from '@/hooks/useCoinRates';
+import { useOrganization } from '@/hooks/useOrganization';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,9 +13,12 @@ import { formatINR, formatCoinRate } from '@/lib/currency';
 
 export function MyCoins() {
   const { profile } = useAuth();
+  const { organization } = useOrganization();
   const { transactions, getUserTransactions, getTotalEarned, getPendingCoins } = useCoinTransactions();
   const { tasks } = useTasks();
   const { latestRate } = useCoinRates();
+  
+  const coinName = organization?.coin_name || 'Coins';
 
   // Get user's transactions
   const myTransactions = getUserTransactions(profile?.id);
@@ -60,7 +64,7 @@ export function MyCoins() {
   return (
     <div className="space-y-4 sm:space-y-6">
       <div>
-        <h2 className="text-xl sm:text-2xl font-bold">My SLT Coins</h2>
+        <h2 className="text-xl sm:text-2xl font-bold">My {coinName}</h2>
         <p className="text-muted-foreground text-sm">Track your earnings and performance</p>
       </div>
 
