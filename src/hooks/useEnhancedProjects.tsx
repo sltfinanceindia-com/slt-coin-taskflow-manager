@@ -129,14 +129,29 @@ export const useEnhancedProjects = (programId?: string) => {
 
   const createProjectMutation = useMutation({
     mutationFn: async (data: CreateEnhancedProjectData) => {
+      // Clean up empty strings to null for UUID fields
+      const cleanedData = {
+        name: data.name,
+        description: data.description || null,
+        program_id: data.program_id || null,
+        stage: data.stage || 'planned',
+        health_status: data.health_status || 'green',
+        health_reason: data.health_reason || null,
+        sponsor_id: data.sponsor_id || null,
+        business_case: data.business_case || null,
+        budget: data.budget || 0,
+        start_date: data.start_date || null,
+        target_end_date: data.target_end_date || null,
+        kpis: data.kpis || [],
+        priority: data.priority || 'medium',
+        organization_id: profile?.organization_id,
+        created_by: profile?.id,
+        status: 'active',
+      };
+
       const { data: result, error } = await supabase
         .from('projects')
-        .insert({
-          ...data,
-          organization_id: profile?.organization_id,
-          created_by: profile?.id,
-          status: 'active',
-        })
+        .insert(cleanedData)
         .select()
         .single();
 

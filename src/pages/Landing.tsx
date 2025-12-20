@@ -30,6 +30,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { BottomNavigation } from '@/components/BottomNavigation';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -138,8 +139,23 @@ export default function Landing() {
 
   const NavLinks = () => (
     <>
+      <Link to="/features" onClick={() => setMobileMenuOpen(false)}>
+        <Button variant="ghost" className="w-full justify-start sm:w-auto transition-all duration-200 hover-lift focus-ring text-muted-foreground">
+          Features
+        </Button>
+      </Link>
+      <Link to="/pricing" onClick={() => setMobileMenuOpen(false)}>
+        <Button variant="ghost" className="w-full justify-start sm:w-auto transition-all duration-200 hover-lift focus-ring text-muted-foreground">
+          Pricing
+        </Button>
+      </Link>
+      <Link to="/contact" onClick={() => setMobileMenuOpen(false)}>
+        <Button variant="ghost" className="w-full justify-start sm:w-auto transition-all duration-200 hover-lift focus-ring text-muted-foreground">
+          Contact
+        </Button>
+      </Link>
       <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
-        <Button variant="ghost" className="w-full justify-start sm:w-auto transition-all duration-200 hover-lift focus-ring text-muted">
+        <Button variant="ghost" className="w-full justify-start sm:w-auto transition-all duration-200 hover-lift focus-ring text-muted-foreground">
           Sign In
         </Button>
       </Link>
@@ -172,12 +188,31 @@ export default function Landing() {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden sm:flex items-center gap-3">
-              <NavLinks />
+            <div className="hidden md:flex items-center gap-2">
+              <Link to="/features">
+                <Button variant="ghost" className="text-muted-foreground hover:text-foreground">Features</Button>
+              </Link>
+              <Link to="/pricing">
+                <Button variant="ghost" className="text-muted-foreground hover:text-foreground">Pricing</Button>
+              </Link>
+              <Link to="/contact">
+                <Button variant="ghost" className="text-muted-foreground hover:text-foreground">Contact</Button>
+              </Link>
+              <ThemeToggle />
+              <Link to="/auth">
+                <Button variant="ghost" className="text-muted-foreground hover:text-foreground">Sign In</Button>
+              </Link>
+              <Link to="/signup">
+                <Button className="bg-emerald-600 hover:bg-emerald-700">
+                  Start Free Trial
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
             </div>
 
             {/* Mobile Navigation */}
-            <div className="sm:hidden">
+            <div className="md:hidden flex items-center gap-2">
+              <ThemeToggle />
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-9 w-9">
