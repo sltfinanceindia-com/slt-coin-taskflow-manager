@@ -1722,6 +1722,63 @@ export type Database = {
           },
         ]
       }
+      custom_roles: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          hierarchy_level: number
+          id: string
+          is_active: boolean | null
+          is_system_role: boolean | null
+          name: string
+          organization_id: string | null
+          role_type: Database["public"]["Enums"]["app_role"]
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          hierarchy_level?: number
+          id?: string
+          is_active?: boolean | null
+          is_system_role?: boolean | null
+          name: string
+          organization_id?: string | null
+          role_type: Database["public"]["Enums"]["app_role"]
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          hierarchy_level?: number
+          id?: string
+          is_active?: boolean | null
+          is_system_role?: boolean | null
+          name?: string
+          organization_id?: string | null
+          role_type?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_roles_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_roles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       daily_email_log: {
         Row: {
           created_at: string
@@ -4898,7 +4955,12 @@ export type Database = {
         Row: {
           avatar_url: string | null
           bio: string | null
+          can_approve_leaves: boolean | null
+          can_approve_timesheets: boolean | null
+          can_assign_tasks: boolean | null
           created_at: string
+          custom_role_id: string | null
+          data_visibility_scope: string | null
           deactivated_at: string | null
           deactivated_by: string | null
           deactivation_reason: string | null
@@ -4913,6 +4975,7 @@ export type Database = {
           organization_id: string | null
           reactivated_at: string | null
           reactivated_by: string | null
+          reporting_manager_id: string | null
           role: Database["public"]["Enums"]["user_role"]
           start_date: string | null
           total_coins: number | null
@@ -4922,7 +4985,12 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           bio?: string | null
+          can_approve_leaves?: boolean | null
+          can_approve_timesheets?: boolean | null
+          can_assign_tasks?: boolean | null
           created_at?: string
+          custom_role_id?: string | null
+          data_visibility_scope?: string | null
           deactivated_at?: string | null
           deactivated_by?: string | null
           deactivation_reason?: string | null
@@ -4937,6 +5005,7 @@ export type Database = {
           organization_id?: string | null
           reactivated_at?: string | null
           reactivated_by?: string | null
+          reporting_manager_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           start_date?: string | null
           total_coins?: number | null
@@ -4946,7 +5015,12 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           bio?: string | null
+          can_approve_leaves?: boolean | null
+          can_approve_timesheets?: boolean | null
+          can_assign_tasks?: boolean | null
           created_at?: string
+          custom_role_id?: string | null
+          data_visibility_scope?: string | null
           deactivated_at?: string | null
           deactivated_by?: string | null
           deactivation_reason?: string | null
@@ -4961,6 +5035,7 @@ export type Database = {
           organization_id?: string | null
           reactivated_at?: string | null
           reactivated_by?: string | null
+          reporting_manager_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           start_date?: string | null
           total_coins?: number | null
@@ -4968,6 +5043,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "profiles_custom_role_id_fkey"
+            columns: ["custom_role_id"]
+            isOneToOne: false
+            referencedRelation: "custom_roles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "profiles_deactivated_by_fkey"
             columns: ["deactivated_by"]
@@ -4992,6 +5074,13 @@ export type Database = {
           {
             foreignKeyName: "profiles_reactivated_by_fkey"
             columns: ["reactivated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_reporting_manager_id_fkey"
+            columns: ["reporting_manager_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -5620,6 +5709,71 @@ export type Database = {
           },
         ]
       }
+      reporting_structure: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          effective_from: string | null
+          effective_to: string | null
+          id: string
+          manager_id: string | null
+          organization_id: string | null
+          relationship_type: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          effective_from?: string | null
+          effective_to?: string | null
+          id?: string
+          manager_id?: string | null
+          organization_id?: string | null
+          relationship_type?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          effective_from?: string | null
+          effective_to?: string | null
+          id?: string
+          manager_id?: string | null
+          organization_id?: string | null
+          relationship_type?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reporting_structure_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reporting_structure_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reporting_structure_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reporting_structure_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       request_routing_rules: {
         Row: {
           assign_to_team: string | null
@@ -5851,6 +6005,66 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      role_permissions: {
+        Row: {
+          can_approve: boolean | null
+          can_create: boolean | null
+          can_delete: boolean | null
+          can_edit: boolean | null
+          can_export: boolean | null
+          can_view: boolean | null
+          created_at: string | null
+          id: string
+          module_name: string
+          organization_id: string | null
+          role_id: string | null
+          visibility_scope: string | null
+        }
+        Insert: {
+          can_approve?: boolean | null
+          can_create?: boolean | null
+          can_delete?: boolean | null
+          can_edit?: boolean | null
+          can_export?: boolean | null
+          can_view?: boolean | null
+          created_at?: string | null
+          id?: string
+          module_name: string
+          organization_id?: string | null
+          role_id?: string | null
+          visibility_scope?: string | null
+        }
+        Update: {
+          can_approve?: boolean | null
+          can_create?: boolean | null
+          can_delete?: boolean | null
+          can_edit?: boolean | null
+          can_export?: boolean | null
+          can_view?: boolean | null
+          created_at?: string | null
+          id?: string
+          module_name?: string
+          organization_id?: string | null
+          role_id?: string | null
+          visibility_scope?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "custom_roles"
             referencedColumns: ["id"]
           },
         ]
@@ -8083,6 +8297,10 @@ export type Database = {
         Args: { p_email_type: string; p_user_id: string }
         Returns: boolean
       }
+      check_module_permission: {
+        Args: { p_action: string; p_module: string; p_user_id: string }
+        Returns: boolean
+      }
       check_sla_breaches: { Args: never; Returns: undefined }
       cleanup_expired_otps: { Args: never; Returns: undefined }
       cleanup_expired_typing_indicators: { Args: never; Returns: undefined }
@@ -8125,6 +8343,7 @@ export type Database = {
       }
       get_current_profile_id: { Args: never; Returns: string }
       get_current_user_role: { Args: never; Returns: string }
+      get_direct_reports: { Args: { p_manager_id: string }; Returns: string[] }
       get_employee_workload: {
         Args: {
           p_end_date?: string
@@ -8188,6 +8407,12 @@ export type Database = {
           total_requests: number
         }[]
       }
+      get_team_members: {
+        Args: { p_user_id: string }
+        Returns: {
+          member_id: string
+        }[]
+      }
       get_user_channel_ids: {
         Args: { p_profile_id: string }
         Returns: string[]
@@ -8210,8 +8435,16 @@ export type Database = {
         }[]
       }
       get_user_profile_id: { Args: never; Returns: string }
+      get_visibility_scope: {
+        Args: { p_module: string; p_user_id: string }
+        Returns: string
+      }
       increment_user_coins: {
         Args: { p_coins: number; p_user_id: string }
+        Returns: undefined
+      }
+      initialize_default_roles: {
+        Args: { p_created_by?: string; p_org_id: string }
         Returns: undefined
       }
       is_any_admin: { Args: { p_user_id?: string }; Returns: boolean }
@@ -8287,7 +8520,14 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "intern" | "employee" | "super_admin" | "org_admin"
+      app_role:
+        | "admin"
+        | "intern"
+        | "employee"
+        | "super_admin"
+        | "org_admin"
+        | "manager"
+        | "team_lead"
       card_type_enum: "high_value" | "medium_value" | "better_luck"
       organization_status:
         | "active"
@@ -8432,7 +8672,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "intern", "employee", "super_admin", "org_admin"],
+      app_role: [
+        "admin",
+        "intern",
+        "employee",
+        "super_admin",
+        "org_admin",
+        "manager",
+        "team_lead",
+      ],
       card_type_enum: ["high_value", "medium_value", "better_luck"],
       organization_status: [
         "active",
