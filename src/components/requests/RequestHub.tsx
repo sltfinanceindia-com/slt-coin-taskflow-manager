@@ -4,8 +4,9 @@ import { RequestPortal } from './RequestPortal';
 import { TriageQueue } from './TriageQueue';
 import { SLADashboard } from './SLADashboard';
 import { RoutingRulesConfig } from './RoutingRulesConfig';
+import { RequestTypeManager } from './RequestTypeManager';
 import { useUserRole } from '@/hooks/useUserRole';
-import { FileText, Inbox, BarChart3, Settings2 } from 'lucide-react';
+import { FileText, Inbox, BarChart3, Settings2, FolderPlus } from 'lucide-react';
 
 export function RequestHub() {
   const { isAdmin } = useUserRole();
@@ -21,7 +22,7 @@ export function RequestHub() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-4' : 'grid-cols-1'} lg:w-auto lg:inline-grid`}>
+        <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-5' : 'grid-cols-1'} lg:w-auto lg:inline-grid`}>
           <TabsTrigger value="submit" className="gap-1.5 px-2 sm:px-3">
             <FileText className="h-4 w-4 shrink-0" />
             <span className="text-xs sm:text-sm truncate">Submit</span>
@@ -35,6 +36,10 @@ export function RequestHub() {
               <TabsTrigger value="sla" className="gap-1.5 px-2 sm:px-3">
                 <BarChart3 className="h-4 w-4 shrink-0" />
                 <span className="text-xs sm:text-sm truncate">SLA</span>
+              </TabsTrigger>
+              <TabsTrigger value="types" className="gap-1.5 px-2 sm:px-3">
+                <FolderPlus className="h-4 w-4 shrink-0" />
+                <span className="text-xs sm:text-sm truncate">Types</span>
               </TabsTrigger>
               <TabsTrigger value="routing" className="gap-1.5 px-2 sm:px-3">
                 <Settings2 className="h-4 w-4 shrink-0" />
@@ -55,6 +60,9 @@ export function RequestHub() {
             </TabsContent>
             <TabsContent value="sla" className="mt-0">
               <SLADashboard />
+            </TabsContent>
+            <TabsContent value="types" className="mt-0">
+              <RequestTypeManager />
             </TabsContent>
             <TabsContent value="routing" className="mt-0">
               <RoutingRulesConfig />
