@@ -277,6 +277,8 @@ export function useCustomRoles() {
       queryClient.invalidateQueries({ queryKey: ['profiles'] });
       queryClient.invalidateQueries({ queryKey: ['user-roles'] });
       queryClient.invalidateQueries({ queryKey: ['interns'] });
+      queryClient.invalidateQueries({ queryKey: ['team-members-roles'] });
+      queryClient.invalidateQueries({ queryKey: ['role-change-history'] });
     },
     onError: (error) => {
       toast.error('Failed to assign role');
