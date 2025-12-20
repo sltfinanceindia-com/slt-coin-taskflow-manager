@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useOrganization } from "@/hooks/useOrganization";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,7 @@ const inrFormatter = new Intl.NumberFormat("en-IN", {
 
 export function CoinRateManagement() {
   const { profile } = useAuth();
+  const { organization } = useOrganization();
   const queryClient = useQueryClient();
   const [isAddingRate, setIsAddingRate] = useState(false);
   const [formData, setFormData] = useState({
@@ -32,6 +34,8 @@ export function CoinRateManagement() {
     market_cap: "",
     notes: "",
   });
+  
+  const coinName = organization?.coin_name || 'SLT Coins';
 
   // Fetch coin rates for this organization only
   const { data: rates, isLoading } = useQuery({
@@ -107,7 +111,7 @@ export function CoinRateManagement() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Coins className="h-6 w-6 text-emerald-600" />
-            Current SLT Coin Rate
+            Current {coinName} Rate
           </CardTitle>
           <CardDescription>Real-time coin rate and market statistics (INR)</CardDescription>
         </CardHeader>

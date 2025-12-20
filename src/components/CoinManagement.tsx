@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useCoinTransactions } from "@/hooks/useCoinTransactions";
 import { useTasks } from "@/hooks/useTasks";
 import { useCoinRates } from "@/hooks/useCoinRates";
+import { useOrganization } from "@/hooks/useOrganization";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,9 +34,12 @@ export function CoinManagement() {
   const { transactions, isLoading } = useCoinTransactions();
   const { tasks, verifyTask } = useTasks();
   const { latestRate } = useCoinRates();
+  const { organization } = useOrganization();
   const [selectedTask, setSelectedTask] = useState<any>(null);
   const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
   const [approveAction, setApproveAction] = useState<boolean>(true);
+  
+  const coinName = organization?.coin_name || 'SLT Coins';
 
   const {
     register,
@@ -83,7 +87,7 @@ export function CoinManagement() {
       <div>
         <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
           <Coins className="h-5 w-5 sm:h-7 sm:w-7 text-coin-gold" />
-          SLT Coin Management
+          {coinName} Management
         </h2>
         <p className="text-muted-foreground text-xs sm:text-sm">Manage coin rates, approve tasks, and track coin distribution</p>
       </div>
@@ -97,7 +101,7 @@ export function CoinManagement() {
           </CardHeader>
           <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
             <div className="text-lg sm:text-2xl font-bold">{formatCoinRate(currentRate)}</div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">Per SLT coin</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Per {coinName}</p>
           </CardContent>
         </Card>
 
