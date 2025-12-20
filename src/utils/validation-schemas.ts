@@ -46,7 +46,7 @@ const departmentSchema = z
   .or(z.literal(''));
 
 // Role schema for team members
-const roleSchema = z.enum(['employee', 'intern']).default('employee');
+const roleSchema = z.enum(['org_admin', 'manager', 'team_lead', 'employee', 'intern']).default('employee');
 
 // Signup schema for new team members
 export const internFormSchema = z.object({

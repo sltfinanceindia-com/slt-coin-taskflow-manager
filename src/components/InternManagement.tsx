@@ -198,12 +198,20 @@ export function InternManagement() {
 
   const getRoleBadge = (role: string) => {
     switch (role) {
+      case 'org_admin':
+        return <Badge variant="secondary" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300"><Crown className="h-3 w-3 mr-1" />Org Admin</Badge>;
+      case 'admin':
+        return <Badge variant="secondary" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300"><Crown className="h-3 w-3 mr-1" />Admin</Badge>;
       case 'manager':
-        return <Badge variant="secondary" className="bg-blue-100 text-blue-800"><Crown className="h-3 w-3 mr-1" />Manager</Badge>;
+        return <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"><Crown className="h-3 w-3 mr-1" />Manager</Badge>;
+      case 'team_lead':
+        return <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300">Team Lead</Badge>;
       case 'employee':
         return <Badge variant="outline">Employee</Badge>;
+      case 'intern':
+        return <Badge variant="outline" className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">Intern</Badge>;
       default:
-        return <Badge variant="outline">Intern</Badge>;
+        return <Badge variant="outline">{role}</Badge>;
     }
   };
 
@@ -280,13 +288,16 @@ export function InternManagement() {
                         <SelectValue placeholder="Select role" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="org_admin">Organization Admin</SelectItem>
+                        <SelectItem value="manager">Manager</SelectItem>
+                        <SelectItem value="team_lead">Team Lead</SelectItem>
                         <SelectItem value="employee">Employee</SelectItem>
                         <SelectItem value="intern">Intern</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
                 />
-                <p className="text-xs text-muted-foreground mt-1">This will be shown in their profile.</p>
+                <p className="text-xs text-muted-foreground mt-1">This determines the user's permissions level.</p>
               </div>
 
               <div>

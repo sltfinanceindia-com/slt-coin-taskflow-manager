@@ -51,6 +51,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { useCustomRoles, RoleWithPermissions } from '@/hooks/useCustomRoles';
@@ -59,6 +60,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { RoleEditor } from '@/components/rbac/RoleEditor';
 import { RolePermissionMatrix, ModulePermission, PERMISSION_TEMPLATES } from '@/components/rbac/RolePermissionMatrix';
+import { TeamRoleAssignment } from '@/components/rbac/TeamRoleAssignment';
 
 const ROLE_ICONS: Record<string, React.ElementType> = {
   org_admin: Shield,
@@ -242,6 +244,33 @@ export default function RolesPermissions() {
         </Button>
       </div>
 
+      <Tabs defaultValue="team-members" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="team-members" className="gap-2">
+            <Users className="h-4 w-4" />
+            Team Members
+          </TabsTrigger>
+          <TabsTrigger value="roles" className="gap-2">
+            <Shield className="h-4 w-4" />
+            Role Configuration
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="team-members">
+          <Card>
+            <CardHeader>
+              <CardTitle>Assign Roles to Team Members</CardTitle>
+              <CardDescription>
+                Select a role for each team member to define their access level and permissions
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TeamRoleAssignment />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="roles">
       <div className="grid gap-6 md:grid-cols-3">
         {/* Role List */}
         <Card className="md:col-span-1">
@@ -490,6 +519,8 @@ export default function RolesPermissions() {
           </CardContent>
         </Card>
       </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Delete Confirmation */}
       <AlertDialog open={!!roleToDelete} onOpenChange={() => setRoleToDelete(null)}>
