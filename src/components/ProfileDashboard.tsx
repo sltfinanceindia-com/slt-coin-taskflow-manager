@@ -10,7 +10,33 @@ import { Badge } from '@/components/ui/badge';
 import { AvatarUpload } from '@/components/AvatarUpload';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole, type AppRole } from '@/hooks/useUserRole';
 import { Coins, Clock, Target, User, Calendar, Award, ArrowLeft } from 'lucide-react';
+
+const roleDisplayNames: Record<AppRole, string> = {
+  super_admin: 'Super Administrator',
+  org_admin: 'Organization Admin',
+  admin: 'Administrator',
+  manager: 'Manager',
+  team_lead: 'Team Lead',
+  employee: 'Employee',
+  intern: 'Intern',
+};
+
+const getRoleBadgeVariant = (role: AppRole): "default" | "secondary" | "destructive" | "outline" => {
+  switch (role) {
+    case 'super_admin':
+      return 'destructive';
+    case 'org_admin':
+    case 'admin':
+      return 'default';
+    case 'manager':
+    case 'team_lead':
+      return 'secondary';
+    default:
+      return 'outline';
+  }
+};
 
 export function ProfileDashboard() {
   const navigate = useNavigate();
