@@ -20,6 +20,9 @@ export interface Organization {
   trial_ends_at: string | null;
   created_at: string;
   updated_at: string;
+  coin_name: string | null;
+  coin_rate: number | null;
+  two_fa_policy: string | null;
   subscription_plan?: {
     name: string;
     code: string;
@@ -62,7 +65,7 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
           subscription_plan:subscription_plans(name, code, max_users, features)
         `)
         .eq('id', profile.organization_id)
-        .single();
+        .single() as { data: any; error: any };
 
       if (fetchError) throw fetchError;
 

@@ -7,12 +7,14 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Search, Users, Grid3X3, List, Mail, MessageSquare, 
-  Coins, Calendar, Building2, User, Download
+  Coins, Calendar, Building2, User, Download, ShieldAlert, Home
 } from 'lucide-react';
 import { useEmployeeDirectory } from '@/hooks/useEmployeeDirectory';
 import { useAchievements } from '@/hooks/useAchievements';
+import { useWFHMode } from '@/hooks/useWFHMode';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { exportToCSV } from '@/lib/export';
@@ -86,11 +88,41 @@ function EmployeeProfileModal({ employee, open, onClose }: EmployeeProfileModalP
 
 export function EmployeeDirectory() {
   const { employees, departments, isLoading, roles } = useEmployeeDirectory();
+  const { isWFH, canAccessDirectory, canExport } = useWFHMode();
   const [search, setSearch] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
   const [selectedRole, setSelectedRole] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
+
+  // WFH restriction check
+  if (isWFH && !canAccessDirectory) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Employee Directory
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert variant="destructive" className="bg-destructive/10 border-destructive/20">
+            <ShieldAlert className="h-4 w-4" />
+            <AlertDescription className="ml-2">
+              <div className="flex items-center gap-2">
+                <Home className="h-4 w-4" />
+                <span className="font-medium">Access Restricted - Work From Home</span>
+              </div>
+              <p className="mt-1 text-sm">
+                The Employee Directory is not accessible while working from home for security reasons.
+                Please contact your administrator if you need assistance.
+              </p>
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const filteredEmployees = useMemo(() => {
     return employees.filter((employee) => {
@@ -144,24 +176,26 @@ export function EmployeeDirectory() {
               <Badge variant="secondary">{employees.length}</Badge>
             </CardTitle>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => {
-                  exportToCSV(filteredEmployees.map(e => ({
-                    Name: e.full_name,
-                    Email: e.email,
-                    Role: e.role,
-                    Department: e.department?.name || '',
-                    'Total Coins': e.total_coins || 0,
-                    'Joined': e.created_at ? format(new Date(e.created_at), 'yyyy-MM-dd') : '',
-                  })), 'employee_directory');
-                  toast.success('Exported employee directory');
-                }}
-              >
-                <Download className="h-4 w-4" />
-              </Button>
+              {canExport && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => {
+                    exportToCSV(filteredEmployees.map(e => ({
+                      Name: e.full_name,
+                      Email: e.email,
+                      Role: e.role,
+                      Department: e.department?.name || '',
+                      'Total Coins': e.total_coins || 0,
+                      'Joined': e.created_at ? format(new Date(e.created_at), 'yyyy-MM-dd') : '',
+                    })), 'employee_directory');
+                    toast.success('Exported employee directory');
+                  }}
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+              )}
               <Button
                 variant={viewMode === 'grid' ? 'default' : 'outline'}
                 size="icon"

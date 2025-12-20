@@ -61,11 +61,76 @@ export type Database = {
           },
         ]
       }
+      active_sessions: {
+        Row: {
+          created_at: string | null
+          device_info: Json | null
+          expires_at: string | null
+          geo_location: Json | null
+          id: string
+          ip_address: unknown
+          is_active: boolean | null
+          last_activity_at: string | null
+          login_at: string | null
+          organization_id: string | null
+          profile_id: string | null
+          user_id: string
+          work_mode: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          device_info?: Json | null
+          expires_at?: string | null
+          geo_location?: Json | null
+          id?: string
+          ip_address?: unknown
+          is_active?: boolean | null
+          last_activity_at?: string | null
+          login_at?: string | null
+          organization_id?: string | null
+          profile_id?: string | null
+          user_id: string
+          work_mode?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          device_info?: Json | null
+          expires_at?: string | null
+          geo_location?: Json | null
+          id?: string
+          ip_address?: unknown
+          is_active?: boolean | null
+          last_activity_at?: string | null
+          login_at?: string | null
+          organization_id?: string | null
+          profile_id?: string | null
+          user_id?: string
+          work_mode?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "active_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "active_sessions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       activity_logs: {
         Row: {
           activity_type: string
           created_at: string
+          device_info: Json | null
           duration_minutes: number | null
+          geo_location: Json | null
           id: string
           ip_address: unknown
           metadata: Json | null
@@ -78,7 +143,9 @@ export type Database = {
         Insert: {
           activity_type: string
           created_at?: string
+          device_info?: Json | null
           duration_minutes?: number | null
+          geo_location?: Json | null
           id?: string
           ip_address?: unknown
           metadata?: Json | null
@@ -91,7 +158,9 @@ export type Database = {
         Update: {
           activity_type?: string
           created_at?: string
+          device_info?: Json | null
           duration_minutes?: number | null
+          geo_location?: Json | null
           id?: string
           ip_address?: unknown
           metadata?: Json | null
@@ -4322,6 +4391,8 @@ export type Database = {
           address: string | null
           autopay_enabled: boolean | null
           billing_email: string | null
+          coin_name: string | null
+          coin_rate: number | null
           contact_email: string | null
           contact_phone: string | null
           created_at: string
@@ -4344,12 +4415,15 @@ export type Database = {
           subscription_status: string | null
           tax_id: string | null
           trial_ends_at: string | null
+          two_fa_policy: string | null
           updated_at: string
         }
         Insert: {
           address?: string | null
           autopay_enabled?: boolean | null
           billing_email?: string | null
+          coin_name?: string | null
+          coin_rate?: number | null
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
@@ -4372,12 +4446,15 @@ export type Database = {
           subscription_status?: string | null
           tax_id?: string | null
           trial_ends_at?: string | null
+          two_fa_policy?: string | null
           updated_at?: string
         }
         Update: {
           address?: string | null
           autopay_enabled?: boolean | null
           billing_email?: string | null
+          coin_name?: string | null
+          coin_rate?: number | null
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
@@ -4400,6 +4477,7 @@ export type Database = {
           subscription_status?: string | null
           tax_id?: string | null
           trial_ends_at?: string | null
+          two_fa_policy?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -5937,6 +6015,73 @@ export type Database = {
             columns: ["feedback_response_id"]
             isOneToOne: false
             referencedRelation: "feedback_responses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      security_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          alert_type: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_acknowledged: boolean | null
+          metadata: Json | null
+          organization_id: string | null
+          profile_id: string | null
+          severity: string | null
+          user_id: string | null
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_acknowledged?: boolean | null
+          metadata?: Json | null
+          organization_id?: string | null
+          profile_id?: string | null
+          severity?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_acknowledged?: boolean | null
+          metadata?: Json | null
+          organization_id?: string | null
+          profile_id?: string | null
+          severity?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "security_alerts_acknowledged_by_fkey"
+            columns: ["acknowledged_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "security_alerts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "security_alerts_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
