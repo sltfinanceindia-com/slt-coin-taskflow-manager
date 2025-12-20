@@ -25,10 +25,13 @@ export function AppHeader() {
   const { profile, signOut } = useAuth()
   const { theme, setTheme } = useTheme()
   const { getPendingCoins } = useCoinTransactions()
-  const { isSuperAdmin } = useUserRole()
+  const { isSuperAdmin, role } = useUserRole()
   const navigate = useNavigate()
   
   const pendingCoins = getPendingCoins()
+  
+  // Use role from useUserRole (authoritative from user_roles table)
+  const displayRole = role || profile?.role || 'employee'
 
   const handleSignOut = async () => {
     try {
@@ -137,8 +140,8 @@ export function AppHeader() {
                 <div className="space-y-1">
                   <p className="text-sm font-medium truncate">{profile?.full_name}</p>
                   <p className="text-xs text-muted-foreground truncate">{profile?.email}</p>
-                  <Badge variant={profile?.role === 'admin' ? 'admin' : 'intern'} className="text-xs">
-                    {profile?.role}
+                  <Badge variant={displayRole === 'admin' || displayRole === 'org_admin' || displayRole === 'super_admin' ? 'admin' : displayRole === 'manager' ? 'default' : 'intern'} className="text-xs capitalize">
+                    {displayRole}
                   </Badge>
                 </div>
               </DropdownMenuLabel>
