@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { 
   Card, 
@@ -22,46 +22,155 @@ import {
   Globe,
   Lock,
   Save,
-  RefreshCw
+  RefreshCw,
+  CheckCircle
 } from 'lucide-react';
 import { useIsSuperAdmin } from '@/hooks/useUserRole';
 import { useAuth } from '@/hooks/useAuth';
 import SuperAdminLayout from '@/components/super-admin/SuperAdminLayout';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+
+interface PlatformSettings {
+  platformName: string;
+  supportEmail: string;
+  maxOrganizations: number;
+  enforceStrongPasswords: boolean;
+  sessionTimeout: number;
+  maxLoginAttempts: number;
+  twoFactorRequired: boolean;
+  emailNotifications: boolean;
+  welcomeEmails: boolean;
+  weeklyReports: boolean;
+  maintenanceMode: boolean;
+  debugMode: boolean;
+}
 
 export default function SuperAdminSettings() {
   const { isSuperAdmin, isLoading: roleLoading } = useIsSuperAdmin();
-  const { loading: authLoading } = useAuth();
+  const { loading: authLoading, profile } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasChanges, setHasChanges] = useState(false);
   
-  const [settings, setSettings] = useState({
-    // General
+  const [settings, setSettings] = useState<PlatformSettings>({
     platformName: 'SLT Work Hub',
     supportEmail: 'support@sltworkhub.com',
     maxOrganizations: 100,
-    // Security
     enforceStrongPasswords: true,
     sessionTimeout: 60,
     maxLoginAttempts: 5,
     twoFactorRequired: false,
-    // Email
     emailNotifications: true,
     welcomeEmails: true,
     weeklyReports: false,
-    // Maintenance
     maintenanceMode: false,
     debugMode: false,
   });
 
-  const handleSave = async () => {
-    setIsSaving(true);
-    // Simulate save
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    toast.success('Settings saved successfully');
-    setIsSaving(false);
+  // Fetch settings from database
+  useEffect(() => {
+    const fetchSettings = async () => {
+      if (!isSuperAdmin) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('platform_settings')
+          .select('key, value');
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          const settingsMap: Record<string, any> = {};
+          data.forEach((item: { key: string; value: any }) => {
+            // Convert snake_case to camelCase
+            const camelKey = item.key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+            settingsMap[camelKey] = item.value;
+          });
+          
+          setSettings(prev => ({
+            ...prev,
+            platformName: settingsMap.platformName || prev.platformName,
+            supportEmail: settingsMap.supportEmail || prev.supportEmail,
+            maxOrganizations: settingsMap.maxOrganizations || prev.maxOrganizations,
+            enforceStrongPasswords: settingsMap.enforceStrongPasswords ?? prev.enforceStrongPasswords,
+            sessionTimeout: settingsMap.sessionTimeout || prev.sessionTimeout,
+            maxLoginAttempts: settingsMap.maxLoginAttempts || prev.maxLoginAttempts,
+            twoFactorRequired: settingsMap.twoFactorRequired ?? prev.twoFactorRequired,
+            emailNotifications: settingsMap.emailNotifications ?? prev.emailNotifications,
+            welcomeEmails: settingsMap.welcomeEmails ?? prev.welcomeEmails,
+            weeklyReports: settingsMap.weeklyReports ?? prev.weeklyReports,
+            maintenanceMode: settingsMap.maintenanceMode ?? prev.maintenanceMode,
+            debugMode: settingsMap.debugMode ?? prev.debugMode,
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchSettings();
+  }, [isSuperAdmin]);
+
+  const handleSettingChange = (key: keyof PlatformSettings, value: any) => {
+    setSettings(s => ({ ...s, [key]: value }));
+    setHasChanges(true);
   };
 
-  if (authLoading || roleLoading) {
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      // Convert settings to database format
+      const settingsToSave = [
+        { key: 'platform_name', value: settings.platformName, category: 'general' },
+        { key: 'support_email', value: settings.supportEmail, category: 'general' },
+        { key: 'max_organizations', value: settings.maxOrganizations, category: 'general' },
+        { key: 'enforce_strong_passwords', value: settings.enforceStrongPasswords, category: 'security' },
+        { key: 'session_timeout', value: settings.sessionTimeout, category: 'security' },
+        { key: 'max_login_attempts', value: settings.maxLoginAttempts, category: 'security' },
+        { key: 'two_factor_required', value: settings.twoFactorRequired, category: 'security' },
+        { key: 'email_notifications', value: settings.emailNotifications, category: 'email' },
+        { key: 'welcome_emails', value: settings.welcomeEmails, category: 'email' },
+        { key: 'weekly_reports', value: settings.weeklyReports, category: 'email' },
+        { key: 'maintenance_mode', value: settings.maintenanceMode, category: 'system' },
+        { key: 'debug_mode', value: settings.debugMode, category: 'system' },
+      ];
+
+      for (const setting of settingsToSave) {
+        const { error } = await supabase
+          .from('platform_settings')
+          .upsert({
+            key: setting.key,
+            value: setting.value,
+            category: setting.category,
+            updated_by: profile?.id,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'key' });
+        
+        if (error) throw error;
+      }
+
+      // Log the action
+      await supabase.from('super_admin_audit_log').insert({
+        action: 'update_settings',
+        entity_type: 'platform_settings',
+        details: { settings: settingsToSave.map(s => s.key) },
+        performed_by: profile?.id,
+      });
+
+      toast.success('Settings saved successfully');
+      setHasChanges(false);
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      toast.error('Failed to save settings');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (authLoading || roleLoading || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full" />
@@ -87,14 +196,21 @@ export default function SuperAdminSettings() {
               Configure global platform settings and preferences
             </p>
           </div>
-          <Button onClick={handleSave} disabled={isSaving} className="w-full sm:w-auto">
-            {isSaving ? (
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4 mr-2" />
+          <div className="flex items-center gap-2">
+            {hasChanges && (
+              <span className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded">
+                Unsaved changes
+              </span>
             )}
-            Save Changes
-          </Button>
+            <Button onClick={handleSave} disabled={isSaving || !hasChanges} className="w-full sm:w-auto">
+              {isSaving ? (
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              Save Changes
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="general" className="space-y-4 sm:space-y-6">
@@ -137,7 +253,7 @@ export default function SuperAdminSettings() {
                   <Input
                     id="platformName"
                     value={settings.platformName}
-                    onChange={(e) => setSettings(s => ({ ...s, platformName: e.target.value }))}
+                    onChange={(e) => handleSettingChange('platformName', e.target.value)}
                     className="max-w-md min-h-[44px]"
                   />
                 </div>
@@ -147,7 +263,7 @@ export default function SuperAdminSettings() {
                     id="supportEmail"
                     type="email"
                     value={settings.supportEmail}
-                    onChange={(e) => setSettings(s => ({ ...s, supportEmail: e.target.value }))}
+                    onChange={(e) => handleSettingChange('supportEmail', e.target.value)}
                     className="max-w-md min-h-[44px]"
                   />
                 </div>
@@ -157,7 +273,7 @@ export default function SuperAdminSettings() {
                     id="maxOrgs"
                     type="number"
                     value={settings.maxOrganizations}
-                    onChange={(e) => setSettings(s => ({ ...s, maxOrganizations: parseInt(e.target.value) || 0 }))}
+                    onChange={(e) => handleSettingChange('maxOrganizations', parseInt(e.target.value) || 0)}
                     className="max-w-[200px] min-h-[44px]"
                   />
                   <p className="text-xs text-muted-foreground">Maximum number of organizations allowed on the platform</p>
@@ -188,7 +304,7 @@ export default function SuperAdminSettings() {
                   </div>
                   <Switch
                     checked={settings.enforceStrongPasswords}
-                    onCheckedChange={(checked) => setSettings(s => ({ ...s, enforceStrongPasswords: checked }))}
+                    onCheckedChange={(checked) => handleSettingChange('enforceStrongPasswords', checked)}
                   />
                 </div>
 
@@ -201,7 +317,7 @@ export default function SuperAdminSettings() {
                   </div>
                   <Switch
                     checked={settings.twoFactorRequired}
-                    onCheckedChange={(checked) => setSettings(s => ({ ...s, twoFactorRequired: checked }))}
+                    onCheckedChange={(checked) => handleSettingChange('twoFactorRequired', checked)}
                   />
                 </div>
 
@@ -214,7 +330,7 @@ export default function SuperAdminSettings() {
                       id="sessionTimeout"
                       type="number"
                       value={settings.sessionTimeout}
-                      onChange={(e) => setSettings(s => ({ ...s, sessionTimeout: parseInt(e.target.value) || 60 }))}
+                      onChange={(e) => handleSettingChange('sessionTimeout', parseInt(e.target.value) || 60)}
                       className="min-h-[44px]"
                     />
                   </div>
@@ -224,7 +340,7 @@ export default function SuperAdminSettings() {
                       id="maxLoginAttempts"
                       type="number"
                       value={settings.maxLoginAttempts}
-                      onChange={(e) => setSettings(s => ({ ...s, maxLoginAttempts: parseInt(e.target.value) || 5 }))}
+                      onChange={(e) => handleSettingChange('maxLoginAttempts', parseInt(e.target.value) || 5)}
                       className="min-h-[44px]"
                     />
                   </div>
@@ -255,7 +371,7 @@ export default function SuperAdminSettings() {
                   </div>
                   <Switch
                     checked={settings.emailNotifications}
-                    onCheckedChange={(checked) => setSettings(s => ({ ...s, emailNotifications: checked }))}
+                    onCheckedChange={(checked) => handleSettingChange('emailNotifications', checked)}
                   />
                 </div>
 
@@ -268,7 +384,7 @@ export default function SuperAdminSettings() {
                   </div>
                   <Switch
                     checked={settings.welcomeEmails}
-                    onCheckedChange={(checked) => setSettings(s => ({ ...s, welcomeEmails: checked }))}
+                    onCheckedChange={(checked) => handleSettingChange('welcomeEmails', checked)}
                   />
                 </div>
 
@@ -281,7 +397,7 @@ export default function SuperAdminSettings() {
                   </div>
                   <Switch
                     checked={settings.weeklyReports}
-                    onCheckedChange={(checked) => setSettings(s => ({ ...s, weeklyReports: checked }))}
+                    onCheckedChange={(checked) => handleSettingChange('weeklyReports', checked)}
                   />
                 </div>
               </CardContent>
@@ -310,7 +426,7 @@ export default function SuperAdminSettings() {
                   </div>
                   <Switch
                     checked={settings.maintenanceMode}
-                    onCheckedChange={(checked) => setSettings(s => ({ ...s, maintenanceMode: checked }))}
+                    onCheckedChange={(checked) => handleSettingChange('maintenanceMode', checked)}
                   />
                 </div>
 
@@ -323,7 +439,7 @@ export default function SuperAdminSettings() {
                   </div>
                   <Switch
                     checked={settings.debugMode}
-                    onCheckedChange={(checked) => setSettings(s => ({ ...s, debugMode: checked }))}
+                    onCheckedChange={(checked) => handleSettingChange('debugMode', checked)}
                   />
                 </div>
 
