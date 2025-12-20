@@ -70,22 +70,42 @@ export function InternManagement() {
   const isAtLimit = !isUnlimited && userCount >= maxUsers;
   const isNearLimit = !isUnlimited && usagePercentage >= 80;
 
-  // Fetch all users from this organization (including inactive for admin management)
+  // Fetch all users from this organization with their roles from user_roles table
   const { data: interns = [], isLoading } = useQuery({
     queryKey: ['interns', profile?.organization_id],
     queryFn: async () => {
       if (!profile?.organization_id) return [];
       
-      const { data, error } = await supabase
+      // First get profiles
+      const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
         .eq('organization_id', profile.organization_id)
-        .neq('role', 'admin')
         .order('is_active', { ascending: false })
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return (data || []) as Profile[];
+      if (profilesError) throw profilesError;
+      
+      // Then get user roles
+      const { data: rolesData, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .eq('organization_id', profile.organization_id);
+      
+      if (rolesError) throw rolesError;
+      
+      // Create a map of user_id to role
+      const roleMap = new Map(rolesData?.map(r => [r.user_id, r.role]) || []);
+      
+      // Merge profiles with roles from user_roles table, filter out super_admin and admin
+      const mergedData = (profilesData || [])
+        .map(p => ({
+          ...p,
+          role: roleMap.get(p.id) || p.role || 'intern'
+        }))
+        .filter(p => !['admin', 'super_admin'].includes(p.role));
+      
+      return mergedData as Profile[];
     },
     enabled: !!profile?.organization_id,
   });
