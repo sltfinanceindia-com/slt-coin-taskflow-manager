@@ -309,6 +309,14 @@ export default function ModernDashboard() {
       case 'lifecycle':
         return isAdmin ? <LifecycleHub /> : null;
       
+      case 'roles':
+        navigate('/admin/roles-permissions');
+        return null;
+      
+      case 'org-chart':
+        navigate('/organization/chart');
+        return null;
+      
       case 'app-feedback':
         return <FeedbackForm userEmail={profile?.email} userName={profile?.full_name} />;
       
