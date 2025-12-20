@@ -70,6 +70,8 @@ export function InternManagement() {
   const isAtLimit = !isUnlimited && userCount >= maxUsers;
   const isNearLimit = !isUnlimited && usagePercentage >= 80;
 
+  const coinName = organization?.coin_name || 'SLT Coins';
+
   // Fetch all users from this organization with their roles from user_roles table
   const { data: interns = [], isLoading } = useQuery({
     queryKey: ['interns', profile?.organization_id],
@@ -94,7 +96,7 @@ export function InternManagement() {
       
       if (rolesError) throw rolesError;
       
-      // Create a map of user_id to role
+      // Create a map of user_id to role - user_roles.user_id matches profiles.id (not profiles.user_id)
       const roleMap = new Map(rolesData?.map(r => [r.user_id, r.role]) || []);
       
       // Merge profiles with roles from user_roles table
@@ -102,8 +104,8 @@ export function InternManagement() {
       const mergedData = (profilesData || [])
         .map(p => ({
           ...p,
-          // Use user_id to look up role since that's what user_roles uses
-          role: roleMap.get(p.user_id) || roleMap.get(p.id) || p.role || 'intern'
+          // profiles.id is the user's UUID which matches user_roles.user_id
+          role: roleMap.get(p.id) || p.role || 'employee'
         }))
         .filter(p => p.role !== 'super_admin');
       
@@ -453,7 +455,7 @@ export function InternManagement() {
                     </div>
                   )}
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Total Coins:</span>
+                    <span className="text-muted-foreground">Total {coinName}:</span>
                     <div className="flex items-center space-x-1">
                       <Coins className="h-3 w-3 text-amber-500" />
                       <span className="font-semibold text-amber-500">{intern.total_coins}</span>
