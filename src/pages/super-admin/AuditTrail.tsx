@@ -171,19 +171,19 @@ export default function AuditTrail() {
 
   return (
     <SuperAdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-              <FileText className="h-8 w-8 text-primary" />
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold flex items-center gap-2">
+              <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
               Audit Trail
             </h1>
-            <p className="text-muted-foreground mt-1 text-sm">
+            <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
               Track all administrative actions and changes
             </p>
           </div>
-          <Button onClick={exportLogs} variant="outline">
+          <Button onClick={exportLogs} variant="outline" size="sm" className="w-full sm:w-auto">
             <Download className="h-4 w-4 mr-2" />
             Export CSV
           </Button>
@@ -191,45 +191,47 @@ export default function AuditTrail() {
 
         {/* Filters */}
         <Card>
-          <CardContent className="p-4">
-            <div className="flex flex-col sm:flex-row gap-3">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search logs..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
+                  className="pl-9 h-10"
                 />
               </div>
-              <Select value={actionFilter} onValueChange={setActionFilter}>
-                <SelectTrigger className="w-full sm:w-40">
-                  <SelectValue placeholder="Action" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Actions</SelectItem>
-                  <SelectItem value="create_organization">Create Org</SelectItem>
-                  <SelectItem value="update_organization">Update Org</SelectItem>
-                  <SelectItem value="update_settings">Settings</SelectItem>
-                  <SelectItem value="create_user">Create User</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={entityFilter} onValueChange={setEntityFilter}>
-                <SelectTrigger className="w-full sm:w-40">
-                  <SelectValue placeholder="Entity" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Entities</SelectItem>
-                  <SelectItem value="organization">Organization</SelectItem>
-                  <SelectItem value="user">User</SelectItem>
-                  <SelectItem value="platform_settings">Settings</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-4">
+                <Select value={actionFilter} onValueChange={setActionFilter}>
+                  <SelectTrigger className="w-full sm:w-36 h-10">
+                    <SelectValue placeholder="Action" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Actions</SelectItem>
+                    <SelectItem value="create_organization">Create Org</SelectItem>
+                    <SelectItem value="update_organization">Update Org</SelectItem>
+                    <SelectItem value="update_settings">Settings</SelectItem>
+                    <SelectItem value="create_user">Create User</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={entityFilter} onValueChange={setEntityFilter}>
+                  <SelectTrigger className="w-full sm:w-36 h-10">
+                    <SelectValue placeholder="Entity" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Entities</SelectItem>
+                    <SelectItem value="organization">Organization</SelectItem>
+                    <SelectItem value="user">User</SelectItem>
+                    <SelectItem value="platform_settings">Settings</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Logs Table */}
+        {/* Logs Table/Cards */}
         <Card>
           <CardContent className="p-0">
             {isLoading ? (
@@ -237,60 +239,96 @@ export default function AuditTrail() {
                 <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
               </div>
             ) : filteredLogs.length > 0 ? (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Timestamp</TableHead>
-                      <TableHead>Action</TableHead>
-                      <TableHead>Entity</TableHead>
-                      <TableHead>Performed By</TableHead>
-                      <TableHead className="hidden lg:table-cell">Details</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredLogs.map((log) => (
-                      <TableRow key={log.id}>
-                        <TableCell className="whitespace-nowrap">
-                          <div className="flex items-center gap-2 text-sm">
-                            <Clock className="h-4 w-4 text-muted-foreground" />
-                            {format(new Date(log.performed_at), 'MMM dd, HH:mm')}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
+              <>
+                {/* Mobile Card View */}
+                <div className="block md:hidden divide-y">
+                  {filteredLogs.map((log) => (
+                    <div key={log.id} className="p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                             {getActionIcon(log.action)}
-                            <Badge variant={getActionBadgeVariant(log.action)}>
+                          </div>
+                          <div className="min-w-0">
+                            <Badge variant={getActionBadgeVariant(log.action)} className="text-xs">
                               {log.action.replace(/_/g, ' ')}
                             </Badge>
+                            <p className="text-sm text-muted-foreground mt-1 truncate">
+                              {log.entity_type}{log.entity_name && `: ${log.entity_name}`}
+                            </p>
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium text-sm">{log.entity_type}</p>
-                            {log.entity_name && (
-                              <p className="text-xs text-muted-foreground">{log.entity_name}</p>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                              <User className="h-4 w-4 text-primary" />
-                            </div>
-                            <span className="text-sm">{log.performer_name}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell">
-                          <code className="text-xs bg-muted px-2 py-1 rounded max-w-xs truncate block">
-                            {JSON.stringify(log.details).substring(0, 50)}...
-                          </code>
-                        </TableCell>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1.5">
+                          <User className="h-3.5 w-3.5" />
+                          <span className="truncate">{log.performer_name}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="h-3.5 w-3.5" />
+                          <span>{format(new Date(log.performed_at), 'MMM dd, HH:mm')}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Timestamp</TableHead>
+                        <TableHead>Action</TableHead>
+                        <TableHead>Entity</TableHead>
+                        <TableHead>Performed By</TableHead>
+                        <TableHead className="hidden lg:table-cell">Details</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredLogs.map((log) => (
+                        <TableRow key={log.id}>
+                          <TableCell className="whitespace-nowrap">
+                            <div className="flex items-center gap-2 text-sm">
+                              <Clock className="h-4 w-4 text-muted-foreground" />
+                              {format(new Date(log.performed_at), 'MMM dd, HH:mm')}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              {getActionIcon(log.action)}
+                              <Badge variant={getActionBadgeVariant(log.action)}>
+                                {log.action.replace(/_/g, ' ')}
+                              </Badge>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium text-sm">{log.entity_type}</p>
+                              {log.entity_name && (
+                                <p className="text-xs text-muted-foreground">{log.entity_name}</p>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                <User className="h-4 w-4 text-primary" />
+                              </div>
+                              <span className="text-sm">{log.performer_name}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="hidden lg:table-cell">
+                            <code className="text-xs bg-muted px-2 py-1 rounded max-w-xs truncate block">
+                              {JSON.stringify(log.details).substring(0, 50)}...
+                            </code>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </>
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                 <FileText className="h-12 w-12 mb-4 opacity-50" />

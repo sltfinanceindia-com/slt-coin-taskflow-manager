@@ -26,6 +26,7 @@ import { useIsSuperAdmin } from '@/hooks/useUserRole';
 import { useAuth } from '@/hooks/useAuth';
 import SuperAdminLayout from '@/components/super-admin/SuperAdminLayout';
 import { supabase } from '@/integrations/supabase/client';
+import { cn } from '@/lib/utils';
 
 interface HealthMetric {
   name: string;
@@ -255,8 +256,4 @@ export default function SystemHealth() {
       </div>
     </SuperAdminLayout>
   );
-}
-
-function cn(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(' ');
 }
