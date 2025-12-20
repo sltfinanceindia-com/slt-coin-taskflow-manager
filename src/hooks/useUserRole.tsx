@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
-export type AppRole = 'super_admin' | 'org_admin' | 'admin' | 'employee' | 'intern';
+export type AppRole = 'super_admin' | 'org_admin' | 'admin' | 'manager' | 'team_lead' | 'employee' | 'intern';
 
 interface UserRoleData {
   role: AppRole;
@@ -10,18 +10,22 @@ interface UserRoleData {
   organizationId: string | null;
   isSuperAdmin: boolean;
   isOrgAdmin: boolean;
-  isAdmin: boolean;
+  isAdmin: boolean; // True for super_admin, org_admin, or admin
+  isManager: boolean;
+  isTeamLead: boolean;
   isEmployee: boolean;
   isLoading: boolean;
 }
 
 // Role priority order (higher = more privilege)
 const ROLE_PRIORITY: Record<AppRole, number> = {
-  'super_admin': 5,
-  'org_admin': 4,
-  'admin': 3,
-  'employee': 2,
-  'intern': 1,
+  'super_admin': 7,
+  'org_admin': 6,
+  'admin': 6, // Same as org_admin - they have same privileges
+  'manager': 5,
+  'team_lead': 4,
+  'employee': 3,
+  'intern': 2,
 };
 
 function getHighestPriorityRole(roles: AppRole[]): AppRole {
@@ -40,6 +44,8 @@ export function useUserRole(): UserRoleData {
     isSuperAdmin: false,
     isOrgAdmin: false,
     isAdmin: false,
+    isManager: false,
+    isTeamLead: false,
     isEmployee: false,
     isLoading: true,
   });
@@ -54,6 +60,8 @@ export function useUserRole(): UserRoleData {
           isSuperAdmin: false,
           isOrgAdmin: false,
           isAdmin: false,
+          isManager: false,
+          isTeamLead: false,
           isEmployee: false,
           isLoading: false,
         });
@@ -83,9 +91,12 @@ export function useUserRole(): UserRoleData {
         const organizationId = roleRecords?.[0]?.organization_id || profile?.organization_id || null;
 
         // Determine role flags based on highest role AND allRoles
+        // Note: org_admin and admin have the SAME privileges
         const isSuperAdmin = highestRole === 'super_admin' || allRoles.includes('super_admin');
         const isOrgAdmin = isSuperAdmin || highestRole === 'org_admin' || allRoles.includes('org_admin');
         const isAdmin = isOrgAdmin || highestRole === 'admin' || allRoles.includes('admin');
+        const isManager = isAdmin || highestRole === 'manager' || allRoles.includes('manager');
+        const isTeamLead = isManager || highestRole === 'team_lead' || allRoles.includes('team_lead');
         const isEmployee = highestRole === 'employee' || allRoles.includes('employee');
 
         setRoleData({
@@ -95,20 +106,29 @@ export function useUserRole(): UserRoleData {
           isSuperAdmin,
           isOrgAdmin,
           isAdmin,
+          isManager,
+          isTeamLead,
           isEmployee,
           isLoading: false,
         });
       } catch (error) {
         console.error('Error in useUserRole:', error);
-        // Fallback to profile role if user_roles fails
         const fallbackRole = (profile?.role as AppRole) || 'employee';
+        const isSuperAdmin = fallbackRole === 'super_admin';
+        const isOrgAdmin = isSuperAdmin || fallbackRole === 'org_admin';
+        const isAdmin = isOrgAdmin || fallbackRole === 'admin';
+        const isManager = isAdmin || fallbackRole === 'manager';
+        const isTeamLead = isManager || fallbackRole === 'team_lead';
+        
         setRoleData({
           role: fallbackRole,
           allRoles: [fallbackRole],
           organizationId: profile?.organization_id || null,
-          isSuperAdmin: fallbackRole === 'super_admin',
-          isOrgAdmin: fallbackRole === 'super_admin' || fallbackRole === 'org_admin',
-          isAdmin: ['super_admin', 'org_admin', 'admin'].includes(fallbackRole),
+          isSuperAdmin,
+          isOrgAdmin,
+          isAdmin,
+          isManager,
+          isTeamLead,
           isEmployee: fallbackRole === 'employee',
           isLoading: false,
         });
@@ -137,4 +157,16 @@ export function useIsOrgAdmin(): { isOrgAdmin: boolean; isLoading: boolean } {
 export function useIsAnyAdmin(): { isAnyAdmin: boolean; isLoading: boolean } {
   const { isAdmin, isLoading } = useUserRole();
   return { isAnyAdmin: isAdmin, isLoading };
+}
+
+// Hook specifically for manager check
+export function useIsManager(): { isManager: boolean; isLoading: boolean } {
+  const { isManager, isLoading } = useUserRole();
+  return { isManager, isLoading };
+}
+
+// Hook specifically for team lead check
+export function useIsTeamLead(): { isTeamLead: boolean; isLoading: boolean } {
+  const { isTeamLead, isLoading } = useUserRole();
+  return { isTeamLead, isLoading };
 }

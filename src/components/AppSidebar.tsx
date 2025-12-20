@@ -178,10 +178,11 @@ interface AppSidebarProps {
 export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
   const { state, setOpenMobile, isMobile } = useSidebar()
   const { profile } = useAuth()
-  const { isSuperAdmin, isAdmin, role, isLoading: roleLoading } = useUserRole()
+  const { isSuperAdmin, isAdmin, isManager, isTeamLead, role, isLoading: roleLoading } = useUserRole()
   const { isViewingSuperAdmin, isViewingOrgAdmin } = useViewMode()
   const { organization } = useOrganization()
   
+  // isAdmin includes org_admin and admin with same privileges
   const navGroups = isAdmin ? adminNavGroups : internNavGroups
   const collapsed = state === "collapsed"
 
@@ -218,11 +219,14 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
     if (isSuperAdmin && isViewingOrgAdmin) {
       return { label: 'Org View', variant: 'default' as const, icon: Building2 }
     }
-    if (role === 'org_admin') {
-      return { label: 'Org Admin', variant: 'default' as const, icon: Building2 }
-    }
-    if (role === 'admin') {
+    if (role === 'org_admin' || role === 'admin') {
       return { label: 'Admin', variant: 'default' as const, icon: Shield }
+    }
+    if (role === 'manager') {
+      return { label: 'Manager', variant: 'default' as const, icon: Users }
+    }
+    if (role === 'team_lead') {
+      return { label: 'Team Lead', variant: 'default' as const, icon: UserCheck }
     }
     if (role === 'employee') {
       return { label: 'Employee', variant: 'secondary' as const, icon: User }
