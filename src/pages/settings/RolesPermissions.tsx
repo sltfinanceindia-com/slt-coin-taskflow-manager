@@ -228,9 +228,9 @@ export default function RolesPermissions() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/admin/settings')}>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
               <ChevronLeft className="h-4 w-4 mr-1" />
-              Settings
+              Dashboard
             </Button>
           </div>
           <h1 className="text-2xl font-bold">Roles & Permissions</h1>

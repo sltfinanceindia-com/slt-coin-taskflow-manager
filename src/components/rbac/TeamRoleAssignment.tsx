@@ -107,13 +107,14 @@ export function TeamRoleAssignment() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [historyOpen, setHistoryOpen] = useState(false);
 
-  // Fetch all team members
+  // Fetch all team members with roles from user_roles table (source of truth)
   const { data: members = [], isLoading } = useQuery({
     queryKey: ['team-members-roles', profile?.organization_id],
     queryFn: async () => {
       if (!profile?.organization_id) return [];
       
-      const { data, error } = await supabase
+      // First get profiles
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select(`
           id,
@@ -126,11 +127,29 @@ export function TeamRoleAssignment() {
           custom_role_id
         `)
         .eq('organization_id', profile.organization_id)
-        .neq('role', 'super_admin')
         .order('full_name');
 
-      if (error) throw error;
-      return data || [];
+      if (profilesError) throw profilesError;
+      
+      // Then get user_roles for this organization (source of truth)
+      const { data: userRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .eq('organization_id', profile.organization_id);
+      
+      if (rolesError) throw rolesError;
+      
+      // Create a map of user_id to role from user_roles
+      const roleMap = new Map(userRoles?.map(r => [r.user_id, r.role]) || []);
+      
+      // Merge - use user_roles.role as source of truth
+      return (profiles || [])
+        .map(p => ({
+          ...p,
+          // Use role from user_roles table (source of truth), fallback to profiles.role
+          role: roleMap.get(p.id) || p.role || 'employee'
+        }))
+        .filter(p => p.role !== 'super_admin');
     },
     enabled: !!profile?.organization_id,
   });

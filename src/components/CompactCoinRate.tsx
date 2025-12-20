@@ -2,6 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Coins, TrendingUp, TrendingDown } from 'lucide-react';
 import { useCoinRates } from '@/hooks/useCoinRates';
+import { useOrganization } from '@/hooks/useOrganization';
 import { formatCoinRate } from '@/lib/currency';
 
 interface CompactCoinRateProps {
@@ -11,6 +12,9 @@ interface CompactCoinRateProps {
 
 export function CompactCoinRate({ showDetails = true, className = '' }: CompactCoinRateProps) {
   const { latestRate, isLoading } = useCoinRates();
+  const { organization } = useOrganization();
+  
+  const coinName = organization?.coin_name || 'Coins';
 
   if (isLoading) {
     return (
@@ -57,7 +61,7 @@ export function CompactCoinRate({ showDetails = true, className = '' }: CompactC
               <Coins className="h-5 w-5 text-coin-gold" />
             </div>
             <div>
-              <p className="text-xs font-medium text-muted-foreground">SLT Coin Rate</p>
+              <p className="text-xs font-medium text-muted-foreground">{coinName} Rate</p>
               <div className="flex items-baseline gap-2">
                 <p className="text-xl font-bold text-coin-gold">{formatCoinRate(rate)}</p>
                 {showDetails && (
