@@ -110,6 +110,8 @@ const adminNavGroups = [
     label: "Admin Tools",
     icon: Shield,
     items: [
+      { title: "Roles & Permissions", url: "roles", icon: Shield },
+      { title: "Org Chart", url: "org-chart", icon: Users2 },
       { title: "Templates", url: "templates", icon: FileBox },
       { title: "Approvals", url: "approvals", icon: GitBranch },
       { title: "Work Health", url: "work-health", icon: HeartPulse },
