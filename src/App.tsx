@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import Features from "@/pages/Features";
 import Terms from "@/pages/Terms";
@@ -71,10 +71,10 @@ function AppContent() {
   const [minTimeElapsed, setMinTimeElapsed] = useState(false);
 
   // Show splash for minimum 2.5 seconds AND until auth is loaded
-  useState(() => {
+  useEffect(() => {
     const timer = setTimeout(() => setMinTimeElapsed(true), 2500);
     return () => clearTimeout(timer);
-  });
+  }, []);
 
   const shouldShowSplash = showSplash && (!minTimeElapsed || loading);
 
