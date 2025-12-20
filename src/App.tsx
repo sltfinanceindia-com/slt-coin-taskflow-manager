@@ -35,6 +35,8 @@ import BillingDashboard from "./pages/super-admin/BillingDashboard";
 import SubscriptionAnalytics from "./pages/super-admin/SubscriptionAnalytics";
 import PlansManagement from "./pages/super-admin/PlansManagement";
 import OrganizationSettings from "./pages/admin/OrganizationSettings";
+import RolesPermissions from "./pages/settings/RolesPermissions";
+import OrgChartPage from "./pages/organization/OrgChart";
 
 const queryClient = new QueryClient();
 
@@ -115,6 +117,8 @@ function AppContent() {
           
           {/* Admin Routes */}
           <Route path="/admin/settings" element={<ProtectedRoute><OrganizationSettings /></ProtectedRoute>} />
+          <Route path="/admin/roles-permissions" element={<ProtectedRoute><RolesPermissions /></ProtectedRoute>} />
+          <Route path="/organization/chart" element={<ProtectedRoute><OrgChartPage /></ProtectedRoute>} />
           
           {/* Protected Routes */}
           <Route 

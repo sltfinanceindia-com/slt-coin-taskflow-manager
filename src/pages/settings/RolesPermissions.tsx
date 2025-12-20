@@ -81,7 +81,7 @@ const ROLE_COLORS: Record<string, string> = {
 export default function RolesPermissions() {
   const navigate = useNavigate();
   const { profile } = useAuth();
-  const { roles, isLoading, createRole, updateRole, deleteRole } = useCustomRoles();
+  const { roles, isLoading, createRole, updateRole, deleteRole, updatePermission } = useCustomRoles();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
@@ -126,16 +126,25 @@ export default function RolesPermissions() {
 
   const handleUpdateRole = async (data: any) => {
     if (!selectedRoleId) return;
+    
+    // Update the role basic info
     await updateRole({
-      roleId: selectedRoleId,
-      updates: {
-        name: data.name,
-        description: data.description,
-        role_type: data.role_type,
-        hierarchy_level: data.hierarchy_level,
-      },
-      permissions: data.permissions,
+      id: selectedRoleId,
+      name: data.name,
+      description: data.description,
     });
+    
+    // Update permissions separately if provided
+    if (data.permissions?.length > 0) {
+      for (const perm of data.permissions) {
+        await updatePermission({
+          roleId: selectedRoleId,
+          module: perm.module_name,
+          permission: perm,
+        });
+      }
+    }
+    
     setIsEditing(false);
     setSelectedRoleId(null);
   };
