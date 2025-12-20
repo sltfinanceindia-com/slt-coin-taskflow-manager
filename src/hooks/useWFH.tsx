@@ -77,7 +77,7 @@ export const useWFH = () => {
       if (error) throw error;
       return data as WFHRequest[];
     },
-    enabled: profile?.role === 'admin' && !!profile?.organization_id,
+    enabled: ['admin', 'org_admin', 'super_admin'].includes(profile?.role || '') && !!profile?.organization_id,
   });
 
   // Get user's WFH count for current month

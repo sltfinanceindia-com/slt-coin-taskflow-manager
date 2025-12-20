@@ -1,16 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAuth } from '@/hooks/useAuth';
 import { AttendanceClockIn } from './AttendanceClockIn';
 import { AttendanceHistory } from './AttendanceHistory';
 import { AttendanceSettings } from './AttendanceSettings';
 import { AttendanceDashboard } from './AttendanceDashboard';
 import { Clock, History, Settings, BarChart3 } from 'lucide-react';
+import { useUserRole } from '@/hooks/useUserRole';
 
 export const GeoAttendance: React.FC = () => {
-  const { profile } = useAuth();
-  const isAdmin = profile?.role === 'admin';
-
+  const { isAdmin } = useUserRole();
   return (
     <div className="space-y-4 sm:space-y-6">
       <div>

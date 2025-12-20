@@ -101,7 +101,7 @@ export const useLeaveManagement = () => {
       if (error) throw error;
       return (data || []) as LeaveBalance[];
     },
-    enabled: profile?.role === 'admin' && !!profile?.organization_id,
+    enabled: ['admin', 'org_admin', 'super_admin'].includes(profile?.role || '') && !!profile?.organization_id,
   });
 
   // Fetch user's leave requests
@@ -133,7 +133,7 @@ export const useLeaveManagement = () => {
       if (error) throw error;
       return (data || []) as LeaveRequest[];
     },
-    enabled: profile?.role === 'admin' && !!profile?.organization_id,
+    enabled: ['admin', 'org_admin', 'super_admin'].includes(profile?.role || '') && !!profile?.organization_id,
   });
 
   // Create leave request with notification

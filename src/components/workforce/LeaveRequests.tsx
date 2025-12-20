@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useLeaveManagement, LeaveRequest } from '@/hooks/useLeaveManagement';
-import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import { format } from 'date-fns';
 import { CheckCircle, XCircle, Clock, Calendar, X, Eye, Download } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -22,9 +22,8 @@ const statusConfig = {
 };
 
 export const LeaveRequests: React.FC = () => {
-  const { profile } = useAuth();
   const { myRequests, allRequests, isLoading, isAdminLoading, reviewRequest, cancelRequest } = useLeaveManagement();
-  const isAdmin = profile?.role === 'admin';
+  const { isAdmin } = useUserRole();
   
   const [selectedRequest, setSelectedRequest] = useState<LeaveRequest | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');

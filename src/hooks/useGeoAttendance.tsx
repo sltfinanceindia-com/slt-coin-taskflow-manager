@@ -117,7 +117,7 @@ export const useGeoAttendance = () => {
       if (error) throw error;
       return data as AttendanceRecord[];
     },
-    enabled: profile?.role === 'admin',
+    enabled: ['admin', 'org_admin', 'super_admin'].includes(profile?.role || ''),
   });
 
   // Get current location
