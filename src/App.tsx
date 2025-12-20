@@ -13,6 +13,7 @@ import { OrganizationProvider } from "@/hooks/useOrganization";
 import { useAuthEmailNotifications } from "@/hooks/useAuthEmailNotifications";
 import { useUserRole } from "@/hooks/useUserRole";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeApplier } from "@/components/ThemeApplier";
 import { SkipLink } from "@/components/SkipLink";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import SplashScreen from "@/components/SplashScreen";
@@ -87,6 +88,7 @@ function AppContent() {
 
   return (
     <TooltipProvider>
+      <ThemeApplier />
       <SkipLink />
       <Toaster />
       <Sonner />
