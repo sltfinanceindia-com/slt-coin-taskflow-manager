@@ -4454,14 +4454,20 @@ export type Database = {
           contact_phone: string | null
           created_at: string
           created_by: string | null
+          currency: string | null
+          date_format: string | null
           description: string | null
+          enabled_features: Json | null
+          first_day_of_week: number | null
           id: string
           logo_url: string | null
           max_users: number
           name: string
+          notification_settings: Json | null
           payment_failed_at: string | null
           primary_color: string | null
           secondary_color: string | null
+          security_settings: Json | null
           service_suspended_at: string | null
           slug: string | null
           status: Database["public"]["Enums"]["organization_status"]
@@ -4471,6 +4477,7 @@ export type Database = {
           subscription_plan_id: string | null
           subscription_status: string | null
           tax_id: string | null
+          timezone: string | null
           trial_ends_at: string | null
           two_fa_policy: string | null
           updated_at: string
@@ -4485,14 +4492,20 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string
           created_by?: string | null
+          currency?: string | null
+          date_format?: string | null
           description?: string | null
+          enabled_features?: Json | null
+          first_day_of_week?: number | null
           id?: string
           logo_url?: string | null
           max_users?: number
           name: string
+          notification_settings?: Json | null
           payment_failed_at?: string | null
           primary_color?: string | null
           secondary_color?: string | null
+          security_settings?: Json | null
           service_suspended_at?: string | null
           slug?: string | null
           status?: Database["public"]["Enums"]["organization_status"]
@@ -4502,6 +4515,7 @@ export type Database = {
           subscription_plan_id?: string | null
           subscription_status?: string | null
           tax_id?: string | null
+          timezone?: string | null
           trial_ends_at?: string | null
           two_fa_policy?: string | null
           updated_at?: string
@@ -4516,14 +4530,20 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string
           created_by?: string | null
+          currency?: string | null
+          date_format?: string | null
           description?: string | null
+          enabled_features?: Json | null
+          first_day_of_week?: number | null
           id?: string
           logo_url?: string | null
           max_users?: number
           name?: string
+          notification_settings?: Json | null
           payment_failed_at?: string | null
           primary_color?: string | null
           secondary_color?: string | null
+          security_settings?: Json | null
           service_suspended_at?: string | null
           slug?: string | null
           status?: Database["public"]["Enums"]["organization_status"]
@@ -4533,6 +4553,7 @@ export type Database = {
           subscription_plan_id?: string | null
           subscription_status?: string | null
           tax_id?: string | null
+          timezone?: string | null
           trial_ends_at?: string | null
           two_fa_policy?: string | null
           updated_at?: string
