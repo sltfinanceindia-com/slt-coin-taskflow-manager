@@ -20,7 +20,8 @@ import {
   CreditCard, 
   Save,
   ArrowLeft,
-  Sparkles
+  Sparkles,
+  Coins
 } from 'lucide-react';
 
 export default function OrganizationSettings() {
@@ -37,6 +38,7 @@ export default function OrganizationSettings() {
     address: '',
     primary_color: '#10b981',
     secondary_color: '#059669',
+    coin_name: 'SLT Coins',
   });
   
   const [isSaving, setIsSaving] = useState(false);
@@ -52,6 +54,7 @@ export default function OrganizationSettings() {
         address: organization.address || '',
         primary_color: organization.primary_color || '#10b981',
         secondary_color: organization.secondary_color || '#059669',
+        coin_name: organization.coin_name || 'SLT Coins',
       });
     }
   }, [organization]);
@@ -71,6 +74,7 @@ export default function OrganizationSettings() {
           address: formData.address,
           primary_color: formData.primary_color,
           secondary_color: formData.secondary_color,
+          coin_name: formData.coin_name,
         })
         .eq('id', organization.id);
 
@@ -226,6 +230,25 @@ export default function OrganizationSettings() {
               placeholder="Company address"
               rows={2}
             />
+          </div>
+
+          <Separator className="my-4" />
+
+          <div className="space-y-2">
+            <Label htmlFor="coin_name" className="text-sm flex items-center gap-2">
+              <Coins className="h-4 w-4 text-coin-gold" />
+              Coin Name
+            </Label>
+            <Input
+              id="coin_name"
+              value={formData.coin_name}
+              onChange={(e) => setFormData({ ...formData, coin_name: e.target.value })}
+              placeholder="SLT Coins"
+              className="h-10 sm:h-11"
+            />
+            <p className="text-xs text-muted-foreground">
+              Custom name for your organization's reward coins (e.g., "Star Points", "Company Coins")
+            </p>
           </div>
         </CardContent>
       </Card>
