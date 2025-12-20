@@ -71,8 +71,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      console.log('✅ Profile loaded:', profileData.id, profileData.full_name, profileData.role);
-      setProfile(profileData as Profile);
+      // Fetch the authoritative role from user_roles table
+      const { data: userRoleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', profileData.id)
+        .maybeSingle();
+
+      // Use user_roles.role if available, otherwise fall back to profiles.role
+      const authoritativeRole = userRoleData?.role || profileData.role;
+
+      console.log('✅ Profile loaded:', profileData.id, profileData.full_name, 'Role from user_roles:', authoritativeRole);
+      setProfile({ ...profileData, role: authoritativeRole } as Profile);
       
     } catch (error) {
       console.error('❌ Error fetching profile:', error);
