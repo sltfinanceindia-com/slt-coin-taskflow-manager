@@ -22,6 +22,7 @@ import { useTasks } from '@/hooks/useTasks';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
 import { useCoinTransactions } from '@/hooks/useCoinTransactions';
 import { useSessionLogs } from '@/hooks/useSessionLogs';
+import { useOrganization } from '@/hooks/useOrganization';
 import { SimpleLineChart } from '@/components/SimpleChart';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -35,6 +36,9 @@ export function EnhancedOverview() {
   const { getWeeklyHours } = useTimeLogs();
   const { getTotalEarned, getPendingCoins } = useCoinTransactions();
   const { getUserSessionStats } = useSessionLogs();
+  const { organization } = useOrganization();
+  
+  const coinName = organization?.coin_name || 'SLT Coins';
 
   const myTasks = tasks.filter(task => 
     isAdmin ? true : task.assigned_to === profile?.id
@@ -117,7 +121,7 @@ export function EnhancedOverview() {
       trending: completedThisWeek.length > 0,
     },
     {
-      title: 'SLT Coins',
+      title: coinName,
       value: profile?.total_coins || 0,
       icon: Coins,
       color: 'text-coin-gold',
