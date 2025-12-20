@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
 import { ModulePermission, VisibilityScope } from './usePermissions';
+import { AppRole } from './useUserRole';
 
 export interface CustomRole {
   id: string;
@@ -238,19 +239,44 @@ export function useCustomRoles() {
     }
   });
 
-  // Assign a role to a user
+  // Assign a role to a user via user_roles table
   const assignRoleToUserMutation = useMutation({
-    mutationFn: async ({ userId, roleId }: { userId: string; roleId: string }) => {
+    mutationFn: async ({ userId, role, roleId }: { userId: string; role: AppRole; roleId?: string }) => {
+      if (!profile?.organization_id) throw new Error('No organization');
+      
+      // First, remove any existing role for this user in this organization
+      await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userId)
+        .eq('organization_id', profile.organization_id);
+      
+      // Insert the new role
       const { error } = await supabase
-        .from('profiles')
-        .update({ custom_role_id: roleId })
-        .eq('id', userId);
+        .from('user_roles')
+        .insert({
+          user_id: userId,
+          role: role,
+          organization_id: profile.organization_id
+        });
 
       if (error) throw error;
+      
+      // Also update the profile's role and custom_role_id if provided
+      const profileUpdate: Record<string, any> = { role };
+      if (roleId) {
+        profileUpdate.custom_role_id = roleId;
+      }
+      await supabase
+        .from('profiles')
+        .update(profileUpdate)
+        .eq('id', userId);
     },
     onSuccess: () => {
       toast.success('Role assigned successfully');
       queryClient.invalidateQueries({ queryKey: ['profiles'] });
+      queryClient.invalidateQueries({ queryKey: ['user-roles'] });
+      queryClient.invalidateQueries({ queryKey: ['interns'] });
     },
     onError: (error) => {
       toast.error('Failed to assign role');
