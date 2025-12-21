@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Task } from '@/hooks/useTasks';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
 import { useSessionLogs } from '@/hooks/useSessionLogs';
+import { TaskComments } from '@/components/TaskComments';
 import { Eye, Clock, User, Calendar, Coins, BarChart3 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useState } from 'react';
@@ -27,31 +28,30 @@ export function TaskDetailDialog({ task }: TaskDetailDialogProps) {
 
   const getStatusColor = (status: Task['status']) => {
     switch (status) {
-      case 'assigned': return 'bg-blue-100 text-blue-800';
-      case 'in_progress': return 'bg-yellow-100 text-yellow-800';
-      case 'completed': return 'bg-purple-100 text-purple-800';
-      case 'verified': return 'bg-green-100 text-green-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'assigned': return 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30';
+      case 'in_progress': return 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/30';
+      case 'completed': return 'bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/30';
+      case 'verified': return 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/30';
+      case 'rejected': return 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/30';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
   const getPriorityColor = (priority: Task['priority']) => {
     switch (priority) {
-      case 'urgent': return 'bg-red-100 text-red-800';
-      case 'high': return 'bg-orange-100 text-orange-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'low': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'urgent': return 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/30';
+      case 'high': return 'bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/30';
+      case 'medium': return 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/30';
+      case 'low': return 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/30';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm">
-          <Eye className="h-4 w-4 mr-2" />
-          View Details
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Eye className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -71,10 +71,10 @@ export function TaskDetailDialog({ task }: TaskDetailDialogProps) {
             <CardHeader>
               <CardTitle className="text-lg">{task.title}</CardTitle>
               <div className="flex items-center gap-2">
-                <Badge className={getStatusColor(task.status)}>
+                <Badge className={`${getStatusColor(task.status)} border`}>
                   {task.status.replace('_', ' ').toUpperCase()}
                 </Badge>
-                <Badge className={getPriorityColor(task.priority)}>
+                <Badge className={`${getPriorityColor(task.priority)} border`}>
                   {task.priority.toUpperCase()}
                 </Badge>
               </div>
@@ -105,10 +105,10 @@ export function TaskDetailDialog({ task }: TaskDetailDialogProps) {
                   </div>
                 </div>
                 <div className="flex items-start gap-2 p-2 rounded-lg bg-muted/50">
-                  <Coins className="h-4 w-4 text-coin-gold mt-0.5 shrink-0" />
+                  <Coins className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                   <div className="min-w-0">
                     <p className="font-medium text-xs text-muted-foreground">Coin Value</p>
-                    <p className="text-coin-gold font-bold">{task.slt_coin_value}</p>
+                    <p className="text-primary font-bold">{task.slt_coin_value}</p>
                   </div>
                 </div>
               </div>
@@ -215,6 +215,17 @@ export function TaskDetailDialog({ task }: TaskDetailDialogProps) {
               </CardContent>
             </Card>
           )}
+
+          {/* Task Comments */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Comments</CardTitle>
+              <CardDescription>Discussion and updates for this task</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TaskComments taskId={task.id} />
+            </CardContent>
+          </Card>
         </div>
       </DialogContent>
     </Dialog>

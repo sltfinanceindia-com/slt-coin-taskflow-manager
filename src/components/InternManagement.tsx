@@ -114,7 +114,7 @@ export function InternManagement() {
     enabled: !!profile?.organization_id,
   });
 
-  // Add new intern mutation
+  // Add new intern mutation - uses edge function to avoid auto-login
   const addInternMutation = useMutation({
     mutationFn: async (formData: InternFormData) => {
       // Check subscription limit before adding
@@ -122,22 +122,21 @@ export function InternManagement() {
         throw new Error(`You've reached your plan limit of ${maxUsers} users. Please upgrade your plan to add more users.`);
       }
 
-      const { error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            full_name: formData.full_name,
-            role: formData.role,
-            department: formData.department,
-            employee_id: formData.employee_id,
-            organization_id: profile?.organization_id,
-          }
+      // Use edge function to create user without logging them in
+      const { data, error } = await supabase.functions.invoke('create-organization-user', {
+        body: {
+          email: formData.email,
+          password: formData.password,
+          full_name: formData.full_name,
+          role: formData.role,
+          department: formData.department,
+          employee_id: formData.employee_id,
         }
       });
 
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['interns'] });

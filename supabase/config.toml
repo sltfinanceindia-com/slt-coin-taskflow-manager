@@ -30,5 +30,11 @@ verify_jwt = false
 [functions.admin-delete-user]
 verify_jwt = true
 
+[functions.create-organization-user]
+verify_jwt = true
+
+[functions.phonepe-payment]
+verify_jwt = false
+
 [edge_runtime]
 policy = "per_worker"
