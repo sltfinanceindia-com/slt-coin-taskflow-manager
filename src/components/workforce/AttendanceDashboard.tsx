@@ -10,7 +10,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { useGeoAttendance } from '@/hooks/useGeoAttendance';
 import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users, Clock, AlertTriangle, CheckCircle2, Download, CalendarIcon, Search, Filter, X } from 'lucide-react';
+import { Users, Clock, AlertTriangle, CheckCircle2, Download, CalendarIcon, Search, Filter, X, MapPin } from 'lucide-react';
 import { exportToCSV } from '@/lib/export';
 import { cn } from '@/lib/utils';
 
@@ -108,7 +108,15 @@ export const AttendanceDashboard: React.FC = () => {
       email: record.employee?.email || '',
       date: format(new Date(record.attendance_date), 'yyyy-MM-dd'),
       clock_in: record.clock_in_time ? format(new Date(record.clock_in_time), 'HH:mm') : '-',
+      clock_in_location: record.clock_in_latitude && record.clock_in_longitude 
+        ? `${record.clock_in_latitude.toFixed(6)}, ${record.clock_in_longitude.toFixed(6)}` 
+        : '-',
+      clock_in_geofence: record.clock_in_within_geofence ? 'Yes' : 'No',
       clock_out: record.clock_out_time ? format(new Date(record.clock_out_time), 'HH:mm') : '-',
+      clock_out_location: record.clock_out_latitude && record.clock_out_longitude 
+        ? `${record.clock_out_latitude.toFixed(6)}, ${record.clock_out_longitude.toFixed(6)}` 
+        : '-',
+      clock_out_geofence: record.clock_out_within_geofence ? 'Yes' : 'No',
       status: record.status,
       total_hours: record.total_hours || 0,
     }));
@@ -118,7 +126,11 @@ export const AttendanceDashboard: React.FC = () => {
       { key: 'email', label: 'Email' },
       { key: 'date', label: 'Date' },
       { key: 'clock_in', label: 'Clock In' },
+      { key: 'clock_in_location', label: 'Clock In Location' },
+      { key: 'clock_in_geofence', label: 'In Geofence' },
       { key: 'clock_out', label: 'Clock Out' },
+      { key: 'clock_out_location', label: 'Clock Out Location' },
+      { key: 'clock_out_geofence', label: 'Out Geofence' },
       { key: 'status', label: 'Status' },
       { key: 'total_hours', label: 'Total Hours' },
     ]);
@@ -268,43 +280,85 @@ export const AttendanceDashboard: React.FC = () => {
               {filteredAttendance.map((record) => (
                 <div 
                   key={record.id} 
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 rounded-lg border gap-3"
+                  className="flex flex-col p-3 sm:p-4 rounded-lg border gap-3"
                 >
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-9 w-9 sm:h-10 sm:w-10">
-                      <AvatarImage src={record.employee?.avatar_url || undefined} />
-                      <AvatarFallback className="text-xs sm:text-sm">
-                        {record.employee?.full_name?.split(' ').map(n => n[0]).join('') || '?'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0">
-                      <p className="font-medium text-sm sm:text-base truncate">{record.employee?.full_name}</p>
-                      <p className="text-xs sm:text-sm text-muted-foreground truncate">{record.employee?.email}</p>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-9 w-9 sm:h-10 sm:w-10">
+                        <AvatarImage src={record.employee?.avatar_url || undefined} />
+                        <AvatarFallback className="text-xs sm:text-sm">
+                          {record.employee?.full_name?.split(' ').map(n => n[0]).join('') || '?'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm sm:text-base truncate">{record.employee?.full_name}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate">{record.employee?.email}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 pl-12 sm:pl-0">
+                      <div className="text-left sm:text-right">
+                        <p className="text-xs text-muted-foreground">
+                          {format(parseISO(record.attendance_date), 'MMM d, yyyy')}
+                        </p>
+                        <p className="text-xs sm:text-sm">
+                          In: {record.clock_in_time ? format(new Date(record.clock_in_time), 'HH:mm') : '-'}
+                          {' / '}
+                          Out: {record.clock_out_time ? format(new Date(record.clock_out_time), 'HH:mm') : '-'}
+                        </p>
+                      </div>
+                      <Badge 
+                        className={
+                          record.status === 'present' ? 'bg-green-500' :
+                          record.status === 'late' ? 'bg-amber-500' :
+                          record.status === 'wfh' ? 'bg-indigo-500' :
+                          'bg-gray-500'
+                        }
+                      >
+                        {record.status.replace('_', ' ').toUpperCase()}
+                      </Badge>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 pl-12 sm:pl-0">
-                    <div className="text-left sm:text-right">
-                      <p className="text-xs text-muted-foreground">
-                        {format(parseISO(record.attendance_date), 'MMM d, yyyy')}
-                      </p>
-                      <p className="text-xs sm:text-sm">
-                        In: {record.clock_in_time ? format(new Date(record.clock_in_time), 'HH:mm') : '-'}
-                        {' / '}
-                        Out: {record.clock_out_time ? format(new Date(record.clock_out_time), 'HH:mm') : '-'}
-                      </p>
+                  {/* Location Details */}
+                  {(record.clock_in_latitude || record.clock_out_latitude) && (
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 pl-12 text-xs text-muted-foreground border-t pt-3">
+                      {record.clock_in_latitude && record.clock_in_longitude && (
+                        <div className="flex items-center gap-1.5">
+                          <MapPin className="h-3 w-3 shrink-0" />
+                          <span>Clock In: </span>
+                          <span className={record.clock_in_within_geofence ? 'text-green-600' : 'text-amber-600'}>
+                            {record.clock_in_within_geofence ? 'In office' : 'Outside office'}
+                          </span>
+                          <a 
+                            href={`https://maps.google.com/?q=${record.clock_in_latitude},${record.clock_in_longitude}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline ml-1"
+                          >
+                            View Map
+                          </a>
+                        </div>
+                      )}
+                      {record.clock_out_latitude && record.clock_out_longitude && (
+                        <div className="flex items-center gap-1.5">
+                          <MapPin className="h-3 w-3 shrink-0" />
+                          <span>Clock Out: </span>
+                          <span className={record.clock_out_within_geofence ? 'text-green-600' : 'text-amber-600'}>
+                            {record.clock_out_within_geofence ? 'In office' : 'Outside office'}
+                          </span>
+                          <a 
+                            href={`https://maps.google.com/?q=${record.clock_out_latitude},${record.clock_out_longitude}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline ml-1"
+                          >
+                            View Map
+                          </a>
+                        </div>
+                      )}
                     </div>
-                    <Badge 
-                      className={
-                        record.status === 'present' ? 'bg-green-500' :
-                        record.status === 'late' ? 'bg-amber-500' :
-                        record.status === 'wfh' ? 'bg-indigo-500' :
-                        'bg-gray-500'
-                      }
-                    >
-                      {record.status.replace('_', ' ').toUpperCase()}
-                    </Badge>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
