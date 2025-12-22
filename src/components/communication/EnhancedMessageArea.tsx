@@ -307,22 +307,41 @@ export default function EnhancedMessageArea({
                       className="h-6 w-6 p-0"
                       onClick={async () => {
                         try {
-                          const { data, error } = await supabase.storage
+                          // First try to get a signed URL for download
+                          const { data: signedData, error: signedError } = await supabase.storage
                             .from('attachments')
-                            .download(attachment.storage_path);
+                            .createSignedUrl(attachment.storage_path, 3600);
                           
-                          if (error) throw error;
-                          
-                          const url = URL.createObjectURL(data);
-                          const a = document.createElement('a');
-                          a.href = url;
-                          a.download = attachment.file_name;
-                          document.body.appendChild(a);
-                          a.click();
-                          document.body.removeChild(a);
-                          URL.revokeObjectURL(url);
+                          if (signedError) {
+                            console.error('Signed URL error:', signedError);
+                            // Try direct download as fallback
+                            const { data, error } = await supabase.storage
+                              .from('attachments')
+                              .download(attachment.storage_path);
+                            
+                            if (error) throw error;
+                            
+                            const url = URL.createObjectURL(data);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = attachment.file_name;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                          } else if (signedData?.signedUrl) {
+                            // Open signed URL for download
+                            const a = document.createElement('a');
+                            a.href = signedData.signedUrl;
+                            a.download = attachment.file_name;
+                            a.target = '_blank';
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                          }
                         } catch (error) {
                           console.error('Download error:', error);
+                          toast.error('Failed to download file');
                         }
                       }}
                     >

@@ -9,6 +9,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { FileUpload } from '@/components/FileUpload';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 interface TaskCommentsProps {
   taskId: string;
@@ -190,16 +192,35 @@ export function TaskComments({ taskId, defaultOpen = false }: TaskCommentsProps)
                                 <p className="text-xs text-muted-foreground font-medium">Attachments:</p>
                                 <div className="flex flex-wrap gap-2">
                                   {comment.attachments.map((attachment: any, index: number) => (
-                                    <a
+                                    <button
                                       key={index}
-                                      href={attachment.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="flex items-center gap-1 text-xs bg-muted/50 hover:bg-muted/70 rounded px-2 py-1 transition-colors"
+                                      onClick={async () => {
+                                        try {
+                                          // First try signed URL
+                                          const { data: signedData, error: signedError } = await supabase.storage
+                                            .from('task-attachments')
+                                            .createSignedUrl(`${taskId}/${attachment.url.split('/').pop()}`, 3600);
+                                          
+                                          if (signedData?.signedUrl) {
+                                            window.open(signedData.signedUrl, '_blank');
+                                          } else {
+                                            // Fallback to original URL
+                                            window.open(attachment.url, '_blank');
+                                          }
+                                        } catch (error) {
+                                          console.error('Download error:', error);
+                                          toast({
+                                            title: "Error",
+                                            description: "Failed to download file",
+                                            variant: "destructive"
+                                          });
+                                        }
+                                      }}
+                                      className="flex items-center gap-1 text-xs bg-muted/50 hover:bg-muted/70 rounded px-2 py-1 transition-colors cursor-pointer"
                                     >
                                       <Download className="h-3 w-3" />
                                       {attachment.name}
-                                    </a>
+                                    </button>
                                   ))}
                                 </div>
                               </div>
