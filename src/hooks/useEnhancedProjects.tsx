@@ -78,6 +78,8 @@ export const useEnhancedProjects = (programId?: string) => {
   const projectsQuery = useQuery({
     queryKey: ['enhanced-projects', profile?.organization_id, programId],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
+      
       let query = supabase
         .from('projects')
         .select(`
@@ -86,6 +88,7 @@ export const useEnhancedProjects = (programId?: string) => {
           sponsor:profiles!projects_sponsor_id_fkey(id, full_name, avatar_url),
           program:programs(id, name, portfolio:portfolios(id, name))
         `)
+        .eq('organization_id', profile.organization_id)
         .order('created_at', { ascending: false });
 
       if (programId) {
@@ -125,6 +128,7 @@ export const useEnhancedProjects = (programId?: string) => {
       });
     },
     enabled: !!profile?.organization_id,
+    staleTime: 30000, // 30 seconds - prevent refetch on tab changes
   });
 
   const createProjectMutation = useMutation({
@@ -133,11 +137,11 @@ export const useEnhancedProjects = (programId?: string) => {
       const cleanedData = {
         name: data.name,
         description: data.description || null,
-        program_id: data.program_id || null,
+        program_id: data.program_id && data.program_id.trim() !== '' ? data.program_id : null,
         stage: data.stage || 'planned',
         health_status: data.health_status || 'green',
         health_reason: data.health_reason || null,
-        sponsor_id: data.sponsor_id || null,
+        sponsor_id: data.sponsor_id && data.sponsor_id.trim() !== '' ? data.sponsor_id : null,
         business_case: data.business_case || null,
         budget: data.budget || 0,
         start_date: data.start_date || null,

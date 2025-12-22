@@ -97,6 +97,7 @@ export const usePortfolios = () => {
       }) as Portfolio[];
     },
     enabled: !!profile?.organization_id,
+    staleTime: 30000, // 30 seconds - prevent refetch on tab changes
   });
 
   const createPortfolioMutation = useMutation({

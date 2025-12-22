@@ -12,11 +12,12 @@ import { FileUpload } from '@/components/FileUpload';
 
 interface TaskCommentsProps {
   taskId: string;
+  defaultOpen?: boolean;
 }
 
-export function TaskComments({ taskId }: TaskCommentsProps) {
+export function TaskComments({ taskId, defaultOpen = false }: TaskCommentsProps) {
   const { profile } = useAuth();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(defaultOpen);
   const [newComment, setNewComment] = useState('');
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState('');

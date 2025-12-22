@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
-import { FileText, Send, Monitor, Users, Megaphone, DollarSign, HelpCircle, CheckCircle } from 'lucide-react';
+import { FileText, Send, Monitor, Users, Megaphone, DollarSign, HelpCircle, CheckCircle, Plus, Settings } from 'lucide-react';
+import { useUserRole } from '@/hooks/useUserRole';
 
 const ICON_MAP: Record<string, React.ElementType> = {
   FileText,
@@ -27,8 +28,13 @@ const PRIORITY_OPTIONS = [
   { value: 'urgent', label: 'Urgent', color: 'bg-red-500' },
 ];
 
-export function RequestPortal() {
+interface RequestPortalProps {
+  onNavigateToTypes?: () => void;
+}
+
+export function RequestPortal({ onNavigateToTypes }: RequestPortalProps) {
   const { requestTypes, isLoading, createRequest, isCreating } = useWorkRequests();
+  const { isAdmin } = useUserRole();
   const [selectedType, setSelectedType] = useState<RequestType | null>(null);
   const [formData, setFormData] = useState<CreateWorkRequestData>({
     request_type_id: '',
@@ -195,11 +201,23 @@ export function RequestPortal() {
       </div>
 
       {requestTypes.length === 0 ? (
-        <EmptyState
-          icon={FileText}
-          title="No Request Types"
-          description="No request types have been configured yet"
-        />
+        <div className="text-center py-12">
+          <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+            <FileText className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <h3 className="text-lg font-semibold mb-2">No Request Types Available</h3>
+          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+            {isAdmin 
+              ? "You haven't configured any request types yet. Create request types to allow users to submit requests."
+              : "No request types have been configured yet. Please contact your administrator."}
+          </p>
+          {isAdmin && onNavigateToTypes && (
+            <Button onClick={onNavigateToTypes} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Create Request Type
+            </Button>
+          )}
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
           {requestTypes.map(type => {
