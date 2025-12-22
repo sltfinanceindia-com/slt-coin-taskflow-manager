@@ -242,23 +242,39 @@ export default function Privacy() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-muted/80 dark:bg-muted/20 border-t border-border py-8 mt-12">
-        <div className="container mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <img 
-              src="/slt-hub-icon.png" 
-              alt="SLT work HuB"
-              className="h-8 w-8 rounded-lg object-contain"
-            />
-            <span className="text-lg font-bold text-foreground">
-              <span className="font-black">SLT</span>
-              <span className="font-normal text-muted-foreground"> work </span>
-              <span className="font-black">HuB</span>
-            </span>
+      <footer className="bg-slate-900 dark:bg-slate-950 text-slate-100 py-10 sm:py-14 mt-12">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center gap-6 text-center md:text-left md:flex-row md:justify-between">
+            <div className="flex flex-col items-center md:items-start gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <img 
+                  src="/slt-hub-icon.png" 
+                  alt="SLT work HuB"
+                  className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg object-contain"
+                />
+                <span className="text-sm sm:text-lg font-bold">
+                  <span className="font-black">SLT</span>
+                  <span className="font-normal text-slate-400"> work </span>
+                  <span className="font-black">HuB</span>
+                </span>
+              </div>
+              <span className="text-emerald-400 font-medium flex items-center gap-2 text-xs sm:text-sm">
+                <span>Made with ❤️ in</span>
+                <span className="font-bold">భారత్ 🇮🇳</span>
+              </span>
+            </div>
+            
+            <div className="flex flex-col items-center md:items-end gap-2">
+              <div className="text-slate-400 text-xs sm:text-sm">
+                © 2025 SLT work HuB. All rights reserved.
+              </div>
+              <div className="flex gap-4 text-xs text-slate-500">
+                <Link to="/terms" className="hover:text-slate-300 transition-colors">Terms</Link>
+                <Link to="/pricing" className="hover:text-slate-300 transition-colors">Pricing</Link>
+                <Link to="/features" className="hover:text-slate-300 transition-colors">Features</Link>
+              </div>
+            </div>
           </div>
-          <p className="text-muted-foreground text-sm">
-            © 2025 SLT work HuB. All rights reserved.
-          </p>
         </div>
       </footer>
     </div>

@@ -26,7 +26,26 @@ import {
 // Import images
 import bgPatternFeatures from '@/assets/bg-pattern-features.jpg';
 import heroCollaboration from '@/assets/hero-collaboration.jpg';
-import workspaceDesk from '@/assets/workspace-desk.jpg';
+import featureEmployeeManagement from '@/assets/feature-employee-management.jpg';
+import featureTraining from '@/assets/feature-training.jpg';
+import featureAssessment from '@/assets/feature-assessment.jpg';
+import featureTaskManagement from '@/assets/feature-task-management.jpg';
+import featureCommunication from '@/assets/feature-communication.jpg';
+import featureRewards from '@/assets/feature-rewards.jpg';
+import featureAnalytics from '@/assets/feature-analytics.jpg';
+import featureBranding from '@/assets/feature-branding.jpg';
+
+// Feature images mapping
+const featureImages = [
+  featureEmployeeManagement,
+  featureTraining,
+  featureAssessment,
+  featureTaskManagement,
+  featureCommunication,
+  featureRewards,
+  featureAnalytics,
+  featureBranding
+];
 
 const features = [
   {
@@ -305,7 +324,7 @@ export default function Features() {
                     <CardContent className="p-0">
                       <div className="aspect-video relative">
                         <img 
-                          src={index % 2 === 0 ? workspaceDesk : heroCollaboration}
+                          src={featureImages[index] || heroCollaboration}
                           alt={feature.title}
                           className="w-full h-full object-cover"
                         />
