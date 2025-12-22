@@ -123,9 +123,21 @@ export function ProfileDashboard() {
                   <div className="min-w-0">
                     <CardTitle className="text-xl sm:text-2xl truncate">{profile.full_name}</CardTitle>
                     <CardDescription className="text-sm sm:text-base truncate">{profile.email}</CardDescription>
-                    <Badge variant={getRoleBadgeVariant(displayRole)} className="mt-2 text-xs">
-                      {roleDisplayNames[displayRole] || displayRole}
-                    </Badge>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      <Badge variant={getRoleBadgeVariant(displayRole)} className="text-xs">
+                        {roleDisplayNames[displayRole] || displayRole}
+                      </Badge>
+                      {profile.employee_id && (
+                        <Badge variant="outline" className="text-xs">
+                          ID: {profile.employee_id}
+                        </Badge>
+                      )}
+                      {profile.department && (
+                        <Badge variant="secondary" className="text-xs">
+                          {profile.department}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                   <Button
                     variant={isEditing ? "destructive" : "outline"}

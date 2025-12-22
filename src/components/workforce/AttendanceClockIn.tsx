@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useGeoAttendance } from '@/hooks/useGeoAttendance';
 import { format } from 'date-fns';
-import { Clock, LogIn, LogOut, MapPin, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Clock, LogIn, LogOut, MapPin, AlertCircle, CheckCircle2, MapPinOff, Navigation } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { toast } from 'sonner';
 
 export const AttendanceClockIn: React.FC = () => {
   const { 
@@ -18,14 +19,71 @@ export const AttendanceClockIn: React.FC = () => {
   } = useGeoAttendance();
 
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [locationEnabled, setLocationEnabled] = useState<boolean | null>(null);
+  const [isCheckingLocation, setIsCheckingLocation] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
+  // Check location permission on mount
+  useEffect(() => {
+    checkLocationPermission();
+  }, []);
+
+  const checkLocationPermission = async () => {
+    setIsCheckingLocation(true);
+    try {
+      if (!navigator.geolocation) {
+        setLocationEnabled(false);
+        return;
+      }
+      
+      // Check permission state
+      if (navigator.permissions) {
+        const result = await navigator.permissions.query({ name: 'geolocation' });
+        setLocationEnabled(result.state === 'granted');
+        
+        result.addEventListener('change', () => {
+          setLocationEnabled(result.state === 'granted');
+        });
+      }
+      
+      // Try to get current location to verify
+      navigator.geolocation.getCurrentPosition(
+        () => setLocationEnabled(true),
+        () => setLocationEnabled(false),
+        { timeout: 5000 }
+      );
+    } catch (error) {
+      setLocationEnabled(false);
+    } finally {
+      setIsCheckingLocation(false);
+    }
+  };
+
+  const handleEnableLocation = () => {
+    navigator.geolocation.getCurrentPosition(
+      () => {
+        setLocationEnabled(true);
+        toast.success('Location enabled successfully');
+      },
+      (error) => {
+        if (error.code === 1) {
+          toast.error('Location permission denied. Please enable location in your browser settings.');
+        } else {
+          toast.error('Failed to get location. Please try again.');
+        }
+        setLocationEnabled(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
   const isClockedIn = !!todayAttendance?.clock_in_time && !todayAttendance?.clock_out_time;
   const isClockedOut = !!todayAttendance?.clock_out_time;
+  const requiresLocation = settings?.enable_geo_fencing;
 
   const getStatusBadge = () => {
     if (!todayAttendance) return <Badge variant="secondary">Not Clocked In</Badge>;
@@ -35,37 +93,8 @@ export const AttendanceClockIn: React.FC = () => {
     return <Badge variant="secondary">Not Started</Badge>;
   };
 
-  return (
-    <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
-      {/* Clock Card */}
-      <Card className="md:col-span-2">
-        <CardHeader className="text-center pb-2 sm:pb-4">
-          <CardTitle className="text-2xl sm:text-3xl lg:text-4xl font-mono">
-            {format(currentTime, 'HH:mm:ss')}
-          </CardTitle>
-          <CardDescription className="text-sm sm:text-base lg:text-lg">
-            {format(currentTime, 'EEEE, MMMM d, yyyy')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center gap-4 sm:gap-6">
-          <div className="flex items-center gap-2">
-            <span className="text-muted-foreground text-xs sm:text-sm">Status:</span>
-            {getStatusBadge()}
-          </div>
-
-          {settings?.enable_geo_fencing && (
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground text-center">
-              <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-              <span>Location tracking enabled ({settings.geo_fence_radius_meters}m radius)</span>
-            </div>
-          )}
-
-          {locationError && (
-            <Alert variant="destructive" className="max-w-md">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="text-xs sm:text-sm">{locationError}</AlertDescription>
-            </Alert>
-          )}
+  const canClockIn = !requiresLocation || locationEnabled;
+  const canClockOut = !requiresLocation || locationEnabled;
 
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
             {!isClockedIn && !isClockedOut && (

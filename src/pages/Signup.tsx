@@ -13,6 +13,7 @@ import {
   Mail, 
   Lock, 
   ArrowRight,
+  ArrowLeft,
   Loader2,
   Eye,
   EyeOff
@@ -144,25 +145,39 @@ export default function Signup() {
   const strengthColors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500', 'bg-emerald-500'];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/30 to-background px-3 sm:px-4 py-6 sm:py-8">
-      <div className="w-full max-w-lg space-y-4 sm:space-y-6">
-        {/* Header */}
-        <div className="text-center">
-          <Link to="/" className="inline-flex items-center gap-2 mb-4 sm:mb-6">
-            <img 
-              src="/slt-hub-icon.png" 
-              alt="SLT work HuB"
-              className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg object-contain"
-            />
-            <span className="text-base sm:text-lg font-bold">
-              <span className="font-black">SLT</span>
-              <span className="font-normal text-muted-foreground"> work </span>
-              <span className="font-black">HuB</span>
-            </span>
-          </Link>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Create Your Organization</h1>
-          <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">Start your 14-day free trial</p>
-        </div>
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-muted/30 to-background">
+      {/* Back Button */}
+      <div className="p-4">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => navigate('/')}
+          className="gap-2"
+        >
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          Back to Home
+        </Button>
+      </div>
+
+      <div className="flex-1 flex items-center justify-center px-3 sm:px-4 py-6 sm:py-8">
+        <div className="w-full max-w-lg space-y-4 sm:space-y-6">
+          {/* Header */}
+          <div className="text-center">
+            <Link to="/" className="inline-flex items-center gap-2 mb-4 sm:mb-6">
+              <img 
+                src="/slt-hub-icon.png" 
+                alt="SLT work HuB"
+                className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg object-contain"
+              />
+              <span className="text-base sm:text-lg font-bold">
+                <span className="font-black">SLT</span>
+                <span className="font-normal text-muted-foreground"> work </span>
+                <span className="font-black">HuB</span>
+              </span>
+            </Link>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Create Your Organization</h1>
+            <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">Start your 14-day free trial</p>
+          </div>
 
         {/* Progress Steps */}
         <div className="flex items-center justify-center gap-2 sm:gap-4">
@@ -402,6 +417,16 @@ export default function Signup() {
           </Link>
         </p>
       </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="py-6 text-center border-t">
+        <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground">
+          <span>Made with</span>
+          <span className="text-red-500">❤️</span>
+          <span>in భారత్</span>
+        </div>
+      </footer>
     </div>
   );
 }
