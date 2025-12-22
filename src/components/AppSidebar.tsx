@@ -61,6 +61,7 @@ import { Badge } from "@/components/ui/badge"
 import { NotificationCenter } from "@/components/NotificationCenter"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { SidebarNotificationWidget } from "@/components/SidebarNotificationWidget"
 
 // Navigation structure with groups
 const adminNavGroups = [
@@ -151,6 +152,7 @@ const internNavGroups = [
     items: [
       { title: "Requests", url: "requests", icon: Inbox },
       { title: "Time Logs", url: "time", icon: Clock },
+      { title: "My Shifts", url: "shifts", icon: CalendarDays },
       { title: "Attendance", url: "attendance", icon: MapPin },
       { title: "Leave", url: "leave", icon: Palmtree },
       { title: "WFH", url: "wfh", icon: Home },
@@ -332,6 +334,11 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
             </SidebarMenu>
           </div>
         )}
+
+        {/* Pending Items Notification */}
+        <div className="px-3 py-2 shrink-0">
+          <SidebarNotificationWidget collapsed={collapsed} />
+        </div>
 
         {/* Navigation with Collapsible Groups */}
         <ScrollArea className="flex-1">

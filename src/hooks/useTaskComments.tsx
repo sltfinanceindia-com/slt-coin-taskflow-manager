@@ -57,6 +57,7 @@ export function useTaskComments(taskId?: string) {
         .insert([{
           ...commentData,
           user_id: profile?.id,
+          organization_id: profile?.organization_id,
         }])
         .select(`
           *,
