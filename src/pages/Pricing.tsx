@@ -10,6 +10,10 @@ import { Check, X, Coins, ArrowRight, Sparkles, Building2, Users, Menu } from 'l
 import { supabase } from '@/integrations/supabase/client';
 import { SEOHead, generateFAQSchema } from '@/components/SEOHead';
 
+// Import images
+import bgGradientHero from '@/assets/bg-gradient-hero.jpg';
+import teamSuccess from '@/assets/team-success.jpg';
+
 interface SubscriptionPlan {
   id: string;
   name: string;
@@ -162,9 +166,19 @@ export default function Pricing() {
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="py-10 sm:py-16 text-center">
-        <div className="container mx-auto px-4">
+      {/* Hero with Background */}
+      <section 
+        className="relative py-12 sm:py-20 text-center overflow-hidden"
+        style={{
+          backgroundImage: `url(${bgGradientHero})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-background/85 dark:bg-background/90" />
+        
+        <div className="container relative mx-auto px-4">
           <Badge className="mb-3 sm:mb-4 bg-emerald-100 text-emerald-800 border-emerald-200 text-xs sm:text-sm">
             <Sparkles className="h-3 w-3 mr-1" />
             Simple, Transparent Pricing
@@ -293,19 +307,29 @@ export default function Pricing() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* CTA Section with Image */}
       <section className="py-12 sm:py-20">
-        <div className="container mx-auto px-4 text-center">
-          <Card className="max-w-2xl mx-auto bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-emerald-950/20 dark:to-blue-950/20 border-emerald-200 dark:border-emerald-800">
-            <CardContent className="p-6 sm:p-8">
-              <Building2 className="h-10 w-10 sm:h-12 sm:w-12 text-emerald-600 mx-auto mb-3 sm:mb-4" />
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8 items-center">
+            {/* Image */}
+            <div className="order-2 md:order-1">
+              <img 
+                src={teamSuccess}
+                alt="Team celebrating success"
+                className="w-full rounded-xl shadow-xl"
+              />
+            </div>
+            
+            {/* Content */}
+            <div className="order-1 md:order-2 text-center md:text-left">
+              <Building2 className="h-10 w-10 sm:h-12 sm:w-12 text-emerald-600 mx-auto md:mx-0 mb-3 sm:mb-4" />
               <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4">
                 Still have questions?
               </h2>
               <p className="text-muted-foreground mb-4 sm:mb-6 text-sm sm:text-base">
                 Our team is here to help you choose the right plan for your organization.
               </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
                 <Link to="/signup" className="w-full sm:w-auto">
                   <Button className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 min-h-[44px]">
                     Start Free Trial
@@ -317,8 +341,8 @@ export default function Pricing() {
                   </Button>
                 </Link>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </section>
 

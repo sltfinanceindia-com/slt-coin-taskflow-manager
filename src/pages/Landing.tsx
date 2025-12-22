@@ -33,6 +33,12 @@ import { BottomNavigation } from '@/components/BottomNavigation';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { SEOHead, generateOrganizationSchema } from '@/components/SEOHead';
 
+// Import images
+import heroCollaboration from '@/assets/hero-collaboration.jpg';
+import dashboardPreview from '@/assets/dashboard-preview.jpg';
+import bgGradientHero from '@/assets/bg-gradient-hero.jpg';
+import teamSuccess from '@/assets/team-success.jpg';
+
 export default function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -240,25 +246,23 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* Hero Section with Background */}
-      <section aria-labelledby="hero-heading" className="relative overflow-hidden py-16 sm:py-24 lg:py-32">
-        {/* Background Elements */}
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-background to-blue-50 dark:from-emerald-950/30 dark:via-background dark:to-blue-950/30" aria-hidden="true" />
+      {/* Hero Section with Background Image */}
+      <section 
+        aria-labelledby="hero-heading" 
+        className="relative overflow-hidden py-16 sm:py-24 lg:py-32"
+        style={{
+          backgroundImage: `url(${bgGradientHero})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-background/85 dark:bg-background/90" aria-hidden="true" />
         
         {/* Decorative Background Shapes */}
         <div className="absolute top-0 left-0 w-72 h-72 bg-emerald-400/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" aria-hidden="true" />
         <div className="absolute top-1/3 right-0 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl translate-x-1/2" aria-hidden="true" />
         <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-purple-400/10 rounded-full blur-3xl translate-y-1/2" aria-hidden="true" />
-        
-        {/* Grid Pattern Overlay */}
-        <div 
-          className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]" 
-          style={{
-            backgroundImage: 'linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)',
-            backgroundSize: '40px 40px'
-          }}
-          aria-hidden="true" 
-        />
         
         <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
@@ -305,6 +309,18 @@ export default function Landing() {
               <div className="flex items-center gap-2 text-sm">
                 <HeadphonesIcon className="h-5 w-5 text-emerald-600" />
                 <span>24/7 Support</span>
+              </div>
+            </div>
+
+            {/* Dashboard Preview Image */}
+            <div className="mt-12 sm:mt-16 px-4 animate-fade-in" style={{ animationDelay: '400ms' }}>
+              <div className="relative mx-auto max-w-5xl">
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10 pointer-events-none" />
+                <img 
+                  src={dashboardPreview}
+                  alt="SLT work HuB Dashboard Preview"
+                  className="w-full rounded-xl shadow-2xl border border-border/50"
+                />
               </div>
             </div>
           </div>
