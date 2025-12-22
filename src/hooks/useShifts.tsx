@@ -155,7 +155,7 @@ export function useShiftTypes() {
   };
 }
 
-export function useShiftSchedules(weekStart?: Date) {
+export function useShiftSchedules(weekStart?: Date, employeeId?: string) {
   const { profile } = useAuth();
   const queryClient = useQueryClient();
   
@@ -163,24 +163,33 @@ export function useShiftSchedules(weekStart?: Date) {
   const endDate = endOfWeek(startDate, { weekStartsOn: 1 });
 
   const query = useQuery({
-    queryKey: ['shift-schedules', profile?.organization_id, format(startDate, 'yyyy-MM-dd')],
+    queryKey: ['shift-schedules', profile?.organization_id, format(startDate, 'yyyy-MM-dd'), employeeId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      if (!profile?.organization_id) return [];
+      
+      let dbQuery = supabase
         .from('shift_schedules')
         .select(`
           *,
           shift_type:shift_types(*),
           employee:profiles!shift_schedules_employee_id_fkey(id, full_name, email, avatar_url)
         `)
-        .eq('organization_id', profile?.organization_id)
+        .eq('organization_id', profile.organization_id)
         .gte('schedule_date', format(startDate, 'yyyy-MM-dd'))
         .lte('schedule_date', format(endDate, 'yyyy-MM-dd'))
         .order('schedule_date');
 
+      // If employeeId is provided, filter by that employee
+      if (employeeId) {
+        dbQuery = dbQuery.eq('employee_id', employeeId);
+      }
+
+      const { data, error } = await dbQuery;
       if (error) throw error;
       return data as ShiftSchedule[];
     },
     enabled: !!profile?.organization_id,
+    staleTime: 30000, // 30 seconds - prevent refetch on tab changes
   });
 
   const createSchedule = useMutation({

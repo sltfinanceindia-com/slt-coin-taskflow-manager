@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Coins, X, AlertCircle } from 'lucide-react';
+import { Plus, Coins, X, AlertCircle, FolderOpen } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -23,6 +23,7 @@ interface CreateTaskDialogProps {
     slt_coin_value: number;
     start_date: string;
     end_date: string;
+    project_id?: string;
   }) => void;
   isCreating: boolean;
 }
@@ -38,6 +39,7 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
     slt_coin_value: 10,
     start_date: new Date().toISOString().split('T')[0],
     end_date: '',
+    project_id: '',
   });
 
   const { profile } = useAuth();
@@ -55,6 +57,25 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
         .in('role', ['intern', 'employee'])
         .eq('is_active', true)
         .order('full_name');
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!profile?.organization_id,
+  });
+
+  // Fetch projects from the same organization
+  const { data: projects } = useQuery({
+    queryKey: ['assignable-projects', profile?.organization_id],
+    queryFn: async () => {
+      if (!profile?.organization_id) return [];
+      
+      const { data, error } = await supabase
+        .from('projects')
+        .select('id, name')
+        .eq('organization_id', profile.organization_id)
+        .eq('status', 'active')
+        .order('name');
 
       if (error) throw error;
       return data;
@@ -99,6 +120,7 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
       ...formData,
       title: validation.sanitizedData.title || formData.title,
       description: validation.sanitizedData.description || formData.description,
+      project_id: formData.project_id || undefined,
     });
     
     setOpen(false);
@@ -111,6 +133,7 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
       slt_coin_value: 10,
       start_date: new Date().toISOString().split('T')[0],
       end_date: '',
+      project_id: '',
     });
   };
 
@@ -252,6 +275,31 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* Project Selection */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <FolderOpen className="h-4 w-4 text-muted-foreground" />
+              Project (Optional)
+            </Label>
+            <Select
+              value={formData.project_id || 'none'}
+              onValueChange={(value) => setFormData({ ...formData, project_id: value === 'none' ? '' : value })}
+            >
+              <SelectTrigger className="min-h-[44px]">
+                <SelectValue placeholder="Select project (optional)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No Project</SelectItem>
+                {projects?.map((project) => (
+                  <SelectItem key={project.id} value={project.id}>
+                    {project.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">Link this task to a project for better organization</p>
           </div>
 
           <div className="space-y-2">
