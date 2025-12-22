@@ -12,6 +12,10 @@ export function RequestHub() {
   const { isAdmin } = useUserRole();
   const [activeTab, setActiveTab] = useState(isAdmin ? 'triage' : 'submit');
 
+  const handleNavigateToTypes = () => {
+    setActiveTab('types');
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -50,7 +54,7 @@ export function RequestHub() {
         </TabsList>
 
         <TabsContent value="submit" className="mt-0">
-          <RequestPortal />
+          <RequestPortal onNavigateToTypes={isAdmin ? handleNavigateToTypes : undefined} />
         </TabsContent>
 
         {isAdmin && (

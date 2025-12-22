@@ -216,14 +216,14 @@ export function TaskDetailDialog({ task }: TaskDetailDialogProps) {
             </Card>
           )}
 
-          {/* Task Comments */}
+          {/* Task Comments - Expanded by default in dialog */}
           <Card>
             <CardHeader>
               <CardTitle>Comments</CardTitle>
               <CardDescription>Discussion and updates for this task</CardDescription>
             </CardHeader>
             <CardContent>
-              <TaskComments taskId={task.id} />
+              <TaskComments taskId={task.id} defaultOpen={true} />
             </CardContent>
           </Card>
         </div>

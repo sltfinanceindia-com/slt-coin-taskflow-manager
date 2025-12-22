@@ -53,6 +53,8 @@ export const usePrograms = (portfolioId?: string) => {
   const programsQuery = useQuery({
     queryKey: ['programs', profile?.organization_id, portfolioId],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
+      
       let query = supabase
         .from('programs')
         .select(`
@@ -60,6 +62,7 @@ export const usePrograms = (portfolioId?: string) => {
           owner:profiles!programs_owner_id_fkey(id, full_name, avatar_url),
           portfolio:portfolios(id, name)
         `)
+        .eq('organization_id', profile.organization_id)
         .order('created_at', { ascending: false });
 
       if (portfolioId) {
@@ -91,6 +94,7 @@ export const usePrograms = (portfolioId?: string) => {
       }) as Program[];
     },
     enabled: !!profile?.organization_id,
+    staleTime: 30000, // 30 seconds - prevent refetch on tab changes
   });
 
   const createProgramMutation = useMutation({
