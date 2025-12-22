@@ -23,7 +23,7 @@ import {
   Menu
 } from 'lucide-react';
 
-// Import images
+// Import feature images
 import bgPatternFeatures from '@/assets/bg-pattern-features.jpg';
 import heroCollaboration from '@/assets/hero-collaboration.jpg';
 import featureEmployeeManagement from '@/assets/feature-employee-management.jpg';
