@@ -38,8 +38,8 @@ export default function OrgChartPage() {
   };
 
   return (
-    <div className="container mx-auto py-6 max-w-7xl">
-      <div className="flex items-center justify-between mb-6">
+    <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-7xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
@@ -47,17 +47,17 @@ export default function OrgChartPage() {
               Dashboard
             </Button>
           </div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <GitBranch className="h-6 w-6" />
+          <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+            <GitBranch className="h-5 w-5 sm:h-6 sm:w-6" />
             Organization Chart
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             View your organization's reporting structure
           </p>
         </div>
         <div className="flex gap-2">
           {isAdmin && (
-            <Button onClick={() => setShowAssignment(true)}>
+            <Button onClick={() => setShowAssignment(true)} size="sm" className="sm:size-default">
               <UserPlus className="h-4 w-4 mr-2" />
               Assign Manager
             </Button>

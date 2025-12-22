@@ -224,8 +224,8 @@ export default function RolesPermissions() {
   }
 
   return (
-    <div className="container mx-auto py-6 max-w-6xl">
-      <div className="flex items-center justify-between mb-6">
+    <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-6xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
@@ -233,12 +233,12 @@ export default function RolesPermissions() {
               Dashboard
             </Button>
           </div>
-          <h1 className="text-2xl font-bold">Roles & Permissions</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold">Roles & Permissions</h1>
+          <p className="text-sm text-muted-foreground">
             Manage user roles and configure what each role can access
           </p>
         </div>
-        <Button onClick={() => setIsCreating(true)}>
+        <Button onClick={() => setIsCreating(true)} size="sm" className="w-full sm:w-auto">
           <Plus className="h-4 w-4 mr-2" />
           Create Role
         </Button>
