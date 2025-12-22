@@ -230,7 +230,7 @@ export default function Features() {
 
       {/* Hero with Background Image */}
       <section 
-        className="relative py-12 sm:py-20 px-3 sm:px-4 overflow-hidden"
+        className="relative py-16 sm:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 overflow-hidden"
         style={{
           backgroundImage: `url(${bgPatternFeatures})`,
           backgroundSize: 'cover',
@@ -238,63 +238,70 @@ export default function Features() {
         }}
       >
         {/* Overlay */}
-        <div className="absolute inset-0 bg-background/90 dark:bg-background/95" />
+        <div className="absolute inset-0 bg-background/85 dark:bg-background/90" />
         
-        <div className="container relative mx-auto text-center max-w-3xl">
-          <Badge variant="secondary" className="mb-4 text-xs">All Features</Badge>
-          <h1 className="text-2xl sm:text-4xl font-bold mb-4">
-            Everything You Need to Manage Your Team
+        <div className="container relative mx-auto text-center max-w-4xl">
+          <Badge className="mb-4 sm:mb-6 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-700 text-xs sm:text-sm">
+            <Zap className="mr-1 h-3 w-3" />
+            All Features
+          </Badge>
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 tracking-tight text-foreground leading-tight">
+            Everything You Need to
+            <span className="block text-emerald-600 dark:text-emerald-400">Manage Your Team</span>
           </h1>
-          <p className="text-sm sm:text-lg text-muted-foreground mb-6">
+          <p className="text-base sm:text-xl lg:text-2xl text-muted-foreground mb-8 sm:mb-10 max-w-3xl mx-auto leading-relaxed">
             From employee management to training, assessments, task tracking, and rewards - 
             SLT Work Hub provides a complete solution for modern teams.
           </p>
-          <Button size="lg" className="h-11" asChild>
+          <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 h-12 sm:h-14 px-8 sm:px-10 text-base sm:text-lg" asChild>
             <Link to="/signup">
               Start Free Trial
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
           
           {/* Team Image */}
-          <div className="mt-10 sm:mt-14">
-            <img 
-              src={heroCollaboration}
-              alt="Team collaboration"
-              className="w-full max-w-4xl mx-auto rounded-xl shadow-2xl border border-border/50"
-            />
+          <div className="mt-12 sm:mt-16">
+            <div className="relative mx-auto max-w-5xl">
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10 pointer-events-none" />
+              <img 
+                src={heroCollaboration}
+                alt="Team collaboration"
+                className="w-full rounded-xl shadow-2xl border border-border/50"
+              />
+            </div>
           </div>
         </div>
       </section>
 
       {/* Main Features */}
-      <section className="py-10 sm:py-14 px-3 sm:px-4">
+      <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
         <div className="container mx-auto">
-          <div className="space-y-12 sm:space-y-16">
+          <div className="space-y-16 sm:space-y-24">
             {features.map((feature, index) => (
               <div 
                 key={feature.title}
-                className={`flex flex-col ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} gap-6 sm:gap-8 items-center`}
+                className={`flex flex-col ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} gap-8 sm:gap-12 items-center`}
               >
                 <div className="flex-1">
-                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg ${feature.color} flex items-center justify-center mb-4`}>
-                    <feature.icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                  <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl ${feature.color} flex items-center justify-center mb-4 sm:mb-6`}>
+                    <feature.icon className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
                   </div>
-                  <h2 className="text-xl sm:text-2xl font-bold mb-2">{feature.title}</h2>
-                  <p className="text-sm text-muted-foreground mb-4">{feature.description}</p>
-                  <ul className="space-y-2">
+                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 text-foreground">{feature.title}</h2>
+                  <p className="text-base sm:text-lg text-muted-foreground mb-6 leading-relaxed">{feature.description}</p>
+                  <ul className="space-y-3">
                     {feature.benefits.map((benefit) => (
-                      <li key={benefit} className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
-                          <Check className="h-2.5 w-2.5 text-green-600" />
+                      <li key={benefit} className="flex items-center gap-3">
+                        <div className="w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
+                          <Check className="h-3 w-3 text-green-600" />
                         </div>
-                        <span className="text-xs sm:text-sm">{benefit}</span>
+                        <span className="text-sm sm:text-base text-foreground">{benefit}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
                 <div className="flex-1 w-full">
-                  <Card className="border overflow-hidden">
+                  <Card className="border overflow-hidden shadow-lg">
                     <CardContent className="p-0">
                       <div className="aspect-video relative">
                         <img 
@@ -304,8 +311,8 @@ export default function Features() {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
                         <div className="absolute bottom-4 left-4 right-4">
-                          <div className={`w-10 h-10 rounded-lg ${feature.color} flex items-center justify-center`}>
-                            <feature.icon className="h-5 w-5 text-white" />
+                          <div className={`w-12 h-12 rounded-xl ${feature.color} flex items-center justify-center shadow-lg`}>
+                            <feature.icon className="h-6 w-6 text-white" />
                           </div>
                         </div>
                       </div>
@@ -319,22 +326,22 @@ export default function Features() {
       </section>
 
       {/* Additional Features Grid */}
-      <section className="py-10 sm:py-14 px-3 sm:px-4 bg-muted/30">
+      <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-muted/30">
         <div className="container mx-auto">
-          <div className="text-center max-w-xl mx-auto mb-8">
-            <h2 className="text-xl sm:text-2xl font-bold mb-2">And Much More...</h2>
-            <p className="text-xs sm:text-sm text-muted-foreground">
+          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 text-foreground">And Much More...</h2>
+            <p className="text-base sm:text-xl text-muted-foreground">
               Built with enterprise-grade infrastructure to support teams of any size.
             </p>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {additionalFeatures.map((feature) => (
-              <Card key={feature.title} className="p-3 sm:p-4">
-                <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center mb-2">
-                  <feature.icon className="h-4 w-4 text-primary" />
+              <Card key={feature.title} className="p-5 sm:p-6 hover:shadow-lg transition-shadow">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                  <feature.icon className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="text-sm font-semibold mb-1">{feature.title}</h3>
-                <p className="text-xs text-muted-foreground">{feature.description}</p>
+                <h3 className="text-lg font-semibold mb-2 text-foreground">{feature.title}</h3>
+                <p className="text-sm sm:text-base text-muted-foreground">{feature.description}</p>
               </Card>
             ))}
           </div>
@@ -342,21 +349,24 @@ export default function Features() {
       </section>
 
       {/* CTA */}
-      <section className="py-10 sm:py-14 px-3 sm:px-4">
+      <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
         <div className="container mx-auto">
-          <Card className="bg-gradient-to-r from-primary to-primary/80 border-0">
-            <CardContent className="py-10 sm:py-12 text-center px-4">
-              <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-2">
+          <Card className="max-w-4xl mx-auto bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-emerald-950/40 dark:to-blue-950/40 border-2 border-emerald-200 dark:border-emerald-800 shadow-2xl shadow-emerald-500/10">
+            <CardContent className="p-8 sm:p-12 lg:p-16 text-center">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-4">
                 Ready to Transform Your Workplace?
               </h2>
-              <p className="text-primary-foreground/80 text-xs sm:text-sm mb-6 max-w-xl mx-auto">
+              <p className="text-base sm:text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
                 Start your 14-day free trial today. No credit card required.
               </p>
-              <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                <Button size="sm" variant="secondary" className="h-9 text-xs" asChild>
-                  <Link to="/signup">Start Free Trial</Link>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 h-12 sm:h-14 px-8 sm:px-10 text-base sm:text-lg" asChild>
+                  <Link to="/signup">
+                    Start Free Trial
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
                 </Button>
-                <Button size="sm" variant="outline" className="h-9 text-xs bg-transparent text-primary-foreground border-primary-foreground/30 hover:bg-primary-foreground/10" asChild>
+                <Button size="lg" variant="outline" className="h-12 sm:h-14 px-8 sm:px-10 text-base sm:text-lg" asChild>
                   <Link to="/pricing">View Pricing</Link>
                 </Button>
               </div>
@@ -366,29 +376,38 @@ export default function Features() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-8 px-3 sm:px-4">
-        <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-3">
-            <div className="flex items-center gap-1.5">
-              <img 
-                src="/slt-hub-icon.png" 
-                alt="SLT work HuB"
-                className="w-6 h-6 rounded-md object-contain"
-              />
-              <span className="text-sm font-bold">
-                <span className="font-bold">SLT</span>
-                <span className="font-normal text-muted-foreground"> work </span>
-                <span className="font-bold">HuB</span>
+      <footer className="bg-slate-900 dark:bg-slate-950 text-slate-100 py-10 sm:py-14">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center gap-6 text-center md:text-left md:flex-row md:justify-between">
+            <div className="flex flex-col items-center md:items-start gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <img 
+                  src="/slt-hub-icon.png" 
+                  alt="SLT work HuB"
+                  className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg object-contain"
+                />
+                <span className="text-sm sm:text-lg font-bold">
+                  <span className="font-black">SLT</span>
+                  <span className="font-normal text-slate-400"> work </span>
+                  <span className="font-black">HuB</span>
+                </span>
+              </div>
+              <span className="text-emerald-400 font-medium flex items-center gap-2 text-xs sm:text-sm">
+                <span>Made with ❤️ in</span>
+                <span className="font-bold">భారత్ 🇮🇳</span>
               </span>
             </div>
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <span>Made with</span>
-              <span className="text-red-500">❤️</span>
-              <span>in భారత్</span>
+            
+            <div className="flex flex-col items-center md:items-end gap-2">
+              <div className="text-slate-400 text-xs sm:text-sm">
+                © 2025 SLT work HuB. All rights reserved.
+              </div>
+              <div className="flex gap-4 text-xs text-slate-500">
+                <Link to="/privacy" className="hover:text-slate-300 transition-colors">Privacy</Link>
+                <Link to="/terms" className="hover:text-slate-300 transition-colors">Terms</Link>
+                <Link to="/pricing" className="hover:text-slate-300 transition-colors">Pricing</Link>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              © {new Date().getFullYear()} SLT Work Hub. All rights reserved.
-            </p>
           </div>
         </div>
       </footer>
