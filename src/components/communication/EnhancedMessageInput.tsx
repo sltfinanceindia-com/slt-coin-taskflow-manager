@@ -241,14 +241,17 @@ export default function EnhancedMessageInput({
               </Button>
             </PopoverTrigger>
             <PopoverContent 
-              className="w-full p-0 border-0" 
+              className="w-auto p-0 border-0 z-[9999]" 
               side="top"
               align="end"
+              sideOffset={8}
+              avoidCollisions={true}
+              collisionPadding={16}
             >
               <EmojiPicker 
                 onEmojiClick={handleEmojiClick}
-                width={320}
-                height={350}
+                width={280}
+                height={300}
               />
             </PopoverContent>
           </Popover>
