@@ -485,17 +485,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
       
-      // Sign out from Supabase
-      const { error } = await supabase.auth.signOut();
-      
-      // Always clear local state regardless of signOut result
+      // Clear local state FIRST before calling signOut
+      // This ensures UI updates immediately regardless of API response
       setUser(null);
       setSession(null);
       setProfile(null);
       
-      if (error && !error.message.includes('session_not_found')) {
-        console.error('❌ Sign out error:', error);
-        return { error };
+      // Sign out from Supabase - use scope: 'local' to avoid server-side session issues
+      try {
+        const { error } = await supabase.auth.signOut({ scope: 'local' });
+        
+        if (error) {
+          // Only log non-session errors as actual errors
+          if (!error.message.includes('session') && !error.message.includes('Session')) {
+            console.error('❌ Sign out error:', error);
+          } else {
+            console.log('ℹ️ Session already invalidated, local state cleared');
+          }
+        }
+      } catch (signOutError: any) {
+        // Handle AuthSessionMissingError gracefully
+        console.log('ℹ️ Session was already cleared:', signOutError?.message);
       }
       
       console.log('✅ Sign out successful, state cleared');
@@ -506,7 +516,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setSession(null);
       setProfile(null);
-      return { error };
+      return { error: null }; // Return null error since we successfully cleared local state
     }
   };
 
