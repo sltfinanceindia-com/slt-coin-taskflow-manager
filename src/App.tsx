@@ -43,7 +43,15 @@ import OrganizationSettings from "./pages/admin/OrganizationSettings";
 import RolesPermissions from "./pages/settings/RolesPermissions";
 import OrgChartPage from "./pages/organization/OrgChart";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 2, // 2 minutes
+      refetchOnWindowFocus: true, // Refetch when tab becomes active
+      refetchOnReconnect: true, // Refetch when network reconnects
+    },
+  },
+});
 
 import FeedbackPage from './pages/Feedback';
 import FeedbackRewards from './pages/super-admin/FeedbackRewards';

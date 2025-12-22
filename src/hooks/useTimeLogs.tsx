@@ -22,18 +22,18 @@ export interface TimeLog {
   };
 }
 
-export function useTimeLogs() {
+export function useTimeLogs(userId?: string) {
   const { profile } = useAuth();
   const queryClient = useQueryClient();
 
   const timeLogsQuery = useQuery({
-    queryKey: ['time-logs', profile?.organization_id],
+    queryKey: ['time-logs', profile?.organization_id, userId],
     queryFn: async () => {
       if (!profile?.organization_id) {
         return [];
       }
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('time_logs')
         .select(`
           *,
@@ -42,6 +42,14 @@ export function useTimeLogs() {
         `)
         .eq('organization_id', profile.organization_id)
         .order('date_logged', { ascending: false });
+
+      // If a specific userId is provided, filter by that user
+      // Otherwise, admins see all, non-admins see only their own
+      if (userId) {
+        query = query.eq('user_id', userId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data as TimeLog[];

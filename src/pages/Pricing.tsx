@@ -338,7 +338,12 @@ export default function Pricing() {
                 <span className="font-black">HuB</span>
               </span>
             </div>
-          <div className="text-muted-foreground text-xs sm:text-sm text-center">
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <span>Made with</span>
+              <span className="text-red-500">❤️</span>
+              <span>in భారత్</span>
+            </div>
+            <div className="text-muted-foreground text-xs sm:text-sm text-center">
               © 2025 SLT work HuB. All rights reserved.
             </div>
           </div>

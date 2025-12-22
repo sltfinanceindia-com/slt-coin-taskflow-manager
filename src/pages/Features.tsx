@@ -347,6 +347,11 @@ export default function Features() {
                 <span className="font-bold">HuB</span>
               </span>
             </div>
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <span>Made with</span>
+              <span className="text-red-500">❤️</span>
+              <span>in భారత్</span>
+            </div>
             <p className="text-xs text-muted-foreground">
               © {new Date().getFullYear()} SLT Work Hub. All rights reserved.
             </p>
