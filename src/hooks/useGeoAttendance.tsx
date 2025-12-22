@@ -152,24 +152,35 @@ export const useGeoAttendance = () => {
 
       let latitude: number | null = null;
       let longitude: number | null = null;
-      let withinGeofence = true;
+      let withinGeofence: boolean | null = null;
 
-      if (settings?.enable_geo_fencing) {
-        try {
-          const position = await getCurrentLocation();
-          latitude = position.coords.latitude;
-          longitude = position.coords.longitude;
+      // Always try to get location for tracking purposes
+      try {
+        const position = await getCurrentLocation();
+        latitude = position.coords.latitude;
+        longitude = position.coords.longitude;
+        
+        // Only enforce geofence if enabled
+        if (settings?.enable_geo_fencing && settings.office_latitude && settings.office_longitude) {
           withinGeofence = isWithinGeofence(latitude, longitude);
-
           if (!withinGeofence) {
             throw new Error('You are outside the office area. Please clock in from the office.');
           }
-        } catch (error: any) {
-          if (error.code === 1) {
-            throw new Error('Location permission denied. Please enable location access.');
+        } else {
+          // Still record whether within geofence for reference, but don't enforce
+          if (settings?.office_latitude && settings?.office_longitude) {
+            withinGeofence = isWithinGeofence(latitude, longitude);
           }
+        }
+      } catch (error: any) {
+        if (error.code === 1) {
+          // Location permission denied - still allow clock-in but warn
+          console.warn('Location permission denied');
+          setLocationError('Location permission denied. Your location was not recorded.');
+        } else if (error.message?.includes('outside the office')) {
           throw error;
         }
+        // For other location errors, continue without location
       }
 
       const now = new Date();
@@ -219,20 +230,22 @@ export const useGeoAttendance = () => {
 
       let latitude: number | null = null;
       let longitude: number | null = null;
-      let withinGeofence = true;
+      let withinGeofence: boolean | null = null;
 
-      if (settings?.enable_geo_fencing) {
-        try {
-          const position = await getCurrentLocation();
-          latitude = position.coords.latitude;
-          longitude = position.coords.longitude;
+      // Always try to get location for tracking
+      try {
+        const position = await getCurrentLocation();
+        latitude = position.coords.latitude;
+        longitude = position.coords.longitude;
+        
+        if (settings?.office_latitude && settings?.office_longitude) {
           withinGeofence = isWithinGeofence(latitude, longitude);
-        } catch (error: any) {
-          if (error.code === 1) {
-            throw new Error('Location permission denied');
-          }
-          // Allow clock out even if location fails
         }
+      } catch (error: any) {
+        if (error.code === 1) {
+          console.warn('Location permission denied during clock out');
+        }
+        // Allow clock out even if location fails
       }
 
       const now = new Date();
