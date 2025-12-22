@@ -32,6 +32,7 @@ import {
   Globe,
   Check
 } from 'lucide-react';
+import { AdminSessionViewer } from '@/components/AdminSessionViewer';
 
 // Theme presets
 const themePresets = [
@@ -846,6 +847,9 @@ export default function OrganizationSettings() {
               </div>
             </CardContent>
           </Card>
+
+          {/* User Sessions Viewer */}
+          <AdminSessionViewer />
         </TabsContent>
       </Tabs>
 

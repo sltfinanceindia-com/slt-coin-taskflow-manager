@@ -53,6 +53,7 @@ const MODULES = [
   { key: 'settings', label: 'Settings', description: 'Organization settings' },
   { key: 'wfh', label: 'WFH', description: 'Work from home requests' },
   { key: 'shifts', label: 'Shifts', description: 'Shift scheduling' },
+  { key: 'sessions', label: 'Sessions', description: 'User sessions, devices and locations' },
 ];
 
 const PERMISSION_COLUMNS = [
@@ -264,7 +265,7 @@ export const PERMISSION_TEMPLATES = {
   })),
   team_lead: MODULES.map((m) => ({
     module_name: m.key,
-    can_view: !['settings'].includes(m.key),
+    can_view: !['settings', 'sessions'].includes(m.key),
     can_create: ['tasks', 'communication'].includes(m.key),
     can_edit: ['tasks'].includes(m.key),
     can_delete: false,
@@ -274,7 +275,7 @@ export const PERMISSION_TEMPLATES = {
   })),
   employee: MODULES.map((m) => ({
     module_name: m.key,
-    can_view: !['settings', 'employees'].includes(m.key),
+    can_view: !['settings', 'employees', 'sessions'].includes(m.key),
     can_create: ['tasks', 'communication', 'leave', 'wfh'].includes(m.key),
     can_edit: ['tasks'].includes(m.key),
     can_delete: false,
