@@ -1,3 +1,4 @@
+export { AuditHub } from './AuditHub';
 export { AuditPackGenerator } from './AuditPackGenerator';
 export { AuditPackSelector } from './AuditPackSelector';
 export { ComplianceChecklist } from './ComplianceChecklist';

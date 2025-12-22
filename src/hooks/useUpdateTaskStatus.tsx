@@ -27,11 +27,13 @@ export function useUpdateTaskStatus() {
         .from('tasks')
         .update(updateData)
         .eq('id', taskId)
-        .select()
-        .single();
+        .select();
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('Task not found or you do not have permission to update it');
+      }
+      return data[0];
     },
     onSuccess: async (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
@@ -45,11 +47,20 @@ export function useUpdateTaskStatus() {
         try {
           const { data: adminProfiles } = await supabase
             .from('profiles')
-            .select('email, full_name')
+            .select('id, email, full_name, user_id')
+            .eq('organization_id', data.organization_id);
+
+          // Filter for admins using user_roles
+          const { data: adminRoles } = await supabase
+            .from('user_roles')
+            .select('user_id')
             .eq('role', 'admin');
 
-          if (adminProfiles && adminProfiles.length > 0) {
-            for (const admin of adminProfiles) {
+          const adminUserIds = new Set(adminRoles?.map(r => r.user_id) || []);
+          const admins = adminProfiles?.filter(p => adminUserIds.has(p.user_id)) || [];
+
+          if (admins.length > 0) {
+            for (const admin of admins) {
               await emailNotifications.sendTaskCompletedEmail({
                 to: admin.email,
                 recipientName: admin.full_name,
