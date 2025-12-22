@@ -23,6 +23,11 @@ import {
   Menu
 } from 'lucide-react';
 
+// Import images
+import bgPatternFeatures from '@/assets/bg-pattern-features.jpg';
+import heroCollaboration from '@/assets/hero-collaboration.jpg';
+import workspaceDesk from '@/assets/workspace-desk.jpg';
+
 const features = [
   {
     icon: Users,
@@ -223,23 +228,42 @@ export default function Features() {
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="py-10 sm:py-14 px-3 sm:px-4 bg-gradient-to-b from-primary/5 to-background">
-        <div className="container mx-auto text-center max-w-2xl">
-          <Badge variant="secondary" className="mb-3 text-xs">All Features</Badge>
-          <h1 className="text-2xl sm:text-3xl font-bold mb-4">
+      {/* Hero with Background Image */}
+      <section 
+        className="relative py-12 sm:py-20 px-3 sm:px-4 overflow-hidden"
+        style={{
+          backgroundImage: `url(${bgPatternFeatures})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-background/90 dark:bg-background/95" />
+        
+        <div className="container relative mx-auto text-center max-w-3xl">
+          <Badge variant="secondary" className="mb-4 text-xs">All Features</Badge>
+          <h1 className="text-2xl sm:text-4xl font-bold mb-4">
             Everything You Need to Manage Your Team
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground mb-6">
+          <p className="text-sm sm:text-lg text-muted-foreground mb-6">
             From employee management to training, assessments, task tracking, and rewards - 
             SLT Work Hub provides a complete solution for modern teams.
           </p>
-          <Button size="sm" className="h-9" asChild>
+          <Button size="lg" className="h-11" asChild>
             <Link to="/signup">
               Start Free Trial
-              <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
+          
+          {/* Team Image */}
+          <div className="mt-10 sm:mt-14">
+            <img 
+              src={heroCollaboration}
+              alt="Team collaboration"
+              className="w-full max-w-4xl mx-auto rounded-xl shadow-2xl border border-border/50"
+            />
+          </div>
         </div>
       </section>
 
@@ -270,10 +294,20 @@ export default function Features() {
                   </ul>
                 </div>
                 <div className="flex-1 w-full">
-                  <Card className="border">
-                    <CardContent className="p-4 sm:p-6">
-                      <div className="aspect-video bg-gradient-to-br from-muted to-muted/50 rounded-md flex items-center justify-center">
-                        <feature.icon className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground/50" />
+                  <Card className="border overflow-hidden">
+                    <CardContent className="p-0">
+                      <div className="aspect-video relative">
+                        <img 
+                          src={index % 2 === 0 ? workspaceDesk : heroCollaboration}
+                          alt={feature.title}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+                        <div className="absolute bottom-4 left-4 right-4">
+                          <div className={`w-10 h-10 rounded-lg ${feature.color} flex items-center justify-center`}>
+                            <feature.icon className="h-5 w-5 text-white" />
+                          </div>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
