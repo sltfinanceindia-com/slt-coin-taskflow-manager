@@ -96,13 +96,69 @@ export const AttendanceClockIn: React.FC = () => {
   const canClockIn = !requiresLocation || locationEnabled;
   const canClockOut = !requiresLocation || locationEnabled;
 
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+  return (
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {/* Main Clock Card */}
+      <Card className="md:col-span-2 lg:col-span-3">
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div>
+              <CardTitle className="text-xl sm:text-2xl flex items-center gap-2">
+                <Clock className="h-5 w-5 sm:h-6 sm:w-6" />
+                Time & Attendance
+              </CardTitle>
+              <CardDescription className="text-sm sm:text-base">
+                {format(currentTime, 'EEEE, MMMM d, yyyy')}
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              {getStatusBadge()}
+              {requiresLocation && (
+                <Badge variant={locationEnabled ? "default" : "destructive"} className="flex items-center gap-1">
+                  {locationEnabled ? <MapPin className="h-3 w-3" /> : <MapPinOff className="h-3 w-3" />}
+                  {locationEnabled ? 'Location On' : 'Location Off'}
+                </Badge>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Current Time Display */}
+          <div className="text-center py-4">
+            <p className="text-4xl sm:text-5xl font-bold tabular-nums">
+              {format(currentTime, 'HH:mm:ss')}
+            </p>
+          </div>
+
+          {/* Location Warning */}
+          {requiresLocation && !locationEnabled && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Location Required</AlertTitle>
+              <AlertDescription className="flex flex-col gap-2">
+                <span>Location must be enabled to clock in/out. Your organization requires location tracking for attendance.</span>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleEnableLocation}
+                  disabled={isCheckingLocation}
+                  className="w-fit"
+                >
+                  <Navigation className="h-4 w-4 mr-2" />
+                  {isCheckingLocation ? 'Checking...' : 'Enable Location'}
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Clock In/Out Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto justify-center">
             {!isClockedIn && !isClockedOut && (
               <Button 
                 size="lg" 
                 className="w-full sm:w-auto sm:min-w-40 h-11 sm:h-12 text-sm sm:text-base"
                 onClick={() => clockIn.mutate()}
-                disabled={clockIn.isPending}
+                disabled={clockIn.isPending || (requiresLocation && !locationEnabled)}
               >
                 <LogIn className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                 {clockIn.isPending ? 'Clocking In...' : 'Clock In'}
@@ -115,7 +171,7 @@ export const AttendanceClockIn: React.FC = () => {
                 variant="destructive"
                 className="w-full sm:w-auto sm:min-w-40 h-11 sm:h-12 text-sm sm:text-base"
                 onClick={() => clockOut.mutate()}
-                disabled={clockOut.isPending}
+                disabled={clockOut.isPending || (requiresLocation && !locationEnabled)}
               >
                 <LogOut className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                 {clockOut.isPending ? 'Clocking Out...' : 'Clock Out'}
