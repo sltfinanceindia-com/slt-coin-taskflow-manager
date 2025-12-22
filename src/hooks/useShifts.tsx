@@ -155,7 +155,7 @@ export function useShiftTypes() {
   };
 }
 
-export function useShiftSchedules(weekStart?: Date, employeeId?: string) {
+export function useShiftSchedules(weekStart?: Date, employeeId?: string, viewOwnOnly?: boolean) {
   const { profile } = useAuth();
   const queryClient = useQueryClient();
   
@@ -163,7 +163,7 @@ export function useShiftSchedules(weekStart?: Date, employeeId?: string) {
   const endDate = endOfWeek(startDate, { weekStartsOn: 1 });
 
   const query = useQuery({
-    queryKey: ['shift-schedules', profile?.organization_id, format(startDate, 'yyyy-MM-dd'), employeeId],
+    queryKey: ['shift-schedules', profile?.organization_id, format(startDate, 'yyyy-MM-dd'), employeeId, viewOwnOnly],
     queryFn: async () => {
       if (!profile?.organization_id) return [];
       
@@ -182,6 +182,11 @@ export function useShiftSchedules(weekStart?: Date, employeeId?: string) {
       // If employeeId is provided, filter by that employee
       if (employeeId) {
         dbQuery = dbQuery.eq('employee_id', employeeId);
+      }
+      
+      // If viewOwnOnly is true (for non-admin users), filter to their own schedules
+      if (viewOwnOnly && profile?.id) {
+        dbQuery = dbQuery.eq('employee_id', profile.id);
       }
 
       const { data, error } = await dbQuery;

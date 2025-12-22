@@ -22,12 +22,12 @@ export interface TimeLog {
   };
 }
 
-export function useTimeLogs(userId?: string) {
+export function useTimeLogs(userId?: string, dateRange?: { start: string; end: string }) {
   const { profile } = useAuth();
   const queryClient = useQueryClient();
 
   const timeLogsQuery = useQuery({
-    queryKey: ['time-logs', profile?.organization_id, userId],
+    queryKey: ['time-logs', profile?.organization_id, userId, dateRange?.start, dateRange?.end],
     queryFn: async () => {
       if (!profile?.organization_id) {
         return [];
@@ -44,9 +44,16 @@ export function useTimeLogs(userId?: string) {
         .order('date_logged', { ascending: false });
 
       // If a specific userId is provided, filter by that user
-      // Otherwise, admins see all, non-admins see only their own
       if (userId) {
         query = query.eq('user_id', userId);
+      }
+
+      // Apply date range filter if provided
+      if (dateRange?.start) {
+        query = query.gte('date_logged', dateRange.start);
+      }
+      if (dateRange?.end) {
+        query = query.lte('date_logged', dateRange.end);
       }
 
       const { data, error } = await query;

@@ -104,20 +104,22 @@ export const useGeoAttendance = () => {
     enabled: !!profile?.id,
   });
 
-  // Fetch all attendance (admin)
+  // Fetch all attendance (admin) - uses RLS policy for admin visibility
   const { data: allAttendance = [], isLoading: loadingAllAttendance } = useQuery({
-    queryKey: ['all-attendance'],
+    queryKey: ['all-attendance', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
       const today = new Date().toISOString().split('T')[0];
       const { data, error } = await supabase
         .from('attendance_records')
         .select(`*, employee:profiles(full_name, email, avatar_url)`)
+        .eq('organization_id', profile.organization_id)
         .eq('attendance_date', today)
         .order('clock_in_time', { ascending: false });
       if (error) throw error;
       return data as AttendanceRecord[];
     },
-    enabled: ['admin', 'org_admin', 'super_admin'].includes(profile?.role || ''),
+    enabled: !!profile?.organization_id,
   });
 
   // Get current location
@@ -154,33 +156,36 @@ export const useGeoAttendance = () => {
       let longitude: number | null = null;
       let withinGeofence: boolean | null = null;
 
-      // Always try to get location for tracking purposes
+      // Check if geo-fencing is enabled and enforce location requirement
+      const requiresLocation = settings?.enable_geo_fencing;
+
       try {
         const position = await getCurrentLocation();
         latitude = position.coords.latitude;
         longitude = position.coords.longitude;
         
-        // Only enforce geofence if enabled
-        if (settings?.enable_geo_fencing && settings.office_latitude && settings.office_longitude) {
+        // Check geofence if enabled
+        if (settings?.office_latitude && settings?.office_longitude) {
           withinGeofence = isWithinGeofence(latitude, longitude);
-          if (!withinGeofence) {
+          
+          if (settings?.enable_geo_fencing && !withinGeofence) {
             throw new Error('You are outside the office area. Please clock in from the office.');
-          }
-        } else {
-          // Still record whether within geofence for reference, but don't enforce
-          if (settings?.office_latitude && settings?.office_longitude) {
-            withinGeofence = isWithinGeofence(latitude, longitude);
           }
         }
       } catch (error: any) {
         if (error.code === 1) {
-          // Location permission denied - still allow clock-in but warn
+          // Location permission denied
+          if (requiresLocation) {
+            throw new Error('Location permission denied. Location is required to clock in. Please enable location in your browser settings.');
+          }
           console.warn('Location permission denied');
           setLocationError('Location permission denied. Your location was not recorded.');
-        } else if (error.message?.includes('outside the office')) {
+        } else if (error.message?.includes('outside the office') || error.message?.includes('Location permission denied')) {
           throw error;
+        } else if (requiresLocation) {
+          throw new Error('Unable to get your location. Please enable location services and try again.');
         }
-        // For other location errors, continue without location
+        // For other location errors when not required, continue without location
       }
 
       const now = new Date();

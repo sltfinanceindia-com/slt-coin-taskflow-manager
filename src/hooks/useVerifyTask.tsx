@@ -33,14 +33,15 @@ export function useVerifyTask() {
       if (taskError) throw taskError;
 
       // If approved, create coin transaction and update user's total coins
-      if (approve && coinValue) {
+      if (approve && coinValue && taskData.assigned_to) {
         const { error: coinError } = await supabase
           .from('coin_transactions')
           .insert([{
             user_id: taskData.assigned_to,
             task_id: taskId,
             coins_earned: coinValue,
-            status: 'approved'
+            status: 'approved',
+            organization_id: taskData.organization_id
           }]);
 
         if (coinError) throw coinError;
