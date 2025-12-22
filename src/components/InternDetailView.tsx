@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { User, Award, Clock, FileText, Eye, TrendingUp, MessageSquare } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import { useProfile } from '@/hooks/useProfile';
 import { useTasks } from '@/hooks/useTasks';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
@@ -21,13 +22,15 @@ interface InternDetailViewProps {
 
 export function InternDetailView({ internId, onClose }: InternDetailViewProps) {
   const { profile: currentProfile } = useAuth();
+  const { isAdmin, isManager } = useUserRole();
   const { profile: internProfile, stats } = useProfile(internId);
   const { tasks } = useTasks();
   const { timeLogs } = useTimeLogs();
   const { data: analyticsData, isLoading: analyticsLoading } = useInternAnalytics(internId);
   const [showCertificateGenerator, setShowCertificateGenerator] = useState(false);
 
-  if (!currentProfile || currentProfile.role !== 'admin') {
+  // Allow admins and managers to view team member details
+  if (!currentProfile || (!isAdmin && !isManager)) {
     return null;
   }
 

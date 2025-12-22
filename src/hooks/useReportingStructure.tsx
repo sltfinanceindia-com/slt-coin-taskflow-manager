@@ -213,10 +213,18 @@ export function useOrgChart() {
       // Get all profiles in the org
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, full_name, email, avatar_url, role, department_id, is_active, reporting_manager_id')
+        .select('id, full_name, email, avatar_url, department_id, is_active, reporting_manager_id, departments(name)')
         .eq('organization_id', profile.organization_id)
-        .eq('is_active', true)
-        .order('role');
+        .eq('is_active', true);
+
+      // Get all user roles
+      const { data: userRoles } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .eq('organization_id', profile.organization_id);
+
+      // Create role map
+      const roleMap = new Map(userRoles?.map(r => [r.user_id, r.role]) || []);
 
       // Get all reporting relationships
       const { data: relationships } = await supabase
@@ -225,10 +233,14 @@ export function useOrgChart() {
         .eq('organization_id', profile.organization_id)
         .is('effective_to', null);
 
-      // Build hierarchy
+      // Build hierarchy with proper roles from user_roles table
       const hierarchy = (profiles || []).map(p => ({
         ...p,
-        managerId: p.reporting_manager_id || relationships?.find(r => r.user_id === p.id)?.manager_id || null,
+        role: roleMap.get(p.id) || 'employee',
+        reporting_manager_id: p.reporting_manager_id || relationships?.find(r => r.user_id === p.id)?.manager_id || null,
+        reporting_manager: (profiles || []).find(
+          manager => manager.id === (p.reporting_manager_id || relationships?.find(r => r.user_id === p.id)?.manager_id)
+        ) || null,
         directReports: (profiles || []).filter(
           child => child.reporting_manager_id === p.id || 
             relationships?.some(r => r.user_id === child.id && r.manager_id === p.id)

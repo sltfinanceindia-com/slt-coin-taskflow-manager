@@ -52,6 +52,7 @@ export default function CalendarIntegration() {
         .from('calendar_events')
         .select('*')
         .eq('user_id', profile?.id)
+        .eq('organization_id', profile?.organization_id)
         .gte('start_time', weekStart.toISOString())
         .order('start_time', { ascending: true });
 
@@ -85,6 +86,7 @@ export default function CalendarIntegration() {
         .from('calendar_events')
         .insert({
           user_id: profile?.id,
+          organization_id: profile?.organization_id,
           ...newEvent
         });
 
