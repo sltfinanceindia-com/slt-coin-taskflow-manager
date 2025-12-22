@@ -51,8 +51,8 @@ const privateNavItems: NavItem[] = [
 // More menu items for quick access to other features
 const moreMenuItems: NavItem[] = [
   { icon: FolderKanban, label: 'Projects', tab: 'projects' },
-  { icon: Calendar, label: 'Calendar', tab: 'calendar' },
-  { icon: Clock, label: 'Time Logs', tab: 'time-logs' },
+  { icon: Calendar, label: 'Calendar', path: '/dashboard?tab=shifts' },
+  { icon: Clock, label: 'Time Logs', tab: 'time' },
   { icon: TrendingUp, label: 'Analytics', tab: 'analytics' },
   { icon: GraduationCap, label: 'Training', tab: 'training' },
 ];
