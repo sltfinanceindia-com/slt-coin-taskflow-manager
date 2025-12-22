@@ -165,13 +165,13 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
           Create New Task
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto mx-4">
-        <DialogHeader>
-          <DialogTitle className="flex items-center space-x-2">
-            <Coins className="h-5 w-5 text-coin-gold" />
+      <DialogContent className="sm:max-w-[425px] max-h-[85vh] overflow-y-auto mx-2 p-4 sm:p-6">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="flex items-center space-x-2 text-base sm:text-lg">
+            <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-coin-gold" />
             <span>Create New Task</span>
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs sm:text-sm">
             Create a new task and assign SLT Coins as reward for completion.
           </DialogDescription>
         </DialogHeader>
@@ -189,106 +189,85 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
           </Alert>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">Task Title *</Label>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="title" className="text-sm">Task Title *</Label>
             <Input
               id="title"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               placeholder="Enter task title..."
               required
+              className="h-9"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="description" className="text-sm">Description</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Describe the task requirements..."
-              rows={3}
+              rows={2}
+              className="resize-none"
             />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Assign to Employees *</Label>
-              <div className="space-y-3">
-                {/* Selected Employees */}
-                {formData.assigned_to.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">Selected:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {formData.assigned_to.map(employeeId => (
-                        <Badge key={employeeId} variant="secondary" className="flex items-center gap-1">
-                          {getEmployeeName(employeeId)}
-                          <X 
-                            className="h-3 w-3 cursor-pointer" 
-                            onClick={() => removeEmployee(employeeId)}
-                          />
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Employee Selection */}
-                <div className="border rounded-md p-3 max-h-40 overflow-y-auto space-y-2">
-                  {employees?.map((employee) => (
-                    <div key={employee.id} className="flex items-center gap-3 min-h-[44px] py-1">
-                      <Checkbox
-                        id={employee.id}
-                        checked={formData.assigned_to.includes(employee.id)}
-                        onCheckedChange={() => handleEmployeeToggle(employee.id)}
-                        className="h-5 w-5"
-                      />
-                      <Label htmlFor={employee.id} className="flex-1 cursor-pointer text-sm">
-                        {employee.full_name}
-                      </Label>
-                    </div>
-                  ))}
-                  {(!employees || employees.length === 0) && (
-                    <p className="text-sm text-muted-foreground py-2">No employees available</p>
-                  )}
+          <div className="space-y-1.5">
+            <Label className="text-sm">Assign to Employees *</Label>
+            <div className="border rounded-md p-2 max-h-28 overflow-y-auto space-y-1">
+              {employees?.map((employee) => (
+                <div key={employee.id} className="flex items-center gap-2 py-0.5">
+                  <Checkbox
+                    id={employee.id}
+                    checked={formData.assigned_to.includes(employee.id)}
+                    onCheckedChange={() => handleEmployeeToggle(employee.id)}
+                    className="h-4 w-4"
+                  />
+                  <Label htmlFor={employee.id} className="flex-1 cursor-pointer text-sm">
+                    {employee.full_name}
+                  </Label>
                 </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Priority</Label>
-              <Select 
-                value={formData.priority} 
-                onValueChange={(value: 'low' | 'medium' | 'high' | 'urgent') => 
-                  setFormData({ ...formData, priority: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="urgent">Urgent</SelectItem>
-                </SelectContent>
-              </Select>
+              ))}
+              {(!employees || employees.length === 0) && (
+                <p className="text-xs text-muted-foreground py-1">No employees available</p>
+              )}
             </div>
           </div>
 
+          <div className="space-y-1.5">
+            <Label className="text-sm">Priority</Label>
+            <Select 
+              value={formData.priority} 
+              onValueChange={(value: 'low' | 'medium' | 'high' | 'urgent') => 
+                setFormData({ ...formData, priority: value })
+              }
+            >
+              <SelectTrigger className="h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="urgent">Urgent</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Project Selection */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <FolderOpen className="h-4 w-4 text-muted-foreground" />
+          <div className="space-y-1.5">
+            <Label className="flex items-center gap-2 text-sm">
+              <FolderOpen className="h-3.5 w-3.5 text-muted-foreground" />
               Project (Optional)
             </Label>
             <Select
               value={formData.project_id || 'none'}
               onValueChange={(value) => setFormData({ ...formData, project_id: value === 'none' ? '' : value })}
             >
-              <SelectTrigger className="min-h-[44px]">
-                <SelectValue placeholder="Select project (optional)" />
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="Select project" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">No Project</SelectItem>
@@ -299,11 +278,10 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">Link this task to a project for better organization</p>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="coins">SLT Coin Reward *</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="coins" className="text-sm">SLT Coin Reward *</Label>
             <div className="flex items-center space-x-2">
               <Coins className="h-4 w-4 text-coin-gold shrink-0" />
               <Input
@@ -317,27 +295,26 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
                   const value = parseInt(e.target.value) || 0;
                   setFormData({ ...formData, slt_coin_value: Math.min(Math.max(value, 0), 1000) });
                 }}
-                className="flex-1 min-h-[44px]"
+                className="flex-1 h-9"
                 required
               />
             </div>
-            <p className="text-xs text-muted-foreground">Max 1000 coins per task</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="start_date">Start Date</Label>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="start_date" className="text-sm">Start Date</Label>
               <Input
                 id="start_date"
                 type="date"
                 value={formData.start_date}
                 onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                className="min-h-[44px]"
+                className="h-9"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="end_date">Due Date *</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="end_date" className="text-sm">Due Date *</Label>
               <Input
                 id="end_date"
                 type="date"
@@ -345,16 +322,16 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
                 onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
                 min={formData.start_date}
                 required
-                className="min-h-[44px]"
+                className="h-9"
               />
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="min-h-[44px]">
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} size="sm">
               Cancel
             </Button>
-            <Button type="submit" disabled={isCreating} className="min-h-[44px]">
+            <Button type="submit" disabled={isCreating} size="sm">
               {isCreating ? "Creating..." : "Create Task"}
             </Button>
           </div>
