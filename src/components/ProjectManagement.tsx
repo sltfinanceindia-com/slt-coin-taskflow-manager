@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -72,7 +73,7 @@ export function ProjectManagement() {
       };
     });
 
-    exportToCSV(exportData, 'projects_export', [
+    const result = exportToCSV(exportData, 'projects_export', [
       { key: 'name', label: 'Project Name' },
       { key: 'description', label: 'Description' },
       { key: 'status', label: 'Status' },
@@ -81,6 +82,12 @@ export function ProjectManagement() {
       { key: 'created_at', label: 'Created Date' },
       { key: 'created_by', label: 'Created By' },
     ]);
+    
+    if (result?.success) {
+      toast.success(result.message);
+    } else if (result) {
+      toast.error(result.message);
+    }
   };
 
   return (
