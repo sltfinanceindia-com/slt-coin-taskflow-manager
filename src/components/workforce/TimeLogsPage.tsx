@@ -18,6 +18,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { exportToCSV, formatDateForExport } from '@/lib/export';
 import { format, subDays, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
 import { Clock, Download, Search, Filter, Calendar, Home } from 'lucide-react';
+import { ExportWrapper } from '@/components/ExportButton';
+import { useIsActualDesktop } from '@/hooks/useDeviceDetection';
 
 export function TimeLogsPage() {
   const { timeLogs, isLoading, getWeeklyHours, getMonthlyHours } = useTimeLogs();
@@ -25,6 +27,7 @@ export function TimeLogsPage() {
   const { profile } = useAuth();
   const { isAdmin } = useUserRole();
   const { isWFH, canExport } = useWFHMode();
+  const isDesktop = useIsActualDesktop();
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -154,28 +157,30 @@ export function TimeLogsPage() {
           <h1 className="text-2xl font-bold tracking-tight">Time Logs</h1>
           <p className="text-muted-foreground text-sm">Track and manage working hours</p>
         </div>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span>
-                <Button 
-                  onClick={handleExport} 
-                  variant="outline" 
-                  disabled={filteredLogs.length === 0 || !canExport}
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Export CSV
-                  {isWFH && !canExport && <Home className="h-3 w-3 ml-1 text-muted-foreground" />}
-                </Button>
-              </span>
-            </TooltipTrigger>
-            {isWFH && !canExport && (
-              <TooltipContent>
-                <p>Export is disabled while working from home</p>
-              </TooltipContent>
-            )}
-          </Tooltip>
-        </TooltipProvider>
+        <ExportWrapper>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <Button 
+                    onClick={handleExport} 
+                    variant="outline" 
+                    disabled={filteredLogs.length === 0 || !canExport}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export CSV
+                    {isWFH && !canExport && <Home className="h-3 w-3 ml-1 text-muted-foreground" />}
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              {isWFH && !canExport && (
+                <TooltipContent>
+                  <p>Export is disabled while working from home</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+        </ExportWrapper>
       </div>
 
       {/* Stats Cards */}

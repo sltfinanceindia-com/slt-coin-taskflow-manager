@@ -110,3 +110,11 @@ export function useCanExport(): boolean {
   // This prevents export even in "desktop mode" on mobile
   return isDesktop && !hasTouch;
 }
+
+/**
+ * Hook to check if device is actual desktop (not mobile in desktop mode)
+ */
+export function useIsActualDesktop(): boolean {
+  const { isDesktop, hasTouch } = useDeviceDetection();
+  return isDesktop && !hasTouch;
+}

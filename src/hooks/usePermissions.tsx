@@ -20,7 +20,8 @@ export type ModuleName =
   | 'audit'
   | 'lifecycle'
   | 'wfh'
-  | 'shifts';
+  | 'shifts'
+  | 'sessions';
 
 export type VisibilityScope = 'own' | 'team' | 'department' | 'all';
 
@@ -68,7 +69,7 @@ export function usePermissions(): PermissionsData {
         const fullPermissions: ModulePermission[] = [
           'tasks', 'attendance', 'leave', 'time_logs', 'projects', 
           'employees', 'reports', 'coins', 'settings', 'communication', 
-          'training', 'approvals', 'automation', 'audit', 'lifecycle', 'wfh', 'shifts'
+          'training', 'approvals', 'automation', 'audit', 'lifecycle', 'wfh', 'shifts', 'sessions'
         ].map(module => ({
           module_name: module,
           can_view: true,
@@ -194,7 +195,7 @@ function getDefaultPermissions(role: string): ModulePermission[] {
   const modules: ModuleName[] = [
     'tasks', 'attendance', 'leave', 'time_logs', 'projects', 
     'employees', 'reports', 'coins', 'settings', 'communication', 
-    'training', 'approvals', 'automation', 'audit', 'lifecycle', 'wfh', 'shifts'
+    'training', 'approvals', 'automation', 'audit', 'lifecycle', 'wfh', 'shifts', 'sessions'
   ];
 
   switch (role) {
