@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { exportToCSV } from '@/lib/export';
 import { toast } from 'sonner';
 import { useUserRole } from '@/hooks/useUserRole';
+import { ExportWrapper } from '@/components/ExportButton';
 
 const statusConfig = {
   pending: { label: 'Pending', variant: 'secondary' as const, icon: Clock },
@@ -71,23 +72,25 @@ export const WFHRequests: React.FC = () => {
             <Home className="h-4 w-4 sm:h-5 sm:w-5" />
             {isAdmin ? 'All WFH Requests' : 'My WFH Requests'}
           </CardTitle>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              exportToCSV(requests.map(r => ({
-                Employee: r.employee?.full_name || '',
-                Date: format(new Date(r.request_date), 'yyyy-MM-dd'),
-                Status: r.status,
-                Reason: r.reason || '',
-              })), 'wfh_requests');
-              toast.success('Exported WFH requests');
-            }}
-            className="h-8"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
+          <ExportWrapper>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                exportToCSV(requests.map(r => ({
+                  Employee: r.employee?.full_name || '',
+                  Date: format(new Date(r.request_date), 'yyyy-MM-dd'),
+                  Status: r.status,
+                  Reason: r.reason || '',
+                })), 'wfh_requests');
+                toast.success('Exported WFH requests');
+              }}
+              className="h-8"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          </ExportWrapper>
         </div>
       </CardHeader>
       <CardContent>

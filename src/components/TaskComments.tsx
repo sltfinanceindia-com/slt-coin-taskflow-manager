@@ -102,9 +102,10 @@ export function TaskComments({ taskId, defaultOpen = false }: TaskCommentsProps)
             <div className="flex items-center justify-between">
               <FileUpload 
                 onFileUpload={handleFileUpload}
-                accept="image/*,.pdf,.doc,.docx,.txt"
-                maxSize={5}
+                accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip,.rar"
+                maxSize={20}
                 multiple={true}
+                taskId={taskId}
               />
               <Button
                 onClick={handleAddComment}
