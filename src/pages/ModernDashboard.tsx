@@ -51,7 +51,7 @@ import { AuditHub } from '@/components/audit/AuditHub';
 import { LifecycleHub } from '@/components/lifecycle/LifecycleHub';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import FeedbackForm from '@/components/feedback/FeedbackForm';
-import { TaskCalendar } from '@/components/TaskCalendar';
+import { OrganizationCalendar } from '@/components/OrganizationCalendar';
 
 import { Coins, Clock, CheckCircle, Plus, Crown, ArrowRight, Shield, Building2 } from 'lucide-react';
 
@@ -151,7 +151,7 @@ export default function ModernDashboard() {
         return <ProjectPortfolioHub />;
       
       case 'calendar':
-        return <TaskCalendar />;
+        return <OrganizationCalendar />;
       
       case 'training':
         navigate('/training');
