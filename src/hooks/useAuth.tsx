@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, useRef, useCallback } f
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 export interface Profile {
   id: string;
@@ -40,6 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const isSigningOut = useRef(false); // Flag to prevent re-auth during signout
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -263,6 +265,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (!mounted) return;
 
+        // ✅ CRITICAL: Skip all auth events if we're signing out
+        if (isSigningOut.current) {
+          console.log('⏭️ Skipping auth state change - signing out in progress');
+          return;
+        }
+
+        // Handle sign out event
+        if (event === 'SIGNED_OUT') {
+          console.log('👋 User signed out via auth state change');
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          return;
+        }
+
         // Handle token refresh events
         if (event === 'TOKEN_REFRESHED') {
           console.log('✅ Token refreshed automatically');
@@ -440,6 +457,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('👋 Signing out...');
       
+      // ✅ Set flag to prevent auth listener from re-authenticating
+      isSigningOut.current = true;
+      
       // Try to update session logs and presence, but don't block logout on errors
       if (profile?.id) {
         try {
@@ -491,24 +511,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(null);
       setProfile(null);
       
-      // Sign out from Supabase - use scope: 'local' to avoid server-side session issues
+      // Sign out from Supabase with global scope to clear all sessions
       try {
-        const { error } = await supabase.auth.signOut({ scope: 'local' });
-        
-        if (error) {
-          // Only log non-session errors as actual errors
-          if (!error.message.includes('session') && !error.message.includes('Session')) {
-            console.error('❌ Sign out error:', error);
-          } else {
-            console.log('ℹ️ Session already invalidated, local state cleared');
-          }
-        }
+        await supabase.auth.signOut({ scope: 'global' });
       } catch (signOutError: any) {
-        // Handle AuthSessionMissingError gracefully
-        console.log('ℹ️ Session was already cleared:', signOutError?.message);
+        // Handle any signOut errors gracefully - session may already be invalid
+        console.log('ℹ️ SignOut completed (may have been already signed out):', signOutError?.message);
+      }
+      
+      // ✅ Manually clear any remaining auth data from localStorage
+      try {
+        const keys = Object.keys(localStorage);
+        keys.forEach(key => {
+          if (key.startsWith('sb-') || key.includes('supabase')) {
+            localStorage.removeItem(key);
+          }
+        });
+        console.log('✅ Local storage cleared');
+      } catch (storageError) {
+        console.warn('⚠️ Could not clear localStorage:', storageError);
       }
       
       console.log('✅ Sign out successful, state cleared');
+      
+      // Reset the flag after a short delay to allow any pending auth events to be ignored
+      setTimeout(() => {
+        isSigningOut.current = false;
+      }, 1000);
+      
       return { error: null };
     } catch (error: any) {
       console.error('❌ Unexpected sign out error:', error);
@@ -516,6 +546,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setSession(null);
       setProfile(null);
+      isSigningOut.current = false;
       return { error: null }; // Return null error since we successfully cleared local state
     }
   };
