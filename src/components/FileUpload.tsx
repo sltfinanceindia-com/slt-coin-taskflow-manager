@@ -48,7 +48,8 @@ export function FileUpload({
         
         // Determine bucket and path based on whether taskId is provided
         const bucket = taskId ? 'task-attachments' : 'attachments';
-        const filePath = taskId ? `${taskId}/${fileName}` : fileName;
+        // For attachments bucket, use a simple path that doesn't depend on auth.uid()
+        const filePath = taskId ? `${taskId}/${fileName}` : `shared/${fileName}`;
         
         // Upload to Supabase storage
         const { data, error } = await supabase.storage
@@ -60,26 +61,22 @@ export function FileUpload({
           throw error;
         }
 
-        // Get URL based on bucket type
+        // Get URL - always use signed URL for reliability
         let fileUrl: string;
         
-        if (bucket === 'task-attachments') {
-          // task-attachments is private, use signed URL
-          const { data: signedData, error: signedError } = await supabase.storage
-            .from(bucket)
-            .createSignedUrl(filePath, 60 * 60 * 24 * 7); // 7 days expiry
-          
-          if (signedError || !signedData?.signedUrl) {
-            console.error('Failed to get signed URL:', signedError);
-            throw signedError || new Error('Failed to get download URL');
-          }
-          fileUrl = signedData.signedUrl;
-        } else {
-          // Public bucket - use public URL
+        const { data: signedData, error: signedError } = await supabase.storage
+          .from(bucket)
+          .createSignedUrl(filePath, 60 * 60 * 24 * 7); // 7 days expiry
+        
+        if (signedError || !signedData?.signedUrl) {
+          console.error('Failed to get signed URL:', signedError);
+          // Fallback to public URL for public buckets
           const { data: { publicUrl } } = supabase.storage
             .from(bucket)
             .getPublicUrl(filePath);
           fileUrl = publicUrl;
+        } else {
+          fileUrl = signedData.signedUrl;
         }
 
         const fileData = {

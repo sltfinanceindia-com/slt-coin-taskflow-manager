@@ -35,10 +35,10 @@ export const useFileUpload = () => {
 
     setUploading(true);
     try {
-      // Generate unique file path with auth user ID for storage RLS
+      // Generate unique file path - use 'shared' folder for org-wide access
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `${user.id}/${fileName}`;
+      const filePath = `shared/${fileName}`;
 
       console.log('[FileUpload] Uploading to path:', filePath);
 
@@ -98,14 +98,25 @@ export const useFileUpload = () => {
     }
   };
 
-  const getFileUrl = async (storagePath: string): Promise<string | null> => {
+  const getFileUrl = async (storagePath: string, bucketName: string = 'attachments'): Promise<string | null> => {
     try {
-      const { data } = await supabase.storage
-        .from('attachments')
-        .createSignedUrl(storagePath, 3600); // 1 hour expiry
+      // Use signed URL for private buckets, public URL for public buckets
+      const { data: bucketData } = await supabase.storage.getBucket(bucketName);
+      
+      if (bucketData?.public) {
+        const { data } = supabase.storage
+          .from(bucketName)
+          .getPublicUrl(storagePath);
+        return data.publicUrl;
+      }
+      
+      // For private buckets, use signed URL
+      const { data, error } = await supabase.storage
+        .from(bucketName)
+        .createSignedUrl(storagePath, 3600 * 24); // 24 hour expiry
 
-      if (!data?.signedUrl) {
-        console.error('No signed URL returned for path:', storagePath);
+      if (error || !data?.signedUrl) {
+        console.error('No signed URL returned for path:', storagePath, error);
         return null;
       }
 
@@ -124,10 +135,10 @@ export const useFileUpload = () => {
     return data.publicUrl;
   };
 
-  const downloadFile = async (attachment: FileAttachment) => {
+  const downloadFile = async (attachment: FileAttachment, bucketName: string = 'attachments') => {
     try {
       const { data, error } = await supabase.storage
-        .from('attachments')
+        .from(bucketName)
         .download(attachment.storage_path);
 
       if (error) throw error;
