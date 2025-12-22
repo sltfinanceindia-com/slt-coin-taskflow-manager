@@ -13,6 +13,7 @@ import { CheckCircle, XCircle, Clock, Calendar, X, Eye, Download } from 'lucide-
 import { Skeleton } from '@/components/ui/skeleton';
 import { exportToCSV } from '@/lib/export';
 import { toast } from 'sonner';
+import { ExportWrapper } from '@/components/ExportButton';
 
 const statusConfig = {
   pending: { label: 'Pending', variant: 'secondary' as const, icon: Clock },
@@ -71,26 +72,28 @@ export const LeaveRequests: React.FC = () => {
             <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
             {isAdmin ? 'All Leave Requests' : 'My Leave Requests'}
           </CardTitle>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              exportToCSV(requests.map(r => ({
-                Employee: r.employee?.full_name || '',
-                'Leave Type': r.leave_type?.name || '',
-                'Start Date': format(new Date(r.start_date), 'yyyy-MM-dd'),
-                'End Date': format(new Date(r.end_date), 'yyyy-MM-dd'),
-                'Total Days': r.total_days,
-                Status: r.status,
-                Reason: r.reason || '',
-              })), 'leave_requests');
-              toast.success('Exported leave requests');
-            }}
-            className="h-8"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
+          <ExportWrapper>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                exportToCSV(requests.map(r => ({
+                  Employee: r.employee?.full_name || '',
+                  'Leave Type': r.leave_type?.name || '',
+                  'Start Date': format(new Date(r.start_date), 'yyyy-MM-dd'),
+                  'End Date': format(new Date(r.end_date), 'yyyy-MM-dd'),
+                  'Total Days': r.total_days,
+                  Status: r.status,
+                  Reason: r.reason || '',
+                })), 'leave_requests');
+                toast.success('Exported leave requests');
+              }}
+              className="h-8"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          </ExportWrapper>
         </div>
       </CardHeader>
       <CardContent>

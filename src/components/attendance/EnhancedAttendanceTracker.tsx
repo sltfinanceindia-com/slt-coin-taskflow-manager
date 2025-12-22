@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { SimpleBarChart, SimpleLineChart } from '@/components/SimpleChart';
 import { toast } from '@/hooks/use-toast';
 import { useUserRole } from '@/hooks/useUserRole';
+import { ExportWrapper } from '@/components/ExportButton';
 
 interface Profile {
   id: string;
@@ -307,14 +308,18 @@ ${u.name}:
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button onClick={exportToCSV} variant="outline" size="sm" className="h-8 sm:h-9 text-xs sm:text-sm">
-            <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-            <span className="hidden xs:inline">Export</span> CSV
-          </Button>
-          <Button onClick={exportDetailedReport} variant="default" size="sm" className="h-8 sm:h-9 text-xs sm:text-sm">
-            <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-            Report
-          </Button>
+          <ExportWrapper>
+            <Button onClick={exportToCSV} variant="outline" size="sm" className="h-8 sm:h-9 text-xs sm:text-sm">
+              <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden xs:inline">Export</span> CSV
+            </Button>
+          </ExportWrapper>
+          <ExportWrapper>
+            <Button onClick={exportDetailedReport} variant="default" size="sm" className="h-8 sm:h-9 text-xs sm:text-sm">
+              <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              Report
+            </Button>
+          </ExportWrapper>
           {isAdmin && (
             <Button 
               onClick={closeAllStaleSessions} 

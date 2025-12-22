@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { format } from 'date-fns';
 import { EmptyState } from '@/components/ui/empty-state';
 import { exportToCSV, formatDateForExport } from '@/lib/export';
+import { ExportWrapper } from '@/components/ExportButton';
 
 export function ProjectManagement() {
   const { profile } = useAuth();
@@ -101,10 +102,12 @@ export function ProjectManagement() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleExportProjects}>
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
+          <ExportWrapper>
+            <Button variant="outline" size="sm" onClick={handleExportProjects}>
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          </ExportWrapper>
           {isAdmin && (
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
               <DialogTrigger asChild>

@@ -16,6 +16,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { ThemeApplier } from "@/components/ThemeApplier";
 import { SkipLink } from "@/components/SkipLink";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { ContentProtection } from "@/components/ContentProtection";
 import SplashScreen from "@/components/SplashScreen";
 import Landing from "./pages/Landing";
 import ModernDashboard from "./pages/ModernDashboard";
@@ -87,12 +88,13 @@ function AppContent() {
   }
 
   return (
-    <TooltipProvider>
-      <ThemeApplier />
-      <SkipLink />
-      <Toaster />
-      <Sonner />
-      <PWAInstallPrompt />
+    <ContentProtection>
+      <TooltipProvider>
+        <ThemeApplier />
+        <SkipLink />
+        <Toaster />
+        <Sonner />
+        <PWAInstallPrompt />
       <BrowserRouter>
         <Routes>
           {/* Public Routes */}
@@ -167,6 +169,7 @@ function AppContent() {
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
+    </ContentProtection>
   );
 }
 

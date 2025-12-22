@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { exportToCSV } from '@/lib/export';
 import { toast } from 'sonner';
+import { ExportWrapper } from '@/components/ExportButton';
 
 const getRankIcon = (rank: number) => {
   switch (rank) {
@@ -77,23 +78,25 @@ export function Leaderboard() {
             Leaderboard
           </CardTitle>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                exportToCSV(leaderboard.map(e => ({
-                  Rank: e.rank,
-                  Name: e.full_name,
-                  Role: e.role,
-                  'Total Coins': e.total_coins,
-                  'Tasks Completed': e.tasks_completed,
-                })), `leaderboard_${period}`);
-                toast.success('Exported leaderboard');
-              }}
-              className="h-8"
-            >
-              <Download className="h-4 w-4" />
-            </Button>
+            <ExportWrapper>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  exportToCSV(leaderboard.map(e => ({
+                    Rank: e.rank,
+                    Name: e.full_name,
+                    Role: e.role,
+                    'Total Coins': e.total_coins,
+                    'Tasks Completed': e.tasks_completed,
+                  })), `leaderboard_${period}`);
+                  toast.success('Exported leaderboard');
+                }}
+                className="h-8"
+              >
+                <Download className="h-4 w-4" />
+              </Button>
+            </ExportWrapper>
             <Tabs value={period} onValueChange={(v) => setPeriod(v as LeaderboardPeriod)}>
               <TabsList className="h-8">
                 <TabsTrigger value="week" className="text-xs px-2">Week</TabsTrigger>

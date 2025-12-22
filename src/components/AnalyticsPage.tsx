@@ -11,6 +11,7 @@ import { useCoinTransactions } from '@/hooks/useCoinTransactions';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
+import { ExportWrapper } from '@/components/ExportButton';
 
 export function AnalyticsPage() {
   const { tasks } = useTasks();
@@ -114,10 +115,12 @@ export function AnalyticsPage() {
             Comprehensive performance metrics and team insights
           </p>
         </div>
-        <Button onClick={exportData} variant="outline" size="sm" className="w-full sm:w-auto min-h-[44px] sm:min-h-0">
-          <Download className="h-4 w-4 mr-2" />
-          Export CSV
-        </Button>
+        <ExportWrapper>
+          <Button onClick={exportData} variant="outline" size="sm" className="w-full sm:w-auto min-h-[44px] sm:min-h-0">
+            <Download className="h-4 w-4 mr-2" />
+            Export CSV
+          </Button>
+        </ExportWrapper>
       </div>
 
       {/* Key Metrics */}
