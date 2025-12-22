@@ -129,6 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
     let authInitialized = false;
+    let lastVisibleTime = Date.now();
 
     // ✅ FIXED: Simplified auth initialization with proper loading management
     const initializeAuth = async () => {
@@ -169,12 +170,106 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
+    // ✅ Handle visibility change (wake from sleep/background)
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible' && mounted && authInitialized) {
+        const now = Date.now();
+        const timeSinceLastVisible = now - lastVisibleTime;
+        
+        // If more than 30 seconds have passed, refresh session
+        if (timeSinceLastVisible > 30000) {
+          console.log('🔄 App woke from sleep, refreshing session...');
+          try {
+            const { data, error } = await supabase.auth.getSession();
+            
+            if (error) {
+              console.error('❌ Session check failed:', error);
+              // Session invalid, clear state
+              setUser(null);
+              setSession(null);
+              setProfile(null);
+              return;
+            }
+            
+            if (data.session) {
+              // Check if session needs refresh (expires within 5 minutes)
+              const expiresAt = data.session.expires_at;
+              const expiresIn = expiresAt ? (expiresAt * 1000) - Date.now() : 0;
+              
+              if (expiresIn < 5 * 60 * 1000) {
+                console.log('🔄 Session expiring soon, refreshing...');
+                const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+                
+                if (refreshError) {
+                  console.error('❌ Session refresh failed:', refreshError);
+                } else if (refreshData.session) {
+                  setSession(refreshData.session);
+                  setUser(refreshData.session.user);
+                  console.log('✅ Session refreshed after wake');
+                }
+              } else {
+                // Session still valid, just update state if needed
+                setSession(data.session);
+                setUser(data.session.user);
+                
+                // Refresh profile data
+                if (data.session.user) {
+                  await fetchProfile(data.session.user.id);
+                }
+                console.log('✅ Session still valid after wake');
+              }
+            } else {
+              // No session found, user was signed out
+              console.log('👋 No session found after wake');
+              setUser(null);
+              setSession(null);
+              setProfile(null);
+            }
+          } catch (error) {
+            console.error('❌ Error checking session after wake:', error);
+          }
+        }
+        
+        lastVisibleTime = now;
+      } else if (document.visibilityState === 'hidden') {
+        lastVisibleTime = Date.now();
+      }
+    };
+
+    // ✅ Handle online/offline status
+    const handleOnline = async () => {
+      if (mounted && authInitialized) {
+        console.log('🌐 Network reconnected, checking session...');
+        try {
+          const { data, error } = await supabase.auth.getSession();
+          if (!error && data.session) {
+            setSession(data.session);
+            setUser(data.session.user);
+            if (data.session.user) {
+              await fetchProfile(data.session.user.id);
+            }
+            console.log('✅ Session restored after network reconnect');
+          }
+        } catch (error) {
+          console.error('❌ Error restoring session after network reconnect:', error);
+        }
+      }
+    };
+
     // ✅ Set up auth state listener BEFORE initialization
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         console.log('🔐 Auth state changed:', event);
         
         if (!mounted) return;
+
+        // Handle token refresh events
+        if (event === 'TOKEN_REFRESHED') {
+          console.log('✅ Token refreshed automatically');
+          setSession(newSession);
+          setUser(newSession?.user ?? null);
+          return;
+        }
 
         // Only handle auth changes after initial load
         if (!authInitialized) {
@@ -199,12 +294,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
+    // Add event listeners
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('online', handleOnline);
+
     // Start initialization
     initializeAuth();
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('online', handleOnline);
     };
   }, []); // Empty dependency - one-time initialization
 
