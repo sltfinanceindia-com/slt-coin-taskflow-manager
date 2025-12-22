@@ -2,7 +2,6 @@ import { createContext, useContext, useEffect, useState, useRef, useCallback } f
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
 
 export interface Profile {
   id: string;
