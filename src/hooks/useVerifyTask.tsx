@@ -27,28 +27,31 @@ export function useVerifyTask() {
           admin_feedback: feedback,
         })
         .eq('id', taskId)
-        .select()
-        .single();
+        .select();
 
       if (taskError) throw taskError;
+      if (!taskData || taskData.length === 0) {
+        throw new Error('Task not found or you do not have permission to update it');
+      }
+      const task = taskData[0];
 
       // If approved, create coin transaction and update user's total coins
-      if (approve && coinValue && taskData.assigned_to) {
+      if (approve && coinValue && task.assigned_to) {
         const { error: coinError } = await supabase
           .from('coin_transactions')
           .insert([{
-            user_id: taskData.assigned_to,
+            user_id: task.assigned_to,
             task_id: taskId,
             coins_earned: coinValue,
             status: 'approved',
-            organization_id: taskData.organization_id
+            organization_id: task.organization_id
           }]);
 
         if (coinError) throw coinError;
 
         // Update user's total coins
         const { error: updateError } = await supabase.rpc('increment_user_coins', {
-          p_user_id: taskData.assigned_to,
+          p_user_id: task.assigned_to,
           p_coins: coinValue
         });
 
@@ -58,7 +61,7 @@ export function useVerifyTask() {
         }
       }
 
-      return taskData;
+      return task;
     },
     onSuccess: async (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
