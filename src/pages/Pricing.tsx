@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { Check, X, Coins, ArrowRight, Sparkles, Building2, Users, Menu } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { SEOHead, generateFAQSchema } from '@/components/SEOHead';
 
 interface SubscriptionPlan {
   id: string;
@@ -110,7 +111,15 @@ export default function Pricing() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEOHead 
+        title="Pricing - SLT work HuB | Affordable Workplace Management Plans"
+        description="Choose the perfect plan for your team. SLT work HuB offers flexible pricing from free to enterprise plans. Start your 14-day free trial today."
+        keywords="pricing, SLT work HuB pricing, workplace software pricing, HR software cost, team management pricing India"
+        canonical="https://slthub.lovable.app/pricing"
+        structuredData={generateFAQSchema(faqs)}
+      />
+      <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -342,5 +351,6 @@ export default function Pricing() {
       {/* Add padding at bottom for mobile nav */}
       <div className="h-16 md:hidden" />
     </div>
+    </>
   );
 }

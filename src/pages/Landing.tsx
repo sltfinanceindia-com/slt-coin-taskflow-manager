@@ -31,6 +31,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { SEOHead, generateOrganizationSchema } from '@/components/SEOHead';
 
 export default function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -169,7 +170,15 @@ export default function Landing() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEOHead 
+        title="SLT work HuB - Complete Workplace Management Platform"
+        description="All-in-one workplace management platform with task tracking, team collaboration, training, attendance, and a rewarding coin system to boost productivity. Start free trial today."
+        keywords="workplace management, task management, team collaboration, employee training, attendance tracking, HR software, project management, India, SLT Finance"
+        canonical="https://slthub.lovable.app/"
+        structuredData={generateOrganizationSchema()}
+      />
+      <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-40 w-full border-b border-border bg-background/80 backdrop-blur-sm" role="banner">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -605,5 +614,6 @@ export default function Landing() {
       {/* Add padding at bottom for mobile nav */}
       <div className="h-16 md:hidden" />
     </div>
+    </>
   );
 }

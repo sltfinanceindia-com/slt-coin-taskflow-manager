@@ -8,9 +8,11 @@ import { toast } from "sonner";
 import { Mail, Phone, MapPin, Send, Building2, Coins } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { contactFormSchema, validateFormData } from "@/utils/validation-schemas";
 
 const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -21,18 +23,38 @@ const Contact = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({});
+    
+    // Validate using Zod schema
+    const result = validateFormData(contactFormSchema, formData);
+    
+    if (!result.success) {
+      // Map errors to field names
+      const fieldErrors: Record<string, string> = {};
+      (result as { success: false; errors: string[] }).errors.forEach(error => {
+        if (error.includes('Name')) fieldErrors.name = error;
+        else if (error.includes('Email')) fieldErrors.email = error;
+        else if (error.includes('Subject')) fieldErrors.subject = error;
+        else if (error.includes('Message')) fieldErrors.message = error;
+        else if (error.includes('Company')) fieldErrors.company = error;
+      });
+      setErrors(fieldErrors);
+      toast.error("Please fix the form errors before submitting.");
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
-      // Store in database
+      // Store validated and sanitized data
       const { error } = await supabase
         .from('contact_submissions')
         .insert([{
-          name: formData.name,
-          email: formData.email,
-          company: formData.company || null,
-          subject: formData.subject,
-          message: formData.message,
+          name: result.data.name,
+          email: result.data.email,
+          company: result.data.company || null,
+          subject: result.data.subject,
+          message: result.data.message,
         }]);
 
       if (error) throw error;
