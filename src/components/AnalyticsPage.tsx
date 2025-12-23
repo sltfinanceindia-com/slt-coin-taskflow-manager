@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
-import { Coins, TrendingUp, Users, Clock, Download, BarChart3 } from 'lucide-react';
+import { Coins, TrendingUp, Users, Clock, Download, BarChart3, Target, CheckCircle, Timer } from 'lucide-react';
 import { useTasks } from '@/hooks/useTasks';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
 import { useCoinTransactions } from '@/hooks/useCoinTransactions';
@@ -12,6 +12,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ExportWrapper } from '@/components/ExportButton';
+import { TaskPieChart, ProductivityLineChart, TeamPerformanceBarChart, CoinsAreaChart, KPIGaugeCard } from '@/components/charts';
 
 export function AnalyticsPage() {
   const { tasks } = useTasks();
@@ -25,7 +26,6 @@ export function AnalyticsPage() {
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData.session) return [];
 
-      // Get user's organization
       const { data: userProfile } = await supabase
         .from('profiles')
         .select('organization_id')
@@ -74,15 +74,6 @@ export function AnalyticsPage() {
     };
   }) || [];
 
-  // Task status distribution
-  const taskStatusData = [
-    { status: 'Assigned', count: tasks.filter(t => t.status === 'assigned').length, color: 'bg-blue-500' },
-    { status: 'In Progress', count: tasks.filter(t => t.status === 'in_progress').length, color: 'bg-yellow-500' },
-    { status: 'Completed', count: tasks.filter(t => t.status === 'completed').length, color: 'bg-purple-500' },
-    { status: 'Verified', count: tasks.filter(t => t.status === 'verified').length, color: 'bg-green-500' },
-    { status: 'Rejected', count: tasks.filter(t => t.status === 'rejected').length, color: 'bg-red-500' },
-  ];
-
   const exportData = () => {
     const csvContent = [
       ['Name', 'Role', 'Total Coins', 'Tasks Assigned', 'Tasks Completed', 'Hours Logged', 'Completion Rate'],
@@ -101,7 +92,7 @@ export function AnalyticsPage() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `slt-analytics-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.download = `analytics-${format(new Date(), 'yyyy-MM-dd')}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
@@ -112,7 +103,7 @@ export function AnalyticsPage() {
         <div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Analytics & Reports</h1>
           <p className="text-muted-foreground text-xs sm:text-sm">
-            Comprehensive performance metrics and team insights
+            Comprehensive performance metrics and interactive insights
           </p>
         </div>
         <ExportWrapper>
@@ -123,57 +114,50 @@ export function AnalyticsPage() {
         </ExportWrapper>
       </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
-            <CardTitle className="text-xs sm:text-sm font-medium">Total SLT Coins</CardTitle>
-            <Coins className="h-3 w-3 sm:h-4 sm:w-4 text-coin-gold" />
-          </CardHeader>
-          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
-            <div className="text-lg sm:text-2xl font-bold text-coin-gold">{totalCoinsAwarded}</div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">Awarded to team</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
-            <CardTitle className="text-xs sm:text-sm font-medium">Task Completion</CardTitle>
-            <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-success" />
-          </CardHeader>
-          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
-            <div className="text-lg sm:text-2xl font-bold">{completionRate.toFixed(1)}%</div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">{completedTasks} of {totalTasks} tasks</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
-            <CardTitle className="text-xs sm:text-sm font-medium">Total Hours</CardTitle>
-            <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-accent" />
-          </CardHeader>
-          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
-            <div className="text-lg sm:text-2xl font-bold">{totalHours.toFixed(1)}</div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">Hours logged</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
-            <CardTitle className="text-xs sm:text-sm font-medium">Active Tasks</CardTitle>
-            <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
-          </CardHeader>
-          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
-            <div className="text-lg sm:text-2xl font-bold">{pendingTasks}</div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">In progress</p>
-          </CardContent>
-        </Card>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <KPIGaugeCard
+          title="Task Completion"
+          value={completedTasks}
+          target={totalTasks || 1}
+          unit="tasks"
+          trend={completionRate > 50 ? 'up' : 'down'}
+          trendValue={`${completionRate.toFixed(0)}%`}
+          icon={<CheckCircle className="h-4 w-4" />}
+          color="green"
+        />
+        <KPIGaugeCard
+          title="Total Coins Awarded"
+          value={totalCoinsAwarded}
+          target={10000}
+          unit="coins"
+          trend="up"
+          icon={<Coins className="h-4 w-4" />}
+          color="yellow"
+        />
+        <KPIGaugeCard
+          title="Hours Logged"
+          value={Math.round(totalHours)}
+          target={500}
+          unit="hours"
+          icon={<Timer className="h-4 w-4" />}
+          color="blue"
+        />
+        <KPIGaugeCard
+          title="Team Members"
+          value={profiles?.length || 0}
+          target={50}
+          unit="active"
+          icon={<Users className="h-4 w-4" />}
+          color="purple"
+        />
       </div>
 
       <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
         <div className="overflow-x-auto pb-2 -mx-2 px-2">
           <TabsList className="inline-flex w-auto min-w-full sm:w-auto">
             <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
+            <TabsTrigger value="charts" className="text-xs sm:text-sm">Charts</TabsTrigger>
             <TabsTrigger value="team" className="text-xs sm:text-sm">Team</TabsTrigger>
             <TabsTrigger value="tasks" className="text-xs sm:text-sm">Tasks</TabsTrigger>
             <TabsTrigger value="coins" className="text-xs sm:text-sm">Coins</TabsTrigger>
@@ -182,62 +166,24 @@ export function AnalyticsPage() {
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Task Status Distribution */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Task Status Distribution</CardTitle>
-                <CardDescription>Current status of all tasks</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {taskStatusData.map((item) => (
-                  <div key={item.status} className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <div className={`w-3 h-3 rounded-full ${item.color}`} />
-                      <span className="text-sm">{item.status}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm font-medium">{item.count}</span>
-                      <div className="w-20 bg-muted rounded-full h-2">
-                        <div 
-                          className={`h-2 rounded-full ${item.color}`}
-                          style={{ width: `${totalTasks > 0 ? (item.count / totalTasks) * 100 : 0}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* Top Performers */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Top Performers</CardTitle>
-                <CardDescription>Highest SLT Coin earners</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {teamPerformance
-                    .filter(member => member.role === 'intern')
-                    .slice(0, 5)
-                    .map((member, index) => (
-                      <div key={member.id} className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">
-                            {index + 1}
-                          </div>
-                          <span className="font-medium">{member.full_name}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Coins className="h-4 w-4 text-coin-gold" />
-                          <span className="font-bold text-coin-gold">{member.total_coins}</span>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </CardContent>
-            </Card>
+            <TaskPieChart />
+            <ProductivityLineChart />
           </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TeamPerformanceBarChart />
+            <CoinsAreaChart />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="charts" className="space-y-6">
+          <div className="grid grid-cols-1 gap-6">
+            <ProductivityLineChart />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TaskPieChart />
+            <CoinsAreaChart />
+          </div>
+          <TeamPerformanceBarChart />
         </TabsContent>
 
         <TabsContent value="team">
@@ -319,11 +265,11 @@ export function AnalyticsPage() {
                         <TableCell className="hidden sm:table-cell text-xs sm:text-sm">{task.assigned_profile?.full_name}</TableCell>
                         <TableCell>
                           <Badge className={`text-[10px] sm:text-xs ${
-                            task.status === 'verified' ? 'bg-green-100 text-green-800' :
-                            task.status === 'completed' ? 'bg-purple-100 text-purple-800' :
-                            task.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
-                            task.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                            'bg-blue-100 text-blue-800'
+                            task.status === 'verified' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                            task.status === 'completed' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' :
+                            task.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                            task.status === 'rejected' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+                            'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
                           }`}>
                             {task.status.replace('_', ' ')}
                           </Badge>
@@ -345,9 +291,47 @@ export function AnalyticsPage() {
         </TabsContent>
 
         <TabsContent value="coins">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <CoinsAreaChart />
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Coins className="h-5 w-5 text-coin-gold" />
+                  Top Earners
+                </CardTitle>
+                <CardDescription>Highest coin earners this period</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {teamPerformance
+                    .sort((a, b) => b.total_coins - a.total_coins)
+                    .slice(0, 5)
+                    .map((member, index) => (
+                      <div key={member.id} className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${
+                            index === 0 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30' :
+                            index === 1 ? 'bg-gray-100 text-gray-800 dark:bg-gray-900/30' :
+                            index === 2 ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30' :
+                            'bg-muted text-muted-foreground'
+                          }`}>
+                            {index + 1}
+                          </div>
+                          <span className="font-medium">{member.full_name}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Coins className="h-4 w-4 text-coin-gold" />
+                          <span className="font-bold text-coin-gold">{member.total_coins}</span>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
           <Card>
             <CardHeader>
-              <CardTitle className="text-base sm:text-lg">SLT Coin Transactions</CardTitle>
+              <CardTitle className="text-base sm:text-lg">Coin Transactions</CardTitle>
               <CardDescription className="text-xs sm:text-sm">Recent coin awards and transactions</CardDescription>
             </CardHeader>
             <CardContent className="p-0 sm:p-6">
@@ -356,8 +340,7 @@ export function AnalyticsPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead className="text-xs sm:text-sm">Date</TableHead>
-                      <TableHead className="text-xs sm:text-sm hidden sm:table-cell">Recipient</TableHead>
-                      <TableHead className="text-xs sm:text-sm hidden md:table-cell">Task</TableHead>
+                      <TableHead className="text-xs sm:text-sm hidden sm:table-cell">Task</TableHead>
                       <TableHead className="text-xs sm:text-sm">Coins</TableHead>
                       <TableHead className="text-xs sm:text-sm">Status</TableHead>
                     </TableRow>
@@ -365,21 +348,22 @@ export function AnalyticsPage() {
                   <TableBody>
                     {transactions.slice(0, 10).map((transaction) => (
                       <TableRow key={transaction.id}>
-                        <TableCell className="text-xs sm:text-sm">{format(new Date(transaction.transaction_date), 'MMM dd')}</TableCell>
-                        <TableCell className="hidden sm:table-cell text-xs sm:text-sm">{transaction.user_profile?.full_name}</TableCell>
-                        <TableCell className="hidden md:table-cell text-xs sm:text-sm max-w-[150px] truncate">{transaction.task?.title}</TableCell>
+                        <TableCell className="text-xs sm:text-sm">
+                          {format(new Date(transaction.transaction_date), 'MMM dd, yyyy')}
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell text-xs sm:text-sm">
+                          Task completion reward
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-1">
                             <Coins className="h-3 w-3 sm:h-4 sm:w-4 text-coin-gold" />
-                            <span className="font-bold text-coin-gold text-xs sm:text-sm">{transaction.coins_earned}</span>
+                            <span className="font-bold text-coin-gold text-xs sm:text-sm">
+                              +{transaction.coins_earned}
+                            </span>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className={`text-[10px] sm:text-xs ${
-                            transaction.status === 'approved' ? 'bg-green-100 text-green-800' :
-                            transaction.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                            'bg-yellow-100 text-yellow-800'
-                          }`}>
+                          <Badge variant={transaction.status === 'approved' ? 'default' : 'secondary'} className="text-[10px] sm:text-xs">
                             {transaction.status}
                           </Badge>
                         </TableCell>
