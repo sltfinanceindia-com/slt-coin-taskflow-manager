@@ -47,11 +47,13 @@ export function useTasks() {
           *,
           assigned_profile:profiles!tasks_assigned_to_fkey(id, full_name, email),
           creator_profile:profiles!tasks_created_by_fkey(id, full_name, email)
-        `)
-        .single();
+        `);
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('Task not found or you do not have permission to update it');
+      }
+      return data[0];
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });

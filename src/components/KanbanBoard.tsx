@@ -181,7 +181,7 @@ export function KanbanBoard({
 
   // Admin override function - allows admins to force status changes
   const handleAdminOverride = async (task: Task, newStatus?: Task['status']) => {
-    if (profile?.role !== 'admin') return;
+    if (!isAdmin) return;
     
     // If no specific status provided, cycle through available statuses
     const statusOptions: Task['status'][] = ['assigned', 'in_progress', 'completed', 'verified', 'rejected'];
