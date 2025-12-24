@@ -194,6 +194,9 @@ export default function Landing() {
                 src="/slt-hub-icon.png" 
                 alt="SLT work HuB"
                 className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg object-contain"
+                width="40"
+                height="40"
+                loading="eager"
               />
               <span className="text-sm sm:text-lg font-bold text-foreground">
                 <span className="font-black">SLT</span>
@@ -320,6 +323,10 @@ export default function Landing() {
                   src={dashboardPreview}
                   alt="SLT work HuB Dashboard Preview"
                   className="w-full rounded-xl shadow-2xl border border-border/50"
+                  width="1920"
+                  height="1080"
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
             </div>
