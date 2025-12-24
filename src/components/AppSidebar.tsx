@@ -33,7 +33,12 @@ import {
   FileBox,
   GitBranch,
   Gauge,
-  Inbox
+  Inbox,
+  Wallet,
+  Receipt,
+  FileText,
+  Package,
+  PieChart
 } from "lucide-react"
 import { useOrganization } from "@/hooks/useOrganization"
 import { cn } from "@/lib/utils"
@@ -108,6 +113,16 @@ const adminNavGroups = [
     ]
   },
   {
+    label: "Finance & HR",
+    icon: Wallet,
+    items: [
+      { title: "Payroll", url: "payroll", icon: Wallet },
+      { title: "Expenses", url: "expenses", icon: Receipt },
+      { title: "Documents", url: "documents", icon: FileText },
+      { title: "Assets", url: "assets", icon: Package },
+    ]
+  },
+  {
     label: "Admin Tools",
     icon: Shield,
     items: [
@@ -119,6 +134,7 @@ const adminNavGroups = [
       { title: "Automation", url: "automation", icon: Zap },
       { title: "Audit Packs", url: "audit", icon: FileBox },
       { title: "Lifecycle", url: "lifecycle", icon: Users2 },
+      { title: "Reports", url: "reports", icon: PieChart },
       { title: "Coins", url: "coins", icon: Coins },
       { title: "Employees", url: "interns", icon: Users },
       { title: "Analytics", url: "analytics", icon: BarChart3 },

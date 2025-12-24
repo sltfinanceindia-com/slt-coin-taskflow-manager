@@ -52,6 +52,11 @@ import { LifecycleHub } from '@/components/lifecycle/LifecycleHub';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import FeedbackForm from '@/components/feedback/FeedbackForm';
 import { OrganizationCalendar } from '@/components/OrganizationCalendar';
+import { PayrollDashboard } from '@/components/payroll/PayrollDashboard';
+import { ExpenseManagement } from '@/components/expenses/ExpenseManagement';
+import { DocumentManager } from '@/components/documents/DocumentManager';
+import { AssetManagement } from '@/components/assets/AssetManagement';
+import { CustomReportBuilder } from '@/components/reports/CustomReportBuilder';
 
 import { Coins, Clock, CheckCircle, Plus, Crown, ArrowRight, Shield, Building2 } from 'lucide-react';
 
@@ -316,6 +321,21 @@ export default function ModernDashboard() {
       
       case 'lifecycle':
         return isAdmin ? <LifecycleHub /> : null;
+      
+      case 'payroll':
+        return isAdmin ? <PayrollDashboard /> : null;
+      
+      case 'expenses':
+        return <ExpenseManagement />;
+      
+      case 'documents':
+        return <DocumentManager />;
+      
+      case 'assets':
+        return isAdmin ? <AssetManagement /> : null;
+      
+      case 'reports':
+        return isAdmin ? <CustomReportBuilder /> : null;
       
       case 'roles':
         navigate('/admin/roles-permissions');
