@@ -262,10 +262,10 @@ export default function Landing() {
         {/* Dark overlay for text readability */}
         <div className="absolute inset-0 bg-background/85 dark:bg-background/90" aria-hidden="true" />
         
-        {/* Decorative Background Shapes */}
-        <div className="absolute top-0 left-0 w-72 h-72 bg-emerald-400/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" aria-hidden="true" />
-        <div className="absolute top-1/3 right-0 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl translate-x-1/2" aria-hidden="true" />
-        <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-purple-400/10 rounded-full blur-3xl translate-y-1/2" aria-hidden="true" />
+        {/* Decorative Background Shapes - using transform to create new stacking context and prevent CLS */}
+        <div className="absolute top-0 left-0 w-72 h-72 bg-emerald-400/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 transform-gpu will-change-transform" aria-hidden="true" style={{ contain: 'layout paint' }} />
+        <div className="absolute top-1/3 right-0 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl translate-x-1/2 transform-gpu will-change-transform" aria-hidden="true" style={{ contain: 'layout paint' }} />
+        <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-purple-400/10 rounded-full blur-3xl translate-y-1/2 transform-gpu will-change-transform" aria-hidden="true" style={{ contain: 'layout paint' }} />
         
         <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
