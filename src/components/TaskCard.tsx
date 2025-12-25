@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Coins, User, Calendar, Edit } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Coins, User, Calendar, Edit, Crown } from 'lucide-react';
 import { Task } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -93,11 +94,25 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
       </div>
 
       {/* Details Row */}
-      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+      <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
         <div className="flex items-center gap-1.5 min-w-0">
           <User className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
           <span className="truncate font-medium">{task.assigned_profile?.full_name || 'Unassigned'}</span>
         </div>
+        {task.project_owner_profile && (
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Crown className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+            <Avatar className="h-4 w-4">
+              <AvatarImage src={task.project_owner_profile.avatar_url} />
+              <AvatarFallback className="text-[8px]">
+                {task.project_owner_profile.full_name?.charAt(0)?.toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <span className="truncate font-medium text-amber-600 dark:text-amber-400">
+              {task.project_owner_profile.full_name}
+            </span>
+          </div>
+        )}
         <div className="flex items-center gap-1.5 shrink-0">
           <Calendar className="h-3.5 w-3.5 text-muted-foreground/70" />
           <time dateTime={task.end_date} className="font-medium">{format(new Date(task.end_date), 'MMM dd')}</time>

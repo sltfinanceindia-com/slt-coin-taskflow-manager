@@ -26,7 +26,8 @@ export function useTasks() {
         .select(`
           *,
           assigned_profile:profiles!tasks_assigned_to_fkey(id, full_name, email),
-          creator_profile:profiles!tasks_created_by_fkey(id, full_name, email)
+          creator_profile:profiles!tasks_created_by_fkey(id, full_name, email),
+          project_owner_profile:profiles!tasks_project_owner_id_fkey(id, full_name, email, avatar_url)
         `)
         .eq('organization_id', profile.organization_id)
         .order('created_at', { ascending: false });
@@ -46,7 +47,8 @@ export function useTasks() {
         .select(`
           *,
           assigned_profile:profiles!tasks_assigned_to_fkey(id, full_name, email),
-          creator_profile:profiles!tasks_created_by_fkey(id, full_name, email)
+          creator_profile:profiles!tasks_created_by_fkey(id, full_name, email),
+          project_owner_profile:profiles!tasks_project_owner_id_fkey(id, full_name, email, avatar_url)
         `);
 
       if (error) throw error;

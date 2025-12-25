@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Coins, X, AlertCircle, FolderOpen } from 'lucide-react';
+import { Plus, Coins, X, AlertCircle, FolderOpen, User } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -24,6 +24,7 @@ interface CreateTaskDialogProps {
     start_date: string;
     end_date: string;
     project_id?: string;
+    project_owner_id?: string;
   }) => void;
   isCreating: boolean;
 }
@@ -40,6 +41,7 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
     start_date: new Date().toISOString().split('T')[0],
     end_date: '',
     project_id: '',
+    project_owner_id: '',
   });
 
   const { profile } = useAuth();
@@ -60,6 +62,28 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
 
       if (error) throw error;
       return data;
+    },
+    enabled: !!profile?.organization_id,
+  });
+
+  // Fetch managers/admins for project owner selection
+  // Fetch admins for project owner selection (those who can be accountable)
+  const { data: projectOwners } = useQuery({
+    queryKey: ['project-owners', profile?.organization_id],
+    queryFn: async () => {
+      if (!profile?.organization_id) return [];
+      
+      // Fetch all active users who could be project owners (admins + regular employees with higher responsibility)
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, avatar_url, role')
+        .eq('organization_id', profile.organization_id)
+        .eq('is_active', true)
+        .order('full_name');
+
+      if (error) throw error;
+      // Filter to only admins and org_admins for project ownership
+      return data?.filter(p => ['admin', 'org_admin', 'employee'].includes(p.role)) || [];
     },
     enabled: !!profile?.organization_id,
   });
@@ -121,6 +145,7 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
       title: validation.sanitizedData.title || formData.title,
       description: validation.sanitizedData.description || formData.description,
       project_id: formData.project_id || undefined,
+      project_owner_id: formData.project_owner_id || undefined,
     });
     
     setOpen(false);
@@ -134,6 +159,7 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
       start_date: new Date().toISOString().split('T')[0],
       end_date: '',
       project_id: '',
+      project_owner_id: '',
     });
   };
 
@@ -278,6 +304,36 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Project Owner Selection */}
+          <div className="space-y-1.5">
+            <Label className="flex items-center gap-2 text-sm">
+              <User className="h-3.5 w-3.5 text-muted-foreground" />
+              Project Owner (Optional)
+            </Label>
+            <Select
+              value={formData.project_owner_id || 'none'}
+              onValueChange={(value) => setFormData({ ...formData, project_owner_id: value === 'none' ? '' : value })}
+            >
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="Select project owner" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No Owner</SelectItem>
+                {projectOwners?.map((owner) => (
+                  <SelectItem key={owner.id} value={owner.id}>
+                    <span className="flex items-center gap-2">
+                      <span>{owner.full_name}</span>
+                      <span className="text-xs text-muted-foreground">({owner.role})</span>
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              The person accountable for this task's completion
+            </p>
           </div>
 
           <div className="space-y-1.5">
