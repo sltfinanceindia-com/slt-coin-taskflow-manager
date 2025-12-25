@@ -13,6 +13,7 @@ export interface Task {
   submission_notes?: string;
   admin_feedback?: string;
   project_id?: string;
+  project_owner_id?: string;
   created_at: string;
   updated_at: string;
   // Phase 2: Scheduling fields
@@ -35,6 +36,12 @@ export interface Task {
     full_name: string;
     email: string;
   };
+  project_owner_profile?: {
+    id: string;
+    full_name: string;
+    email: string;
+    avatar_url?: string;
+  };
 }
 
 export interface CreateTaskData {
@@ -46,4 +53,5 @@ export interface CreateTaskData {
   start_date: string;
   end_date: string;
   project_id?: string;
+  project_owner_id?: string;
 }

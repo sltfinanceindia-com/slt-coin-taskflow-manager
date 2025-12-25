@@ -12,6 +12,7 @@ import {
   Phone,
   Building2,
   Search,
+  AlertCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -347,13 +348,50 @@ export function OrgChartViewer({ onSelectUser }: OrgChartViewerProps) {
 
   if (!filteredTree || filteredTree.length === 0) {
     return (
-      <div className="text-center py-16 text-muted-foreground">
-        <Users className="h-16 w-16 mx-auto mb-4 opacity-30" />
-        <p className="text-lg">No organization structure found</p>
-        <p className="text-sm">
-          Start by assigning reporting managers to employees
-        </p>
-      </div>
+      <Card className="border-dashed">
+        <CardContent className="text-center py-16">
+          <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground/30" />
+          <h3 className="text-lg font-semibold mb-2">No Organization Structure Found</h3>
+          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+            {searchQuery 
+              ? `No employees match "${searchQuery}". Try a different search term.`
+              : "Your organization chart is empty. Start building your team hierarchy by assigning reporting managers to employees."
+            }
+          </p>
+          
+          {!searchQuery && (
+            <div className="bg-muted/50 rounded-lg p-6 max-w-lg mx-auto text-left space-y-4">
+              <h4 className="font-semibold flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-primary" />
+                How to Build Your Org Chart
+              </h4>
+              <ol className="space-y-3 text-sm text-muted-foreground">
+                <li className="flex gap-3">
+                  <span className="shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">1</span>
+                  <span>Go to <strong className="text-foreground">Settings → Roles & Permissions</strong></span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">2</span>
+                  <span>Click <strong className="text-foreground">"Assign Manager"</strong> next to each employee</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">3</span>
+                  <span>Select their reporting manager from the dropdown</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">4</span>
+                  <span>The org chart will automatically display the hierarchy</span>
+                </li>
+              </ol>
+              <div className="pt-2 border-t">
+                <p className="text-xs text-muted-foreground">
+                  <strong>Tip:</strong> Start from the top by first assigning department heads, then their direct reports.
+                </p>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     );
   }
 
