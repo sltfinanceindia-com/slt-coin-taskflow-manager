@@ -52,6 +52,6 @@ export interface CreateTaskData {
   slt_coin_value: number;
   start_date: string;
   end_date: string;
-  project_id?: string;
-  project_owner_id?: string;
+  project_id?: string | null;
+  project_owner_id?: string | null;
 }
