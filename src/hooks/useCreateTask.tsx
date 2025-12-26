@@ -22,7 +22,14 @@ export function useCreateTask() {
         const { data: newTask, error: taskError } = await supabase
           .from('tasks')
           .insert([{
-            ...taskData,
+            title: taskData.title,
+            description: taskData.description,
+            priority: taskData.priority,
+            slt_coin_value: taskData.slt_coin_value,
+            start_date: taskData.start_date,
+            end_date: taskData.end_date,
+            project_id: taskData.project_id || null,
+            project_owner_id: taskData.project_owner_id || null,
             assigned_to: userId,
             created_by: profile?.id,
             organization_id: profile?.organization_id,

@@ -2480,6 +2480,59 @@ export type Database = {
           },
         ]
       }
+      employee_portal_settings: {
+        Row: {
+          allow_attendance_view: boolean | null
+          allow_document_upload: boolean | null
+          allow_leave_requests: boolean | null
+          allow_payslip_download: boolean | null
+          allow_profile_update: boolean | null
+          created_at: string | null
+          id: string
+          organization_id: string | null
+          show_achievements: boolean | null
+          show_coin_balance: boolean | null
+          show_leaderboard: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          allow_attendance_view?: boolean | null
+          allow_document_upload?: boolean | null
+          allow_leave_requests?: boolean | null
+          allow_payslip_download?: boolean | null
+          allow_profile_update?: boolean | null
+          created_at?: string | null
+          id?: string
+          organization_id?: string | null
+          show_achievements?: boolean | null
+          show_coin_balance?: boolean | null
+          show_leaderboard?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          allow_attendance_view?: boolean | null
+          allow_document_upload?: boolean | null
+          allow_leave_requests?: boolean | null
+          allow_payslip_download?: boolean | null
+          allow_profile_update?: boolean | null
+          created_at?: string | null
+          id?: string
+          organization_id?: string | null
+          show_achievements?: boolean | null
+          show_coin_balance?: boolean | null
+          show_leaderboard?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_portal_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_skills: {
         Row: {
           certified_date: string | null
@@ -2625,6 +2678,66 @@ export type Database = {
             columns: ["reviewed_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expense_categories: {
+        Row: {
+          budget_amount: number | null
+          budget_period: string | null
+          color: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          organization_id: string | null
+          parent_category_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          budget_amount?: number | null
+          budget_period?: string | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          organization_id?: string | null
+          parent_category_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          budget_amount?: number | null
+          budget_period?: string | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          organization_id?: string | null
+          parent_category_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expense_categories_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_categories_parent_category_id_fkey"
+            columns: ["parent_category_id"]
+            isOneToOne: false
+            referencedRelation: "expense_categories"
             referencedColumns: ["id"]
           },
         ]
@@ -3198,6 +3311,60 @@ export type Database = {
           },
           {
             foreignKeyName: "groups_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      holidays: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          holiday_date: string
+          holiday_type: string | null
+          id: string
+          is_recurring: boolean | null
+          name: string
+          organization_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          holiday_date: string
+          holiday_type?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          name: string
+          organization_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          holiday_date?: string
+          holiday_type?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          name?: string
+          organization_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "holidays_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "holidays_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -3858,6 +4025,158 @@ export type Database = {
           },
           {
             foreignKeyName: "lifecycle_playbooks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loan_repayments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          interest_amount: number | null
+          loan_id: string | null
+          organization_id: string | null
+          payment_date: string
+          payment_method: string | null
+          payroll_record_id: string | null
+          principal_amount: number | null
+          reference_number: string | null
+          status: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          interest_amount?: number | null
+          loan_id?: string | null
+          organization_id?: string | null
+          payment_date: string
+          payment_method?: string | null
+          payroll_record_id?: string | null
+          principal_amount?: number | null
+          reference_number?: string | null
+          status?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          interest_amount?: number | null
+          loan_id?: string | null
+          organization_id?: string | null
+          payment_date?: string
+          payment_method?: string | null
+          payroll_record_id?: string | null
+          principal_amount?: number | null
+          reference_number?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loan_repayments_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loan_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loan_repayments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loan_repayments_payroll_record_id_fkey"
+            columns: ["payroll_record_id"]
+            isOneToOne: false
+            referencedRelation: "payroll_records"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loan_requests: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string | null
+          disbursed_at: string | null
+          emi_amount: number | null
+          employee_id: string | null
+          id: string
+          interest_rate: number | null
+          loan_type: string | null
+          next_emi_date: string | null
+          organization_id: string | null
+          reason: string | null
+          remaining_balance: number | null
+          status: string | null
+          tenure_months: number | null
+          total_paid: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          disbursed_at?: string | null
+          emi_amount?: number | null
+          employee_id?: string | null
+          id?: string
+          interest_rate?: number | null
+          loan_type?: string | null
+          next_emi_date?: string | null
+          organization_id?: string | null
+          reason?: string | null
+          remaining_balance?: number | null
+          status?: string | null
+          tenure_months?: number | null
+          total_paid?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          disbursed_at?: string | null
+          emi_amount?: number | null
+          employee_id?: string | null
+          id?: string
+          interest_rate?: number | null
+          loan_type?: string | null
+          next_emi_date?: string | null
+          organization_id?: string | null
+          reason?: string | null
+          remaining_balance?: number | null
+          status?: string | null
+          tenure_months?: number | null
+          total_paid?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loan_requests_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loan_requests_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loan_requests_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
