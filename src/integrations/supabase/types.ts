@@ -5444,6 +5444,82 @@ export type Database = {
           },
         ]
       }
+      payroll_items: {
+        Row: {
+          base_salary: number | null
+          bonuses: number | null
+          created_at: string
+          deductions: number | null
+          employee_id: string
+          id: string
+          loan_deductions: number | null
+          net_pay: number | null
+          organization_id: string | null
+          overtime_pay: number | null
+          payment_date: string | null
+          payment_reference: string | null
+          payroll_run_id: string
+          status: string
+          tax_amount: number | null
+        }
+        Insert: {
+          base_salary?: number | null
+          bonuses?: number | null
+          created_at?: string
+          deductions?: number | null
+          employee_id: string
+          id?: string
+          loan_deductions?: number | null
+          net_pay?: number | null
+          organization_id?: string | null
+          overtime_pay?: number | null
+          payment_date?: string | null
+          payment_reference?: string | null
+          payroll_run_id: string
+          status?: string
+          tax_amount?: number | null
+        }
+        Update: {
+          base_salary?: number | null
+          bonuses?: number | null
+          created_at?: string
+          deductions?: number | null
+          employee_id?: string
+          id?: string
+          loan_deductions?: number | null
+          net_pay?: number | null
+          organization_id?: string | null
+          overtime_pay?: number | null
+          payment_date?: string | null
+          payment_reference?: string | null
+          payroll_run_id?: string
+          status?: string
+          tax_amount?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_items_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_items_payroll_run_id_fkey"
+            columns: ["payroll_run_id"]
+            isOneToOne: false
+            referencedRelation: "payroll_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payroll_records: {
         Row: {
           allowances: Json | null
@@ -5540,6 +5616,69 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payroll_runs: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          organization_id: string | null
+          period_end: string
+          period_start: string
+          processed_at: string | null
+          processed_by: string | null
+          run_name: string
+          status: string
+          total_amount: number | null
+          total_employees: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          period_end: string
+          period_start: string
+          processed_at?: string | null
+          processed_by?: string | null
+          run_name: string
+          status?: string
+          total_amount?: number | null
+          total_employees?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          period_end?: string
+          period_start?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          run_name?: string
+          status?: string
+          total_amount?: number | null
+          total_employees?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_runs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_runs_processed_by_fkey"
+            columns: ["processed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -8334,6 +8473,150 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      timesheet_entries: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          organization_id: string | null
+          overtime_hours: number | null
+          project_id: string | null
+          regular_hours: number | null
+          task_id: string | null
+          timesheet_id: string
+          work_date: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          organization_id?: string | null
+          overtime_hours?: number | null
+          project_id?: string | null
+          regular_hours?: number | null
+          task_id?: string | null
+          timesheet_id: string
+          work_date: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          organization_id?: string | null
+          overtime_hours?: number | null
+          project_id?: string | null
+          regular_hours?: number | null
+          task_id?: string | null
+          timesheet_id?: string
+          work_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timesheet_entries_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timesheet_entries_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timesheet_entries_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timesheet_entries_timesheet_id_fkey"
+            columns: ["timesheet_id"]
+            isOneToOne: false
+            referencedRelation: "timesheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      timesheets: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          employee_id: string
+          id: string
+          notes: string | null
+          organization_id: string | null
+          overtime_hours: number | null
+          period_end: string
+          period_start: string
+          rejection_reason: string | null
+          status: string
+          submitted_at: string | null
+          total_hours: number | null
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          employee_id: string
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          overtime_hours?: number | null
+          period_end: string
+          period_start: string
+          rejection_reason?: string | null
+          status?: string
+          submitted_at?: string | null
+          total_hours?: number | null
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          overtime_hours?: number | null
+          period_end?: string
+          period_start?: string
+          rejection_reason?: string | null
+          status?: string
+          submitted_at?: string | null
+          total_hours?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timesheets_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timesheets_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timesheets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
