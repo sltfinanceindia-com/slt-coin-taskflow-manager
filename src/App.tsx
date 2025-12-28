@@ -82,6 +82,7 @@ function AppContent() {
   const { isSuperAdmin } = useUserRole();
   const [showSplash, setShowSplash] = useState(true);
   const [minTimeElapsed, setMinTimeElapsed] = useState(false);
+  const [initialAuthChecked, setInitialAuthChecked] = useState(false);
 
   // Show splash for minimum 2.5 seconds AND until auth is loaded
   useEffect(() => {
@@ -89,7 +90,22 @@ function AppContent() {
     return () => clearTimeout(timer);
   }, []);
 
-  const shouldShowSplash = showSplash && (!minTimeElapsed || loading);
+  // Track when initial auth check completes
+  useEffect(() => {
+    if (!loading) {
+      setInitialAuthChecked(true);
+    }
+  }, [loading]);
+
+  // Only show splash for authenticated users navigating to protected routes
+  // Public pages load instantly without splash
+  const isPublicRoute = typeof window !== 'undefined' && 
+    ['/', '/auth', '/signup', '/pricing', '/features', '/terms', '/privacy', '/contact', '/feedback'].includes(window.location.pathname);
+
+  const shouldShowSplash = showSplash && 
+    (!minTimeElapsed || loading) && 
+    !isPublicRoute && 
+    (user || !initialAuthChecked);
 
   if (shouldShowSplash) {
     return <SplashScreen onComplete={() => setShowSplash(false)} minDuration={2500} />;
