@@ -38,7 +38,13 @@ import {
   Receipt,
   FileText,
   Package,
-  PieChart
+  PieChart,
+  ClipboardCheck,
+  Calendar,
+  Banknote,
+  Tags,
+  GanttChart,
+  UserCircle
 } from "lucide-react"
 import { useOrganization } from "@/hooks/useOrganization"
 import { cn } from "@/lib/utils"
@@ -110,6 +116,7 @@ const adminNavGroups = [
       { title: "Baselines", url: "baselines", icon: GitBranch },
       { title: "Changes", url: "changes", icon: FileBox },
       { title: "Scoring", url: "scoring", icon: Target },
+      { title: "Gantt Chart", url: "gantt", icon: GanttChart },
     ]
   },
   {
@@ -117,9 +124,13 @@ const adminNavGroups = [
     icon: Wallet,
     items: [
       { title: "Payroll", url: "payroll", icon: Wallet },
+      { title: "Timesheets", url: "timesheets", icon: ClipboardCheck },
       { title: "Expenses", url: "expenses", icon: Receipt },
+      { title: "Expense Categories", url: "expense-categories", icon: Tags },
+      { title: "Loans & Advances", url: "loans", icon: Banknote },
       { title: "Documents", url: "documents", icon: FileText },
       { title: "Assets", url: "assets", icon: Package },
+      { title: "Holidays", url: "holidays", icon: Calendar },
     ]
   },
   {
@@ -160,6 +171,7 @@ const internNavGroups = [
       { title: "My Tasks", url: "tasks", icon: CheckSquare },
       { title: "Projects", url: "projects", icon: FolderOpen },
       { title: "Updates", url: "updates", icon: Activity },
+      { title: "Self-Service", url: "self-service", icon: UserCircle },
     ]
   },
   {
@@ -168,10 +180,20 @@ const internNavGroups = [
     items: [
       { title: "Requests", url: "requests", icon: Inbox },
       { title: "Time Logs", url: "time", icon: Clock },
+      { title: "Timesheets", url: "timesheets", icon: ClipboardCheck },
       { title: "My Shifts", url: "shifts", icon: CalendarDays },
       { title: "Attendance", url: "attendance", icon: MapPin },
       { title: "Leave", url: "leave", icon: Palmtree },
       { title: "WFH", url: "wfh", icon: Home },
+      { title: "Holidays", url: "holidays", icon: Calendar },
+    ]
+  },
+  {
+    label: "Finance",
+    icon: Wallet,
+    items: [
+      { title: "Expenses", url: "expenses", icon: Receipt },
+      { title: "Loans & Advances", url: "loans", icon: Banknote },
     ]
   },
   {
