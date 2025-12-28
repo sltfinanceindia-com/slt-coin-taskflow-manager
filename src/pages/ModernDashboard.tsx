@@ -57,6 +57,12 @@ import { ExpenseManagement } from '@/components/expenses/ExpenseManagement';
 import { DocumentManager } from '@/components/documents/DocumentManager';
 import { AssetManagement } from '@/components/assets/AssetManagement';
 import { CustomReportBuilder } from '@/components/reports/CustomReportBuilder';
+import { TimesheetManager } from '@/components/timesheet/TimesheetManager';
+import { HolidayCalendar } from '@/components/workforce/HolidayCalendar';
+import { LoanManagement } from '@/components/loans/LoanManagement';
+import { ExpenseCategoryManager } from '@/components/expenses/ExpenseCategoryManager';
+import { GanttChart } from '@/components/project/GanttChart';
+import { EmployeeSelfServicePortal } from '@/components/employee/EmployeeSelfServicePortal';
 
 import { Coins, Clock, CheckCircle, Plus, Crown, ArrowRight, Shield, Building2 } from 'lucide-react';
 
@@ -347,6 +353,24 @@ export default function ModernDashboard() {
       
       case 'app-feedback':
         return <FeedbackForm userEmail={profile?.email} userName={profile?.full_name} />;
+      
+      case 'timesheets':
+        return <TimesheetManager />;
+      
+      case 'holidays':
+        return isAdmin ? <HolidayCalendar /> : null;
+      
+      case 'loans':
+        return <LoanManagement />;
+      
+      case 'expense-categories':
+        return isAdmin ? <ExpenseCategoryManager /> : null;
+      
+      case 'gantt':
+        return <GanttChart />;
+      
+      case 'self-service':
+        return <EmployeeSelfServicePortal />;
       
       default:
         return <EnhancedDashboardWidgets />;
