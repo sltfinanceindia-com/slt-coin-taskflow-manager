@@ -25,6 +25,7 @@ import {
   Star,
   Flag
 } from 'lucide-react';
+import { HolidayCalendarSkeleton, EmptyState } from '@/components/ui/enhanced-skeletons';
 
 const holidayTypeConfig = {
   public: { label: 'Public Holiday', color: 'bg-red-100 text-red-800', icon: PartyPopper },
@@ -284,7 +285,9 @@ export function HolidayCalendar() {
           <CardDescription>{upcomingHolidays.length} holidays scheduled</CardDescription>
         </CardHeader>
         <CardContent>
-          {upcomingHolidays.length > 0 ? (
+          {isLoading ? (
+            <HolidayCalendarSkeleton />
+          ) : upcomingHolidays.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -345,11 +348,15 @@ export function HolidayCalendar() {
               </TableBody>
             </Table>
           ) : (
-            <div className="text-center py-8">
-              <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <p className="text-muted-foreground">No upcoming holidays</p>
-              {isAdmin && <p className="text-sm text-muted-foreground">Add holidays to your organization calendar</p>}
-            </div>
+            <EmptyState
+              icon={Calendar}
+              title="No Upcoming Holidays"
+              description="Plan ahead by adding organization holidays to the calendar. Employees will be notified of upcoming holidays."
+              action={isAdmin ? {
+                label: "Add Holiday",
+                onClick: () => setIsCreateOpen(true)
+              } : undefined}
+            />
           )}
         </CardContent>
       </Card>

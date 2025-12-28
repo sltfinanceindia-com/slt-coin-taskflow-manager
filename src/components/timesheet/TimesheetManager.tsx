@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Calendar, Clock, CheckCircle, XCircle, Send, Plus, FileText, AlertCircle } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, addDays, parseISO } from 'date-fns';
 import { toast } from 'sonner';
+import { TimesheetSkeleton, EmptyState } from '@/components/ui/enhanced-skeletons';
 
 interface Timesheet {
   id: string;
@@ -233,21 +234,19 @@ export function TimesheetManager() {
 
         <TabsContent value="my-timesheets" className="space-y-4">
           {isLoading ? (
-            <Card className="card-gradient">
-              <CardContent className="p-8 text-center">
-                <div className="animate-pulse">Loading timesheets...</div>
-              </CardContent>
-            </Card>
+            <TimesheetSkeleton />
           ) : timesheets?.length === 0 ? (
             <Card className="card-gradient">
-              <CardContent className="p-8 text-center">
-                <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="font-semibold mb-2">No Timesheets Yet</h3>
-                <p className="text-muted-foreground mb-4">Create your first weekly timesheet</p>
-                <Button onClick={() => createTimesheet.mutate()}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Timesheet
-                </Button>
+              <CardContent className="p-0">
+                <EmptyState
+                  icon={Calendar}
+                  title="No Timesheets Yet"
+                  description="Track your weekly work hours by creating your first timesheet. Submit timesheets for approval to maintain accurate records."
+                  action={{
+                    label: "Create Timesheet",
+                    onClick: () => createTimesheet.mutate()
+                  }}
+                />
               </CardContent>
             </Card>
           ) : (

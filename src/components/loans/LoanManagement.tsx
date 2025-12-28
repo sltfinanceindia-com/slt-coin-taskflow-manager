@@ -27,6 +27,7 @@ import {
   TrendingDown,
   User
 } from 'lucide-react';
+import { LoanManagementSkeleton, EmptyState } from '@/components/ui/enhanced-skeletons';
 
 const loanTypeConfig = {
   salary_advance: { label: 'Salary Advance', color: 'bg-blue-100 text-blue-800' },
@@ -395,23 +396,31 @@ export function LoanManagement() {
         </TabsList>
 
         <TabsContent value="my-loans">
-          <Card>
-            <CardHeader>
-              <CardTitle>My Loan Requests</CardTitle>
-              <CardDescription>Track your loan and advance requests</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {myLoans && myLoans.length > 0 ? (
-                <LoanTable loans={myLoans} />
-              ) : (
-                <div className="text-center py-8">
-                  <Wallet className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <p className="text-muted-foreground">No loan requests yet</p>
-                  <p className="text-sm text-muted-foreground">Request a loan or salary advance when needed</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {loadingMyLoans ? (
+            <LoanManagementSkeleton />
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>My Loan Requests</CardTitle>
+                <CardDescription>Track your loan and advance requests</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {myLoans && myLoans.length > 0 ? (
+                  <LoanTable loans={myLoans} />
+                ) : (
+                  <EmptyState
+                    icon={Wallet}
+                    title="No Loan Requests"
+                    description="Need financial assistance? Request a salary advance or personal loan. All requests are reviewed within 24-48 hours."
+                    action={{
+                      label: "Request Loan",
+                      onClick: () => setIsCreateOpen(true)
+                    }}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         {isAdmin && (

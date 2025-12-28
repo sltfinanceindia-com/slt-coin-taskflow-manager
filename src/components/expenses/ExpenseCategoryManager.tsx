@@ -30,6 +30,7 @@ import {
   Building2,
   ShoppingBag
 } from 'lucide-react';
+import { ExpenseCategorySkeleton, EmptyState } from '@/components/ui/enhanced-skeletons';
 
 const iconOptions = [
   { value: 'folder', icon: FolderTree, label: 'Folder' },
@@ -417,12 +418,22 @@ export function ExpenseCategoryManager() {
           );
         })}
         
-        {(!categories || categories.length === 0) && (
+        {isLoading ? (
+          <div className="col-span-full">
+            <ExpenseCategorySkeleton />
+          </div>
+        ) : (!categories || categories.length === 0) && (
           <Card className="col-span-full">
-            <CardContent className="pt-8 pb-8 text-center">
-              <FolderTree className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <p className="text-muted-foreground">No expense categories defined</p>
-              {isAdmin && <p className="text-sm text-muted-foreground">Create categories to organize and track expenses</p>}
+            <CardContent className="p-0">
+              <EmptyState
+                icon={FolderTree}
+                title="No Expense Categories"
+                description="Organize your company expenses by creating categories with budgets. Track spending patterns and control costs effectively."
+                action={isAdmin ? {
+                  label: "Create Category",
+                  onClick: () => setIsCreateOpen(true)
+                } : undefined}
+              />
             </CardContent>
           </Card>
         )}
