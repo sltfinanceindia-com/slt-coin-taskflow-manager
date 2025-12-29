@@ -4,11 +4,18 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Mail, Phone, MapPin, Send, Building2, Coins } from "lucide-react";
+import { Mail, Phone, MapPin, Send, Building2, MessageSquare, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { contactFormSchema, validateFormData } from "@/utils/validation-schemas";
+import { PublicHeader } from "@/components/public/PublicHeader";
+import { PublicFooter } from "@/components/public/PublicFooter";
+import { SEOHead } from "@/components/SEOHead";
+
+// Import background image
+import bgPatternFeatures from '@/assets/bg-pattern-features.jpg';
 
 const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -70,232 +77,216 @@ const Contact = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 sm:gap-3">
-            <img 
-              src="/slt-hub-icon.png" 
-              alt="SLT work HuB"
-              className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg object-contain"
-            />
-            <span className="text-sm sm:text-lg font-bold">
-              <span className="font-black">SLT</span>
-              <span className="font-normal text-muted-foreground"> work </span>
-              <span className="font-black">HuB</span>
-            </span>
-          </Link>
-          <nav className="flex items-center gap-2 sm:gap-4">
-            <Link to="/pricing">
-              <Button variant="ghost" size="sm" className="text-xs sm:text-sm">Pricing</Button>
-            </Link>
-            <Link to="/auth">
-              <Button size="sm" className="text-xs sm:text-sm">Sign In</Button>
-            </Link>
-          </nav>
-        </div>
-      </header>
+    <>
+      <SEOHead 
+        title="Contact Us - SLT work HuB | Get in Touch"
+        description="Contact SLT work HuB for enterprise solutions, custom integrations, or any questions. Our team is ready to help you transform your workplace."
+        keywords="contact, support, enterprise solutions, custom integrations, SLT work HuB contact"
+        canonical="https://slthub.lovable.app/contact"
+      />
+      <div className="min-h-screen bg-background">
+        {/* Shared Header */}
+        <PublicHeader />
 
-      <main className="container mx-auto px-4 py-8 sm:py-16">
-        <div className="text-center mb-8 sm:mb-12">
-          <h1 className="text-2xl sm:text-4xl font-bold tracking-tight mb-3 sm:mb-4">Contact Us</h1>
-          <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
-            Have questions about our enterprise plans or need custom solutions? 
-            Our team is here to help you find the perfect fit for your organization.
-          </p>
-        </div>
+        {/* Hero with Background */}
+        <section 
+          className="relative py-16 sm:py-24 lg:py-32 text-center overflow-hidden"
+          style={{
+            backgroundImage: `url(${bgPatternFeatures})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        >
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-background/85 dark:bg-background/90" />
+          
+          {/* Decorative Background Shapes */}
+          <div className="absolute top-0 left-0 w-72 h-72 bg-emerald-400/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" aria-hidden="true" />
+          <div className="absolute top-1/3 right-0 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl translate-x-1/2" aria-hidden="true" />
+          <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-purple-400/10 rounded-full blur-3xl translate-y-1/2" aria-hidden="true" />
+          
+          <div className="container relative mx-auto px-4">
+            <Badge className="mb-4 sm:mb-6 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-700 text-xs sm:text-sm animate-bounce-subtle">
+              <MessageSquare className="h-3 w-3 mr-1" />
+              Get in Touch
+            </Badge>
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-4 sm:mb-6 tracking-tight leading-tight animate-fade-in">
+              Contact
+              <span className="block text-emerald-600 dark:text-emerald-400">Our Team</span>
+            </h1>
+            <p className="text-base sm:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto px-4 leading-relaxed animate-fade-in" style={{ animationDelay: '100ms' }}>
+              Have questions about our enterprise plans or need custom solutions? 
+              Our team is here to help you find the perfect fit for your organization.
+            </p>
+          </div>
+        </section>
 
-        <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 max-w-6xl mx-auto">
-          {/* Contact Form */}
-          <Card>
-            <CardHeader className="p-4 sm:p-6">
-              <CardTitle className="text-lg sm:text-xl">Send us a message</CardTitle>
-              <CardDescription className="text-xs sm:text-sm">
-                Fill out the form below and we'll get back to you within 24 hours.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name" className="text-sm">Full Name *</Label>
-                    <Input
-                      id="name"
-                      required
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="John Doe"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm">Work Email *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="john@company.com"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="company" className="text-sm">Company Name</Label>
-                  <Input
-                    id="company"
-                    value={formData.company}
-                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                    placeholder="Acme Corporation"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="subject" className="text-sm">Subject *</Label>
-                  <Input
-                    id="subject"
-                    required
-                    value={formData.subject}
-                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    placeholder="Enterprise pricing inquiry"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="message" className="text-sm">Message *</Label>
-                  <Textarea
-                    id="message"
-                    required
-                    rows={5}
-                    value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    placeholder="Tell us about your organization's needs..."
-                  />
-                </div>
-
-                <Button type="submit" className="w-full min-h-[44px]" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    "Sending..."
-                  ) : (
-                    <>
-                      <Send className="mr-2 h-4 w-4" />
-                      Send Message
-                    </>
-                  )}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-
-          {/* Contact Info */}
-          <div className="space-y-4 sm:space-y-6">
-            <Card>
+        <main className="container mx-auto px-4 py-12 sm:py-20">
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 max-w-6xl mx-auto">
+            {/* Contact Form */}
+            <Card className="shadow-lg">
               <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="text-lg sm:text-xl">Get in touch</CardTitle>
+                <CardTitle className="text-lg sm:text-xl">Send us a message</CardTitle>
                 <CardDescription className="text-xs sm:text-sm">
-                  Reach out to our sales and support teams directly.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0 space-y-4 sm:space-y-6">
-                <div className="flex items-start gap-3 sm:gap-4">
-                  <div className="p-2.5 sm:p-3 rounded-lg bg-primary/10 shrink-0">
-                    <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm sm:text-base">Email</p>
-                    <p className="text-xs sm:text-sm text-muted-foreground">sales@sltworkhub.com</p>
-                    <p className="text-xs sm:text-sm text-muted-foreground">support@sltworkhub.com</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 sm:gap-4">
-                  <div className="p-2.5 sm:p-3 rounded-lg bg-primary/10 shrink-0">
-                    <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm sm:text-base">Phone</p>
-                    <p className="text-xs sm:text-sm text-muted-foreground">+91 98765 43210</p>
-                    <p className="text-[10px] sm:text-xs text-muted-foreground">Mon-Fri, 9am-6pm IST</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 sm:gap-4">
-                  <div className="p-2.5 sm:p-3 rounded-lg bg-primary/10 shrink-0">
-                    <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm sm:text-base">Office</p>
-                    <p className="text-xs sm:text-sm text-muted-foreground">SLT Finance Building</p>
-                    <p className="text-xs sm:text-sm text-muted-foreground">Mumbai, India</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="text-lg sm:text-xl">Enterprise Solutions</CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
-                  Need a custom solution for your large organization?
+                  Fill out the form below and we'll get back to you within 24 hours.
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
-                <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-muted-foreground">
-                  <li>• Dedicated account manager</li>
-                  <li>• Custom integrations</li>
-                  <li>• SLA guarantees</li>
-                  <li>• On-premise deployment options</li>
-                  <li>• Priority support 24/7</li>
-                </ul>
-                <Link to="/pricing">
-                  <Button variant="outline" className="w-full mt-4 min-h-[44px]">
-                    View Pricing Plans
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name" className="text-sm">Full Name *</Label>
+                      <Input
+                        id="name"
+                        required
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        placeholder="John Doe"
+                        className={errors.name ? 'border-red-500' : ''}
+                      />
+                      {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-sm">Work Email *</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        required
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        placeholder="john@company.com"
+                        className={errors.email ? 'border-red-500' : ''}
+                      />
+                      {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="company" className="text-sm">Company Name</Label>
+                    <Input
+                      id="company"
+                      value={formData.company}
+                      onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                      placeholder="Acme Corporation"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="subject" className="text-sm">Subject *</Label>
+                    <Input
+                      id="subject"
+                      required
+                      value={formData.subject}
+                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      placeholder="Enterprise pricing inquiry"
+                      className={errors.subject ? 'border-red-500' : ''}
+                    />
+                    {errors.subject && <p className="text-xs text-red-500">{errors.subject}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="message" className="text-sm">Message *</Label>
+                    <Textarea
+                      id="message"
+                      required
+                      rows={5}
+                      value={formData.message}
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      placeholder="Tell us about your organization's needs..."
+                      className={errors.message ? 'border-red-500' : ''}
+                    />
+                    {errors.message && <p className="text-xs text-red-500">{errors.message}</p>}
+                  </div>
+
+                  <Button type="submit" className="w-full min-h-[44px] bg-emerald-600 hover:bg-emerald-700" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      "Sending..."
+                    ) : (
+                      <>
+                        <Send className="mr-2 h-4 w-4" />
+                        Send Message
+                      </>
+                    )}
                   </Button>
-                </Link>
+                </form>
               </CardContent>
             </Card>
-          </div>
-        </div>
-      </main>
 
-      {/* Footer */}
-      <footer className="bg-slate-900 dark:bg-slate-950 text-slate-100 py-10 sm:py-14 mt-12">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center gap-6 text-center md:text-left md:flex-row md:justify-between">
-            <div className="flex flex-col items-center md:items-start gap-3">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <img 
-                  src="/slt-hub-icon.png" 
-                  alt="SLT work HuB"
-                  className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg object-contain"
-                />
-                <span className="text-sm sm:text-lg font-bold">
-                  <span className="font-black">SLT</span>
-                  <span className="font-normal text-slate-400"> work </span>
-                  <span className="font-black">HuB</span>
-                </span>
-              </div>
-              <span className="text-emerald-400 font-medium flex items-center gap-2 text-xs sm:text-sm">
-                <span>Made with ❤️ in</span>
-                <span className="font-bold">భారత్ 🇮🇳</span>
-              </span>
-            </div>
-            
-            <div className="flex flex-col items-center md:items-end gap-2">
-              <div className="text-slate-400 text-xs sm:text-sm">
-                © 2025 SLT work HuB. All rights reserved.
-              </div>
-              <div className="flex gap-4 text-xs text-slate-500">
-                <Link to="/privacy" className="hover:text-slate-300 transition-colors">Privacy</Link>
-                <Link to="/terms" className="hover:text-slate-300 transition-colors">Terms</Link>
-                <Link to="/pricing" className="hover:text-slate-300 transition-colors">Pricing</Link>
-              </div>
+            {/* Contact Info */}
+            <div className="space-y-4 sm:space-y-6">
+              <Card className="shadow-lg">
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="text-lg sm:text-xl">Get in touch</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
+                    Reach out to our sales and support teams directly.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0 space-y-4 sm:space-y-6">
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="p-2.5 sm:p-3 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 shrink-0">
+                      <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm sm:text-base">Email</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">sales@sltworkhub.com</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">support@sltworkhub.com</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="p-2.5 sm:p-3 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 shrink-0">
+                      <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm sm:text-base">Phone</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">+91 98765 43210</p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">Mon-Fri, 9am-6pm IST</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="p-2.5 sm:p-3 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 shrink-0">
+                      <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm sm:text-base">Office</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">SLT Finance Building</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">Mumbai, India</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-lg">
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="text-lg sm:text-xl">Enterprise Solutions</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
+                    Need a custom solution for your large organization?
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+                  <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-muted-foreground">
+                    <li>• Dedicated account manager</li>
+                    <li>• Custom integrations</li>
+                    <li>• SLA guarantees</li>
+                    <li>• On-premise deployment options</li>
+                    <li>• Priority support 24/7</li>
+                  </ul>
+                  <Link to="/pricing">
+                    <Button variant="outline" className="w-full mt-4 min-h-[44px]">
+                      View Pricing Plans
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
             </div>
           </div>
-        </div>
-      </footer>
-    </div>
+        </main>
+
+        {/* Shared Footer */}
+        <PublicFooter />
+      </div>
+    </>
   );
 };
 
