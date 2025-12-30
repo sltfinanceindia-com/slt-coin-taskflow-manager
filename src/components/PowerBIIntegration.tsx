@@ -393,9 +393,9 @@ EVALUATE
                 </div>
               </div>
               
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <h4 className="font-medium text-blue-900 mb-2">Integration Steps:</h4>
-                <ol className="text-sm text-blue-800 space-y-1">
+              <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
+                <h4 className="font-medium text-foreground mb-2">Integration Steps:</h4>
+                <ol className="text-sm text-muted-foreground space-y-1">
                   <li>1. Export the dataset using the button above</li>
                   <li>2. Import the JSON file into Power BI Desktop</li>
                   <li>3. Create your visualizations and reports</li>
