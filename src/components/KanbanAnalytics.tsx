@@ -45,12 +45,19 @@ export function KanbanAnalytics({ tasks }: KanbanAnalyticsProps) {
       return t.status === 'verified' && updated >= weekAgo;
     }).length;
 
+    const completedTasks = tasks.filter(t => t.status === 'verified').length;
+    const completionRate = tasks.length > 0 ? (completedTasks / tasks.length) * 100 : 0;
+
     return {
       statusCounts,
       priorityCounts,
       avgCycleTime: Math.round(avgCycleTime * 10) / 10,
       throughput,
       totalTasks: tasks.length,
+      completedTasks,
+      completionRate,
+      tasks, // Include raw tasks for PowerBI
+      wipLimit: tasks.filter(t => t.status === 'in_progress').length,
     };
   }, [tasks]);
 
@@ -230,7 +237,7 @@ export function KanbanAnalytics({ tasks }: KanbanAnalyticsProps) {
         </CardHeader>
         {showPowerBI && (
           <CardContent>
-            <PowerBIIntegration data={tasks} onClose={() => setShowPowerBI(false)} />
+            <PowerBIIntegration data={analytics} onClose={() => setShowPowerBI(false)} />
           </CardContent>
         )}
       </Card>
