@@ -12,6 +12,8 @@ import { TaskDetailDialog } from '@/components/TaskDetailDialog';
 import { TaskDescription } from '@/components/TaskDescription';
 import { TaskActions } from '@/components/TaskActions';
 import { TaskStatusIndicator } from '@/components/TaskStatusIndicator';
+import { SubtaskProgress } from '@/components/tasks/SubtaskProgress';
+import { ChecklistProgress } from '@/components/tasks/ChecklistProgress';
 
 interface TaskCardProps {
   task: Task;
@@ -117,6 +119,12 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
           <Calendar className="h-3.5 w-3.5 text-muted-foreground/70" />
           <time dateTime={task.end_date} className="font-medium">{format(new Date(task.end_date), 'MMM dd')}</time>
         </div>
+      </div>
+
+      {/* Subtasks & Checklists Progress */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <SubtaskProgress taskId={task.id} />
+        <ChecklistProgress taskId={task.id} />
       </div>
 
       {/* Description - Collapsible */}

@@ -6,6 +6,8 @@ import { Task } from '@/hooks/useTasks';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
 import { useSessionLogs } from '@/hooks/useSessionLogs';
 import { TaskComments } from '@/components/TaskComments';
+import { SubtaskList } from '@/components/tasks/SubtaskList';
+import { ChecklistEditor } from '@/components/tasks/ChecklistEditor';
 import { Eye, Clock, User, Calendar, Coins, BarChart3 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useState } from 'react';
@@ -114,6 +116,29 @@ export function TaskDetailDialog({ task }: TaskDetailDialogProps) {
               </div>
             </CardContent>
           </Card>
+
+          {/* Subtasks & Checklists */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Subtasks</CardTitle>
+                <CardDescription>Break down this task into smaller pieces</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <SubtaskList parentTaskId={task.id} />
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Checklist</CardTitle>
+                <CardDescription>Track completion items</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ChecklistEditor taskId={task.id} />
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Time Tracking */}
           <Card>
