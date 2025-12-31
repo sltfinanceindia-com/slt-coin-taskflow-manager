@@ -180,10 +180,10 @@ export default function Features() {
   return (
     <>
       <SEOHead 
-        title="Features - SLT work HuB | Complete Workplace Management Tools"
-        description="Discover all features of SLT work HuB: employee management, training, assessments, task management, team communication, rewards, and analytics."
-        keywords="workplace features, employee management, training software, task management, team communication, HR software features"
-        canonical="https://slthub.lovable.app/features"
+        title="Features - Tenexa | Complete Workplace Management Tools"
+        description="Discover all features of Tenexa: employee management, training, assessments, task management, team communication, rewards, and analytics."
+        keywords="workplace features, employee management, training software, task management, team communication, HR software features, Tenexa"
+        canonical="https://tenexa.lovable.app/features"
       />
       <div className="min-h-screen bg-background">
         {/* Shared Header */}
@@ -217,7 +217,7 @@ export default function Features() {
             </h1>
             <p className="text-base sm:text-xl lg:text-2xl text-muted-foreground mb-8 sm:mb-10 max-w-3xl mx-auto leading-relaxed animate-fade-in" style={{ animationDelay: '100ms' }}>
               From employee management to training, assessments, task tracking, and rewards - 
-              SLT Work Hub provides a complete solution for modern teams.
+              Tenexa provides a complete solution for modern teams.
             </p>
             <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 h-12 sm:h-14 px-8 sm:px-10 text-base sm:text-lg shadow-lg shadow-emerald-600/25 animate-fade-in" style={{ animationDelay: '200ms' }} asChild>
               <Link to="/signup">

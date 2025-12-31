@@ -74,16 +74,14 @@ export function PublicHeader() {
           <Link to="/" className="flex items-center gap-2 sm:gap-3">
             <img 
               src="/slt-hub-icon.png" 
-              alt="SLT work HuB"
+              alt="Tenexa"
               className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg object-contain"
               width="40"
               height="40"
               loading="eager"
             />
             <span className="text-sm sm:text-lg font-bold text-foreground">
-              <span className="font-black">SLT</span>
-              <span className="font-normal text-muted-foreground"> work </span>
-              <span className="font-black">HuB</span>
+              <span className="font-black">Tenexa</span>
             </span>
           </Link>
 

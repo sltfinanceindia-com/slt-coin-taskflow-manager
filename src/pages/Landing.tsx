@@ -139,10 +139,10 @@ export default function Landing() {
   return (
     <>
       <SEOHead 
-        title="SLT work HuB - Complete Workplace Management Platform"
+        title="Tenexa - Complete Workplace Management Platform"
         description="All-in-one workplace management platform with task tracking, team collaboration, training, attendance, and a rewarding coin system to boost productivity. Start free trial today."
-        keywords="workplace management, task management, team collaboration, employee training, attendance tracking, HR software, project management, India, SLT Finance"
-        canonical="https://slthub.lovable.app/"
+        keywords="workplace management, task management, team collaboration, employee training, attendance tracking, HR software, project management, Tenexa"
+        canonical="https://tenexa.lovable.app/"
         structuredData={generateOrganizationSchema()}
       />
       <div className="min-h-screen bg-background">
@@ -221,7 +221,7 @@ export default function Landing() {
                   <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10 pointer-events-none" />
                   <img 
                     src={dashboardPreview}
-                    alt="SLT work HuB Dashboard Preview"
+                    alt="Tenexa Dashboard Preview"
                     className="w-full rounded-xl shadow-2xl border border-border/50"
                     width="1920"
                     height="1080"
@@ -294,7 +294,7 @@ export default function Landing() {
                 <span className="block text-purple-600 dark:text-purple-400">Exciting Rewards!</span>
               </h2>
               <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed">
-                Help us improve SLT work HuB by providing your valuable feedback and get a chance to win 
+                Help us improve Tenexa by providing your valuable feedback and get a chance to win 
                 exclusive scratch cards with amazing prizes!
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-10">

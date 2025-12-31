@@ -101,10 +101,10 @@ export default function Pricing() {
   return (
     <>
       <SEOHead 
-        title="Pricing - SLT work HuB | Affordable Workplace Management Plans"
-        description="Choose the perfect plan for your team. SLT work HuB offers flexible pricing from free to enterprise plans. Start your 14-day free trial today."
-        keywords="pricing, SLT work HuB pricing, workplace software pricing, HR software cost, team management pricing India"
-        canonical="https://slthub.lovable.app/pricing"
+        title="Pricing - Tenexa | Affordable Workplace Management Plans"
+        description="Choose the perfect plan for your team. Tenexa offers flexible pricing from free to enterprise plans. Start your 14-day free trial today."
+        keywords="pricing, Tenexa pricing, workplace software pricing, HR software cost, team management pricing"
+        canonical="https://tenexa.lovable.app/pricing"
         structuredData={generateFAQSchema(faqs)}
       />
       <div className="min-h-screen bg-background">
