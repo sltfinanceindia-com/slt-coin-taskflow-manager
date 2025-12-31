@@ -292,15 +292,13 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
             <div className="flex items-center gap-3">
               <img 
                 src="/slt-hub-icon.png" 
-                alt="SLT work HuB"
+                alt="Tenexa"
                 className="h-9 w-auto object-contain shrink-0 rounded-xl"
               />
               {!collapsed && (
                 <div className="min-w-0 flex-1">
-                  <h2 className="text-sidebar-foreground text-base truncate">
-                    <span className="font-black">SLT</span>
-                    <span className="font-normal"> work </span>
-                    <span className="font-black">HuB</span>
+                  <h2 className="text-sidebar-foreground text-base truncate font-black">
+                    Tenexa
                   </h2>
                 </div>
               )}

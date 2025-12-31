@@ -79,10 +79,10 @@ const Contact = () => {
   return (
     <>
       <SEOHead 
-        title="Contact Us - SLT work HuB | Get in Touch"
-        description="Contact SLT work HuB for enterprise solutions, custom integrations, or any questions. Our team is ready to help you transform your workplace."
-        keywords="contact, support, enterprise solutions, custom integrations, SLT work HuB contact"
-        canonical="https://slthub.lovable.app/contact"
+        title="Contact Us - Tenexa | Get in Touch"
+        description="Contact Tenexa for enterprise solutions, custom integrations, or any questions. Our team is ready to help you transform your workplace."
+        keywords="contact, support, enterprise solutions, custom integrations, Tenexa contact"
+        canonical="https://tenexa.lovable.app/contact"
       />
       <div className="min-h-screen bg-background">
         {/* Shared Header */}
@@ -228,8 +228,8 @@ const Contact = () => {
                     </div>
                     <div>
                       <p className="font-medium text-sm sm:text-base">Email</p>
-                      <p className="text-xs sm:text-sm text-muted-foreground">sales@sltworkhub.com</p>
-                      <p className="text-xs sm:text-sm text-muted-foreground">support@sltworkhub.com</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">sales@tenexa.com</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">support@tenexa.com</p>
                     </div>
                   </div>
 

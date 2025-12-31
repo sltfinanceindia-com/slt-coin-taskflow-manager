@@ -17,9 +17,9 @@ interface SEOHeadProps {
  * Updates document head on mount for each page
  */
 export function SEOHead({
-  title = 'SLT work HuB - Complete Workplace Management Platform',
+  title = 'Tenexa - Complete Workplace Management Platform',
   description = 'All-in-one workplace management platform with task tracking, team collaboration, training, attendance, and a rewarding coin system to boost productivity.',
-  keywords = 'workplace management, task management, team collaboration, employee training, attendance tracking, HR software, project management, India',
+  keywords = 'workplace management, task management, team collaboration, employee training, attendance tracking, HR software, project management, Tenexa',
   canonical,
   ogImage = '/slt-hub-icon.png',
   ogType = 'website',
@@ -59,7 +59,7 @@ export function SEOHead({
     setMeta('og:description', description, true);
     setMeta('og:type', ogType, true);
     setMeta('og:image', ogImage, true);
-    setMeta('og:site_name', 'SLT work HuB', true);
+    setMeta('og:site_name', 'Tenexa', true);
     
     if (canonical) {
       setMeta('og:url', canonical, true);
@@ -108,7 +108,7 @@ export function SEOHead({
 export const generateOrganizationSchema = () => ({
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
-  name: 'SLT work HuB',
+  name: 'Tenexa',
   applicationCategory: 'BusinessApplication',
   operatingSystem: 'Web',
   offers: {

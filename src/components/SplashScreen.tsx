@@ -89,7 +89,7 @@ const SplashScreen = ({ onComplete, minDuration = 2000 }: SplashScreenProps) => 
               <div className="relative">
                 <motion.img
                   src="/slt-hub-icon.png"
-                  alt="SLT work HuB"
+                  alt="Tenexa"
                   className={`w-24 h-24 md:w-32 md:h-32 object-contain drop-shadow-2xl rounded-3xl ${
                     isDark ? 'bg-card/50 p-2' : ''
                   }`}
@@ -112,8 +112,7 @@ const SplashScreen = ({ onComplete, minDuration = 2000 }: SplashScreenProps) => 
                 isDark ? 'text-foreground' : 'text-white'
               }`}
             >
-              SLT work{' '}
-              <span className="text-amber-400">HuB</span>
+              <span className="text-amber-400">Tenexa</span>
             </motion.h1>
 
             {/* Tagline */}
