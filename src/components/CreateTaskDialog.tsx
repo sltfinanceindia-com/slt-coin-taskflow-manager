@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { validateTaskData } from '@/utils/security';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AITaskAssistant } from '@/components/tasks/AITaskAssistant';
 
 interface CreateTaskDialogProps {
   onCreateTask: (taskData: {
@@ -229,7 +230,15 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="description" className="text-sm">Description</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="description" className="text-sm">Description</Label>
+              <AITaskAssistant
+                taskTitle={formData.title}
+                taskDescription={formData.description}
+                onDescriptionGenerated={(desc) => setFormData({ ...formData, description: desc })}
+                onPrioritySuggested={(priority) => setFormData({ ...formData, priority })}
+              />
+            </div>
             <Textarea
               id="description"
               value={formData.description}
