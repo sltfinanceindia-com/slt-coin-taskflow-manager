@@ -61,6 +61,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { RoleEditor } from '@/components/rbac/RoleEditor';
 import { RolePermissionMatrix, ModulePermission, PERMISSION_TEMPLATES } from '@/components/rbac/RolePermissionMatrix';
 import { TeamRoleAssignment } from '@/components/rbac/TeamRoleAssignment';
+import { BulkRoleAssignment } from '@/components/rbac/BulkRoleAssignment';
+import { RoleInheritance } from '@/components/rbac/RoleInheritance';
+import { DepartmentRoles } from '@/components/rbac/DepartmentRoles';
+import { ReportingManagerSetup } from '@/components/rbac/ReportingManagerSetup';
 
 const ROLE_ICONS: Record<string, React.ElementType> = {
   org_admin: Shield,
@@ -245,14 +249,36 @@ export default function RolesPermissions() {
       </div>
 
       <Tabs defaultValue="team-members" className="space-y-6">
-        <TabsList>
+        <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="team-members" className="gap-2">
             <Users className="h-4 w-4" />
-            Team Members
+            <span className="hidden sm:inline">Team Members</span>
+            <span className="sm:hidden">Team</span>
+          </TabsTrigger>
+          <TabsTrigger value="bulk-assign" className="gap-2">
+            <UserCheck className="h-4 w-4" />
+            <span className="hidden sm:inline">Bulk Assign</span>
+            <span className="sm:hidden">Bulk</span>
           </TabsTrigger>
           <TabsTrigger value="roles" className="gap-2">
             <Shield className="h-4 w-4" />
-            Role Configuration
+            <span className="hidden sm:inline">Role Config</span>
+            <span className="sm:hidden">Roles</span>
+          </TabsTrigger>
+          <TabsTrigger value="inheritance" className="gap-2">
+            <Shield className="h-4 w-4" />
+            <span className="hidden sm:inline">Inheritance</span>
+            <span className="sm:hidden">Inherit</span>
+          </TabsTrigger>
+          <TabsTrigger value="departments" className="gap-2">
+            <Users className="h-4 w-4" />
+            <span className="hidden sm:inline">Departments</span>
+            <span className="sm:hidden">Dept</span>
+          </TabsTrigger>
+          <TabsTrigger value="reporting" className="gap-2">
+            <Users className="h-4 w-4" />
+            <span className="hidden sm:inline">Reporting</span>
+            <span className="sm:hidden">Report</span>
           </TabsTrigger>
         </TabsList>
 
@@ -268,6 +294,22 @@ export default function RolesPermissions() {
               <TeamRoleAssignment />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="bulk-assign">
+          <BulkRoleAssignment />
+        </TabsContent>
+
+        <TabsContent value="inheritance">
+          <RoleInheritance />
+        </TabsContent>
+
+        <TabsContent value="departments">
+          <DepartmentRoles />
+        </TabsContent>
+
+        <TabsContent value="reporting">
+          <ReportingManagerSetup />
         </TabsContent>
 
         <TabsContent value="roles">
