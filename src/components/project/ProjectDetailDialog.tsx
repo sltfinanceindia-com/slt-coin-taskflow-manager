@@ -16,8 +16,9 @@ import { useTasks } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { CreateTaskDialog } from '@/components/CreateTaskDialog';
+import { ProjectActivityFeed } from '@/components/project/ProjectActivityFeed';
 import { format } from 'date-fns';
-import { Edit2, Save, X, Users, CheckCircle, Clock, AlertTriangle, FileText, Hash } from 'lucide-react';
+import { Edit2, Save, X, Users, CheckCircle, Clock, AlertTriangle, FileText, Hash, Calendar, DollarSign } from 'lucide-react';
 
 interface ProjectDetailDialogProps {
   project: Project;
@@ -41,7 +42,11 @@ export function ProjectDetailDialog({
   const [editForm, setEditForm] = useState({
     name: project.name,
     description: project.description || '',
-    status: project.status
+    status: project.status,
+    start_date: project.start_date || '',
+    target_end_date: project.target_end_date || '',
+    priority: project.priority || 'medium',
+    budget: project.budget || undefined
   });
 
   // Filter tasks for this project
@@ -91,7 +96,11 @@ export function ProjectDetailDialog({
     setEditForm({
       name: project.name,
       description: project.description || '',
-      status: project.status
+      status: project.status,
+      start_date: project.start_date || '',
+      target_end_date: project.target_end_date || '',
+      priority: project.priority || 'medium',
+      budget: project.budget || undefined
     });
     setIsEditing(false);
   };
@@ -212,6 +221,54 @@ export function ProjectDetailDialog({
                 )}
               </div>
 
+              {/* Dates & Priority - Editable */}
+              {isEditing && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Start Date</Label>
+                    <Input
+                      type="date"
+                      value={editForm.start_date}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, start_date: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Target End Date</Label>
+                    <Input
+                      type="date"
+                      value={editForm.target_end_date}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, target_end_date: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Priority</Label>
+                    <Select
+                      value={editForm.priority}
+                      onValueChange={(value) => setEditForm(prev => ({ ...prev, priority: value as any }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="critical">Critical</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Budget</Label>
+                    <Input
+                      type="number"
+                      placeholder="Budget amount"
+                      value={editForm.budget || ''}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, budget: e.target.value ? Number(e.target.value) : undefined }))}
+                    />
+                  </div>
+                </div>
+              )}
+
               {/* Progress */}
               <Card>
                 <CardHeader className="pb-2">
@@ -269,7 +326,7 @@ export function ProjectDetailDialog({
               </div>
 
               {/* Meta Info */}
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                 <div>
                   <span className="text-muted-foreground">Created by</span>
                   <p className="font-medium">{project.creator_profile?.full_name || 'Unknown'}</p>
@@ -278,6 +335,36 @@ export function ProjectDetailDialog({
                   <span className="text-muted-foreground">Created on</span>
                   <p className="font-medium">{format(new Date(project.created_at), 'MMM d, yyyy')}</p>
                 </div>
+                {project.start_date && (
+                  <div>
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      <Calendar className="h-3 w-3" /> Start Date
+                    </span>
+                    <p className="font-medium">{format(new Date(project.start_date), 'MMM d, yyyy')}</p>
+                  </div>
+                )}
+                {project.target_end_date && (
+                  <div>
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      <Calendar className="h-3 w-3" /> Target End
+                    </span>
+                    <p className="font-medium">{format(new Date(project.target_end_date), 'MMM d, yyyy')}</p>
+                  </div>
+                )}
+                {project.priority && (
+                  <div>
+                    <span className="text-muted-foreground">Priority</span>
+                    <p className="font-medium capitalize">{project.priority}</p>
+                  </div>
+                )}
+                {project.budget && (
+                  <div>
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      <DollarSign className="h-3 w-3" /> Budget
+                    </span>
+                    <p className="font-medium">${project.budget.toLocaleString()}</p>
+                  </div>
+                )}
               </div>
             </TabsContent>
 
@@ -369,13 +456,7 @@ export function ProjectDetailDialog({
             </TabsContent>
 
             <TabsContent value="activity" className="p-4">
-              <div className="text-center py-8">
-                <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                <h3 className="font-medium mb-1">Activity feed coming soon</h3>
-                <p className="text-sm text-muted-foreground">
-                  Track all changes and updates to this project
-                </p>
-              </div>
+              <ProjectActivityFeed projectId={project.id} />
             </TabsContent>
           </ScrollArea>
         </Tabs>

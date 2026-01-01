@@ -185,6 +185,7 @@ export function ProjectManagement() {
           projects.map((project) => {
             const projectTasks = getProjectTasks(project.id);
             const progress = getProjectProgress(project.id);
+            const projectId = `PRJ-${project.id.slice(0, 8).toUpperCase()}`;
             
             return (
               <Card key={project.id} className="hover:shadow-md transition-shadow">
@@ -192,9 +193,14 @@ export function ProjectManagement() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="space-y-1 min-w-0 flex-1">
                       <CardTitle className="text-base sm:text-lg truncate">{project.name}</CardTitle>
-                      <Badge className={`text-[10px] sm:text-xs ${getStatusColor(project.status)}`}>
-                        {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
-                      </Badge>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge variant="outline" className="font-mono text-[10px]">
+                          {projectId}
+                        </Badge>
+                        <Badge className={`text-[10px] sm:text-xs ${getStatusColor(project.status)}`}>
+                          {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
                   {project.description && (

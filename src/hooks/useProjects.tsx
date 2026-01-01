@@ -12,7 +12,22 @@ export interface Project {
   organization_id?: string;
   created_at: string;
   updated_at: string;
+  start_date?: string;
+  target_end_date?: string;
+  actual_end_date?: string;
+  priority?: 'low' | 'medium' | 'high' | 'critical';
+  sponsor_id?: string;
+  budget?: number;
+  spent_budget?: number;
+  health_status?: 'green' | 'yellow' | 'red';
+  health_reason?: string;
+  stage?: string;
+  project_number?: string;
   creator_profile?: {
+    id: string;
+    full_name: string;
+  };
+  sponsor_profile?: {
     id: string;
     full_name: string;
   };
@@ -34,7 +49,8 @@ export function useProjects() {
         .from('projects')
         .select(`
           *,
-          creator_profile:profiles!projects_created_by_fkey(id, full_name)
+          creator_profile:profiles!projects_created_by_fkey(id, full_name),
+          sponsor_profile:profiles!projects_sponsor_id_fkey(id, full_name)
         `)
         .eq('organization_id', profile.organization_id)
         .order('created_at', { ascending: false });
@@ -44,7 +60,10 @@ export function useProjects() {
         ...project,
         creator_profile: Array.isArray(project.creator_profile) 
           ? project.creator_profile[0] 
-          : project.creator_profile
+          : project.creator_profile,
+        sponsor_profile: Array.isArray(project.sponsor_profile) 
+          ? project.sponsor_profile[0] 
+          : project.sponsor_profile
       })) as Project[];
     },
     enabled: !!profile?.organization_id,
@@ -90,7 +109,7 @@ export function useProjects() {
       updates 
     }: { 
       projectId: string; 
-      updates: Partial<Pick<Project, 'name' | 'description' | 'status'>>
+      updates: Partial<Pick<Project, 'name' | 'description' | 'status' | 'start_date' | 'target_end_date' | 'sponsor_id' | 'priority' | 'budget' | 'health_status' | 'health_reason'>>
     }) => {
       const { data, error } = await supabase
         .from('projects')
