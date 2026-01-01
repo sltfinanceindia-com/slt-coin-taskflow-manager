@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu,
@@ -52,64 +51,67 @@ export function QuickActionsMenu({
   className,
 }: QuickActionsMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate();
   const isMobile = useIsMobile();
+
+  const navigateToTab = (tab: string) => {
+    window.dispatchEvent(new CustomEvent('navigate-to-tab', { detail: tab }));
+  };
 
   const quickActions: QuickAction[] = [
     {
       icon: CheckSquare,
       label: 'New Task',
       shortcut: 'N',
-      action: onCreateTask || (() => navigate('/dashboard?tab=tasks')),
+      action: onCreateTask || (() => navigateToTab('tasks')),
       color: 'text-blue-500',
     },
     {
       icon: Clock,
       label: 'Log Time',
       shortcut: 'T',
-      action: onLogTime || (() => navigate('/dashboard?tab=time')),
+      action: onLogTime || (() => navigateToTab('time')),
       color: 'text-green-500',
     },
     {
       icon: Palmtree,
       label: 'Request Leave',
       shortcut: 'L',
-      action: onRequestLeave || (() => navigate('/dashboard?tab=leave')),
+      action: onRequestLeave || (() => navigateToTab('leave')),
       color: 'text-yellow-500',
     },
     {
       icon: Home,
       label: 'Request WFH',
       shortcut: 'W',
-      action: onRequestWfh || (() => navigate('/dashboard?tab=wfh')),
+      action: onRequestWfh || (() => navigateToTab('wfh')),
       color: 'text-purple-500',
     },
     {
       icon: Receipt,
       label: 'Add Expense',
       shortcut: 'E',
-      action: onAddExpense || (() => navigate('/dashboard?tab=expenses')),
+      action: onAddExpense || (() => navigateToTab('expenses')),
       color: 'text-orange-500',
     },
     {
       icon: Heart,
       label: 'Give Kudos',
       shortcut: 'K',
-      action: () => navigate('/dashboard?tab=kudos'),
+      action: () => navigateToTab('kudos'),
       color: 'text-pink-500',
     },
     {
       icon: Target,
       label: 'Add Goal',
       shortcut: 'G',
-      action: () => navigate('/dashboard?tab=my-goals'),
+      action: () => navigateToTab('my-goals'),
       color: 'text-cyan-500',
     },
     {
       icon: MessageSquare,
       label: 'Send Message',
       shortcut: 'M',
-      action: () => navigate('/dashboard?tab=communication'),
+      action: () => navigateToTab('communication'),
       color: 'text-indigo-500',
     },
   ];

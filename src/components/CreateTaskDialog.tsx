@@ -199,7 +199,7 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
             <span>Create New Task</span>
           </DialogTitle>
           <DialogDescription className="text-xs sm:text-sm">
-            Create a new task and assign SLT Coins as reward for completion.
+            Create a new task and assign Coins as reward for completion.
           </DialogDescription>
         </DialogHeader>
 
@@ -346,7 +346,7 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="coins" className="text-sm">SLT Coin Reward *</Label>
+            <Label htmlFor="coins" className="text-sm">Coin Reward *</Label>
             <div className="flex items-center space-x-2">
               <Coins className="h-4 w-4 text-coin-gold shrink-0" />
               <Input
