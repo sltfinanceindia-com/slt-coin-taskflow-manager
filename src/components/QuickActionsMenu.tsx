@@ -102,7 +102,7 @@ export function QuickActionsMenu({
       icon: Target,
       label: 'Add Goal',
       shortcut: 'G',
-      action: () => navigate('/dashboard?tab=goals'),
+      action: () => navigate('/dashboard?tab=my-goals'),
       color: 'text-cyan-500',
     },
     {
