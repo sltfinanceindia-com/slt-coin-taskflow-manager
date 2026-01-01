@@ -38,7 +38,12 @@ export default function Training() {
             <Button 
               variant="ghost" 
               size="sm"
-              onClick={() => navigate('/dashboard')}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                navigate('/dashboard');
+              }}
               className="flex items-center gap-2 self-start"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -61,7 +66,12 @@ export default function Training() {
           <Button 
             variant="ghost" 
             size="sm"
-            onClick={() => navigate('/dashboard')}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              navigate('/dashboard');
+            }}
             className="flex items-center gap-2"
           >
             <ChevronLeft className="h-4 w-4" />
