@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useViewMode } from '@/hooks/useViewMode';
@@ -6,6 +6,7 @@ import { useTasks } from '@/hooks/useTasks';
 import { useTimeLogs } from '@/hooks/useTimeLogs';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useOrganization } from '@/hooks/useOrganization';
+import { useTabPersistence } from '@/hooks/useTabPersistence';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -19,7 +20,7 @@ import { MyCoins } from '@/components/MyCoins';
 import { EnhancedDashboardWidgets } from '@/components/EnhancedDashboardWidgets';
 import { ProjectPortfolioHub } from '@/components/project/ProjectPortfolioHub';
 import { ProjectScheduleHub } from '@/components/project/ProjectScheduleHub';
-import { KanbanBoard } from '@/components/KanbanBoard';
+import { TabBasedKanban } from '@/components/kanban/TabBasedKanban';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AppHeader } from '@/components/AppHeader';
@@ -79,23 +80,15 @@ export default function ModernDashboard() {
   const { tasks, createTask, updateTaskStatus, verifyTask, updateTask, isCreating, isUpdating } = useTasks();
   const { timeLogs, logTime, isLogging } = useTimeLogs();
   const { organization } = useOrganization();
-  const [activeTab, setActiveTab] = useState('overview');
+  const { activeTab, setActiveTab } = useTabPersistence({
+    defaultTab: 'overview',
+    paramName: 'tab',
+    storageKey: 'dashboard_active_tab'
+  });
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
   const coinName = organization?.coin_name || 'Coins';
-
-  // Listen for navigation events from dashboard widgets
-  useEffect(() => {
-    const handleNavigateToTab = (event: CustomEvent<string>) => {
-      setActiveTab(event.detail);
-    };
-
-    window.addEventListener('navigate-to-tab', handleNavigateToTab as EventListener);
-    return () => {
-      window.removeEventListener('navigate-to-tab', handleNavigateToTab as EventListener);
-    };
-  }, []);
 
   if (loading || roleLoading) {
     return (
@@ -144,7 +137,7 @@ export default function ModernDashboard() {
                   <CreateTaskDialog onCreateTask={createTask} isCreating={isCreating} />
                 </div>
               </div>
-              <KanbanBoard
+              <TabBasedKanban
                 tasks={myTasks}
                 onUpdateStatus={updateTaskStatus}
                 onVerifyTask={verifyTask}
@@ -160,7 +153,7 @@ export default function ModernDashboard() {
                 <h2 className="text-xl sm:text-2xl font-bold">My Tasks</h2>
                 <p className="text-muted-foreground text-sm">View and manage your assigned tasks</p>
               </div>
-              <KanbanBoard
+              <TabBasedKanban
                 tasks={myTasks}
                 onUpdateStatus={updateTaskStatus}
                 onVerifyTask={verifyTask}
