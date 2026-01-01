@@ -71,21 +71,7 @@ export function DashboardBuilder() {
 
       if (error) throw error;
       
-      // If no widgets, return empty - user can add widgets
-      if (data.length === 0) {
-        return [] as DashboardWidget[];
-      }
-        
-        const { data: newData } = await supabase
-          .from('dashboard_widgets')
-          .select('*')
-          .eq('user_id', profile?.id)
-          .order('position');
-        
-        return (newData || []) as DashboardWidget[];
-      }
-      
-      return data as DashboardWidget[];
+      return (data || []) as DashboardWidget[];
     },
     enabled: !!profile?.id,
   });
