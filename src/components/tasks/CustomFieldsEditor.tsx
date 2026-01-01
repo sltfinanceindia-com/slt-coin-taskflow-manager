@@ -6,6 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCustomFields, CustomFieldDefinition } from '@/hooks/useCustomFields';
 import { ExternalLink } from 'lucide-react';
+import type { Json } from '@/integrations/supabase/types';
 
 interface CustomFieldsEditorProps {
   taskId: string;
@@ -14,11 +15,11 @@ interface CustomFieldsEditorProps {
 
 export function CustomFieldsEditor({ taskId, compact = false }: CustomFieldsEditorProps) {
   const { definitions, values, isLoadingDefinitions, saveValue, getFieldValue } = useCustomFields('task', taskId);
-  const [localValues, setLocalValues] = useState<Record<string, unknown>>({});
+  const [localValues, setLocalValues] = useState<Record<string, Json>>({});
 
   useEffect(() => {
     if (values.length > 0) {
-      const valueMap: Record<string, unknown> = {};
+      const valueMap: Record<string, Json> = {};
       values.forEach(v => {
         valueMap[v.field_id] = v.value;
       });
@@ -26,7 +27,7 @@ export function CustomFieldsEditor({ taskId, compact = false }: CustomFieldsEdit
     }
   }, [values]);
 
-  const handleChange = (fieldId: string, value: unknown) => {
+  const handleChange = (fieldId: string, value: Json) => {
     setLocalValues(prev => ({ ...prev, [fieldId]: value }));
     saveValue({ fieldId, entityId: taskId, value });
   };
