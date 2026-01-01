@@ -42,6 +42,9 @@ import PlatformAnnouncements from "./pages/super-admin/PlatformAnnouncements";
 import OrganizationSettings from "./pages/admin/OrganizationSettings";
 import RolesPermissions from "./pages/settings/RolesPermissions";
 import OrgChartPage from "./pages/organization/OrgChart";
+import KudosWallPage from "./pages/KudosWall";
+import PulseSurveysPage from "./pages/PulseSurveys";
+import MyGoalsPage from "./pages/MyGoals";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -187,6 +190,9 @@ function AppContent() {
               </ProtectedRoute>
             } 
           />
+          <Route path="/kudos" element={<ProtectedRoute><KudosWallPage /></ProtectedRoute>} />
+          <Route path="/pulse-surveys" element={<ProtectedRoute><PulseSurveysPage /></ProtectedRoute>} />
+          <Route path="/my-goals" element={<ProtectedRoute><MyGoalsPage /></ProtectedRoute>} />
           
           {/* 404 */}
           <Route path="*" element={<NotFound />} />

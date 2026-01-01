@@ -63,6 +63,12 @@ import { LoanManagement } from '@/components/loans/LoanManagement';
 import { ExpenseCategoryManager } from '@/components/expenses/ExpenseCategoryManager';
 import { GanttChart } from '@/components/project/GanttChart';
 import { EmployeeSelfServicePortal } from '@/components/employee/EmployeeSelfServicePortal';
+import { KudosWall } from '@/components/kudos/KudosWall';
+import { PulseSurveyWidget } from '@/components/pulse/PulseSurveyWidget';
+import { PulseSurveyAdmin } from '@/components/pulse/PulseSurveyAdmin';
+import { PersonalGoalsWidget } from '@/components/goals/PersonalGoalsWidget';
+import { DashboardBuilder } from '@/components/dashboard/DashboardBuilder';
+import { QuickActionsMenu } from '@/components/QuickActionsMenu';
 
 import { Coins, Clock, CheckCircle, Plus, Crown, ArrowRight, Shield, Building2 } from 'lucide-react';
 
@@ -116,7 +122,14 @@ export default function ModernDashboard() {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'overview':
-        return <EnhancedDashboardWidgets />;
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-end gap-2">
+              <DashboardBuilder />
+            </div>
+            <EnhancedDashboardWidgets />
+          </div>
+        );
       
       case 'tasks':
         if (isAdmin) {
@@ -372,6 +385,15 @@ export default function ModernDashboard() {
       case 'self-service':
         return <EmployeeSelfServicePortal />;
       
+      case 'kudos':
+        return <KudosWall />;
+      
+      case 'pulse-surveys':
+        return isAdmin ? <PulseSurveyAdmin /> : <PulseSurveyWidget />;
+      
+      case 'my-goals':
+        return <PersonalGoalsWidget />;
+      
       default:
         return <EnhancedDashboardWidgets />;
     }
@@ -438,6 +460,9 @@ export default function ModernDashboard() {
         
         {/* Bottom Navigation for Mobile */}
         <BottomNavigation variant="private" activeTab={activeTab} onTabChange={setActiveTab} />
+        
+        {/* Quick Actions Menu for Mobile */}
+        <QuickActionsMenu />
       </div>
     </SidebarProvider>
   );
