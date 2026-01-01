@@ -83,7 +83,7 @@ export default function ModernDashboard() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
-  const coinName = organization?.coin_name || 'SLT Coins';
+  const coinName = organization?.coin_name || 'Coins';
 
   // Listen for navigation events from dashboard widgets
   useEffect(() => {

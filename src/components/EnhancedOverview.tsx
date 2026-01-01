@@ -38,7 +38,7 @@ export function EnhancedOverview() {
   const { getUserSessionStats } = useSessionLogs();
   const { organization } = useOrganization();
   
-  const coinName = organization?.coin_name || 'SLT Coins';
+  const coinName = organization?.coin_name || 'Coins';
 
   const myTasks = tasks.filter(task => 
     isAdmin ? true : task.assigned_to === profile?.id

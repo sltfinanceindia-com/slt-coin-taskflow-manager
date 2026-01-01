@@ -69,7 +69,7 @@ export function useVerifyTask() {
       toast({
         title: variables.approve ? "Task Approved" : "Task Rejected",
         description: variables.approve 
-          ? "SLT Coins have been awarded to the intern."
+          ? "Coins have been awarded to the employee."
           : "Task has been rejected with feedback.",
         variant: variables.approve ? "default" : "destructive",
       });

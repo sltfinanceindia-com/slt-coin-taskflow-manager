@@ -37,7 +37,7 @@ export default function Dashboard() {
   const { organization } = useOrganization();
   const [activeTab, setActiveTab] = useState('overview');
   
-  const coinName = organization?.coin_name || 'SLT Coins';
+  const coinName = organization?.coin_name || 'Coins';
 
   if (loading) {
     return (
@@ -95,14 +95,12 @@ export default function Dashboard() {
               <div className="flex items-center space-x-3">
                 <img 
                   src="/slt-hub-icon.png" 
-                  alt="SLT work HuB"
+                  alt="Tenexa"
                   className="h-10 sm:h-12 w-auto object-contain"
                 />
                 <div className="hidden sm:block">
-                  <h1 className="text-lg sm:text-xl text-primary">
-                    <span className="font-black">SLT</span>
-                    <span className="font-normal"> work </span>
-                    <span className="font-black">HuB</span>
+                  <h1 className="text-lg sm:text-xl text-primary font-bold">
+                    Tenexa
                   </h1>
                   <p className="text-xs text-muted-foreground">Task Management System</p>
                 </div>

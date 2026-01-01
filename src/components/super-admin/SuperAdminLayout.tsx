@@ -131,7 +131,7 @@ export default function SuperAdminLayout({ children }: SuperAdminLayoutProps) {
                   <Crown className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="font-bold text-lg">SLT Work Hub</h2>
+                  <h2 className="font-bold text-lg">Tenexa</h2>
                   <p className="text-xs text-amber-600 font-medium">Super Admin Panel</p>
                 </div>
               </div>

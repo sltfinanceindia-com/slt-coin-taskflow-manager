@@ -223,7 +223,7 @@ export function MyCoins() {
                   <Coins className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No transactions yet</h3>
                   <p className="text-muted-foreground">
-                    Complete tasks to start earning SLT coins!
+                    Complete tasks to start earning coins!
                   </p>
                 </div>
               )}

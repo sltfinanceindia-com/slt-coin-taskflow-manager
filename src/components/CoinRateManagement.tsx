@@ -35,7 +35,7 @@ export function CoinRateManagement() {
     notes: "",
   });
   
-  const coinName = organization?.coin_name || 'SLT Coins';
+  const coinName = organization?.coin_name || 'Coins';
 
   // Fetch coin rates for this organization only
   const { data: rates, isLoading } = useQuery({

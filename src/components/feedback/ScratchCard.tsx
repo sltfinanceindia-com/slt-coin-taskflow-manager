@@ -26,7 +26,7 @@ export default function ScratchCard({ card }: ScratchCardProps) {
 
   const openWhatsApp = () => {
     const message = encodeURIComponent(
-      `Hi! I've completed the SLT Work Hub feedback survey.\n\n` +
+      `Hi! I've completed the Tenexa feedback survey.\n\n` +
       `🎫 Card Value: ₹${card.card_value}\n` +
       `📧 Email: ${card.user_email}\n` +
       `👤 Name: ${card.user_name}\n\n` +
@@ -278,7 +278,7 @@ export default function ScratchCard({ card }: ScratchCardProps) {
                   <ol className="text-left space-y-2 max-w-md mx-auto text-sm bg-muted/50 p-4 rounded-lg">
                     <li className="flex items-start gap-2">
                       <span className="text-lg">1️⃣</span>
-                      <span>Share SLT Work Hub with 2+ friends</span>
+                      <span>Share Tenexa with 2+ friends</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-lg">2️⃣</span>

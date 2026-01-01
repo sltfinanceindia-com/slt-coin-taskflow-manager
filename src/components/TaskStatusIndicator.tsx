@@ -15,7 +15,7 @@ export function TaskStatusIndicator({ status, coinValue }: TaskStatusIndicatorPr
       case 'completed':
         return {
           icon: Clock,
-          message: '⏳ Task submitted and awaiting admin approval for SLT Coins',
+          message: '⏳ Task submitted and awaiting admin approval for Coins',
           bgColor: 'bg-gradient-to-r from-yellow-50 to-amber-50',
           borderColor: 'border-yellow-200',
           textColor: 'text-yellow-800',
@@ -23,7 +23,7 @@ export function TaskStatusIndicator({ status, coinValue }: TaskStatusIndicatorPr
       case 'verified':
         return {
           icon: CheckCircle,
-          message: `✅ Task approved! ${coinValue} SLT Coins awarded`,
+          message: `✅ Task approved! ${coinValue} Coins awarded`,
           bgColor: 'bg-gradient-to-r from-green-50 to-emerald-50',
           borderColor: 'border-green-200',
           textColor: 'text-green-800',

@@ -488,7 +488,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         </div>
 
         <div className="space-y-2">
-          <Label>How long have you been using SLT Work Hub? *</Label>
+          <Label>How long have you been using Tenexa? *</Label>
           <RadioGroup value={formData.usageDuration} onValueChange={(v) => updateField('usageDuration', v)}>
             {[
               'Less than 1 week',
@@ -517,7 +517,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         <h3 className="text-xl font-semibold text-foreground">Overall Experience</h3>
 
         <div className="space-y-2">
-          <Label>Overall, how satisfied are you with SLT Work Hub? *</Label>
+          <Label>Overall, how satisfied are you with Tenexa? *</Label>
           <div className="flex gap-2">
             {[1, 2, 3, 4, 5].map(rating => (
               <button
@@ -539,7 +539,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         </div>
 
         <div className="space-y-2">
-          <Label>How likely are you to recommend SLT Work Hub to other companies? *</Label>
+          <Label>How likely are you to recommend Tenexa to other companies? *</Label>
           <p className="text-xs text-muted-foreground mb-2">0 = Not Likely, 10 = Extremely Likely</p>
           <div className="flex gap-1 flex-wrap">
             {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(score => (
@@ -561,7 +561,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         </div>
 
         <div className="space-y-2">
-          <Label>Compared to other tools you've used, SLT Work Hub is:</Label>
+          <Label>Compared to other tools you've used, Tenexa is:</Label>
           <RadioGroup value={formData.comparison} onValueChange={(v) => updateField('comparison', v)}>
             {[
               'Much better',
@@ -975,7 +975,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
             onChange={(v: number) => updateFeatureField('training', 'progress', v)}
           />
           <div className="mt-3 space-y-2">
-            <Label>Would you use SLT Work Hub as your primary training platform?</Label>
+            <Label>Would you use Tenexa as your primary training platform?</Label>
             <RadioGroup 
               value={formData.features?.training?.primaryPlatform} 
               onValueChange={(v) => updateFeatureField('training', 'primaryPlatform', v)}
@@ -1100,7 +1100,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         <h3 className="text-xl font-semibold text-foreground">Usability & Design</h3>
 
         <div className="space-y-2">
-          <Label>How easy is it to navigate SLT Work Hub? *</Label>
+          <Label>How easy is it to navigate Tenexa? *</Label>
           <div className="flex gap-2">
             {[1, 2, 3, 4, 5].map(rating => (
               <button
@@ -1300,7 +1300,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         <h3 className="text-xl font-semibold text-foreground">Feature Requests</h3>
 
         <div className="space-y-2">
-          <Label>What feature is SLT Work Hub missing that you need?</Label>
+          <Label>What feature is Tenexa missing that you need?</Label>
           <Textarea
             placeholder="Describe the missing feature(s)..."
             value={formData.missing_features || ''}
@@ -1371,7 +1371,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         <h3 className="text-xl font-semibold text-foreground">Comparison & Value</h3>
 
         <div className="space-y-2">
-          <Label>What tools were you using before SLT Work Hub? (Select all that apply)</Label>
+          <Label>What tools were you using before Tenexa? (Select all that apply)</Label>
           <div className="space-y-2">
             {tools.map(tool => (
               <div key={tool} className="flex items-center space-x-2">
@@ -1395,7 +1395,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         </div>
 
         <div className="space-y-2">
-          <Label>Has SLT Work Hub replaced any of those tools?</Label>
+          <Label>Has Tenexa replaced any of those tools?</Label>
           <RadioGroup value={formData.replaced_tools} onValueChange={(v) => updateField('replaced_tools', v)}>
             {[
               'Yes, completely replaced them',
@@ -1412,7 +1412,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         </div>
 
         <div className="space-y-2">
-          <Label>What does SLT Work Hub do BETTER than other tools? *</Label>
+          <Label>What does Tenexa do BETTER than other tools? *</Label>
           <Textarea
             placeholder="What are our strengths?"
             value={formData.does_better || ''}
@@ -1426,7 +1426,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         </div>
 
         <div className="space-y-2">
-          <Label>What do other tools do BETTER than SLT Work Hub? *</Label>
+          <Label>What do other tools do BETTER than Tenexa? *</Label>
           <Textarea
             placeholder="Where can we improve?"
             value={formData.others_do_better || ''}
@@ -1462,7 +1462,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         <h3 className="text-xl font-semibold text-foreground">Pricing & Business Decision</h3>
 
         <div className="space-y-2">
-          <Label>Would your organization pay for SLT Work Hub?</Label>
+          <Label>Would your organization pay for Tenexa?</Label>
           <RadioGroup value={formData.would_pay} onValueChange={(v) => updateField('would_pay', v)}>
             {[
               'Yes, definitely',
@@ -1552,7 +1552,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         <h3 className="text-xl font-semibold text-foreground">Final Thoughts</h3>
 
         <div className="space-y-2">
-          <Label>What do you LOVE most about SLT Work Hub? *</Label>
+          <Label>What do you LOVE most about Tenexa? *</Label>
           <Textarea
             placeholder="What's your favorite thing?"
             value={formData.love_most || ''}
@@ -1580,7 +1580,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         </div>
 
         <div className="space-y-2">
-          <Label>Complete this sentence: "I would use SLT Work Hub every day if it could..." *</Label>
+          <Label>Complete this sentence: "I would use Tenexa every day if it could..." *</Label>
           <Textarea
             placeholder="Finish the sentence..."
             value={formData.would_use_if || ''}
@@ -1619,7 +1619,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         <h3 className="text-xl font-semibold text-foreground">How Did You Hear About Us?</h3>
 
         <div className="space-y-2">
-          <Label>How did you hear about SLT Work Hub? *</Label>
+          <Label>How did you hear about Tenexa? *</Label>
           <RadioGroup value={formData.referral_source} onValueChange={(v) => updateField('referral_source', v)}>
             {[
               'Friend or colleague referral',
@@ -1728,7 +1728,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
                 I'm willing to participate in a 15-minute follow-up interview
               </Label>
               <p className="text-xs text-muted-foreground">
-                Help us improve SLT Work Hub and get early access to new features!
+                Help us improve Tenexa and get early access to new features!
               </p>
             </div>
           </div>
