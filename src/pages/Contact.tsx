@@ -250,7 +250,7 @@ const Contact = () => {
                     </div>
                     <div>
                       <p className="font-medium text-sm sm:text-base">Office</p>
-                      <p className="text-xs sm:text-sm text-muted-foreground">SLT Finance Building</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">Tenexa Building</p>
                       <p className="text-xs sm:text-sm text-muted-foreground">Mumbai, India</p>
                     </div>
                   </div>

@@ -172,7 +172,7 @@ export function AdminDashboard() {
             <Card>
               <CardContent className="p-6 flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold mb-1">Manage SLT Coin Rate</h3>
+                  <h3 className="font-semibold mb-1">Manage Coin Rate</h3>
                   <p className="text-sm text-muted-foreground">Update the current coin rate and view history</p>
                 </div>
                 <Button onClick={() => setActiveTab('coin-rate')} className="bg-emerald-600 hover:bg-emerald-700">

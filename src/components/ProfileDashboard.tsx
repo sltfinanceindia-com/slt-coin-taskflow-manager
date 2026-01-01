@@ -84,7 +84,7 @@ export function ProfileDashboard() {
             <div className="flex items-center space-x-4">
               <img 
                 src="/slt-hub-icon.png" 
-                alt="SLT work HuB"
+                alt="Tenexa"
                 className="h-8 sm:h-10 w-auto object-contain"
               />
               <div>

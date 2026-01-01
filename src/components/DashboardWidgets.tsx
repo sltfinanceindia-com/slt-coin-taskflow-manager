@@ -16,7 +16,7 @@ export function DashboardWidgets() {
   const { getWeeklyHours } = useTimeLogs();
   const { organization } = useOrganization();
 
-  const coinName = organization?.coin_name || 'SLT Coins';
+  const coinName = organization?.coin_name || 'Coins';
   
   const myTasks = tasks.filter(task => task.assigned_to === profile?.id);
   const pendingTasks = myTasks.filter(task => 

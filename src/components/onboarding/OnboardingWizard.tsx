@@ -141,7 +141,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
 
   const handleComplete = () => {
     toast({
-      title: 'Welcome to SLT Work Hub!',
+      title: 'Welcome to Tenexa!',
       description: 'Your organization is all set up. Start exploring!',
     });
     onComplete();

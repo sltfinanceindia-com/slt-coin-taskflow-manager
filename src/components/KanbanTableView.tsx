@@ -79,7 +79,7 @@ export function KanbanTableView({ tasks, onUpdateStatus, onVerifyTask }: KanbanT
       Priority: t.priority,
       'Assigned To': t.assigned_profile?.full_name || '',
       'Due Date': format(new Date(t.end_date), 'yyyy-MM-dd'),
-      'SLT Coins': t.slt_coin_value,
+      'Coins': t.slt_coin_value,
       Description: t.description || '',
     })), 'tasks');
     toast.success('Exported tasks');

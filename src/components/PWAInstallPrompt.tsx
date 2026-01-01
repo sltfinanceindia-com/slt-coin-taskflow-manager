@@ -61,7 +61,7 @@ export function PWAInstallPrompt() {
           </div>
           <div className="flex-1">
             <h3 className="font-semibold mb-1">
-              Install <span className="font-black">SLT</span> <span className="font-normal">work</span> <span className="font-black">HuB</span>
+              Install Tenexa
             </h3>
             <p className="text-sm text-muted-foreground mb-3">
               Install our app for a better experience with offline access and faster performance.

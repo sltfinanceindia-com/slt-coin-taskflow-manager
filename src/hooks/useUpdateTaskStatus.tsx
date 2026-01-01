@@ -40,7 +40,7 @@ export function useUpdateTaskStatus() {
       if (variables.status === 'completed') {
         toast({
           title: "Task Completed",
-          description: "Task marked as completed. Awaiting admin approval for SLT Coins.",
+          description: "Task marked as completed. Awaiting admin approval for Coins.",
         });
 
         // Send email notification to admin
@@ -75,7 +75,7 @@ export function useUpdateTaskStatus() {
       } else if (variables.status === 'verified') {
         toast({
           title: "Task Verified",
-          description: "Task has been approved and SLT Coins will be awarded.",
+          description: "Task has been approved and Coins will be awarded.",
         });
       }
     },

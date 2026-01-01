@@ -70,7 +70,7 @@ export function InternManagement() {
   const isAtLimit = !isUnlimited && userCount >= maxUsers;
   const isNearLimit = !isUnlimited && usagePercentage >= 80;
 
-  const coinName = organization?.coin_name || 'SLT Coins';
+  const coinName = organization?.coin_name || 'Coins';
 
   // Fetch all users from this organization with their roles from user_roles table
   const { data: interns = [], isLoading } = useQuery({

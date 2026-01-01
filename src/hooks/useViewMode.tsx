@@ -3,7 +3,7 @@ import { useUserRole } from './useUserRole';
 
 export type ViewMode = 'super_admin' | 'org_admin';
 
-const VIEW_MODE_KEY = 'slt_view_mode';
+const VIEW_MODE_KEY = 'tenexa_view_mode';
 
 export function useViewMode() {
   const { isSuperAdmin, isOrgAdmin, organizationId, isLoading: roleLoading } = useUserRole();

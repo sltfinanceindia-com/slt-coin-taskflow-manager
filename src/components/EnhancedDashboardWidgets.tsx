@@ -37,7 +37,7 @@ export function EnhancedDashboardWidgets() {
   const { channels, teamMembers, status: commStatus } = useCommunication();
   const { organization } = useOrganization();
   
-  const coinName = organization?.coin_name || 'SLT Coins';
+  const coinName = organization?.coin_name || 'Coins';
 
   // Calculate unread messages
   const unreadCount = channels.reduce((acc, channel) => acc + (channel.unread_count || 0), 0);

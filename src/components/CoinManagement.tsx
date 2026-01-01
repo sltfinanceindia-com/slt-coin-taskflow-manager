@@ -39,7 +39,7 @@ export function CoinManagement() {
   const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
   const [approveAction, setApproveAction] = useState<boolean>(true);
   
-  const coinName = organization?.coin_name || 'SLT Coins';
+  const coinName = organization?.coin_name || 'Coins';
 
   const {
     register,
@@ -221,7 +221,7 @@ export function CoinManagement() {
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                               <div className="flex items-center space-x-2">
                                 <Coins className="h-4 w-4 text-coin-gold" />
-                                <span className="font-semibold text-coin-gold text-sm">{task.slt_coin_value} SLT Coins</span>
+                                <span className="font-semibold text-coin-gold text-sm">{task.slt_coin_value} {coinName}</span>
                               </div>
 
                               <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2">
@@ -360,7 +360,7 @@ export function CoinManagement() {
             <DialogTitle>{approveAction ? "Approve Task" : "Reject Task"}</DialogTitle>
             <DialogDescription>
               {approveAction
-                ? "Approve this task and award SLT coins to the employee."
+                ? "Approve this task and award coins to the employee."
                 : "Reject this task and provide feedback for improvement."}
             </DialogDescription>
           </DialogHeader>
@@ -368,7 +368,7 @@ export function CoinManagement() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {approveAction && (
               <div>
-                <Label htmlFor="coinValue">SLT Coins to Award</Label>
+                <Label htmlFor="coinValue">Coins to Award</Label>
                 <Input
                   id="coinValue"
                   type="number"

@@ -109,7 +109,7 @@ export default function OrganizationSettings() {
     address: '',
     primary_color: '#10b981',
     secondary_color: '#059669',
-    coin_name: 'SLT Coins',
+    coin_name: 'Coins',
     timezone: 'Asia/Kolkata',
     date_format: 'DD/MM/YYYY',
     currency: 'INR',
@@ -154,7 +154,7 @@ export default function OrganizationSettings() {
         address: organization.address || '',
         primary_color: organization.primary_color || '#10b981',
         secondary_color: organization.secondary_color || '#059669',
-        coin_name: organization.coin_name || 'SLT Coins',
+        coin_name: organization.coin_name || 'Coins',
         timezone: (organization as any).timezone || 'Asia/Kolkata',
         date_format: (organization as any).date_format || 'DD/MM/YYYY',
         currency: (organization as any).currency || 'INR',
@@ -595,7 +595,7 @@ export default function OrganizationSettings() {
                   id="coin_name"
                   value={formData.coin_name}
                   onChange={(e) => setFormData({ ...formData, coin_name: e.target.value })}
-                  placeholder="SLT Coins"
+                  placeholder="Coins"
                   className="h-10 sm:h-11"
                 />
                 <p className="text-xs text-muted-foreground">
