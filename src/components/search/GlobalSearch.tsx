@@ -23,6 +23,11 @@ export function GlobalSearch() {
     return () => document.removeEventListener('keydown', down);
   }, []);
 
+  const navigateToTab = useCallback((tab: string) => {
+    setOpen(false);
+    window.dispatchEvent(new CustomEvent('navigate-to-tab', { detail: tab }));
+  }, []);
+
   const runCommand = useCallback((command: () => void) => {
     setOpen(false);
     command();
@@ -47,11 +52,11 @@ export function GlobalSearch() {
           <CommandEmpty>No results found.</CommandEmpty>
           
           <CommandGroup heading="Quick Actions">
-            <CommandItem onSelect={() => runCommand(() => navigate('/admin'))}>
+            <CommandItem onSelect={() => navigateToTab('tasks')}>
               <Plus className="mr-2 h-4 w-4" />
               Create New Task
             </CommandItem>
-            <CommandItem onSelect={() => runCommand(() => navigate('/admin?tab=projects'))}>
+            <CommandItem onSelect={() => navigateToTab('projects')}>
               <FolderKanban className="mr-2 h-4 w-4" />
               Create New Project
             </CommandItem>
@@ -60,23 +65,23 @@ export function GlobalSearch() {
           <CommandSeparator />
 
           <CommandGroup heading="Navigation">
-            <CommandItem onSelect={() => runCommand(() => navigate('/admin'))}>
+            <CommandItem onSelect={() => navigateToTab('overview')}>
               <LayoutDashboard className="mr-2 h-4 w-4" />
               Dashboard
             </CommandItem>
-            <CommandItem onSelect={() => runCommand(() => navigate('/admin?tab=tasks'))}>
+            <CommandItem onSelect={() => navigateToTab('tasks')}>
               <CheckSquare className="mr-2 h-4 w-4" />
               Tasks
             </CommandItem>
-            <CommandItem onSelect={() => runCommand(() => navigate('/admin?tab=projects'))}>
+            <CommandItem onSelect={() => navigateToTab('projects')}>
               <FolderKanban className="mr-2 h-4 w-4" />
               Projects
             </CommandItem>
-            <CommandItem onSelect={() => runCommand(() => navigate('/admin?tab=interns'))}>
+            <CommandItem onSelect={() => navigateToTab('interns')}>
               <Users className="mr-2 h-4 w-4" />
               Team Members
             </CommandItem>
-            <CommandItem onSelect={() => runCommand(() => navigate('/admin?tab=calendar'))}>
+            <CommandItem onSelect={() => navigateToTab('calendar')}>
               <Calendar className="mr-2 h-4 w-4" />
               Calendar
             </CommandItem>
@@ -93,7 +98,7 @@ export function GlobalSearch() {
                 {tasks.slice(0, 5).map((task) => (
                   <CommandItem
                     key={task.id}
-                    onSelect={() => runCommand(() => navigate('/admin?tab=tasks'))}
+                    onSelect={() => navigateToTab('tasks')}
                   >
                     <CheckSquare className="mr-2 h-4 w-4" />
                     <span className="truncate">{task.title}</span>
@@ -113,7 +118,7 @@ export function GlobalSearch() {
                 {projects.slice(0, 5).map((project) => (
                   <CommandItem
                     key={project.id}
-                    onSelect={() => runCommand(() => navigate('/admin?tab=projects'))}
+                    onSelect={() => navigateToTab('projects')}
                   >
                     <FolderKanban className="mr-2 h-4 w-4" />
                     <span className="truncate">{project.name}</span>

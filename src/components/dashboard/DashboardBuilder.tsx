@@ -76,12 +76,21 @@ export function DashboardBuilder() {
     enabled: !!profile?.id,
   });
 
-  // Initialize local state when widgets load
+  // Initialize local state when widgets load or create defaults
   useEffect(() => {
     if (widgets.length > 0) {
       setLocalWidgets(widgets);
+    } else if (!isLoading && profile?.id) {
+      // Create default widgets for new users
+      const defaultWidgets: DashboardWidget[] = [
+        { id: 'default-1', widget_type: 'stats_overview', title: 'Stats Overview', position: 0, size: 'large', is_visible: true, config: {} },
+        { id: 'default-2', widget_type: 'my_tasks', title: 'My Tasks', position: 1, size: 'medium', is_visible: true, config: {} },
+        { id: 'default-3', widget_type: 'goals_progress', title: 'Goals Progress', position: 2, size: 'medium', is_visible: true, config: {} },
+        { id: 'default-4', widget_type: 'coin_balance', title: 'Coin Balance', position: 3, size: 'small', is_visible: true, config: {} },
+      ];
+      setLocalWidgets(defaultWidgets);
     }
-  }, [widgets]);
+  }, [widgets, isLoading, profile?.id]);
 
   // Save widgets mutation
   const saveWidgets = useMutation({

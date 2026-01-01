@@ -145,7 +145,7 @@ export function TaskEditDialog({ task, onUpdateTask, isUpdating }: TaskEditDialo
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="coins">SLT Coin Value</Label>
+              <Label htmlFor="coins">Coin Value</Label>
               <Input
                 id="coins"
                 type="number"
