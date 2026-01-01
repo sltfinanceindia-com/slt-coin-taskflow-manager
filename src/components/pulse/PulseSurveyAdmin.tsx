@@ -62,9 +62,12 @@ export function PulseSurveyAdmin() {
   const { data: surveys = [], isLoading } = useQuery({
     queryKey: ['pulse-surveys-admin'],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
+      
       const { data: surveysData, error } = await supabase
         .from('pulse_surveys')
         .select('*')
+        .eq('organization_id', profile.organization_id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

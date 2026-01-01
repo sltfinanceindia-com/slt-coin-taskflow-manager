@@ -458,14 +458,14 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                     <div className="flex items-center justify-start">
                       <img 
                         src="/slt-hub-icon.png" 
-                        alt="SLT work HuB Logo" 
+                        alt="Tenexa Logo" 
                         className="h-16 w-auto"
                       />
                     </div>
                     
                     {/* Center: Company Name */}
                     <div className="flex flex-col items-center justify-center text-center">
-                      <h1 className="text-2xl font-bold text-green-700 tracking-wider whitespace-nowrap">SLT work HuB</h1>
+                      <h1 className="text-2xl font-bold text-green-700 tracking-wider whitespace-nowrap">Tenexa</h1>
                       <p className="text-sm text-gray-600 tracking-wide mt-1">Your Wealth Is Our Future</p>
                     </div>
                     
@@ -473,7 +473,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                     <div className="flex items-center justify-end">
                       <div className="bg-green-50 px-4 py-2 rounded-lg border-2 border-green-300">
                         <p className="text-xs text-green-700 font-semibold">Certificate No.</p>
-                        <p className="text-sm font-bold text-gray-800">SLT-{new Date().getFullYear()}-{String(Math.floor(Math.random() * 1000)).padStart(3, '0')}</p>
+                        <p className="text-sm font-bold text-gray-800">TNX-{new Date().getFullYear()}-{String(Math.floor(Math.random() * 1000)).padStart(3, '0')}</p>
                       </div>
                     </div>
                   </div>
@@ -551,12 +551,12 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                       </div>
                     </div>
 
-                    {/* Center: SLT Coins */}
+                    {/* Center: Coins */}
                     <div className="text-center">
                       <h5 className="text-sm font-bold text-gray-700 mb-4 uppercase">Achievement</h5>
                       <div className="bg-green-50 border-3 border-green-400 rounded-lg p-4 shadow-md">
                         <div className="text-center">
-                          <p className="text-xs text-green-700 mb-1 font-medium">SLT Coins Earned</p>
+                          <p className="text-xs text-green-700 mb-1 font-medium">Coins Earned</p>
                           <p className="text-2xl font-bold text-green-800">{certificateData.totalCoins || '0'}</p>
                           <p className="text-xs text-green-600 mt-1 font-medium">Excellence Points</p>
                         </div>
@@ -572,10 +572,10 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                           <div className="text-center mr-3">
                             <p className="text-sm font-bold text-gray-800 mb-1">{certificateData.authorityName || 'Authority Name'}</p>
                             <p className="text-xs text-gray-600">{certificateData.signatureAuthority || 'Position'}</p>
-                            <p className="text-xs text-gray-500">SLT Finance India</p>
+                            <p className="text-xs text-gray-500">Tenexa</p>
                           </div>
                           <div className="w-12 h-12 rounded-full bg-green-100 border-3 border-green-400 flex items-center justify-center shadow-md">
-                            <span className="text-sm font-bold text-green-700">SLT</span>
+                            <span className="text-sm font-bold text-green-700">TNX</span>
                           </div>
                         </div>
                       </div>
@@ -592,7 +592,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
 
                 {/* Bottom Border with Green Theme */}
                 <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-r from-gray-700 to-green-700 flex items-center justify-center z-20">
-                  <p className="text-white text-sm font-bold tracking-widest">CERTIFICATE OF ACHIEVEMENT • SLT FINANCE INDIA</p>
+                  <p className="text-white text-sm font-bold tracking-widest">CERTIFICATE OF ACHIEVEMENT • TENEXA</p>
                 </div>
               </div>
             </div>

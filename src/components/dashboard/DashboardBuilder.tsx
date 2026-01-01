@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { supabase } from '@/integrations/supabase/client';
@@ -77,11 +77,11 @@ export function DashboardBuilder() {
   });
 
   // Initialize local state when widgets load
-  useState(() => {
-    if (widgets.length > 0 && localWidgets.length === 0) {
+  useEffect(() => {
+    if (widgets.length > 0) {
       setLocalWidgets(widgets);
     }
-  });
+  }, [widgets]);
 
   // Save widgets mutation
   const saveWidgets = useMutation({

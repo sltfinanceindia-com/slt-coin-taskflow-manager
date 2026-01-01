@@ -47,10 +47,13 @@ export function PulseSurveyWidget() {
   const { data: survey, isLoading } = useQuery({
     queryKey: ['active-pulse-survey'],
     queryFn: async () => {
+      if (!profile?.organization_id) return null;
+      
       const { data: surveys, error } = await supabase
         .from('pulse_surveys')
         .select('id, title, description, questions')
         .eq('is_active', true)
+        .eq('organization_id', profile.organization_id)
         .order('created_at', { ascending: false })
         .limit(1);
 

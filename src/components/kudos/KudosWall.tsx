@@ -45,6 +45,8 @@ export function KudosWall() {
   const { data: kudos = [], isLoading } = useQuery({
     queryKey: ['kudos'],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
+      
       const { data, error } = await supabase
         .from('kudos')
         .select(`
@@ -55,6 +57,7 @@ export function KudosWall() {
           from_user:from_user_id(id, full_name, avatar_url),
           to_user:to_user_id(id, full_name, avatar_url)
         `)
+        .eq('organization_id', profile.organization_id)
         .order('created_at', { ascending: false })
         .limit(50);
 
@@ -65,19 +68,22 @@ export function KudosWall() {
 
   // Fetch users for selection
   const { data: users = [] } = useQuery({
-    queryKey: ['users-for-kudos'],
+    queryKey: ['users-for-kudos', profile?.organization_id],
     queryFn: async () => {
+      if (!profile?.organization_id) return [];
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, avatar_url')
         .eq('is_active', true)
+        .eq('organization_id', profile.organization_id)
         .neq('id', profile?.id)
         .order('full_name');
 
       if (error) throw error;
       return data;
     },
-    enabled: !!profile?.id,
+    enabled: !!profile?.id && !!profile?.organization_id,
   });
 
   // Create kudos mutation
