@@ -259,7 +259,7 @@ export default function CreateOrganization() {
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" onClick={() => navigate('/super-admin')}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
@@ -460,7 +460,7 @@ export default function CreateOrganization() {
 
           {/* Submit */}
           <div className="flex justify-end gap-4">
-            <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+            <Button type="button" variant="outline" onClick={() => navigate('/super-admin')}>
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>

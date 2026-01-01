@@ -4,7 +4,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AvatarUpload } from '@/components/AvatarUpload';
-import { Coins, User, Calendar, Mail, Briefcase, Settings, ArrowLeft } from 'lucide-react';
+import { Coins, User, Calendar, Mail, Briefcase, Settings, ChevronLeft } from 'lucide-react';
 import { UserAssessmentResults } from '@/components/assessment/UserAssessmentResults';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
@@ -38,11 +38,11 @@ export default function Profile() {
           <Button 
             variant="ghost" 
             size="sm"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/dashboard')}
             className="flex items-center gap-1 sm:gap-2 shrink-0 h-8 sm:h-9 px-2 sm:px-3"
           >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="hidden sm:inline text-sm">Back</span>
+            <ChevronLeft className="h-4 w-4" />
+            <span className="hidden sm:inline text-sm">Dashboard</span>
           </Button>
           <div className="flex-1 min-w-0">
             <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">

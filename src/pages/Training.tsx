@@ -5,7 +5,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { TrainingManagement } from '@/components/TrainingManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TrendingUp, BookOpen, ArrowLeft } from 'lucide-react';
+import { TrendingUp, BookOpen, ChevronLeft } from 'lucide-react';
 import { useTrainingSections } from '@/hooks/useTrainingSections';
 import { TrainingHeader } from '@/components/training/TrainingHeader';
 import { TrainingOverview } from '@/components/training/TrainingOverview';
@@ -38,11 +38,11 @@ export default function Training() {
             <Button 
               variant="ghost" 
               size="sm"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate('/dashboard')}
               className="flex items-center gap-2 self-start"
             >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Back to Dashboard</span>
+              <ChevronLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Dashboard</span>
               <span className="sm:hidden">Back</span>
             </Button>
             <h1 className="text-xl sm:text-2xl font-bold">Training Management</h1>
@@ -61,11 +61,11 @@ export default function Training() {
           <Button 
             variant="ghost" 
             size="sm"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/dashboard')}
             className="flex items-center gap-2"
           >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">Back to Dashboard</span>
+            <ChevronLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Dashboard</span>
             <span className="sm:hidden">Back</span>
           </Button>
         </div>

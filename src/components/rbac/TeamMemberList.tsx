@@ -52,11 +52,14 @@ export function TeamMemberList({ managerId, showAll = false, onSelectUser }: Tea
   const isLoading = showAll ? allUsersLoading : structureLoading;
   
   // Get the appropriate list based on props
+  // If showAll, show everyone in org
+  // If managerId is provided, filter to show only direct reports of that manager
+  // Otherwise show all team members the current user has access to
   const members = showAll
     ? allUsers || []
     : managerId
-    ? directReports
-    : allTeamMembers;
+    ? (allUsers || []).filter((user: any) => user.reporting_manager_id === managerId)
+    : directReports.length > 0 ? directReports : allTeamMembers;
 
   // Filter by search
   const filteredMembers = members.filter((member: any) =>
