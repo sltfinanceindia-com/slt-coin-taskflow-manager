@@ -120,7 +120,7 @@ export function InternDetailView({ internId, onClose }: InternDetailViewProps) {
                 <CardContent className="p-3 sm:p-4 text-center">
                   <Award className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500 mx-auto mb-1 sm:mb-2" />
                   <p className="text-lg sm:text-2xl font-bold">{analyticsData?.totalStats.totalCoins || 0}</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">SLT Coins</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Coins</p>
                 </CardContent>
               </Card>
             </div>

@@ -301,7 +301,7 @@ export default function CreateOrganization() {
                       onChange={(e) => setFormData(prev => ({ ...prev, subdomain: e.target.value.toLowerCase() }))}
                       placeholder="acme"
                     />
-                    <span className="text-muted-foreground whitespace-nowrap">.sltworkhub.com</span>
+                    <span className="text-muted-foreground whitespace-nowrap">.tenexa.com</span>
                   </div>
                   {errors.subdomain && <p className="text-sm text-destructive">{errors.subdomain}</p>}
                 </div>

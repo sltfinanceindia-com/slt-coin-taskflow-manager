@@ -151,7 +151,7 @@ export function BillingTab({ organizationId, organizationName }: BillingTabProps
       {/* Domain */}
       <Card><CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Globe className="h-4 w-4" />Subdomain</CardTitle></CardHeader>
         <CardContent><div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div><p className="font-mono text-sm">{organization?.subdomain}.sltworkhub.com</p><div className="flex items-center gap-2 mt-1">{domain?.is_published ? <Badge className="gap-1"><Check className="h-3 w-3" />Published</Badge> : <Badge variant="secondary" className="gap-1"><X className="h-3 w-3" />Not Published</Badge>}</div></div>
+          <div><p className="font-mono text-sm">{organization?.subdomain}.tenexa.com</p><div className="flex items-center gap-2 mt-1">{domain?.is_published ? <Badge className="gap-1"><Check className="h-3 w-3" />Published</Badge> : <Badge variant="secondary" className="gap-1"><X className="h-3 w-3" />Not Published</Badge>}</div></div>
           {!domain?.is_published && <Button size="sm" onClick={handlePublishDomain}>Publish Now</Button>}
         </div></CardContent>
       </Card>

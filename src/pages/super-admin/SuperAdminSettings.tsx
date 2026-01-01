@@ -54,8 +54,8 @@ export default function SuperAdminSettings() {
   const [hasChanges, setHasChanges] = useState(false);
   
   const [settings, setSettings] = useState<PlatformSettings>({
-    platformName: 'SLT Work Hub',
-    supportEmail: 'support@sltworkhub.com',
+    platformName: 'Tenexa',
+    supportEmail: 'support@tenexa.com',
     maxOrganizations: 100,
     enforceStrongPasswords: true,
     sessionTimeout: 60,

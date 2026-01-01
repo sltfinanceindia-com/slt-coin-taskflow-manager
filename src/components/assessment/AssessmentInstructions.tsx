@@ -21,7 +21,7 @@ export function AssessmentInstructions({ assessment, onStart, isStarting }: Asse
           <div className="flex items-center justify-center mb-2 sm:mb-4">
             <img 
               src="/lovable-uploads/56d5dd03-2808-4b88-9f9c-cc8932c46fe8.png" 
-              alt="SLT Finance India"
+              alt="Tenexa"
               className="h-12 sm:h-16 w-auto object-contain"
             />
           </div>

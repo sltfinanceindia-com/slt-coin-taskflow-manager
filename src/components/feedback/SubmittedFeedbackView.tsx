@@ -36,7 +36,7 @@ export default function SubmittedFeedbackView({ feedbackData }: SubmittedFeedbac
       });
       
       const link = document.createElement('a');
-      link.download = `slt-feedback-${feedbackData.user_name.replace(/\s+/g, '-')}.png`;
+      link.download = `tenexa-feedback-${feedbackData.user_name.replace(/\s+/g, '-')}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
       
@@ -51,7 +51,7 @@ export default function SubmittedFeedbackView({ feedbackData }: SubmittedFeedbac
 
   const openWhatsApp = () => {
     const message = encodeURIComponent(
-      `Hi! I've completed the SLT Work Hub feedback survey.\n\n` +
+      `Hi! I've completed the Tenexa feedback survey.\n\n` +
       `📧 Email: ${feedbackData.user_email}\n` +
       `👤 Name: ${feedbackData.user_name}\n` +
       `📅 Submitted: ${format(new Date(feedbackData.submission_date), 'MMM d, yyyy')}\n\n` +
@@ -61,13 +61,13 @@ export default function SubmittedFeedbackView({ feedbackData }: SubmittedFeedbac
   };
 
   const handleShare = async () => {
-    const shareText = `🚀 I just submitted my feedback for SLT Work Hub - an amazing platform for task management, team communication, and workforce management!\n\nCheck it out: ${window.location.origin}`;
+    const shareText = `🚀 I just submitted my feedback for Tenexa - an amazing platform for task management, team communication, and workforce management!\n\nCheck it out: ${window.location.origin}`;
 
     try {
       // Try native share API first (works on mobile)
       if (navigator.share && navigator.canShare?.({ text: shareText })) {
         await navigator.share({
-          title: 'SLT Work Hub - Amazing Work Management Platform',
+          title: 'Tenexa - Amazing Work Management Platform',
           text: shareText,
         });
         toast.success('Thanks for sharing!');

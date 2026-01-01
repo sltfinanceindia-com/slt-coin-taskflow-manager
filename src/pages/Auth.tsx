@@ -244,16 +244,14 @@ export default function Auth() {
             <Link to="/" className="inline-flex items-center justify-center mb-3 sm:mb-4">
               <img 
                 src="/slt-hub-icon.png" 
-                alt="SLT work HuB"
+                alt="Tenexa"
                 className="h-10 sm:h-12 w-auto object-contain rounded-xl"
               />
             </Link>
             <h1 className="text-base sm:text-lg font-semibold text-primary mb-1 sm:mb-2">
-              <span className="font-black">SLT</span>
-              <span className="font-normal"> work </span>
-              <span className="font-black">HuB</span>
+              <span className="font-black">Tenexa</span>
             </h1>
-            <p className="text-muted-foreground text-xs sm:text-sm">Coin-Based Workfront System</p>
+            <p className="text-muted-foreground text-xs sm:text-sm">Complete Workplace Management Platform</p>
           </div>
 
         <Card className="shadow-lg">
@@ -306,7 +304,7 @@ export default function Auth() {
                       id="signin-email"
                       name="email"
                       type="email"
-                      placeholder="your.email@sltfinanceindia.com"
+                      placeholder="your.email@company.com"
                       required
                       className="min-h-[44px]"
                       autoComplete="email"
@@ -391,7 +389,7 @@ export default function Auth() {
                         type="email"
                         value={otpEmail}
                         onChange={(e) => setOtpEmail(e.target.value)}
-                        placeholder="your.email@sltfinanceindia.com"
+                        placeholder="your.email@company.com"
                         required
                         className="min-h-[44px]"
                         autoComplete="email"

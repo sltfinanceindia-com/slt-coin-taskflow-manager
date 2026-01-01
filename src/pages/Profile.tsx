@@ -87,7 +87,7 @@ export default function Profile() {
                 <div className="text-center p-3 sm:p-4 bg-background/50 rounded-lg">
                   <div className="flex items-center justify-center space-x-2 mb-1 sm:mb-2">
                     <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-coin-gold" />
-                    <span className="text-xs sm:text-sm text-muted-foreground">Total SLT Coins</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">Total Coins</span>
                   </div>
                   <div className="text-2xl sm:text-3xl font-bold text-coin-gold">
                     {profile?.total_coins || 0}

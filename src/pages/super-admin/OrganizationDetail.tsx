@@ -206,7 +206,7 @@ export default function OrganizationDetail() {
                 <h1 className="text-lg sm:text-2xl font-bold truncate">{organization?.name || 'Loading...'}</h1>
                 {organization && getStatusBadge(organization.status)}
               </div>
-              <p className="text-xs sm:text-sm text-muted-foreground truncate">{organization?.subdomain}.sltworkhub.com</p>
+              <p className="text-xs sm:text-sm text-muted-foreground truncate">{organization?.subdomain}.tenexa.com</p>
             </div>
           </div>
           {organization && (
