@@ -206,7 +206,7 @@ const internNavGroups = [
       { title: "Training", url: "training", icon: BookOpen },
       { title: "Communication", url: "communication", icon: MessageSquare },
       { title: "Kudos Wall", url: "kudos", icon: HeartPulse },
-      { title: "My Goals", url: "goals", icon: Target },
+      { title: "My Goals", url: "my-goals", icon: Target },
       { title: "My Coins", url: "my-coins", icon: Coins },
       { title: "Analytics", url: "analytics", icon: BarChart3 },
       { title: "Feedback", url: "feedback", icon: MessageCircle },
