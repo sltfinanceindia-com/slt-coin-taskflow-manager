@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
+import type { Json } from '@/integrations/supabase/types';
 
 export type CustomFieldType = 'text' | 'number' | 'date' | 'select' | 'multiselect' | 'checkbox' | 'url' | 'textarea';
 
@@ -11,7 +12,7 @@ export interface CustomFieldDefinition {
   entity_type: string;
   name: string;
   field_type: CustomFieldType;
-  options?: unknown;
+  options?: Json;
   is_required: boolean | null;
   is_active: boolean | null;
   position: number | null;
@@ -23,7 +24,7 @@ export interface CustomFieldValue {
   field_id: string;
   entity_id: string;
   entity_type: string;
-  value: unknown;
+  value: Json;
   created_at: string | null;
 }
 
@@ -46,7 +47,10 @@ export function useCustomFields(entityType: string = 'task', entityId?: string) 
         .order('position', { ascending: true });
 
       if (error) throw error;
-      return (data || []) as unknown as CustomFieldDefinition[];
+      return (data || []) as CustomFieldDefinition[];
+    },
+    enabled: !!profile?.organization_id,
+  });
 
   // Fetch field values for specific entity
   const valuesQuery = useQuery({
@@ -61,7 +65,7 @@ export function useCustomFields(entityType: string = 'task', entityId?: string) 
         .eq('entity_type', entityType);
 
       if (error) throw error;
-      return data as CustomFieldValue[];
+      return (data || []) as CustomFieldValue[];
     },
     enabled: !!entityId,
   });
@@ -72,7 +76,13 @@ export function useCustomFields(entityType: string = 'task', entityId?: string) 
       const { data, error } = await supabase
         .from('custom_field_definitions')
         .insert({
-          ...field,
+          name: field.name,
+          entity_type: field.entity_type,
+          field_type: field.field_type,
+          options: field.options ?? null,
+          is_required: field.is_required,
+          is_active: field.is_active,
+          position: field.position,
           organization_id: profile?.organization_id,
         })
         .select()
@@ -93,9 +103,17 @@ export function useCustomFields(entityType: string = 'task', entityId?: string) 
   // Update field definition
   const updateDefinitionMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<CustomFieldDefinition> }) => {
+      const updateData: Record<string, unknown> = {};
+      if (updates.name !== undefined) updateData.name = updates.name;
+      if (updates.field_type !== undefined) updateData.field_type = updates.field_type;
+      if (updates.options !== undefined) updateData.options = updates.options;
+      if (updates.is_required !== undefined) updateData.is_required = updates.is_required;
+      if (updates.is_active !== undefined) updateData.is_active = updates.is_active;
+      if (updates.position !== undefined) updateData.position = updates.position;
+
       const { data, error } = await supabase
         .from('custom_field_definitions')
-        .update(updates)
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
@@ -133,7 +151,7 @@ export function useCustomFields(entityType: string = 'task', entityId?: string) 
 
   // Save field value
   const saveValueMutation = useMutation({
-    mutationFn: async ({ fieldId, entityId, value }: { fieldId: string; entityId: string; value: unknown }) => {
+    mutationFn: async ({ fieldId, entityId, value }: { fieldId: string; entityId: string; value: Json }) => {
       // Check if value exists
       const { data: existing } = await supabase
         .from('custom_field_values')
@@ -169,7 +187,7 @@ export function useCustomFields(entityType: string = 'task', entityId?: string) 
 
   // Bulk save values
   const saveAllValuesMutation = useMutation({
-    mutationFn: async ({ entityId, values }: { entityId: string; values: Record<string, unknown> }) => {
+    mutationFn: async ({ entityId, values }: { entityId: string; values: Record<string, Json> }) => {
       for (const [fieldId, value] of Object.entries(values)) {
         await saveValueMutation.mutateAsync({ fieldId, entityId, value });
       }
@@ -177,7 +195,7 @@ export function useCustomFields(entityType: string = 'task', entityId?: string) 
   });
 
   // Get value for a specific field
-  const getFieldValue = (fieldId: string): unknown => {
+  const getFieldValue = (fieldId: string): Json | undefined => {
     const fieldValue = valuesQuery.data?.find(v => v.field_id === fieldId);
     return fieldValue?.value;
   };
