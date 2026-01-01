@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,7 +22,6 @@ import {
   Users, 
   CreditCard, 
   Save,
-  ArrowLeft,
   Sparkles,
   Coins,
   Settings,
@@ -33,6 +32,11 @@ import {
   Check
 } from 'lucide-react';
 import { AdminSessionViewer } from '@/components/AdminSessionViewer';
+import { AppSidebar } from '@/components/AppSidebar';
+import { AppHeader } from '@/components/AppHeader';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { BottomNavigation } from '@/components/BottomNavigation';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Theme presets
 const themePresets = [
@@ -96,10 +100,10 @@ interface SecuritySettings {
 }
 
 export default function OrganizationSettings() {
-  const navigate = useNavigate();
   const { organization, userCount, refreshOrganization, isLoading: orgLoading } = useOrganization();
   const { loading: authLoading } = useAuth();
   const { isAdmin, isSuperAdmin, isLoading: roleLoading } = useUserRole();
+  const isMobile = useIsMobile();
   
   const [formData, setFormData] = useState({
     name: '',
@@ -270,17 +274,20 @@ export default function OrganizationSettings() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3 sm:gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')} className="shrink-0">
-          <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-        </Button>
-        <div className="min-w-0">
-          <h1 className="text-lg sm:text-2xl font-bold text-foreground truncate">Organization Settings</h1>
-          <p className="text-muted-foreground text-xs sm:text-sm truncate">Manage your organization's profile and preferences</p>
-        </div>
-      </div>
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full bg-gradient-background">
+        <AppSidebar activeTab="settings" onTabChange={() => {}} />
+        <div className="flex-1 flex flex-col min-w-0">
+          <AppHeader />
+          <main id="main-content" className="flex-1 overflow-auto pb-20 md:pb-0">
+            <div className="max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-6">
+              {/* Header */}
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="min-w-0">
+                  <h1 className="text-lg sm:text-2xl font-bold text-foreground truncate">Organization Settings</h1>
+                  <p className="text-muted-foreground text-xs sm:text-sm truncate">Manage your organization's profile and preferences</p>
+                </div>
+              </div>
 
       <Tabs defaultValue="general" className="w-full">
         <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 h-auto">
@@ -866,6 +873,11 @@ export default function OrganizationSettings() {
           )}
         </Button>
       </div>
-    </div>
+            </div>
+          </main>
+          {isMobile && <BottomNavigation variant="private" activeTab="settings" onTabChange={() => {}} />}
+        </div>
+      </div>
+    </SidebarProvider>
   );
 }

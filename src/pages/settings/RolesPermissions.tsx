@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   Shield,
   Plus,
@@ -9,12 +8,16 @@ import {
   UserCheck,
   User,
   GraduationCap,
-  ChevronLeft,
   Search,
   MoreVertical,
   Copy,
   Eye,
 } from 'lucide-react';
+import { AppSidebar } from '@/components/AppSidebar';
+import { AppHeader } from '@/components/AppHeader';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { BottomNavigation } from '@/components/BottomNavigation';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -85,9 +88,9 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 export default function RolesPermissions() {
-  const navigate = useNavigate();
   const { profile } = useAuth();
   const { roles, isLoading, createRole, updateRole, deleteRole, updatePermission } = useCustomRoles();
+  const isMobile = useIsMobile();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
@@ -190,8 +193,7 @@ export default function RolesPermissions() {
             setSelectedRoleId(null);
           }}
         >
-          <ChevronLeft className="h-4 w-4 mr-2" />
-          Back to Roles
+          ← Back to Roles
         </Button>
         <RoleEditor
           initialData={
@@ -228,25 +230,25 @@ export default function RolesPermissions() {
   }
 
   return (
-    <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-6xl">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Dashboard
-            </Button>
-          </div>
-          <h1 className="text-xl sm:text-2xl font-bold">Roles & Permissions</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage user roles and configure what each role can access
-          </p>
-        </div>
-        <Button onClick={() => setIsCreating(true)} size="sm" className="w-full sm:w-auto">
-          <Plus className="h-4 w-4 mr-2" />
-          Create Role
-        </Button>
-      </div>
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full bg-gradient-background">
+        <AppSidebar activeTab="roles" onTabChange={() => {}} />
+        <div className="flex-1 flex flex-col min-w-0">
+          <AppHeader />
+          <main id="main-content" className="flex-1 overflow-auto pb-20 md:pb-0">
+            <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-6xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-bold">Roles & Permissions</h1>
+                  <p className="text-sm text-muted-foreground">
+                    Manage user roles and configure what each role can access
+                  </p>
+                </div>
+                <Button onClick={() => setIsCreating(true)} size="sm" className="w-full sm:w-auto">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Role
+                </Button>
+              </div>
 
       <Tabs defaultValue="team-members" className="space-y-6">
         <TabsList className="flex-wrap h-auto gap-1">
@@ -585,6 +587,11 @@ export default function RolesPermissions() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+            </div>
+          </main>
+          {isMobile && <BottomNavigation variant="private" activeTab="roles" onTabChange={() => {}} />}
+        </div>
+      </div>
+    </SidebarProvider>
   );
 }
