@@ -157,6 +157,8 @@ const adminNavGroups = [
     items: [
       { title: "Training", url: "training", icon: BookOpen },
       { title: "Communication", url: "communication", icon: MessageSquare },
+      { title: "Kudos Wall", url: "kudos", icon: HeartPulse },
+      { title: "Pulse Surveys", url: "pulse-surveys", icon: MessageCircle },
       { title: "App Feedback", url: "app-feedback", icon: MessageCircle },
     ]
   },
@@ -203,6 +205,8 @@ const internNavGroups = [
       { title: "Approvals", url: "approvals", icon: GitBranch },
       { title: "Training", url: "training", icon: BookOpen },
       { title: "Communication", url: "communication", icon: MessageSquare },
+      { title: "Kudos Wall", url: "kudos", icon: HeartPulse },
+      { title: "My Goals", url: "goals", icon: Target },
       { title: "My Coins", url: "my-coins", icon: Coins },
       { title: "Analytics", url: "analytics", icon: BarChart3 },
       { title: "Feedback", url: "feedback", icon: MessageCircle },
