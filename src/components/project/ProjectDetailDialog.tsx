@@ -11,10 +11,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Project } from '@/hooks/useProjects';
-import { Task } from '@/types/task';
+import { Task, CreateTaskData } from '@/types/task';
 import { useTasks } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
+import { CreateTaskDialog } from '@/components/CreateTaskDialog';
 import { format } from 'date-fns';
 import { Edit2, Save, X, Users, CheckCircle, Clock, AlertTriangle, FileText, Hash } from 'lucide-react';
 
@@ -35,7 +36,7 @@ export function ProjectDetailDialog({
 }: ProjectDetailDialogProps) {
   const { profile } = useAuth();
   const { isAdmin } = useUserRole();
-  const { tasks } = useTasks();
+  const { tasks, createTask, isCreating } = useTasks();
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     name: project.name,
@@ -287,7 +288,6 @@ export function ProjectDetailDialog({
                   <CreateTaskDialog 
                     onCreateTask={handleCreateTask} 
                     isCreating={isCreating}
-                    defaultProjectId={project.id}
                   />
                 </div>
               )}
@@ -304,7 +304,6 @@ export function ProjectDetailDialog({
                     <CreateTaskDialog 
                       onCreateTask={handleCreateTask} 
                       isCreating={isCreating}
-                      defaultProjectId={project.id}
                     />
                   )}
                 </div>
