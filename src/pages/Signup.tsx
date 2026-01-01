@@ -116,7 +116,7 @@ export default function Signup() {
 
       toast({
         title: 'Organization created!',
-        description: 'Welcome to SLT Work Hub. You can now sign in.',
+        description: 'Welcome to Tenexa. You can now sign in.',
       });
 
       navigate('/auth');
@@ -168,13 +168,11 @@ export default function Signup() {
             <Link to="/" className="inline-flex items-center gap-2 mb-4 sm:mb-6">
               <img 
                 src="/slt-hub-icon.png" 
-                alt="SLT work HuB"
+                alt="Tenexa"
                 className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg object-contain"
               />
               <span className="text-base sm:text-lg font-bold">
-                <span className="font-black">SLT</span>
-                <span className="font-normal text-muted-foreground"> work </span>
-                <span className="font-black">HuB</span>
+                <span className="font-black">Tenexa</span>
               </span>
             </Link>
             <h1 className="text-xl sm:text-2xl font-bold text-foreground">Create Your Organization</h1>

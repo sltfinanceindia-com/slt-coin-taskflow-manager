@@ -199,7 +199,7 @@ function AppContent() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="system" storageKey="slt-ui-theme">
+    <ThemeProvider defaultTheme="system" storageKey="tenexa-ui-theme">
       <AuthProvider>
         <OrganizationProvider>
           <AppContent />

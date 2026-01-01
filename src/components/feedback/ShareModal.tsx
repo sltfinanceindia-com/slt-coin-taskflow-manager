@@ -10,7 +10,7 @@ interface ShareModalProps {
 }
 
 export default function ShareModal({ isOpen, onClose, prizeAmount }: ShareModalProps) {
-  const shareMessage = `Hey! Check out SLT Work Hub - the best all-in-one workspace for teams! It has task management, training, attendance, rewards & more. Try it free! 🚀\n\n👉 https://sltworkhub.com`;
+  const shareMessage = `Hey! Check out Tenexa - the best all-in-one workspace for teams! It has task management, training, attendance, rewards & more. Try it free! 🚀\n\n👉 https://tenexa.lovable.app`;
 
   const shareOnWhatsApp = () => {
     const url = `https://wa.me/?text=${encodeURIComponent(shareMessage)}`;
@@ -18,12 +18,12 @@ export default function ShareModal({ isOpen, onClose, prizeAmount }: ShareModalP
   };
 
   const shareOnFacebook = () => {
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://sltworkhub.com')}&quote=${encodeURIComponent(shareMessage)}`;
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://tenexa.lovable.app')}&quote=${encodeURIComponent(shareMessage)}`;
     window.open(url, '_blank');
   };
 
   const shareOnLinkedIn = () => {
-    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://sltworkhub.com')}`;
+    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://tenexa.lovable.app')}`;
     window.open(url, '_blank');
   };
 
@@ -46,7 +46,7 @@ export default function ShareModal({ isOpen, onClose, prizeAmount }: ShareModalP
 
         <div className="space-y-4">
           <p className="text-muted-foreground">
-            Choose how you want to share SLT Work Hub:
+            Choose how you want to share Tenexa:
           </p>
 
           <div className="grid grid-cols-2 gap-3">
@@ -103,7 +103,7 @@ export default function ShareModal({ isOpen, onClose, prizeAmount }: ShareModalP
 
           <Button
             onClick={() => {
-              window.open(`https://wa.me/919948397386?text=${encodeURIComponent(`Hi! I've completed sharing for my SLT Work Hub reward (₹${prizeAmount}). Sending screenshots now.`)}`, '_blank');
+              window.open(`https://wa.me/919948397386?text=${encodeURIComponent(`Hi! I've completed sharing for my Tenexa reward (₹${prizeAmount}). Sending screenshots now.`)}`, '_blank');
             }}
             className="w-full bg-green-600 hover:bg-green-700"
           >

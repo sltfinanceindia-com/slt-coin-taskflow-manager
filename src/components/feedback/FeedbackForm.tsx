@@ -105,7 +105,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
           }
           
           setSubmitted(true);
-          localStorage.removeItem('slt_feedback_draft');
+          localStorage.removeItem('tenexa_feedback_draft');
           toast.info('Welcome back! View your submitted feedback below.');
         }
       } catch (error) {
@@ -129,7 +129,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
   useEffect(() => {
     if (submitted || checkingExisting) return;
     
-    const saved = localStorage.getItem('slt_feedback_draft');
+    const saved = localStorage.getItem('tenexa_feedback_draft');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -150,7 +150,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
     
     if (Object.keys(formData).length > 0) {
       // Save both form data and current section
-      localStorage.setItem('slt_feedback_draft', JSON.stringify({
+      localStorage.setItem('tenexa_feedback_draft', JSON.stringify({
         formData,
         currentSection
       }));
@@ -285,7 +285,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
 
       setScratchCard(fullCard);
       setSubmitted(true);
-      localStorage.removeItem('slt_feedback_draft');
+      localStorage.removeItem('tenexa_feedback_draft');
 
       toast.success('Feedback submitted successfully! 🎉');
     } catch (error: any) {
@@ -357,7 +357,7 @@ export default function FeedbackForm({ userEmail, userName }: FeedbackFormProps)
         <Card className="mt-4 sm:mt-8 shadow-xl">
           <CardHeader className="p-4 sm:p-6">
             <CardTitle className="text-lg sm:text-2xl font-bold text-center text-indigo-700 dark:text-indigo-400">
-              SLT Work Hub Feedback Survey
+              Tenexa Feedback Survey
             </CardTitle>
             <CardDescription className="text-center text-xs sm:text-sm">
               Section {currentSection} of {TOTAL_SECTIONS} • Estimated time: ~15 minutes
