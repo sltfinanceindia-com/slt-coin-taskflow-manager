@@ -5,699 +5,138 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useOrganization } from '@/hooks/useOrganization';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { 
   LayoutDashboard, CheckSquare, Clock, Coins, Users, BarChart3, FolderOpen, BookOpen,
   Settings, MessageSquare, Shield, CalendarDays, MapPin, Home, Palmtree, Target,
   MessageCircle, UserCheck, AlertTriangle, HeartPulse, Zap, Briefcase, TrendingUp,
-  Gauge, Inbox, Wallet, Receipt, FileText, Package, PieChart, ClipboardCheck, Calendar,
-  Banknote, GanttChart, Play, ChevronRight, CheckCircle2, Circle, ArrowRight, Lightbulb,
-  Star, Rocket, GraduationCap, HelpCircle, Video
+  Gauge, Inbox, Wallet, Receipt, FileText, Package, ClipboardCheck, Calendar,
+  Banknote, GanttChart, Play, ChevronRight, CheckCircle2, ArrowRight, Lightbulb,
+  Star, Rocket, GraduationCap, MousePointer, Eye, Edit, Trash2, Plus, Search,
+  Filter, Download, Upload, Bell, User, LogIn, LogOut, RefreshCw, Send,
+  ThumbsUp, Award, Gift, DollarSign, PieChart, Activity, Info, HelpCircle,
+  Layers, Grid3X3, List, MoreHorizontal, ExternalLink, Copy, Check, X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
-interface TutorialStep {
-  id: string;
+// Step component for tutorial steps
+const TutorialStep = ({ 
+  step, 
+  title, 
+  description, 
+  children 
+}: { 
+  step: number; 
+  title: string; 
+  description?: string;
+  children: React.ReactNode;
+}) => (
+  <div className="flex gap-4 py-4">
+    <div className="flex-shrink-0">
+      <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
+        {step}
+      </div>
+    </div>
+    <div className="flex-1 space-y-2">
+      <h4 className="font-semibold text-base">{title}</h4>
+      {description && <p className="text-sm text-muted-foreground">{description}</p>}
+      <div className="mt-3">{children}</div>
+    </div>
+  </div>
+);
+
+// Feature highlight component
+const FeatureHighlight = ({
+  icon: Icon,
+  title,
+  description,
+  path,
+  color = "bg-primary"
+}: {
+  icon: React.ElementType;
   title: string;
   description: string;
-  icon: React.ElementType;
-  path: string;
-  roles: string[];
-  duration: string;
-  tips?: string[];
-}
+  path?: string;
+  color?: string;
+}) => {
+  const navigate = useNavigate();
+  return (
+    <div 
+      className={cn(
+        "p-4 rounded-lg border bg-card hover:shadow-md transition-all cursor-pointer",
+        path && "hover:border-primary/50"
+      )}
+      onClick={() => path && navigate(path)}
+    >
+      <div className="flex items-start gap-3">
+        <div className={cn("p-2 rounded-lg", color)}>
+          <Icon className="h-5 w-5 text-white" />
+        </div>
+        <div className="flex-1">
+          <h4 className="font-medium text-sm">{title}</h4>
+          <p className="text-xs text-muted-foreground mt-1">{description}</p>
+        </div>
+        {path && <ArrowRight className="h-4 w-4 text-muted-foreground" />}
+      </div>
+    </div>
+  );
+};
 
-interface TutorialModule {
-  id: string;
-  title: string;
-  description: string;
+// Action demo component
+const ActionDemo = ({
+  icon: Icon,
+  action,
+  result,
+  iconColor = "text-primary"
+}: {
   icon: React.ElementType;
-  color: string;
-  steps: TutorialStep[];
-  roles: string[];
-}
+  action: string;
+  result: string;
+  iconColor?: string;
+}) => (
+  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 text-sm">
+    <Icon className={cn("h-5 w-5 shrink-0", iconColor)} />
+    <div className="flex-1">
+      <span className="font-medium">{action}</span>
+      <span className="text-muted-foreground"> → {result}</span>
+    </div>
+  </div>
+);
 
-const tutorialModules: TutorialModule[] = [
-  {
-    id: 'getting-started',
-    title: 'Getting Started',
-    description: 'Essential first steps to begin using the platform',
-    icon: Rocket,
-    color: 'bg-blue-500',
-    roles: ['all'],
-    steps: [
-      {
-        id: 'dashboard-overview',
-        title: 'Dashboard Overview',
-        description: 'Learn how to navigate the main dashboard and understand key metrics at a glance.',
-        icon: LayoutDashboard,
-        path: '/dashboard?tab=overview',
-        roles: ['all'],
-        duration: '3 min',
-        tips: [
-          'Use the sidebar to navigate between different sections',
-          'Click on any widget to see detailed information',
-          'Toggle between views using the tabs at the top'
-        ]
-      },
-      {
-        id: 'profile-setup',
-        title: 'Complete Your Profile',
-        description: 'Set up your profile with photo, contact details, and preferences.',
-        icon: Settings,
-        path: '/profile',
-        roles: ['all'],
-        duration: '5 min',
-        tips: [
-          'Upload a professional photo for better team recognition',
-          'Add your skills and expertise for project matching',
-          'Set your notification preferences'
-        ]
-      },
-      {
-        id: 'notifications',
-        title: 'Understanding Notifications',
-        description: 'Learn about the notification system and how to manage alerts.',
-        icon: MessageCircle,
-        path: '/dashboard?tab=overview',
-        roles: ['all'],
-        duration: '2 min',
-        tips: [
-          'Click the bell icon to view all notifications',
-          'Mark important notifications as read',
-          'Configure email notifications in settings'
-        ]
-      }
-    ]
-  },
-  {
-    id: 'task-management',
-    title: 'Task Management',
-    description: 'Master the task system for efficient work tracking',
-    icon: CheckSquare,
-    color: 'bg-green-500',
-    roles: ['all'],
-    steps: [
-      {
-        id: 'kanban-board',
-        title: 'Kanban Board',
-        description: 'Visualize and manage tasks using the drag-and-drop Kanban board.',
-        icon: CheckSquare,
-        path: '/dashboard?tab=tasks',
-        roles: ['all'],
-        duration: '5 min',
-        tips: [
-          'Drag tasks between columns to update status',
-          'Click on a task card to view full details',
-          'Use filters to find specific tasks quickly'
-        ]
-      },
-      {
-        id: 'create-tasks',
-        title: 'Creating Tasks',
-        description: 'Learn how to create, assign, and prioritize tasks effectively.',
-        icon: CheckSquare,
-        path: '/dashboard?tab=tasks',
-        roles: ['admin', 'manager', 'team_lead'],
-        duration: '4 min',
-        tips: [
-          'Set clear titles and descriptions',
-          'Assign due dates and priorities',
-          'Add coin rewards to motivate team members'
-        ]
-      },
-      {
-        id: 'time-logging',
-        title: 'Time Logging',
-        description: 'Track time spent on tasks for accurate project tracking.',
-        icon: Clock,
-        path: '/dashboard?tab=time',
-        roles: ['all'],
-        duration: '3 min',
-        tips: [
-          'Log time immediately after completing work',
-          'Add notes to explain what was accomplished',
-          'Review weekly time summaries'
-        ]
-      }
-    ]
-  },
-  {
-    id: 'projects',
-    title: 'Project Management',
-    description: 'Organize and track projects from start to finish',
-    icon: FolderOpen,
-    color: 'bg-purple-500',
-    roles: ['admin', 'manager', 'team_lead'],
-    steps: [
-      {
-        id: 'project-overview',
-        title: 'Project Dashboard',
-        description: 'View all projects, their status, and key metrics.',
-        icon: FolderOpen,
-        path: '/dashboard?tab=projects',
-        roles: ['admin', 'manager', 'team_lead'],
-        duration: '4 min',
-        tips: [
-          'Filter projects by status, team, or date',
-          'Click on a project to see detailed progress',
-          'Export project reports for stakeholders'
-        ]
-      },
-      {
-        id: 'gantt-chart',
-        title: 'Gantt Chart',
-        description: 'Visualize project timelines and dependencies.',
-        icon: GanttChart,
-        path: '/dashboard?tab=gantt',
-        roles: ['admin', 'manager'],
-        duration: '5 min',
-        tips: [
-          'Drag task bars to adjust dates',
-          'Link tasks to create dependencies',
-          'Identify critical path for project success'
-        ]
-      },
-      {
-        id: 'baselines',
-        title: 'Project Baselines',
-        description: 'Set and track project baselines for performance comparison.',
-        icon: Target,
-        path: '/dashboard?tab=baselines',
-        roles: ['admin', 'manager'],
-        duration: '4 min',
-        tips: [
-          'Create baseline at project start',
-          'Compare current progress vs baseline',
-          'Document reasons for variances'
-        ]
-      }
-    ]
-  },
-  {
-    id: 'work-requests',
-    title: 'Work Requests',
-    description: 'Submit and manage work requests efficiently',
-    icon: Inbox,
-    color: 'bg-orange-500',
-    roles: ['all'],
-    steps: [
-      {
-        id: 'submit-request',
-        title: 'Submit a Request',
-        description: 'Learn how to submit work requests through the portal.',
-        icon: Inbox,
-        path: '/dashboard?tab=requests',
-        roles: ['all'],
-        duration: '3 min',
-        tips: [
-          'Choose the correct request type',
-          'Provide detailed descriptions',
-          'Attach relevant files if needed'
-        ]
-      },
-      {
-        id: 'triage-requests',
-        title: 'Triaging Requests',
-        description: 'Admin view for reviewing and assigning incoming requests.',
-        icon: ClipboardCheck,
-        path: '/dashboard?tab=requests',
-        roles: ['admin', 'manager'],
-        duration: '5 min',
-        tips: [
-          'Review requests in priority order',
-          'Assign to appropriate team members',
-          'Set SLA deadlines based on priority'
-        ]
-      }
-    ]
-  },
-  {
-    id: 'attendance-leave',
-    title: 'Attendance & Leave',
-    description: 'Manage your attendance, shifts, and time off',
-    icon: CalendarDays,
-    color: 'bg-teal-500',
-    roles: ['all'],
-    steps: [
-      {
-        id: 'clock-in-out',
-        title: 'Attendance Tracking',
-        description: 'Clock in and out to track your working hours.',
-        icon: MapPin,
-        path: '/dashboard?tab=attendance',
-        roles: ['all'],
-        duration: '2 min',
-        tips: [
-          'Clock in when you start work',
-          'Remember to clock out at end of day',
-          'Check your attendance history regularly'
-        ]
-      },
-      {
-        id: 'leave-requests',
-        title: 'Leave Requests',
-        description: 'Apply for different types of leave.',
-        icon: Palmtree,
-        path: '/dashboard?tab=leave',
-        roles: ['all'],
-        duration: '4 min',
-        tips: [
-          'Check leave balance before applying',
-          'Submit requests in advance when possible',
-          'Add notes for context'
-        ]
-      },
-      {
-        id: 'wfh-requests',
-        title: 'Work From Home',
-        description: 'Request and manage work from home days.',
-        icon: Home,
-        path: '/dashboard?tab=wfh',
-        roles: ['all'],
-        duration: '3 min',
-        tips: [
-          'Specify WFH dates clearly',
-          'Ensure you have necessary equipment',
-          'Stay responsive during WFH days'
-        ]
-      },
-      {
-        id: 'shift-management',
-        title: 'Shift Management',
-        description: 'View and manage your work shifts.',
-        icon: CalendarDays,
-        path: '/dashboard?tab=shifts',
-        roles: ['all'],
-        duration: '3 min',
-        tips: [
-          'Check weekly shift schedule',
-          'Request shift swaps if needed',
-          'Report scheduling conflicts early'
-        ]
-      }
-    ]
-  },
-  {
-    id: 'performance',
-    title: 'Performance Management',
-    description: 'Track goals, feedback, and performance reviews',
-    icon: TrendingUp,
-    color: 'bg-indigo-500',
-    roles: ['all'],
-    steps: [
-      {
-        id: 'okrs',
-        title: 'OKRs (Objectives & Key Results)',
-        description: 'Set and track organizational and personal objectives.',
-        icon: Target,
-        path: '/dashboard?tab=okrs',
-        roles: ['admin', 'manager', 'team_lead'],
-        duration: '6 min',
-        tips: [
-          'Align personal OKRs with team objectives',
-          'Update progress regularly',
-          'Celebrate achievements'
-        ]
-      },
-      {
-        id: 'feedback-360',
-        title: '360° Feedback',
-        description: 'Give and receive comprehensive feedback.',
-        icon: MessageCircle,
-        path: '/dashboard?tab=feedback',
-        roles: ['all'],
-        duration: '5 min',
-        tips: [
-          'Provide specific, constructive feedback',
-          'Request feedback from peers',
-          'Review feedback for growth areas'
-        ]
-      },
-      {
-        id: 'one-on-ones',
-        title: '1:1 Meetings',
-        description: 'Schedule and conduct effective one-on-one meetings.',
-        icon: UserCheck,
-        path: '/dashboard?tab=meetings',
-        roles: ['admin', 'manager', 'team_lead'],
-        duration: '4 min',
-        tips: [
-          'Prepare agenda before meetings',
-          'Document action items',
-          'Follow up on previous discussions'
-        ]
-      },
-      {
-        id: 'pips',
-        title: 'Performance Improvement Plans',
-        description: 'Manage PIPs for underperforming team members.',
-        icon: AlertTriangle,
-        path: '/dashboard?tab=pips',
-        roles: ['admin', 'manager'],
-        duration: '5 min',
-        tips: [
-          'Set clear, measurable goals',
-          'Provide regular check-ins',
-          'Document all progress'
-        ]
-      }
-    ]
-  },
-  {
-    id: 'finance-hr',
-    title: 'Finance & HR',
-    description: 'Manage expenses, payroll, and HR documents',
-    icon: Wallet,
-    color: 'bg-emerald-500',
-    roles: ['all'],
-    steps: [
-      {
-        id: 'expenses',
-        title: 'Expense Management',
-        description: 'Submit and track expense claims.',
-        icon: Receipt,
-        path: '/dashboard?tab=expenses',
-        roles: ['all'],
-        duration: '4 min',
-        tips: [
-          'Upload receipts promptly',
-          'Categorize expenses correctly',
-          'Track reimbursement status'
-        ]
-      },
-      {
-        id: 'timesheets',
-        title: 'Timesheets',
-        description: 'Submit and approve weekly timesheets.',
-        icon: ClipboardCheck,
-        path: '/dashboard?tab=timesheets',
-        roles: ['all'],
-        duration: '4 min',
-        tips: [
-          'Submit timesheets on time',
-          'Allocate hours to correct projects',
-          'Review before submission'
-        ]
-      },
-      {
-        id: 'payroll',
-        title: 'Payroll',
-        description: 'View payslips and manage payroll (Admin).',
-        icon: Wallet,
-        path: '/dashboard?tab=payroll',
-        roles: ['admin'],
-        duration: '5 min',
-        tips: [
-          'Review payroll before processing',
-          'Handle deductions correctly',
-          'Generate payslips for distribution'
-        ]
-      },
-      {
-        id: 'loans',
-        title: 'Loans & Advances',
-        description: 'Apply for salary advances and loans.',
-        icon: Banknote,
-        path: '/dashboard?tab=loans',
-        roles: ['all'],
-        duration: '3 min',
-        tips: [
-          'Check eligibility before applying',
-          'Understand repayment terms',
-          'Track outstanding balance'
-        ]
-      },
-      {
-        id: 'documents',
-        title: 'HR Documents',
-        description: 'Access and manage HR documents and policies.',
-        icon: FileText,
-        path: '/dashboard?tab=documents',
-        roles: ['admin', 'manager'],
-        duration: '3 min',
-        tips: [
-          'Keep documents organized',
-          'Ensure policies are up to date',
-          'Make important docs easily accessible'
-        ]
-      },
-      {
-        id: 'assets',
-        title: 'Asset Management',
-        description: 'Track company assets assigned to employees.',
-        icon: Package,
-        path: '/dashboard?tab=assets',
-        roles: ['admin'],
-        duration: '4 min',
-        tips: [
-          'Record all asset assignments',
-          'Track asset condition',
-          'Process returns properly'
-        ]
-      }
-    ]
-  },
-  {
-    id: 'communication',
-    title: 'Communication & Engagement',
-    description: 'Stay connected with your team',
-    icon: MessageSquare,
-    color: 'bg-pink-500',
-    roles: ['all'],
-    steps: [
-      {
-        id: 'team-chat',
-        title: 'Communication Hub',
-        description: 'Use channels and direct messages for team communication.',
-        icon: MessageSquare,
-        path: '/dashboard?tab=communication',
-        roles: ['all'],
-        duration: '5 min',
-        tips: [
-          'Join relevant channels',
-          'Use @mentions for important messages',
-          'Keep conversations organized'
-        ]
-      },
-      {
-        id: 'kudos',
-        title: 'Kudos Wall',
-        description: 'Recognize and celebrate team achievements.',
-        icon: HeartPulse,
-        path: '/kudos',
-        roles: ['all'],
-        duration: '3 min',
-        tips: [
-          'Give kudos to recognize great work',
-          'Be specific about achievements',
-          'Celebrate team wins publicly'
-        ]
-      },
-      {
-        id: 'pulse-surveys',
-        title: 'Pulse Surveys',
-        description: 'Participate in quick team surveys.',
-        icon: MessageCircle,
-        path: '/pulse-surveys',
-        roles: ['all'],
-        duration: '3 min',
-        tips: [
-          'Respond to surveys promptly',
-          'Provide honest feedback',
-          'Review survey results (Admin)'
-        ]
-      }
-    ]
-  },
-  {
-    id: 'training',
-    title: 'Training & Development',
-    description: 'Learn and grow with our training resources',
-    icon: GraduationCap,
-    color: 'bg-yellow-500',
-    roles: ['all'],
-    steps: [
-      {
-        id: 'training-courses',
-        title: 'Training Courses',
-        description: 'Access and complete assigned training courses.',
-        icon: BookOpen,
-        path: '/training',
-        roles: ['all'],
-        duration: '5 min',
-        tips: [
-          'Complete mandatory training first',
-          'Track your progress',
-          'Request additional training if needed'
-        ]
-      },
-      {
-        id: 'assessments',
-        title: 'Assessments',
-        description: 'Take assessments to test your knowledge.',
-        icon: ClipboardCheck,
-        path: '/assessment',
-        roles: ['all'],
-        duration: '4 min',
-        tips: [
-          'Review material before assessments',
-          'Take assessments when focused',
-          'Review results for improvement areas'
-        ]
-      },
-      {
-        id: 'goals',
-        title: 'Personal Goals',
-        description: 'Set and track your personal development goals.',
-        icon: Target,
-        path: '/my-goals',
-        roles: ['all'],
-        duration: '4 min',
-        tips: [
-          'Set SMART goals',
-          'Update progress regularly',
-          'Celebrate achievements'
-        ]
-      }
-    ]
-  },
-  {
-    id: 'admin-tools',
-    title: 'Admin Tools',
-    description: 'Advanced administration features',
-    icon: Shield,
-    color: 'bg-red-500',
-    roles: ['admin'],
-    steps: [
-      {
-        id: 'roles-permissions',
-        title: 'Roles & Permissions',
-        description: 'Manage user roles and access permissions.',
-        icon: Shield,
-        path: '/dashboard?tab=roles',
-        roles: ['admin'],
-        duration: '6 min',
-        tips: [
-          'Follow least privilege principle',
-          'Review permissions regularly',
-          'Document role changes'
-        ]
-      },
-      {
-        id: 'org-chart',
-        title: 'Organization Chart',
-        description: 'View and manage organizational structure.',
-        icon: Users,
-        path: '/org-chart',
-        roles: ['admin', 'manager'],
-        duration: '4 min',
-        tips: [
-          'Keep reporting lines accurate',
-          'Update when team changes occur',
-          'Use for planning purposes'
-        ]
-      },
-      {
-        id: 'automation',
-        title: 'Automation Rules',
-        description: 'Set up automated workflows and notifications.',
-        icon: Zap,
-        path: '/dashboard?tab=automation',
-        roles: ['admin'],
-        duration: '8 min',
-        tips: [
-          'Start with simple automations',
-          'Test rules before activating',
-          'Monitor for unexpected behavior'
-        ]
-      },
-      {
-        id: 'reports',
-        title: 'Reports & Analytics',
-        description: 'Generate and customize reports.',
-        icon: PieChart,
-        path: '/dashboard?tab=reports',
-        roles: ['admin', 'manager'],
-        duration: '5 min',
-        tips: [
-          'Schedule recurring reports',
-          'Export data for external analysis',
-          'Create custom dashboards'
-        ]
-      },
-      {
-        id: 'coins-management',
-        title: 'Coin Management',
-        description: 'Configure and manage the rewards system.',
-        icon: Coins,
-        path: '/dashboard?tab=coins',
-        roles: ['admin'],
-        duration: '5 min',
-        tips: [
-          'Set fair coin values for tasks',
-          'Monitor coin distribution',
-          'Plan redemption options'
-        ]
-      }
-    ]
-  }
-];
+// Keyboard shortcut component
+const KeyboardShortcut = ({ keys, action }: { keys: string[]; action: string }) => (
+  <div className="flex items-center justify-between py-2">
+    <span className="text-sm text-muted-foreground">{action}</span>
+    <div className="flex gap-1">
+      {keys.map((key, i) => (
+        <React.Fragment key={i}>
+          <kbd className="px-2 py-1 text-xs font-semibold bg-muted rounded border">
+            {key}
+          </kbd>
+          {i < keys.length - 1 && <span className="text-muted-foreground">+</span>}
+        </React.Fragment>
+      ))}
+    </div>
+  </div>
+);
 
 export default function TutorialPage() {
   const isMobile = useIsMobile();
   const { role, isAdmin, isManager, isTeamLead } = useUserRole();
-  const [activeTab, setActiveTab] = useState('overview');
-  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
-  const [selectedModule, setSelectedModule] = useState<string | null>(null);
-
-  // Filter modules based on user role
-  const getVisibleModules = () => {
-    return tutorialModules.filter(module => {
-      if (module.roles.includes('all')) return true;
-      if (module.roles.includes('admin') && isAdmin) return true;
-      if (module.roles.includes('manager') && (isManager || isAdmin)) return true;
-      if (module.roles.includes('team_lead') && (isTeamLead || isManager || isAdmin)) return true;
-      return false;
-    });
-  };
-
-  // Filter steps based on user role
-  const getVisibleSteps = (steps: TutorialStep[]) => {
-    return steps.filter(step => {
-      if (step.roles.includes('all')) return true;
-      if (step.roles.includes('admin') && isAdmin) return true;
-      if (step.roles.includes('manager') && (isManager || isAdmin)) return true;
-      if (step.roles.includes('team_lead') && (isTeamLead || isManager || isAdmin)) return true;
-      return false;
-    });
-  };
-
-  const visibleModules = getVisibleModules();
-  const totalSteps = visibleModules.reduce((acc, module) => acc + getVisibleSteps(module.steps).length, 0);
-  const completedCount = completedSteps.length;
-  const progressPercent = totalSteps > 0 ? (completedCount / totalSteps) * 100 : 0;
-
-  const toggleStepComplete = (stepId: string) => {
-    setCompletedSteps(prev => 
-      prev.includes(stepId) 
-        ? prev.filter(id => id !== stepId)
-        : [...prev, stepId]
-    );
-  };
-
-  const getRoleBadgeColor = (roles: string[]) => {
-    if (roles.includes('admin')) return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
-    if (roles.includes('manager')) return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400';
-    if (roles.includes('team_lead')) return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
-    return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
-  };
+  const { organization } = useOrganization();
+  const [activeTab, setActiveTab] = useState('getting-started');
+  const navigate = useNavigate();
+  
+  const coinName = organization?.coin_name || 'Coins';
 
   return (
     <SidebarProvider>
@@ -708,388 +147,1135 @@ export default function TutorialPage() {
           <AppHeader />
           
           <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto">
-            <div className="max-w-6xl mx-auto space-y-6">
+            <div className="max-w-5xl mx-auto space-y-6">
               {/* Header */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-3">
-                    <GraduationCap className="h-8 w-8 text-primary" />
-                    Application Tutorial
-                  </h1>
-                  <p className="text-muted-foreground mt-1">
-                    Complete guide to mastering all features based on your role
-                  </p>
-                </div>
+              <div className="space-y-2">
                 <div className="flex items-center gap-3">
-                  <Badge variant="secondary" className="text-sm py-1.5 px-3">
+                  <div className="p-3 rounded-xl bg-primary/10">
+                    <GraduationCap className="h-8 w-8 text-primary" />
+                  </div>
+                  <div>
+                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+                      Complete Application Guide
+                    </h1>
+                    <p className="text-muted-foreground">
+                      Learn how to use every feature of {organization?.name || 'Tenexa'} effectively
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-4">
+                  <Badge variant="outline" className="text-xs">
+                    <User className="h-3 w-3 mr-1" />
                     {role?.replace('_', ' ').toUpperCase() || 'User'}
+                  </Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    <BookOpen className="h-3 w-3 mr-1" />
+                    Interactive Guide
                   </Badge>
                 </div>
               </div>
 
-              {/* Progress Overview */}
-              <Card className="border-primary/20">
-                <CardContent className="pt-6">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 rounded-full bg-primary/10">
-                        <Star className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-lg">Your Progress</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {completedCount} of {totalSteps} steps completed
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-3xl font-bold text-primary">{Math.round(progressPercent)}%</span>
-                    </div>
-                  </div>
-                  <Progress value={progressPercent} className="h-3" />
-                </CardContent>
-              </Card>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+                <ScrollArea className="w-full">
+                  <TabsList className="inline-flex w-auto h-auto p-1 gap-1 flex-wrap">
+                    <TabsTrigger value="getting-started" className="gap-1.5 text-xs sm:text-sm">
+                      <Rocket className="h-4 w-4" />
+                      <span className="hidden sm:inline">Getting Started</span>
+                      <span className="sm:hidden">Start</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="dashboard" className="gap-1.5 text-xs sm:text-sm">
+                      <LayoutDashboard className="h-4 w-4" />
+                      <span className="hidden sm:inline">Dashboard</span>
+                      <span className="sm:hidden">Dash</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="tasks" className="gap-1.5 text-xs sm:text-sm">
+                      <CheckSquare className="h-4 w-4" />
+                      Tasks
+                    </TabsTrigger>
+                    <TabsTrigger value="time-attendance" className="gap-1.5 text-xs sm:text-sm">
+                      <Clock className="h-4 w-4" />
+                      <span className="hidden sm:inline">Time & Attendance</span>
+                      <span className="sm:hidden">Time</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="communication" className="gap-1.5 text-xs sm:text-sm">
+                      <MessageSquare className="h-4 w-4" />
+                      <span className="hidden sm:inline">Communication</span>
+                      <span className="sm:hidden">Chat</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="coins" className="gap-1.5 text-xs sm:text-sm">
+                      <Coins className="h-4 w-4" />
+                      {coinName}
+                    </TabsTrigger>
+                    {isAdmin && (
+                      <TabsTrigger value="admin" className="gap-1.5 text-xs sm:text-sm">
+                        <Shield className="h-4 w-4" />
+                        Admin
+                      </TabsTrigger>
+                    )}
+                  </TabsList>
+                </ScrollArea>
 
-              <Tabs defaultValue="modules" className="space-y-6">
-                <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
-                  <TabsTrigger value="modules" className="gap-2">
-                    <BookOpen className="h-4 w-4" />
-                    <span className="hidden sm:inline">Modules</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="quick-start" className="gap-2">
-                    <Rocket className="h-4 w-4" />
-                    <span className="hidden sm:inline">Quick Start</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="tips" className="gap-2">
-                    <Lightbulb className="h-4 w-4" />
-                    <span className="hidden sm:inline">Tips</span>
-                  </TabsTrigger>
-                </TabsList>
-
-                {/* Modules Tab */}
-                <TabsContent value="modules" className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {visibleModules.map((module) => {
-                      const ModuleIcon = module.icon;
-                      const moduleSteps = getVisibleSteps(module.steps);
-                      const completedModuleSteps = moduleSteps.filter(s => completedSteps.includes(s.id)).length;
-                      const moduleProgress = moduleSteps.length > 0 ? (completedModuleSteps / moduleSteps.length) * 100 : 0;
-
-                      return (
-                        <Card 
-                          key={module.id} 
-                          className={cn(
-                            "cursor-pointer transition-all hover:shadow-md hover:border-primary/30",
-                            selectedModule === module.id && "border-primary ring-1 ring-primary"
-                          )}
-                          onClick={() => setSelectedModule(selectedModule === module.id ? null : module.id)}
-                        >
-                          <CardHeader className="pb-3">
-                            <div className="flex items-start justify-between">
-                              <div className={cn("p-2 rounded-lg", module.color)}>
-                                <ModuleIcon className="h-5 w-5 text-white" />
-                              </div>
-                              <Badge variant="outline" className="text-xs">
-                                {moduleSteps.length} steps
-                              </Badge>
-                            </div>
-                            <CardTitle className="text-lg mt-3">{module.title}</CardTitle>
-                            <CardDescription className="text-sm">{module.description}</CardDescription>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="space-y-2">
-                              <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Progress</span>
-                                <span className="font-medium">{Math.round(moduleProgress)}%</span>
-                              </div>
-                              <Progress value={moduleProgress} className="h-2" />
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-
-                  {/* Selected Module Details */}
-                  {selectedModule && (
-                    <Card className="mt-6">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          {(() => {
-                            const module = visibleModules.find(m => m.id === selectedModule);
-                            if (!module) return null;
-                            const Icon = module.icon;
-                            return (
-                              <>
-                                <Icon className="h-5 w-5 text-primary" />
-                                {module.title} - Step by Step
-                              </>
-                            );
-                          })()}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <Accordion type="single" collapsible className="space-y-2">
-                          {(() => {
-                            const module = visibleModules.find(m => m.id === selectedModule);
-                            if (!module) return null;
-                            return getVisibleSteps(module.steps).map((step, index) => {
-                              const StepIcon = step.icon;
-                              const isCompleted = completedSteps.includes(step.id);
-
-                              return (
-                                <AccordionItem key={step.id} value={step.id} className="border rounded-lg px-4">
-                                  <AccordionTrigger className="hover:no-underline py-4">
-                                    <div className="flex items-center gap-4 w-full">
-                                      <div className={cn(
-                                        "flex items-center justify-center w-8 h-8 rounded-full border-2 transition-colors",
-                                        isCompleted 
-                                          ? "bg-primary border-primary text-primary-foreground" 
-                                          : "border-muted-foreground/30"
-                                      )}>
-                                        {isCompleted ? (
-                                          <CheckCircle2 className="h-5 w-5" />
-                                        ) : (
-                                          <span className="text-sm font-medium">{index + 1}</span>
-                                        )}
-                                      </div>
-                                      <div className="flex-1 text-left">
-                                        <div className="flex items-center gap-2">
-                                          <StepIcon className="h-4 w-4 text-muted-foreground" />
-                                          <span className="font-medium">{step.title}</span>
-                                          <Badge variant="outline" className="text-xs ml-2">
-                                            {step.duration}
-                                          </Badge>
-                                        </div>
-                                        <p className="text-sm text-muted-foreground mt-0.5">{step.description}</p>
-                                      </div>
-                                    </div>
-                                  </AccordionTrigger>
-                                  <AccordionContent className="pb-4">
-                                    <div className="pl-12 space-y-4">
-                                      {step.tips && step.tips.length > 0 && (
-                                        <div className="space-y-2">
-                                          <h4 className="text-sm font-medium flex items-center gap-2">
-                                            <Lightbulb className="h-4 w-4 text-yellow-500" />
-                                            Pro Tips
-                                          </h4>
-                                          <ul className="space-y-1.5">
-                                            {step.tips.map((tip, i) => (
-                                              <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                                                <ChevronRight className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
-                                                {tip}
-                                              </li>
-                                            ))}
-                                          </ul>
-                                        </div>
-                                      )}
-                                      <div className="flex items-center gap-3 pt-2">
-                                        <Button
-                                          variant={isCompleted ? "outline" : "default"}
-                                          size="sm"
-                                          onClick={() => toggleStepComplete(step.id)}
-                                        >
-                                          {isCompleted ? (
-                                            <>
-                                              <CheckCircle2 className="h-4 w-4 mr-2" />
-                                              Completed
-                                            </>
-                                          ) : (
-                                            <>
-                                              <Circle className="h-4 w-4 mr-2" />
-                                              Mark Complete
-                                            </>
-                                          )}
-                                        </Button>
-                                        <Button variant="ghost" size="sm" asChild>
-                                          <a href={step.path}>
-                                            <ArrowRight className="h-4 w-4 mr-2" />
-                                            Go to Feature
-                                          </a>
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  </AccordionContent>
-                                </AccordionItem>
-                              );
-                            });
-                          })()}
-                        </Accordion>
-                      </CardContent>
-                    </Card>
-                  )}
-                </TabsContent>
-
-                {/* Quick Start Tab */}
-                <TabsContent value="quick-start" className="space-y-6">
+                {/* Getting Started Tab */}
+                <TabsContent value="getting-started" className="space-y-6">
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Rocket className="h-5 w-5 text-primary" />
-                        Quick Start Guide
+                        Welcome to {organization?.name || 'Tenexa'}
                       </CardTitle>
                       <CardDescription>
-                        Get up and running in 5 minutes with these essential steps
+                        Your complete workforce management and productivity platform. Follow this guide to get started.
                       </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="space-y-6">
+                      {/* What is this app */}
                       <div className="space-y-4">
-                        {[
-                          { step: 1, title: 'Complete Your Profile', desc: 'Add your photo and details', icon: Settings, path: '/profile' },
-                          { step: 2, title: 'View Dashboard', desc: 'Explore your personalized dashboard', icon: LayoutDashboard, path: '/dashboard?tab=overview' },
-                          { step: 3, title: 'Check Your Tasks', desc: 'See assigned tasks and deadlines', icon: CheckSquare, path: '/dashboard?tab=tasks' },
-                          { step: 4, title: 'Log Time', desc: 'Track your work hours', icon: Clock, path: '/dashboard?tab=time' },
-                          { step: 5, title: 'Join Communication', desc: 'Connect with your team', icon: MessageSquare, path: '/dashboard?tab=communication' },
-                        ].map((item) => (
-                          <div key={item.step} className="flex items-center gap-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
-                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold">
-                              {item.step}
+                        <h3 className="font-semibold text-lg flex items-center gap-2">
+                          <Info className="h-5 w-5 text-blue-500" />
+                          What is this application?
+                        </h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                          This is an all-in-one platform designed to streamline your work experience. Whether you're 
+                          tracking tasks, logging time, managing projects, or collaborating with your team - everything 
+                          you need is in one place. The platform also includes a gamification system where you earn 
+                          <span className="font-medium text-yellow-600"> {coinName} </span> for completing tasks, 
+                          maintaining good attendance, and achieving goals.
+                        </p>
+                      </div>
+
+                      <Separator />
+
+                      {/* First Steps */}
+                      <div className="space-y-4">
+                        <h3 className="font-semibold text-lg flex items-center gap-2">
+                          <Play className="h-5 w-5 text-green-500" />
+                          Your First Steps
+                        </h3>
+
+                        <TutorialStep 
+                          step={1} 
+                          title="Complete Your Profile"
+                          description="Add your photo, contact details, and skills to help your team recognize you."
+                        >
+                          <div className="space-y-3">
+                            <div className="grid gap-2 sm:grid-cols-2">
+                              <ActionDemo icon={User} action="Click your avatar" result="Open profile menu" />
+                              <ActionDemo icon={Edit} action="Click 'Edit Profile'" result="Open edit form" />
                             </div>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <item.icon className="h-4 w-4 text-muted-foreground" />
-                                <span className="font-medium">{item.title}</span>
-                              </div>
-                              <p className="text-sm text-muted-foreground">{item.desc}</p>
-                            </div>
-                            <Button variant="ghost" size="sm" asChild>
-                              <a href={item.path}>
-                                <ArrowRight className="h-4 w-4" />
-                              </a>
+                            <Button size="sm" onClick={() => navigate('/profile')}>
+                              Go to Profile <ArrowRight className="h-4 w-4 ml-2" />
                             </Button>
                           </div>
-                        ))}
+                        </TutorialStep>
+
+                        <TutorialStep 
+                          step={2} 
+                          title="Explore the Dashboard"
+                          description="The dashboard shows your tasks, time logs, notifications, and key metrics at a glance."
+                        >
+                          <div className="grid gap-3 sm:grid-cols-3">
+                            <FeatureHighlight 
+                              icon={LayoutDashboard} 
+                              title="Overview" 
+                              description="See all your key metrics"
+                              path="/dashboard?tab=overview"
+                              color="bg-blue-500"
+                            />
+                            <FeatureHighlight 
+                              icon={CheckSquare} 
+                              title="Kanban Board" 
+                              description="Visual task management"
+                              path="/dashboard?tab=tasks"
+                              color="bg-green-500"
+                            />
+                            <FeatureHighlight 
+                              icon={Clock} 
+                              title="Time Logs" 
+                              description="Track your work hours"
+                              path="/dashboard?tab=time"
+                              color="bg-purple-500"
+                            />
+                          </div>
+                        </TutorialStep>
+
+                        <TutorialStep 
+                          step={3} 
+                          title="Check Your Assigned Tasks"
+                          description="View tasks assigned to you, their priorities, due dates, and coin rewards."
+                        >
+                          <Alert>
+                            <Lightbulb className="h-4 w-4" />
+                            <AlertTitle>Pro Tip</AlertTitle>
+                            <AlertDescription>
+                              Tasks with higher priority usually have more {coinName} attached. Complete them on time 
+                              to maximize your earnings!
+                            </AlertDescription>
+                          </Alert>
+                        </TutorialStep>
+
+                        <TutorialStep 
+                          step={4} 
+                          title="Clock In/Out"
+                          description="Track your daily attendance by clocking in when you start work."
+                        >
+                          <div className="space-y-3">
+                            <ActionDemo icon={LogIn} action="Click 'Clock In'" result="Start tracking your work day" iconColor="text-green-500" />
+                            <ActionDemo icon={LogOut} action="Click 'Clock Out'" result="End your work session" iconColor="text-red-500" />
+                            <p className="text-xs text-muted-foreground">
+                              Your location may be recorded if geo-fencing is enabled for your organization.
+                            </p>
+                          </div>
+                        </TutorialStep>
+                      </div>
+
+                      <Separator />
+
+                      {/* Navigation Guide */}
+                      <div className="space-y-4">
+                        <h3 className="font-semibold text-lg flex items-center gap-2">
+                          <Layers className="h-5 w-5 text-indigo-500" />
+                          How to Navigate
+                        </h3>
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <Card className="border-dashed">
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-sm font-medium">Sidebar Navigation</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-2 text-sm text-muted-foreground">
+                              <p>• Use the left sidebar to access different sections</p>
+                              <p>• Click group headers to expand/collapse sections</p>
+                              <p>• Your current section is highlighted</p>
+                              <p>• On mobile, tap the menu icon to open sidebar</p>
+                            </CardContent>
+                          </Card>
+                          <Card className="border-dashed">
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-sm font-medium">Top Header</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-2 text-sm text-muted-foreground">
+                              <p>• <Bell className="h-3 w-3 inline" /> Notifications - View alerts and updates</p>
+                              <p>• <Search className="h-3 w-3 inline" /> Search - Find anything quickly</p>
+                              <p>• <User className="h-3 w-3 inline" /> Profile - Access your settings</p>
+                              <p>• Theme toggle for dark/light mode</p>
+                            </CardContent>
+                          </Card>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  {/* Role-specific quick actions */}
-                  {isAdmin && (
+                  {/* Role-based features */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Shield className="h-5 w-5 text-primary" />
+                        Features Available to You
+                      </CardTitle>
+                      <CardDescription>
+                        Based on your role: <Badge variant="outline">{role?.replace('_', ' ') || 'User'}</Badge>
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        <FeatureHighlight icon={CheckSquare} title="Task Management" description="View and update your tasks" path="/dashboard?tab=tasks" color="bg-green-500" />
+                        <FeatureHighlight icon={Clock} title="Time Tracking" description="Log hours spent on work" path="/dashboard?tab=time" color="bg-blue-500" />
+                        <FeatureHighlight icon={MapPin} title="Attendance" description="Clock in/out daily" path="/dashboard?tab=attendance" color="bg-purple-500" />
+                        <FeatureHighlight icon={Palmtree} title="Leave Requests" description="Apply for time off" path="/dashboard?tab=leave" color="bg-teal-500" />
+                        <FeatureHighlight icon={MessageSquare} title="Communication" description="Chat with your team" path="/dashboard?tab=communication" color="bg-pink-500" />
+                        <FeatureHighlight icon={Coins} title={`My ${coinName}`} description="View your rewards" path="/dashboard?tab=my-coins" color="bg-yellow-500" />
+                        <FeatureHighlight icon={HeartPulse} title="Kudos Wall" description="Recognize teammates" path="/kudos" color="bg-red-500" />
+                        <FeatureHighlight icon={Target} title="My Goals" description="Personal goal tracking" path="/my-goals" color="bg-indigo-500" />
+                        <FeatureHighlight icon={BookOpen} title="Training" description="Access learning materials" path="/training" color="bg-orange-500" />
+                        
+                        {isAdmin && (
+                          <>
+                            <FeatureHighlight icon={Users} title="Team Management" description="Manage employees" path="/dashboard?tab=interns" color="bg-slate-500" />
+                            <FeatureHighlight icon={PieChart} title="Reports" description="Generate analytics" path="/dashboard?tab=reports" color="bg-cyan-500" />
+                            <FeatureHighlight icon={Zap} title="Automation" description="Create workflow rules" path="/dashboard?tab=automation" color="bg-amber-500" />
+                          </>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* Dashboard Tab */}
+                <TabsContent value="dashboard" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <LayoutDashboard className="h-5 w-5 text-primary" />
+                        Understanding Your Dashboard
+                      </CardTitle>
+                      <CardDescription>
+                        The dashboard is your central hub for all work activities and information.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      {/* Dashboard Overview */}
+                      <div className="space-y-4">
+                        <h3 className="font-semibold">Dashboard Sections Explained</h3>
+                        
+                        <Accordion type="single" collapsible className="space-y-2">
+                          <AccordionItem value="overview" className="border rounded-lg px-4">
+                            <AccordionTrigger className="hover:no-underline">
+                              <div className="flex items-center gap-3">
+                                <LayoutDashboard className="h-5 w-5 text-blue-500" />
+                                <span>Overview Tab</span>
+                              </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="space-y-4 pt-2">
+                              <p className="text-muted-foreground">
+                                The Overview shows your key metrics and quick stats at a glance:
+                              </p>
+                              <div className="grid gap-3 sm:grid-cols-2">
+                                <div className="p-3 rounded-lg bg-muted/50">
+                                  <h4 className="font-medium text-sm flex items-center gap-2">
+                                    <CheckSquare className="h-4 w-4 text-green-500" />
+                                    Task Summary
+                                  </h4>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    See pending, in-progress, and completed tasks
+                                  </p>
+                                </div>
+                                <div className="p-3 rounded-lg bg-muted/50">
+                                  <h4 className="font-medium text-sm flex items-center gap-2">
+                                    <Clock className="h-4 w-4 text-blue-500" />
+                                    Time Today
+                                  </h4>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    Hours logged today and this week
+                                  </p>
+                                </div>
+                                <div className="p-3 rounded-lg bg-muted/50">
+                                  <h4 className="font-medium text-sm flex items-center gap-2">
+                                    <Coins className="h-4 w-4 text-yellow-500" />
+                                    {coinName} Earned
+                                  </h4>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    Your total {coinName} and recent earnings
+                                  </p>
+                                </div>
+                                <div className="p-3 rounded-lg bg-muted/50">
+                                  <h4 className="font-medium text-sm flex items-center gap-2">
+                                    <Activity className="h-4 w-4 text-purple-500" />
+                                    Recent Activity
+                                  </h4>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    Latest updates and notifications
+                                  </p>
+                                </div>
+                              </div>
+                              <Button size="sm" variant="outline" onClick={() => navigate('/dashboard?tab=overview')}>
+                                Go to Overview <ArrowRight className="h-4 w-4 ml-2" />
+                              </Button>
+                            </AccordionContent>
+                          </AccordionItem>
+
+                          <AccordionItem value="projects" className="border rounded-lg px-4">
+                            <AccordionTrigger className="hover:no-underline">
+                              <div className="flex items-center gap-3">
+                                <FolderOpen className="h-5 w-5 text-purple-500" />
+                                <span>Projects Tab</span>
+                              </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="space-y-4 pt-2">
+                              <p className="text-muted-foreground">
+                                View all projects you're involved in, track progress, and see deadlines.
+                              </p>
+                              <div className="space-y-2">
+                                <ActionDemo icon={Eye} action="View Project" result="See full project details, tasks, and team" />
+                                <ActionDemo icon={BarChart3} action="Project Progress" result="Visual progress bar and completion %" />
+                                <ActionDemo icon={Calendar} action="Timeline View" result="See project milestones and deadlines" />
+                              </div>
+                              <Button size="sm" variant="outline" onClick={() => navigate('/dashboard?tab=projects')}>
+                                Go to Projects <ArrowRight className="h-4 w-4 ml-2" />
+                              </Button>
+                            </AccordionContent>
+                          </AccordionItem>
+
+                          <AccordionItem value="updates" className="border rounded-lg px-4">
+                            <AccordionTrigger className="hover:no-underline">
+                              <div className="flex items-center gap-3">
+                                <Activity className="h-5 w-5 text-green-500" />
+                                <span>Updates Tab</span>
+                              </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="space-y-4 pt-2">
+                              <p className="text-muted-foreground">
+                                Stay informed with project updates, announcements, and team activities.
+                              </p>
+                              <div className="space-y-2">
+                                <ActionDemo icon={Send} action="Post Update" result="Share progress with your team" />
+                                <ActionDemo icon={ThumbsUp} action="React to Updates" result="Like and comment on posts" />
+                                <ActionDemo icon={Filter} action="Filter Updates" result="View by project or team" />
+                              </div>
+                            </AccordionContent>
+                          </AccordionItem>
+                        </Accordion>
+                      </div>
+
+                      <Separator />
+
+                      {/* Quick Actions */}
+                      <div className="space-y-4">
+                        <h3 className="font-semibold">Quick Actions from Dashboard</h3>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <div className="p-4 rounded-lg border bg-gradient-to-r from-green-500/10 to-transparent">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 rounded-lg bg-green-500">
+                                <Plus className="h-4 w-4 text-white" />
+                              </div>
+                              <div>
+                                <h4 className="font-medium text-sm">Create New Task</h4>
+                                <p className="text-xs text-muted-foreground">Click + button or use keyboard shortcut</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="p-4 rounded-lg border bg-gradient-to-r from-blue-500/10 to-transparent">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 rounded-lg bg-blue-500">
+                                <Clock className="h-4 w-4 text-white" />
+                              </div>
+                              <div>
+                                <h4 className="font-medium text-sm">Log Time</h4>
+                                <p className="text-xs text-muted-foreground">Record work hours against tasks</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* Tasks Tab */}
+                <TabsContent value="tasks" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <CheckSquare className="h-5 w-5 text-primary" />
+                        Task Management Guide
+                      </CardTitle>
+                      <CardDescription>
+                        Learn how to efficiently manage your tasks using the Kanban board and task system.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      {/* Kanban Board Explanation */}
+                      <div className="space-y-4">
+                        <h3 className="font-semibold flex items-center gap-2">
+                          <Grid3X3 className="h-5 w-5 text-indigo-500" />
+                          The Kanban Board
+                        </h3>
+                        <p className="text-muted-foreground">
+                          The Kanban board provides a visual way to manage your tasks. Tasks are organized into columns 
+                          based on their status.
+                        </p>
+                        
+                        <div className="grid grid-cols-4 gap-2 p-4 rounded-lg bg-muted/30">
+                          <div className="p-3 rounded-lg bg-slate-200 dark:bg-slate-700 text-center">
+                            <div className="w-4 h-4 mx-auto mb-2 rounded-full bg-slate-400" />
+                            <span className="text-xs font-medium">To Do</span>
+                          </div>
+                          <div className="p-3 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-center">
+                            <div className="w-4 h-4 mx-auto mb-2 rounded-full bg-blue-500" />
+                            <span className="text-xs font-medium">In Progress</span>
+                          </div>
+                          <div className="p-3 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-center">
+                            <div className="w-4 h-4 mx-auto mb-2 rounded-full bg-amber-500" />
+                            <span className="text-xs font-medium">Review</span>
+                          </div>
+                          <div className="p-3 rounded-lg bg-green-100 dark:bg-green-900/30 text-center">
+                            <div className="w-4 h-4 mx-auto mb-2 rounded-full bg-green-500" />
+                            <span className="text-xs font-medium">Done</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* How to use tasks */}
+                      <div className="space-y-4">
+                        <h3 className="font-semibold">How to Work with Tasks</h3>
+
+                        <TutorialStep step={1} title="Viewing Task Details">
+                          <div className="space-y-2">
+                            <ActionDemo icon={MousePointer} action="Click on any task card" result="Opens task detail panel" />
+                            <p className="text-sm text-muted-foreground">
+                              You'll see the full description, due date, priority, assigned {coinName}, attachments, 
+                              and comments.
+                            </p>
+                          </div>
+                        </TutorialStep>
+
+                        <TutorialStep step={2} title="Moving Tasks (Updating Status)">
+                          <div className="space-y-2">
+                            <ActionDemo icon={MousePointer} action="Drag and drop task card" result="Moves to new column" />
+                            <Alert className="mt-3">
+                              <Info className="h-4 w-4" />
+                              <AlertDescription>
+                                <strong>Example:</strong> When you start working on a task, drag it from "To Do" to 
+                                "In Progress". When finished, drag to "Review" or "Done".
+                              </AlertDescription>
+                            </Alert>
+                          </div>
+                        </TutorialStep>
+
+                        <TutorialStep step={3} title="Logging Time Against Tasks">
+                          <div className="space-y-2">
+                            <ActionDemo icon={Clock} action="Click clock icon on task" result="Opens time log dialog" />
+                            <ActionDemo icon={Edit} action="Enter hours worked" result="Time recorded against task" />
+                            <p className="text-sm text-muted-foreground">
+                              Always log time after completing work. This helps track project progress and your productivity.
+                            </p>
+                          </div>
+                        </TutorialStep>
+
+                        <TutorialStep step={4} title="Task Completion & Verification">
+                          <div className="space-y-2">
+                            <p className="text-sm text-muted-foreground">
+                              When you mark a task as "Done":
+                            </p>
+                            <div className="space-y-2 mt-2">
+                              <ActionDemo icon={CheckCircle2} action="Move to Done column" result="Task marked complete" iconColor="text-green-500" />
+                              <ActionDemo icon={UserCheck} action="Manager verifies" result="Task approved" iconColor="text-blue-500" />
+                              <ActionDemo icon={Coins} action="Verification approved" result={`${coinName} credited to your account!`} iconColor="text-yellow-500" />
+                            </div>
+                          </div>
+                        </TutorialStep>
+                      </div>
+
+                      <Separator />
+
+                      {/* Task Filters */}
+                      <div className="space-y-4">
+                        <h3 className="font-semibold flex items-center gap-2">
+                          <Filter className="h-5 w-5 text-purple-500" />
+                          Filtering & Searching Tasks
+                        </h3>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <div className="p-3 rounded-lg border">
+                            <h4 className="font-medium text-sm mb-2">Filter by Status</h4>
+                            <p className="text-xs text-muted-foreground">Show only tasks in specific columns</p>
+                          </div>
+                          <div className="p-3 rounded-lg border">
+                            <h4 className="font-medium text-sm mb-2">Filter by Priority</h4>
+                            <p className="text-xs text-muted-foreground">High, Medium, Low priority tasks</p>
+                          </div>
+                          <div className="p-3 rounded-lg border">
+                            <h4 className="font-medium text-sm mb-2">Filter by Project</h4>
+                            <p className="text-xs text-muted-foreground">See tasks for specific projects</p>
+                          </div>
+                          <div className="p-3 rounded-lg border">
+                            <h4 className="font-medium text-sm mb-2">Search by Name</h4>
+                            <p className="text-xs text-muted-foreground">Type to find specific tasks</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Button onClick={() => navigate('/dashboard?tab=tasks')}>
+                        Open Kanban Board <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* Time & Attendance Tab */}
+                <TabsContent value="time-attendance" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Clock className="h-5 w-5 text-primary" />
+                        Time & Attendance Guide
+                      </CardTitle>
+                      <CardDescription>
+                        Track your work hours, attendance, leave, and work from home requests.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      {/* Attendance */}
+                      <div className="space-y-4">
+                        <h3 className="font-semibold flex items-center gap-2">
+                          <MapPin className="h-5 w-5 text-green-500" />
+                          Daily Attendance
+                        </h3>
+                        
+                        <div className="p-4 rounded-lg border bg-gradient-to-r from-green-500/10 via-transparent to-red-500/10">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="text-center p-4 rounded-lg bg-green-500/20">
+                              <LogIn className="h-8 w-8 mx-auto text-green-600 mb-2" />
+                              <h4 className="font-semibold">Clock In</h4>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Start of your work day
+                              </p>
+                            </div>
+                            <div className="text-center p-4 rounded-lg bg-red-500/20">
+                              <LogOut className="h-8 w-8 mx-auto text-red-600 mb-2" />
+                              <h4 className="font-semibold">Clock Out</h4>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                End of your work day
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <Alert>
+                          <MapPin className="h-4 w-4" />
+                          <AlertTitle>Location Tracking</AlertTitle>
+                          <AlertDescription>
+                            If geo-fencing is enabled, your location is recorded when clocking in/out. 
+                            This helps verify you're at an approved work location.
+                          </AlertDescription>
+                        </Alert>
+                      </div>
+
+                      <Separator />
+
+                      {/* Time Logging */}
+                      <div className="space-y-4">
+                        <h3 className="font-semibold flex items-center gap-2">
+                          <Clock className="h-5 w-5 text-blue-500" />
+                          Time Logging
+                        </h3>
+                        <p className="text-muted-foreground">
+                          Log time spent on specific tasks to track productivity and project progress.
+                        </p>
+
+                        <TutorialStep step={1} title="How to Log Time">
+                          <div className="space-y-2">
+                            <ActionDemo icon={Clock} action="Go to Time Logs tab" result="View time log interface" />
+                            <ActionDemo icon={Plus} action="Click 'Log Time'" result="Opens time entry form" />
+                            <ActionDemo icon={CheckSquare} action="Select task" result="Associate time with task" />
+                            <ActionDemo icon={Edit} action="Enter duration & notes" result="Save your time entry" />
+                          </div>
+                        </TutorialStep>
+
+                        <div className="p-4 rounded-lg bg-muted/50">
+                          <h4 className="font-medium text-sm mb-3">Time Log Entry Fields:</h4>
+                          <div className="grid gap-2 sm:grid-cols-2 text-sm">
+                            <div className="flex items-center gap-2">
+                              <CheckSquare className="h-4 w-4 text-green-500" />
+                              <span>Task (required)</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-blue-500" />
+                              <span>Duration in hours</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Calendar className="h-4 w-4 text-purple-500" />
+                              <span>Date worked</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Edit className="h-4 w-4 text-orange-500" />
+                              <span>Description/Notes</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Leave Requests */}
+                      <div className="space-y-4">
+                        <h3 className="font-semibold flex items-center gap-2">
+                          <Palmtree className="h-5 w-5 text-teal-500" />
+                          Leave Requests
+                        </h3>
+                        
+                        <TutorialStep step={1} title="Applying for Leave">
+                          <div className="space-y-3">
+                            <ActionDemo icon={Palmtree} action="Go to Leave tab" result="View leave dashboard" />
+                            <ActionDemo icon={Plus} action="Click 'Request Leave'" result="Opens leave form" />
+                            
+                            <div className="p-4 rounded-lg bg-muted/50 mt-3">
+                              <h4 className="font-medium text-sm mb-2">Leave Types:</h4>
+                              <div className="grid gap-2 sm:grid-cols-2 text-sm text-muted-foreground">
+                                <span>• Sick Leave</span>
+                                <span>• Casual Leave</span>
+                                <span>• Annual Leave</span>
+                                <span>• Emergency Leave</span>
+                                <span>• Maternity/Paternity</span>
+                                <span>• Unpaid Leave</span>
+                              </div>
+                            </div>
+                          </div>
+                        </TutorialStep>
+                      </div>
+
+                      <Separator />
+
+                      {/* WFH */}
+                      <div className="space-y-4">
+                        <h3 className="font-semibold flex items-center gap-2">
+                          <Home className="h-5 w-5 text-indigo-500" />
+                          Work From Home (WFH)
+                        </h3>
+                        <p className="text-muted-foreground">
+                          Request to work remotely on specific days.
+                        </p>
+                        <div className="space-y-2">
+                          <ActionDemo icon={Home} action="Go to WFH tab" result="View WFH requests" />
+                          <ActionDemo icon={Plus} action="New WFH Request" result="Select dates and reason" />
+                          <ActionDemo icon={Send} action="Submit for approval" result="Manager notified" />
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3 flex-wrap">
+                        <Button variant="outline" onClick={() => navigate('/dashboard?tab=attendance')}>
+                          <MapPin className="h-4 w-4 mr-2" /> Attendance
+                        </Button>
+                        <Button variant="outline" onClick={() => navigate('/dashboard?tab=leave')}>
+                          <Palmtree className="h-4 w-4 mr-2" /> Leave
+                        </Button>
+                        <Button variant="outline" onClick={() => navigate('/dashboard?tab=wfh')}>
+                          <Home className="h-4 w-4 mr-2" /> WFH
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* Communication Tab */}
+                <TabsContent value="communication" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <MessageSquare className="h-5 w-5 text-primary" />
+                        Communication Guide
+                      </CardTitle>
+                      <CardDescription>
+                        Stay connected with your team through channels, direct messages, and kudos.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      {/* Communication Hub */}
+                      <div className="space-y-4">
+                        <h3 className="font-semibold flex items-center gap-2">
+                          <MessageSquare className="h-5 w-5 text-blue-500" />
+                          Team Communication
+                        </h3>
+
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <div className="p-4 rounded-lg border">
+                            <h4 className="font-medium flex items-center gap-2 mb-2">
+                              <Users className="h-4 w-4 text-green-500" />
+                              Channels
+                            </h4>
+                            <p className="text-sm text-muted-foreground mb-3">
+                              Group conversations organized by team, project, or topic.
+                            </p>
+                            <div className="space-y-2 text-sm">
+                              <ActionDemo icon={Plus} action="Join a channel" result="Access group chat" />
+                              <ActionDemo icon={Send} action="Send message" result="Visible to all members" />
+                            </div>
+                          </div>
+                          
+                          <div className="p-4 rounded-lg border">
+                            <h4 className="font-medium flex items-center gap-2 mb-2">
+                              <User className="h-4 w-4 text-purple-500" />
+                              Direct Messages
+                            </h4>
+                            <p className="text-sm text-muted-foreground mb-3">
+                              Private one-on-one conversations with teammates.
+                            </p>
+                            <div className="space-y-2 text-sm">
+                              <ActionDemo icon={Search} action="Search for user" result="Open DM chat" />
+                              <ActionDemo icon={Send} action="Send private message" result="Only you both can see" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Kudos Wall */}
+                      <div className="space-y-4">
+                        <h3 className="font-semibold flex items-center gap-2">
+                          <HeartPulse className="h-5 w-5 text-red-500" />
+                          Kudos Wall - Recognize Your Team
+                        </h3>
+                        <p className="text-muted-foreground">
+                          The Kudos Wall is where you publicly recognize and celebrate team achievements.
+                        </p>
+
+                        <TutorialStep step={1} title="Giving Kudos">
+                          <div className="space-y-3">
+                            <ActionDemo icon={HeartPulse} action="Go to Kudos Wall" result="View recent kudos" />
+                            <ActionDemo icon={Plus} action="Click 'Give Kudos'" result="Opens kudos form" />
+                            <ActionDemo icon={User} action="Select recipient" result="Choose team member" />
+                            <ActionDemo icon={Edit} action="Write your message" result="Describe their achievement" />
+                            <ActionDemo icon={Award} action="Choose badge/category" result="Teamwork, Innovation, etc." />
+                            <ActionDemo icon={Send} action="Submit" result="Kudos posted publicly!" />
+                          </div>
+                        </TutorialStep>
+
+                        <Alert className="border-yellow-500/50 bg-yellow-500/10">
+                          <Award className="h-4 w-4 text-yellow-500" />
+                          <AlertTitle>Kudos = {coinName}!</AlertTitle>
+                          <AlertDescription>
+                            Both the giver and receiver may earn {coinName} when kudos are given. 
+                            Spread positivity and grow together!
+                          </AlertDescription>
+                        </Alert>
+
+                        <Button onClick={() => navigate('/kudos')}>
+                          <HeartPulse className="h-4 w-4 mr-2" /> Go to Kudos Wall
+                        </Button>
+                      </div>
+
+                      <Separator />
+
+                      {/* Pulse Surveys */}
+                      <div className="space-y-4">
+                        <h3 className="font-semibold flex items-center gap-2">
+                          <MessageCircle className="h-5 w-5 text-pink-500" />
+                          Pulse Surveys
+                        </h3>
+                        <p className="text-muted-foreground">
+                          Quick surveys to share your feedback and help improve the workplace.
+                        </p>
+                        <div className="space-y-2">
+                          <ActionDemo icon={MessageCircle} action="View active survey" result="See survey questions" />
+                          <ActionDemo icon={ThumbsUp} action="Rate items 1-5" result="Submit your feedback" />
+                          <ActionDemo icon={Edit} action="Add comments" result="Share detailed thoughts" />
+                        </div>
+
+                        <Button variant="outline" onClick={() => navigate('/pulse-surveys')}>
+                          <MessageCircle className="h-4 w-4 mr-2" /> View Pulse Surveys
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* Coins Tab */}
+                <TabsContent value="coins" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Coins className="h-5 w-5 text-yellow-500" />
+                        {coinName} Rewards System
+                      </CardTitle>
+                      <CardDescription>
+                        Understand how to earn and use {coinName} in your organization.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      {/* What are coins */}
+                      <div className="space-y-4">
+                        <h3 className="font-semibold flex items-center gap-2">
+                          <HelpCircle className="h-5 w-5 text-blue-500" />
+                          What are {coinName}?
+                        </h3>
+                        <p className="text-muted-foreground">
+                          {coinName} are virtual rewards you earn by being productive, completing tasks, 
+                          maintaining good attendance, and contributing positively to your team. They represent 
+                          your achievements and can potentially be redeemed for rewards.
+                        </p>
+                      </div>
+
+                      <Separator />
+
+                      {/* How to earn */}
+                      <div className="space-y-4">
+                        <h3 className="font-semibold flex items-center gap-2">
+                          <Star className="h-5 w-5 text-yellow-500" />
+                          How to Earn {coinName}
+                        </h3>
+                        
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <div className="p-4 rounded-lg border bg-gradient-to-r from-green-500/10 to-transparent">
+                            <div className="flex items-start gap-3">
+                              <CheckSquare className="h-5 w-5 text-green-500 mt-1" />
+                              <div>
+                                <h4 className="font-medium">Complete Tasks</h4>
+                                <p className="text-sm text-muted-foreground">
+                                  Each task has {coinName} attached. Complete and get verified to earn.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="p-4 rounded-lg border bg-gradient-to-r from-blue-500/10 to-transparent">
+                            <div className="flex items-start gap-3">
+                              <MapPin className="h-5 w-5 text-blue-500 mt-1" />
+                              <div>
+                                <h4 className="font-medium">Perfect Attendance</h4>
+                                <p className="text-sm text-muted-foreground">
+                                  Maintain attendance streaks for bonus {coinName}.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="p-4 rounded-lg border bg-gradient-to-r from-red-500/10 to-transparent">
+                            <div className="flex items-start gap-3">
+                              <HeartPulse className="h-5 w-5 text-red-500 mt-1" />
+                              <div>
+                                <h4 className="font-medium">Give & Receive Kudos</h4>
+                                <p className="text-sm text-muted-foreground">
+                                  Recognition rewards both parties with {coinName}.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="p-4 rounded-lg border bg-gradient-to-r from-purple-500/10 to-transparent">
+                            <div className="flex items-start gap-3">
+                              <BookOpen className="h-5 w-5 text-purple-500 mt-1" />
+                              <div>
+                                <h4 className="font-medium">Complete Training</h4>
+                                <p className="text-sm text-muted-foreground">
+                                  Finish courses and pass assessments.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="p-4 rounded-lg border bg-gradient-to-r from-orange-500/10 to-transparent">
+                            <div className="flex items-start gap-3">
+                              <Target className="h-5 w-5 text-orange-500 mt-1" />
+                              <div>
+                                <h4 className="font-medium">Achieve Goals</h4>
+                                <p className="text-sm text-muted-foreground">
+                                  Hit personal and team objectives.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="p-4 rounded-lg border bg-gradient-to-r from-teal-500/10 to-transparent">
+                            <div className="flex items-start gap-3">
+                              <Clock className="h-5 w-5 text-teal-500 mt-1" />
+                              <div>
+                                <h4 className="font-medium">On-Time Submissions</h4>
+                                <p className="text-sm text-muted-foreground">
+                                  Submit timesheets and expenses promptly.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Task coins flow */}
+                      <div className="space-y-4">
+                        <h3 className="font-semibold">Task to {coinName} Flow</h3>
+                        
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-4 rounded-lg bg-muted/30">
+                          <div className="flex-1 p-3 rounded-lg bg-card text-center">
+                            <CheckSquare className="h-6 w-6 mx-auto mb-2 text-blue-500" />
+                            <span className="text-xs font-medium">Task Assigned</span>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-muted-foreground hidden sm:block" />
+                          <div className="flex-1 p-3 rounded-lg bg-card text-center">
+                            <Activity className="h-6 w-6 mx-auto mb-2 text-purple-500" />
+                            <span className="text-xs font-medium">Work on Task</span>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-muted-foreground hidden sm:block" />
+                          <div className="flex-1 p-3 rounded-lg bg-card text-center">
+                            <Check className="h-6 w-6 mx-auto mb-2 text-green-500" />
+                            <span className="text-xs font-medium">Mark Done</span>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-muted-foreground hidden sm:block" />
+                          <div className="flex-1 p-3 rounded-lg bg-card text-center">
+                            <UserCheck className="h-6 w-6 mx-auto mb-2 text-indigo-500" />
+                            <span className="text-xs font-medium">Verified</span>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-muted-foreground hidden sm:block" />
+                          <div className="flex-1 p-3 rounded-lg bg-yellow-500/20 text-center">
+                            <Coins className="h-6 w-6 mx-auto mb-2 text-yellow-500" />
+                            <span className="text-xs font-medium">{coinName} Earned!</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Button onClick={() => navigate('/dashboard?tab=my-coins')}>
+                        <Coins className="h-4 w-4 mr-2" /> View My {coinName}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* Admin Tab */}
+                {isAdmin && (
+                  <TabsContent value="admin" className="space-y-6">
                     <Card>
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                           <Shield className="h-5 w-5 text-red-500" />
-                          Admin Quick Actions
+                          Admin Features Guide
                         </CardTitle>
+                        <CardDescription>
+                          Advanced features available to administrators and managers.
+                        </CardDescription>
                       </CardHeader>
-                      <CardContent>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          {[
-                            { title: 'Manage Team', path: '/dashboard?tab=interns', icon: Users },
-                            { title: 'View Reports', path: '/dashboard?tab=reports', icon: PieChart },
-                            { title: 'Approve Requests', path: '/dashboard?tab=approvals', icon: ClipboardCheck },
-                            { title: 'Organization Settings', path: '/admin/settings', icon: Settings },
-                          ].map((action) => (
-                            <Button key={action.title} variant="outline" className="justify-start h-auto py-3" asChild>
-                              <a href={action.path}>
-                                <action.icon className="h-4 w-4 mr-3" />
-                                {action.title}
-                              </a>
-                            </Button>
-                          ))}
+                      <CardContent className="space-y-6">
+                        {/* Team Management */}
+                        <div className="space-y-4">
+                          <h3 className="font-semibold flex items-center gap-2">
+                            <Users className="h-5 w-5 text-blue-500" />
+                            Team Management
+                          </h3>
+                          
+                          <div className="space-y-3">
+                            <ActionDemo icon={Users} action="Employees Tab" result="View all team members" />
+                            <ActionDemo icon={Plus} action="Add Employee" result="Create new user account" />
+                            <ActionDemo icon={Edit} action="Edit Profile" result="Update user details and role" />
+                            <ActionDemo icon={UserCheck} action="Verify Tasks" result="Approve completed work" />
+                          </div>
+                        </div>
+
+                        <Separator />
+
+                        {/* Task Creation */}
+                        <div className="space-y-4">
+                          <h3 className="font-semibold flex items-center gap-2">
+                            <CheckSquare className="h-5 w-5 text-green-500" />
+                            Creating & Assigning Tasks
+                          </h3>
+                          
+                          <TutorialStep step={1} title="Create a New Task">
+                            <div className="space-y-3">
+                              <ActionDemo icon={Plus} action="Click '+' button" result="Open task creation form" />
+                              <div className="p-4 rounded-lg bg-muted/50">
+                                <h4 className="font-medium text-sm mb-2">Task Fields:</h4>
+                                <div className="grid gap-2 sm:grid-cols-2 text-sm text-muted-foreground">
+                                  <span>• Title (required)</span>
+                                  <span>• Description</span>
+                                  <span>• Assignee</span>
+                                  <span>• Project</span>
+                                  <span>• Priority (Low/Medium/High)</span>
+                                  <span>• Due Date</span>
+                                  <span>• {coinName} Reward</span>
+                                  <span>• Attachments</span>
+                                </div>
+                              </div>
+                            </div>
+                          </TutorialStep>
+                        </div>
+
+                        <Separator />
+
+                        {/* Reports & Analytics */}
+                        <div className="space-y-4">
+                          <h3 className="font-semibold flex items-center gap-2">
+                            <PieChart className="h-5 w-5 text-purple-500" />
+                            Reports & Analytics
+                          </h3>
+                          
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <FeatureHighlight 
+                              icon={BarChart3} 
+                              title="Team Analytics" 
+                              description="Performance metrics and trends"
+                              path="/dashboard?tab=analytics"
+                              color="bg-blue-500"
+                            />
+                            <FeatureHighlight 
+                              icon={PieChart} 
+                              title="Custom Reports" 
+                              description="Build and schedule reports"
+                              path="/dashboard?tab=reports"
+                              color="bg-purple-500"
+                            />
+                            <FeatureHighlight 
+                              icon={Activity} 
+                              title="Work Health" 
+                              description="Team wellness metrics"
+                              path="/dashboard?tab=work-health"
+                              color="bg-green-500"
+                            />
+                            <FeatureHighlight 
+                              icon={ClipboardCheck} 
+                              title="Audit Logs" 
+                              description="Track all system activities"
+                              path="/dashboard?tab=audit"
+                              color="bg-orange-500"
+                            />
+                          </div>
+                        </div>
+
+                        <Separator />
+
+                        {/* Other Admin Features */}
+                        <div className="space-y-4">
+                          <h3 className="font-semibold">Other Admin Tools</h3>
+                          
+                          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                            <FeatureHighlight 
+                              icon={Zap} 
+                              title="Automation" 
+                              description="Create workflow rules"
+                              path="/dashboard?tab=automation"
+                              color="bg-yellow-500"
+                            />
+                            <FeatureHighlight 
+                              icon={Shield} 
+                              title="Roles & Permissions" 
+                              description="Manage access levels"
+                              path="/dashboard?tab=roles"
+                              color="bg-red-500"
+                            />
+                            <FeatureHighlight 
+                              icon={Wallet} 
+                              title="Payroll" 
+                              description="Process salaries"
+                              path="/dashboard?tab=payroll"
+                              color="bg-emerald-500"
+                            />
+                            <FeatureHighlight 
+                              icon={Coins} 
+                              title={`${coinName} Management`}
+                              description="Configure rewards"
+                              path="/dashboard?tab=coins"
+                              color="bg-amber-500"
+                            />
+                            <FeatureHighlight 
+                              icon={Settings} 
+                              title="Organization Settings" 
+                              description="Configure your org"
+                              path="/admin/settings"
+                              color="bg-slate-500"
+                            />
+                            <FeatureHighlight 
+                              icon={Users} 
+                              title="Org Chart" 
+                              description="Reporting structure"
+                              path="/organization/chart"
+                              color="bg-indigo-500"
+                            />
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
-                  )}
-                </TabsContent>
-
-                {/* Tips Tab */}
-                <TabsContent value="tips" className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-lg">
-                          <Lightbulb className="h-5 w-5 text-yellow-500" />
-                          Productivity Tips
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        {[
-                          'Use keyboard shortcuts for faster navigation',
-                          'Set up notification preferences to reduce distractions',
-                          'Check dashboard first thing every morning',
-                          'Log time as you complete tasks, not at end of day',
-                          'Use the Kanban board for visual task management'
-                        ].map((tip, i) => (
-                          <div key={i} className="flex items-start gap-2 text-sm">
-                            <CheckCircle2 className="h-4 w-4 mt-0.5 text-green-500 shrink-0" />
-                            <span>{tip}</span>
-                          </div>
-                        ))}
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-lg">
-                          <Coins className="h-5 w-5 text-yellow-500" />
-                          Earning Coins
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        {[
-                          'Complete tasks on time to earn bonus coins',
-                          'Maintain high attendance for streak bonuses',
-                          'Participate in training programs',
-                          'Give and receive kudos from teammates',
-                          'Submit timesheets and expenses on time'
-                        ].map((tip, i) => (
-                          <div key={i} className="flex items-start gap-2 text-sm">
-                            <Star className="h-4 w-4 mt-0.5 text-yellow-500 shrink-0" />
-                            <span>{tip}</span>
-                          </div>
-                        ))}
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-lg">
-                          <HelpCircle className="h-5 w-5 text-blue-500" />
-                          Getting Help
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        {[
-                          'Check the App Feedback section for common issues',
-                          'Contact your manager for access-related issues',
-                          'Use the communication hub for quick questions',
-                          'Submit feedback to help improve the platform',
-                          'Refer back to this tutorial anytime'
-                        ].map((tip, i) => (
-                          <div key={i} className="flex items-start gap-2 text-sm">
-                            <ChevronRight className="h-4 w-4 mt-0.5 text-primary shrink-0" />
-                            <span>{tip}</span>
-                          </div>
-                        ))}
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-lg">
-                          <TrendingUp className="h-5 w-5 text-green-500" />
-                          Career Growth
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        {[
-                          'Set clear personal goals and track progress',
-                          'Request regular feedback from peers and managers',
-                          'Complete all assigned training courses',
-                          'Take on challenging tasks to develop skills',
-                          'Participate actively in 1:1 meetings'
-                        ].map((tip, i) => (
-                          <div key={i} className="flex items-start gap-2 text-sm">
-                            <ArrowRight className="h-4 w-4 mt-0.5 text-green-500 shrink-0" />
-                            <span>{tip}</span>
-                          </div>
-                        ))}
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
+                  </TabsContent>
+                )}
               </Tabs>
+
+              {/* Help Section */}
+              <Card className="border-primary/20 bg-primary/5">
+                <CardContent className="pt-6">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <div className="p-3 rounded-full bg-primary/10">
+                      <HelpCircle className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold">Need More Help?</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Contact your manager or admin if you have questions. You can also submit feedback 
+                        through the App Feedback section.
+                      </p>
+                    </div>
+                    <Button variant="outline" onClick={() => navigate('/dashboard?tab=app-feedback')}>
+                      <MessageCircle className="h-4 w-4 mr-2" /> Submit Feedback
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </main>
         </div>
