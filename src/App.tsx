@@ -45,6 +45,7 @@ import OrgChartPage from "./pages/organization/OrgChart";
 import KudosWallPage from "./pages/KudosWall";
 import PulseSurveysPage from "./pages/PulseSurveys";
 import MyGoalsPage from "./pages/MyGoals";
+import TutorialPage from "./pages/Tutorial";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -193,6 +194,7 @@ function AppContent() {
           <Route path="/kudos" element={<ProtectedRoute><KudosWallPage /></ProtectedRoute>} />
           <Route path="/pulse-surveys" element={<ProtectedRoute><PulseSurveysPage /></ProtectedRoute>} />
           <Route path="/my-goals" element={<ProtectedRoute><MyGoalsPage /></ProtectedRoute>} />
+          <Route path="/tutorial" element={<ProtectedRoute><TutorialPage /></ProtectedRoute>} />
           
           {/* 404 */}
           <Route path="*" element={<NotFound />} />
