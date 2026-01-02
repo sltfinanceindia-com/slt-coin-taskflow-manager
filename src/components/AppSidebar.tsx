@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { NavLink } from "react-router-dom"
+import { NavLink, useNavigate } from "react-router-dom"
 import { 
   LayoutDashboard, 
   CheckSquare, 
@@ -228,14 +228,29 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
   const { isSuperAdmin, isAdmin, isManager, isTeamLead, role, isLoading: roleLoading } = useUserRole()
   const { isViewingSuperAdmin, isViewingOrgAdmin } = useViewMode()
   const { organization } = useOrganization()
+  const navigate = useNavigate()
   
   // isAdmin includes org_admin and admin with same privileges
   const navGroups = isAdmin ? adminNavGroups : internNavGroups
   const collapsed = state === "collapsed"
 
+  // Pages that have their own routes (not dashboard tabs)
+  const standaloneRoutes: Record<string, string> = {
+    'tutorial': '/tutorial',
+    'training': '/training',
+    'kudos': '/kudos',
+    'pulse-surveys': '/pulse-surveys',
+    'my-goals': '/my-goals',
+  }
+
   // Handle tab change and close sidebar on mobile
   const handleTabChange = (tab: string) => {
-    onTabChange(tab);
+    // Check if this is a standalone route
+    if (standaloneRoutes[tab]) {
+      navigate(standaloneRoutes[tab]);
+    } else {
+      onTabChange(tab);
+    }
     if (isMobile) {
       setOpenMobile(false);
     }
