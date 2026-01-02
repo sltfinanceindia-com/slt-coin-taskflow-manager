@@ -3,8 +3,10 @@ import { AppHeader } from '@/components/AppHeader';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { KudosWall as KudosWallComponent } from '@/components/kudos/KudosWall';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function KudosWallPage() {
+  const isMobile = useIsMobile();
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-gradient-background">
@@ -20,7 +22,7 @@ export default function KudosWallPage() {
           </main>
         </div>
         
-        <BottomNavigation variant="private" activeTab="kudos" onTabChange={() => {}} />
+        {isMobile && <BottomNavigation variant="private" activeTab="kudos" onTabChange={() => {}} />}
       </div>
     </SidebarProvider>
   );

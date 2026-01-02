@@ -3,8 +3,10 @@ import { AppHeader } from '@/components/AppHeader';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { PersonalGoalsWidget } from '@/components/goals/PersonalGoalsWidget';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function MyGoalsPage() {
+  const isMobile = useIsMobile();
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-gradient-background">
@@ -20,7 +22,7 @@ export default function MyGoalsPage() {
           </main>
         </div>
         
-        <BottomNavigation variant="private" activeTab="my-goals" onTabChange={() => {}} />
+        {isMobile && <BottomNavigation variant="private" activeTab="my-goals" onTabChange={() => {}} />}
       </div>
     </SidebarProvider>
   );

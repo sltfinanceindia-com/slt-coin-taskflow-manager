@@ -5,9 +5,11 @@ import { BottomNavigation } from '@/components/BottomNavigation';
 import { PulseSurveyAdmin } from '@/components/pulse/PulseSurveyAdmin';
 import { PulseSurveyWidget } from '@/components/pulse/PulseSurveyWidget';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function PulseSurveysPage() {
   const { isAdmin } = useUserRole();
+  const isMobile = useIsMobile();
 
   return (
     <SidebarProvider>
@@ -24,7 +26,7 @@ export default function PulseSurveysPage() {
           </main>
         </div>
         
-        <BottomNavigation variant="private" activeTab="pulse-surveys" onTabChange={() => {}} />
+        {isMobile && <BottomNavigation variant="private" activeTab="pulse-surveys" onTabChange={() => {}} />}
       </div>
     </SidebarProvider>
   );
