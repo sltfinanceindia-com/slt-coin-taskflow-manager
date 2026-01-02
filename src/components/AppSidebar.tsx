@@ -243,6 +243,8 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
     'my-goals': '/my-goals',
     'roles': '/admin/roles-permissions',
     'org-chart': '/organization/chart',
+    'profile': '/profile',
+    'settings': '/admin/organization-settings',
   }
 
   // Handle tab change and close sidebar on mobile

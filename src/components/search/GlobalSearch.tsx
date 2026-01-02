@@ -51,8 +51,9 @@ export function GlobalSearch() {
   const navigateToTab = useCallback((tab: string) => {
     setOpen(false);
     setQuery('');
-    window.dispatchEvent(new CustomEvent('navigate-to-tab', { detail: tab }));
-  }, []);
+    // Navigate directly to dashboard with tab parameter
+    navigate(`/dashboard?tab=${tab}`);
+  }, [navigate]);
 
   const handleResultClick = useCallback((result: UniversalSearchResult) => {
     setOpen(false);
@@ -62,10 +63,11 @@ export function GlobalSearch() {
       const params = new URLSearchParams(result.url.replace('?', ''));
       const tab = params.get('tab');
       if (tab) {
-        window.dispatchEvent(new CustomEvent('navigate-to-tab', { detail: tab }));
+        // Navigate directly to dashboard with tab parameter
+        navigate(`/dashboard?tab=${tab}`);
       }
     }
-  }, []);
+  }, [navigate]);
 
   const runCommand = useCallback((command: () => void) => {
     setOpen(false);
