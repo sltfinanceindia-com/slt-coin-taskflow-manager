@@ -24,18 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
-
-// Standalone routes that have their own pages
-const standaloneRoutes: Record<string, string> = {
-  'training': '/training',
-  'tutorial': '/tutorial',
-  'kudos': '/kudos',
-  'pulse-surveys': '/pulse-surveys',
-  'my-goals': '/my-goals',
-  'profile': '/profile',
-  'roles': '/admin/roles-permissions',
-  'org-chart': '/organization/chart',
-};
+import { standaloneRoutes } from '@/config/navigation';
 
 interface NavItem {
   icon: React.ElementType;

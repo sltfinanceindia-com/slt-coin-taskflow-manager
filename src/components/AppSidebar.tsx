@@ -46,6 +46,7 @@ import {
   GanttChart,
   UserCircle
 } from "lucide-react"
+import { standaloneRoutes } from "@/config/navigation"
 import { useOrganization } from "@/hooks/useOrganization"
 import { cn } from "@/lib/utils"
 
@@ -219,7 +220,7 @@ const internNavGroups = [
 
 interface AppSidebarProps {
   activeTab: string
-  onTabChange: (tab: string) => void
+  onTabChange?: (tab: string) => void
 }
 
 export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
@@ -234,18 +235,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
   const navGroups = isAdmin ? adminNavGroups : internNavGroups
   const collapsed = state === "collapsed"
 
-  // Pages that have their own routes (not dashboard tabs)
-  const standaloneRoutes: Record<string, string> = {
-    'tutorial': '/tutorial',
-    'training': '/training',
-    'kudos': '/kudos',
-    'pulse-surveys': '/pulse-surveys',
-    'my-goals': '/my-goals',
-    'roles': '/admin/roles-permissions',
-    'org-chart': '/organization/chart',
-    'profile': '/profile',
-    'settings': '/admin/organization-settings',
-  }
+  // standaloneRoutes imported from @/config/navigation
 
   // Handle tab change and close sidebar on mobile
   const handleTabChange = (tab: string) => {
