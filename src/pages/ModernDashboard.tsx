@@ -171,8 +171,8 @@ export default function ModernDashboard() {
         return <OrganizationCalendar />;
       
       case 'training':
-        navigate('/training');
-        return null;
+        // Navigation handled by sidebar - show fallback content
+        return <EnhancedDashboardWidgets />;
       
       case 'time':
         return (
@@ -350,12 +350,12 @@ export default function ModernDashboard() {
         return isAdmin ? <CustomReportBuilder /> : null;
       
       case 'roles':
-        navigate('/admin/roles-permissions');
-        return null;
+        // Navigation handled by sidebar
+        return <EnhancedDashboardWidgets />;
       
       case 'org-chart':
-        navigate('/organization/chart');
-        return null;
+        // Navigation handled by sidebar
+        return <EnhancedDashboardWidgets />;
       
       case 'app-feedback':
         return <FeedbackForm userEmail={profile?.email} userName={profile?.full_name} />;

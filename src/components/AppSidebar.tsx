@@ -241,6 +241,8 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
     'kudos': '/kudos',
     'pulse-surveys': '/pulse-surveys',
     'my-goals': '/my-goals',
+    'roles': '/admin/roles-permissions',
+    'org-chart': '/organization/chart',
   }
 
   // Handle tab change and close sidebar on mobile
