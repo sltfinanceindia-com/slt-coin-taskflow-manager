@@ -5,6 +5,7 @@ import { useUniversalSearch, SearchResultType, UniversalSearchResult } from '@/h
 import { Search, CheckSquare, FolderKanban, Users, Settings, LayoutDashboard, Calendar, FileText, Plus, MessageCircle, Clock, Briefcase, Loader2, Hash } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useDebounce } from '@/hooks/useDebounce';
+import { standaloneRoutes, getRouteForTab } from '@/config/navigation';
 
 const getIconForType = (type: SearchResultType) => {
   switch (type) {
@@ -48,28 +49,12 @@ export function GlobalSearch() {
     }
   }, [debouncedQuery, performSearch, clearResults]);
 
-  // Standalone routes that have their own pages
-  const standaloneRoutes: Record<string, string> = {
-    'training': '/training',
-    'tutorial': '/tutorial',
-    'kudos': '/kudos',
-    'pulse-surveys': '/pulse-surveys',
-    'my-goals': '/my-goals',
-    'profile': '/profile',
-    'roles': '/admin/roles-permissions',
-    'org-chart': '/organization/chart',
-    'settings': '/admin/organization-settings',
-  };
+  // standaloneRoutes imported from @/config/navigation
 
   const navigateToTab = useCallback((tab: string) => {
     setOpen(false);
     setQuery('');
-    // Check if this tab has a standalone route
-    if (standaloneRoutes[tab]) {
-      navigate(standaloneRoutes[tab]);
-    } else {
-      navigate(`/dashboard?tab=${tab}`);
-    }
+    navigate(getRouteForTab(tab));
   }, [navigate]);
 
   const handleResultClick = useCallback((result: UniversalSearchResult) => {

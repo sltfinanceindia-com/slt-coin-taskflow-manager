@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import { AppSidebar } from '@/components/AppSidebar';
-import { AppHeader } from '@/components/AppHeader';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import { BottomNavigation } from '@/components/BottomNavigation';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { StandalonePageLayout } from '@/layouts/StandalonePageLayout';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useOrganization } from '@/hooks/useOrganization';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -130,7 +126,6 @@ const KeyboardShortcut = ({ keys, action }: { keys: string[]; action: string }) 
 );
 
 export default function TutorialPage() {
-  const isMobile = useIsMobile();
   const { role, isAdmin, isManager, isTeamLead } = useUserRole();
   const { organization } = useOrganization();
   const [activeTab, setActiveTab] = useState('getting-started');
@@ -139,15 +134,13 @@ export default function TutorialPage() {
   const coinName = organization?.coin_name || 'Coins';
 
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-gradient-background">
-        <AppSidebar activeTab="tutorial" onTabChange={setActiveTab} />
+    <StandalonePageLayout 
+      activeTab="tutorial"
+      contentClassName="p-4 md:p-6 lg:p-8"
+      useContainer={false}
+    >
         
-        <div className="flex-1 flex flex-col min-w-0">
-          <AppHeader />
-          
-          <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto">
-            <div className="max-w-5xl mx-auto space-y-6">
+      <div className="max-w-5xl mx-auto space-y-6">
               {/* Header */}
               <div className="space-y-2">
                 <div className="flex items-center gap-3">
@@ -1277,11 +1270,6 @@ export default function TutorialPage() {
                 </CardContent>
               </Card>
             </div>
-          </main>
-        </div>
-        
-        {isMobile && <BottomNavigation variant="private" activeTab="tutorial" onTabChange={() => {}} />}
-      </div>
-    </SidebarProvider>
+          </StandalonePageLayout>
   );
 }
