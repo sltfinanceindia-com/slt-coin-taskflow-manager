@@ -28,6 +28,13 @@ import {
 // Standalone routes that have their own pages
 const standaloneRoutes: Record<string, string> = {
   'training': '/training',
+  'tutorial': '/tutorial',
+  'kudos': '/kudos',
+  'pulse-surveys': '/pulse-surveys',
+  'my-goals': '/my-goals',
+  'profile': '/profile',
+  'roles': '/admin/roles-permissions',
+  'org-chart': '/organization/chart',
 };
 
 interface NavItem {

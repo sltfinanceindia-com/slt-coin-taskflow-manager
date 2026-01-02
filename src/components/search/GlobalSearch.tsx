@@ -48,11 +48,28 @@ export function GlobalSearch() {
     }
   }, [debouncedQuery, performSearch, clearResults]);
 
+  // Standalone routes that have their own pages
+  const standaloneRoutes: Record<string, string> = {
+    'training': '/training',
+    'tutorial': '/tutorial',
+    'kudos': '/kudos',
+    'pulse-surveys': '/pulse-surveys',
+    'my-goals': '/my-goals',
+    'profile': '/profile',
+    'roles': '/admin/roles-permissions',
+    'org-chart': '/organization/chart',
+    'settings': '/admin/organization-settings',
+  };
+
   const navigateToTab = useCallback((tab: string) => {
     setOpen(false);
     setQuery('');
-    // Navigate directly to dashboard with tab parameter
-    navigate(`/dashboard?tab=${tab}`);
+    // Check if this tab has a standalone route
+    if (standaloneRoutes[tab]) {
+      navigate(standaloneRoutes[tab]);
+    } else {
+      navigate(`/dashboard?tab=${tab}`);
+    }
   }, [navigate]);
 
   const handleResultClick = useCallback((result: UniversalSearchResult) => {
