@@ -155,6 +155,7 @@ const adminNavGroups = [
     label: "Resources",
     icon: BookOpen,
     items: [
+      { title: "Tutorial", url: "tutorial", icon: BookOpen },
       { title: "Training", url: "training", icon: BookOpen },
       { title: "Communication", url: "communication", icon: MessageSquare },
       { title: "Kudos Wall", url: "kudos", icon: HeartPulse },
@@ -202,6 +203,7 @@ const internNavGroups = [
     label: "Resources",
     icon: BookOpen,
     items: [
+      { title: "Tutorial", url: "tutorial", icon: BookOpen },
       { title: "Approvals", url: "approvals", icon: GitBranch },
       { title: "Training", url: "training", icon: BookOpen },
       { title: "Communication", url: "communication", icon: MessageSquare },
