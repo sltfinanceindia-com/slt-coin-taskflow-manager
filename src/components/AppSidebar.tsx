@@ -251,7 +251,9 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
     if (standaloneRoutes[tab]) {
       navigate(standaloneRoutes[tab]);
     } else {
-      onTabChange(tab);
+      // Always navigate to dashboard with the tab parameter
+      // This ensures navigation works even from standalone pages
+      navigate(`/dashboard?tab=${tab}`);
     }
     if (isMobile) {
       setOpenMobile(false);
