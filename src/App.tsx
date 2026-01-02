@@ -155,6 +155,7 @@ function AppContent() {
           
           {/* Admin Routes */}
           <Route path="/admin/settings" element={<ProtectedRoute><OrganizationSettings /></ProtectedRoute>} />
+          <Route path="/admin/organization-settings" element={<ProtectedRoute><OrganizationSettings /></ProtectedRoute>} />
           <Route path="/admin/roles-permissions" element={<ProtectedRoute><RolesPermissions /></ProtectedRoute>} />
           <Route path="/organization/chart" element={<ProtectedRoute><OrgChartPage /></ProtectedRoute>} />
           

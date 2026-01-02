@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Home, 
   Sparkles, 
@@ -24,6 +24,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
+
+// Standalone routes that have their own pages
+const standaloneRoutes: Record<string, string> = {
+  'training': '/training',
+};
 
 interface NavItem {
   icon: React.ElementType;
@@ -65,8 +70,18 @@ interface BottomNavigationProps {
 
 export function BottomNavigation({ variant, activeTab, onTabChange }: BottomNavigationProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const items = variant === 'public' ? publicNavItems : privateNavItems;
   const isPrivate = variant === 'private';
+
+  // Handle tab navigation - always navigate to dashboard for reliability
+  const handleTabChange = (tab: string) => {
+    if (standaloneRoutes[tab]) {
+      navigate(standaloneRoutes[tab]);
+    } else {
+      navigate(`/dashboard?tab=${tab}`);
+    }
+  };
 
   return (
     <nav 
@@ -103,7 +118,7 @@ export function BottomNavigation({ variant, activeTab, onTabChange }: BottomNavi
           return (
             <button
               key={item.label}
-              onClick={() => item.tab && onTabChange?.(item.tab)}
+              onClick={() => item.tab && handleTabChange(item.tab)}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[56px]",
                 isActive 
@@ -144,7 +159,7 @@ export function BottomNavigation({ variant, activeTab, onTabChange }: BottomNavi
                 return (
                   <DropdownMenuItem
                     key={item.label}
-                    onClick={() => item.tab && onTabChange?.(item.tab)}
+                    onClick={() => item.tab && handleTabChange(item.tab)}
                     className={cn(
                       "gap-2 cursor-pointer",
                       isActive && "bg-primary/10 text-primary"
