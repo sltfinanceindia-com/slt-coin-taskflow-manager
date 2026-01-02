@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,8 +23,12 @@ import {
   Clock, 
   XCircle,
   DollarSign,
-  TrendingUp
+  TrendingUp,
+  Upload,
+  ListChecks
 } from 'lucide-react';
+import { ReceiptUpload } from './ReceiptUpload';
+import { BulkExpenseApproval } from './BulkExpenseApproval';
 
 const EXPENSE_CATEGORIES = [
   { value: 'travel', label: 'Travel' },
@@ -281,7 +286,7 @@ export function ExpenseManagement() {
         </Card>
       </div>
 
-      {/* Expense Claims Table */}
+      {/* Expense Claims with Tabs */}
       <Card>
         <CardHeader>
           <CardTitle>Expense Claims</CardTitle>
@@ -290,72 +295,113 @@ export function ExpenseManagement() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
-          ) : expenses && expenses.length > 0 ? (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Claim #</TableHead>
-                    {isAdmin && <TableHead>Employee</TableHead>}
-                    <TableHead>Title</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    {isAdmin && <TableHead>Actions</TableHead>}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {expenses.map((expense) => (
-                    <TableRow key={expense.id}>
-                      <TableCell className="font-mono text-sm">{expense.claim_number}</TableCell>
-                      {isAdmin && (
-                        <TableCell>{(expense.employee as any)?.full_name}</TableCell>
-                      )}
-                      <TableCell className="font-medium">{expense.title}</TableCell>
-                      <TableCell className="capitalize">{expense.category}</TableCell>
-                      <TableCell>{format(new Date(expense.expense_date), 'MMM dd, yyyy')}</TableCell>
-                      <TableCell className="text-right font-bold">₹{Number(expense.amount).toLocaleString()}</TableCell>
-                      <TableCell>{getStatusBadge(expense.status)}</TableCell>
-                      {isAdmin && expense.status === 'pending' && (
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="h-7 text-green-600 hover:text-green-700"
-                              onClick={() => updateExpenseMutation.mutate({ id: expense.id, status: 'approved' })}
-                            >
-                              <CheckCircle className="h-3 w-3" />
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="h-7 text-red-600 hover:text-red-700"
-                              onClick={() => updateExpenseMutation.mutate({ id: expense.id, status: 'rejected' })}
-                            >
-                              <XCircle className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      )}
-                      {isAdmin && expense.status !== 'pending' && <TableCell>-</TableCell>}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <Receipt className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No expense claims found</p>
-              <p className="text-sm">Submit your first expense to get started</p>
-            </div>
-          )}
+          <Tabs defaultValue="list">
+            <TabsList className="mb-4">
+              <TabsTrigger value="list">All Claims</TabsTrigger>
+              {isAdmin && (
+                <TabsTrigger value="bulk" className="gap-2">
+                  <ListChecks className="h-4 w-4" />
+                  Bulk Approval
+                </TabsTrigger>
+              )}
+              <TabsTrigger value="upload" className="gap-2">
+                <Upload className="h-4 w-4" />
+                Upload Receipt
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="list">
+              {isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : expenses && expenses.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Claim #</TableHead>
+                        {isAdmin && <TableHead>Employee</TableHead>}
+                        <TableHead>Title</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
+                        <TableHead>Status</TableHead>
+                        {isAdmin && <TableHead>Actions</TableHead>}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {expenses.map((expense) => (
+                        <TableRow key={expense.id}>
+                          <TableCell className="font-mono text-sm">{expense.claim_number}</TableCell>
+                          {isAdmin && (
+                            <TableCell>{(expense.employee as any)?.full_name}</TableCell>
+                          )}
+                          <TableCell className="font-medium">{expense.title}</TableCell>
+                          <TableCell className="capitalize">{expense.category}</TableCell>
+                          <TableCell>{format(new Date(expense.expense_date), 'MMM dd, yyyy')}</TableCell>
+                          <TableCell className="text-right font-bold">₹{Number(expense.amount).toLocaleString()}</TableCell>
+                          <TableCell>{getStatusBadge(expense.status)}</TableCell>
+                          {isAdmin && expense.status === 'pending' && (
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="h-7 text-green-600 hover:text-green-700"
+                                  onClick={() => updateExpenseMutation.mutate({ id: expense.id, status: 'approved' })}
+                                >
+                                  <CheckCircle className="h-3 w-3" />
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="h-7 text-red-600 hover:text-red-700"
+                                  onClick={() => updateExpenseMutation.mutate({ id: expense.id, status: 'rejected' })}
+                                >
+                                  <XCircle className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          )}
+                          {isAdmin && expense.status !== 'pending' && <TableCell>-</TableCell>}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Receipt className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No expense claims found</p>
+                  <p className="text-sm">Submit your first expense to get started</p>
+                </div>
+              )}
+            </TabsContent>
+            
+            {isAdmin && (
+              <TabsContent value="bulk">
+                <BulkExpenseApproval expenses={(expenses || []).map(e => ({
+                  id: e.id,
+                  claim_number: e.claim_number || '',
+                  title: e.title,
+                  category: e.category,
+                  amount: Number(e.amount),
+                  expense_date: e.expense_date,
+                  status: e.status,
+                  employee: e.employee as any
+                }))} />
+              </TabsContent>
+            )}
+            
+            <TabsContent value="upload">
+              <ReceiptUpload 
+                onUpload={(urls) => {
+                  toast({ title: 'Receipt uploaded', description: 'You can now attach it to an expense claim' });
+                }}
+              />
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </div>
