@@ -234,17 +234,23 @@ export function TabBasedKanban({
             {statusTabs.map((tab) => {
               const count = getTabCount(tab.id);
               const Icon = tab.icon;
+              // Abbreviated titles for mobile
+              const mobileTitle = tab.id === 'in_progress' ? 'Progress' : 
+                                  tab.id === 'completed' ? 'Done' : 
+                                  tab.id === 'verified' ? 'Verified' : 
+                                  tab.id === 'rejected' ? 'Reject' : 
+                                  tab.title;
               return (
                 <TabsTrigger
                   key={tab.id}
                   value={tab.id}
-                  className="flex items-center gap-2 px-3 py-2 whitespace-nowrap data-[state=active]:bg-background"
+                  className="flex items-center gap-1.5 px-2 sm:px-3 py-2 whitespace-nowrap data-[state=active]:bg-background min-w-0"
                 >
-                  <Icon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{tab.title}</span>
+                  <Icon className="h-4 w-4 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm truncate">{mobileTitle}</span>
                   <Badge 
                     variant="secondary" 
-                    className={`text-[10px] px-1.5 min-w-[20px] justify-center ${
+                    className={`text-[10px] px-1.5 min-w-[20px] justify-center flex-shrink-0 ${
                       activeTab === tab.id ? 'bg-primary text-primary-foreground' : ''
                     }`}
                   >

@@ -51,18 +51,32 @@ interface OrgNode {
 const ROLE_ICONS: Record<string, React.ElementType> = {
   org_admin: Shield,
   admin: Shield,
+  hr_admin: Shield,
+  finance_admin: Shield,
+  department_head: Users,
   manager: Users,
+  supervisor: UserCheck,
   team_lead: UserCheck,
+  senior_employee: User,
   employee: User,
+  contractor: User,
+  consultant: User,
   intern: GraduationCap,
 };
 
 const ROLE_COLORS: Record<string, string> = {
   org_admin: 'border-purple-500 bg-purple-50 dark:bg-purple-950',
   admin: 'border-purple-500 bg-purple-50 dark:bg-purple-950',
+  hr_admin: 'border-pink-500 bg-pink-50 dark:bg-pink-950',
+  finance_admin: 'border-cyan-500 bg-cyan-50 dark:bg-cyan-950',
+  department_head: 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950',
   manager: 'border-blue-500 bg-blue-50 dark:bg-blue-950',
+  supervisor: 'border-teal-500 bg-teal-50 dark:bg-teal-950',
   team_lead: 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950',
+  senior_employee: 'border-orange-500 bg-orange-50 dark:bg-orange-950',
   employee: 'border-amber-500 bg-amber-50 dark:bg-amber-950',
+  contractor: 'border-slate-500 bg-slate-50 dark:bg-slate-950',
+  consultant: 'border-violet-500 bg-violet-50 dark:bg-violet-950',
   intern: 'border-gray-400 bg-gray-50 dark:bg-gray-900',
 };
 
@@ -273,13 +287,24 @@ export function OrgChartViewer({ onSelectUser }: OrgChartViewerProps) {
       }
     });
 
-    // Sort children by role hierarchy
-    const roleOrder = ['org_admin', 'admin', 'manager', 'team_lead', 'employee', 'intern'];
+    // Sort children by department, then role hierarchy, then name
+    const roleOrder = ['org_admin', 'admin', 'hr_admin', 'finance_admin', 'department_head', 'manager', 'supervisor', 'team_lead', 'senior_employee', 'employee', 'contractor', 'consultant', 'intern'];
     const sortChildren = (nodes: OrgNode[]) => {
       nodes.sort((a, b) => {
+        // First sort by department
+        const deptA = a.department_name || '';
+        const deptB = b.department_name || '';
+        if (deptA !== deptB) {
+          return deptA.localeCompare(deptB);
+        }
+        // Then sort by role hierarchy
         const aIndex = roleOrder.indexOf(a.role || 'employee');
         const bIndex = roleOrder.indexOf(b.role || 'employee');
-        return aIndex - bIndex;
+        if (aIndex !== bIndex) {
+          return aIndex - bIndex;
+        }
+        // Finally sort by name
+        return (a.full_name || '').localeCompare(b.full_name || '');
       });
       nodes.forEach((node) => {
         if (node.children?.length) {
