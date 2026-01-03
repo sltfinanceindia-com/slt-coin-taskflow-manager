@@ -120,16 +120,30 @@ export const useUniversalSearch = () => {
 
   const searchEmployees = async (query: string): Promise<UniversalSearchResult[]> => {
     try {
+      // Search with flexible matching - handle partial names and different formats
+      const searchTerms = query.toLowerCase().trim().split(/\s+/);
+      
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, email, role, department, avatar_url')
-        .or(`full_name.ilike.%${query}%,email.ilike.%${query}%,department.ilike.%${query}%`)
+        .select('id, full_name, email, role, department, avatar_url, employee_id')
         .eq('is_active', true)
-        .limit(10);
+        .limit(50); // Get more results to filter client-side
 
       if (error) throw error;
 
-      return (data || []).map(emp => ({
+      // Filter results that match any of the search terms
+      const filteredData = (data || []).filter(emp => {
+        const searchableText = [
+          emp.full_name || '',
+          emp.email || '',
+          emp.department || '',
+          emp.employee_id || ''
+        ].join(' ').toLowerCase();
+        
+        return searchTerms.every(term => searchableText.includes(term));
+      }).slice(0, 10);
+
+      return filteredData.map(emp => ({
         id: emp.id,
         type: 'employee' as const,
         title: emp.full_name || 'Unknown',

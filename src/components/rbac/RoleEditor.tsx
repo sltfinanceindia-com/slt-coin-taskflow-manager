@@ -37,17 +37,24 @@ import { toast } from 'sonner';
 const roleFormSchema = z.object({
   name: z.string().min(2, 'Role name must be at least 2 characters'),
   description: z.string().optional(),
-  role_type: z.enum(['org_admin', 'manager', 'team_lead', 'employee', 'intern']),
-  hierarchy_level: z.number().min(1).max(5),
+  role_type: z.enum(['org_admin', 'hr_admin', 'finance_admin', 'department_head', 'manager', 'supervisor', 'team_lead', 'senior_employee', 'employee', 'contractor', 'consultant', 'intern']),
+  hierarchy_level: z.number().min(1).max(10),
 });
 
 type RoleFormValues = z.infer<typeof roleFormSchema>;
 
 const ROLE_TYPES = [
-  { value: 'org_admin', label: 'Organization Admin', icon: Shield, level: 5, color: 'bg-purple-500' },
-  { value: 'manager', label: 'Manager', icon: Users, level: 4, color: 'bg-blue-500' },
-  { value: 'team_lead', label: 'Team Lead', icon: UserCheck, level: 3, color: 'bg-emerald-500' },
-  { value: 'employee', label: 'Employee', icon: User, level: 2, color: 'bg-amber-500' },
+  { value: 'org_admin', label: 'Organization Admin', icon: Shield, level: 10, color: 'bg-purple-500' },
+  { value: 'hr_admin', label: 'HR Admin', icon: Shield, level: 9, color: 'bg-pink-500' },
+  { value: 'finance_admin', label: 'Finance Admin', icon: Shield, level: 9, color: 'bg-cyan-500' },
+  { value: 'department_head', label: 'Department Head', icon: Users, level: 8, color: 'bg-indigo-500' },
+  { value: 'manager', label: 'Manager', icon: Users, level: 7, color: 'bg-blue-500' },
+  { value: 'supervisor', label: 'Supervisor', icon: UserCheck, level: 6, color: 'bg-teal-500' },
+  { value: 'team_lead', label: 'Team Lead', icon: UserCheck, level: 5, color: 'bg-emerald-500' },
+  { value: 'senior_employee', label: 'Senior Employee', icon: User, level: 4, color: 'bg-orange-500' },
+  { value: 'employee', label: 'Employee', icon: User, level: 3, color: 'bg-amber-500' },
+  { value: 'contractor', label: 'Contractor', icon: User, level: 2, color: 'bg-slate-500' },
+  { value: 'consultant', label: 'Consultant', icon: User, level: 2, color: 'bg-violet-500' },
   { value: 'intern', label: 'Intern', icon: GraduationCap, level: 1, color: 'bg-gray-500' },
 ];
 
