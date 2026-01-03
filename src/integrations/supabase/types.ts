@@ -9132,30 +9132,57 @@ export type Database = {
           created_at: string
           date_logged: string
           description: string | null
+          duration_minutes: number | null
+          end_time: string | null
           hours_worked: number
           id: string
+          is_synced_to_timesheet: boolean | null
+          log_type: string | null
+          metadata: Json | null
           organization_id: string | null
+          source: string | null
+          source_id: string | null
+          start_time: string | null
           task_id: string
+          timesheet_entry_id: string | null
           user_id: string
         }
         Insert: {
           created_at?: string
           date_logged?: string
           description?: string | null
+          duration_minutes?: number | null
+          end_time?: string | null
           hours_worked: number
           id?: string
+          is_synced_to_timesheet?: boolean | null
+          log_type?: string | null
+          metadata?: Json | null
           organization_id?: string | null
+          source?: string | null
+          source_id?: string | null
+          start_time?: string | null
           task_id: string
+          timesheet_entry_id?: string | null
           user_id: string
         }
         Update: {
           created_at?: string
           date_logged?: string
           description?: string | null
+          duration_minutes?: number | null
+          end_time?: string | null
           hours_worked?: number
           id?: string
+          is_synced_to_timesheet?: boolean | null
+          log_type?: string | null
+          metadata?: Json | null
           organization_id?: string | null
+          source?: string | null
+          source_id?: string | null
+          start_time?: string | null
           task_id?: string
+          timesheet_entry_id?: string | null
           user_id?: string
         }
         Relationships: [
@@ -9174,6 +9201,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "time_logs_timesheet_entry_id_fkey"
+            columns: ["timesheet_entry_id"]
+            isOneToOne: false
+            referencedRelation: "timesheet_entries"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "time_logs_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -9184,9 +9218,14 @@ export type Database = {
       }
       timesheet_entries: {
         Row: {
+          billing_rate: number | null
+          client_name: string | null
+          cost_center: string | null
           created_at: string
           description: string | null
+          hours_type: string | null
           id: string
+          is_billable: boolean | null
           organization_id: string | null
           overtime_hours: number | null
           project_id: string | null
@@ -9196,9 +9235,14 @@ export type Database = {
           work_date: string
         }
         Insert: {
+          billing_rate?: number | null
+          client_name?: string | null
+          cost_center?: string | null
           created_at?: string
           description?: string | null
+          hours_type?: string | null
           id?: string
+          is_billable?: boolean | null
           organization_id?: string | null
           overtime_hours?: number | null
           project_id?: string | null
@@ -9208,9 +9252,14 @@ export type Database = {
           work_date: string
         }
         Update: {
+          billing_rate?: number | null
+          client_name?: string | null
+          cost_center?: string | null
           created_at?: string
           description?: string | null
+          hours_type?: string | null
           id?: string
+          is_billable?: boolean | null
           organization_id?: string | null
           overtime_hours?: number | null
           project_id?: string | null
@@ -10473,6 +10522,19 @@ export type Database = {
           member_id: string
         }[]
       }
+      get_timesheet_summary: {
+        Args: { p_timesheet_id: string }
+        Returns: {
+          billable_hours: number
+          estimated_revenue: number
+          non_billable_hours: number
+          overtime_hours: number
+          pto_hours: number
+          regular_hours: number
+          total_hours: number
+          training_hours: number
+        }[]
+      }
       get_user_channel_ids: {
         Args: { p_profile_id: string }
         Returns: string[]
@@ -10548,6 +10610,10 @@ export type Database = {
           proficiency_level: number
           profile_id: string
         }[]
+      }
+      sync_lms_hours_to_timesheet: {
+        Args: { p_end_date: string; p_start_date: string; p_user_id: string }
+        Returns: number
       }
       track_user_activity: {
         Args: {
