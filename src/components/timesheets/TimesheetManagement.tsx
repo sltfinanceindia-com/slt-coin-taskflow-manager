@@ -1,96 +1,127 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
-import { format, startOfWeek, endOfWeek, addDays, parseISO, differenceInHours } from 'date-fns';
+import { format, startOfWeek, endOfWeek, addDays, parseISO } from 'date-fns';
+import { TimesheetSummaryCards } from './TimesheetSummaryCards';
+import { EnhancedTimesheetEntry } from './EnhancedTimesheetEntry';
 import { 
   Clock, 
   Plus, 
-  Calendar,
   CheckCircle,
   AlertCircle,
   Timer,
   Play,
   Square,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Download,
+  Upload
 } from 'lucide-react';
 
 interface TimesheetEntry {
   id: string;
+  timesheet_id: string;
+  work_date: string;
+  regular_hours: number;
+  overtime_hours: number;
+  description: string;
+  project_id: string | null;
+  task_id: string | null;
+  is_billable: boolean;
+  billing_rate: number | null;
+  hours_type: string;
+  client_name: string | null;
+  cost_center: string | null;
+  project?: { id: string; name: string } | null;
+  task?: { id: string; title: string; task_number: string | null } | null;
+}
+
+interface Timesheet {
+  id: string;
   period_start: string;
   period_end: string;
+  status: 'draft' | 'submitted' | 'approved' | 'rejected';
   total_hours: number;
   overtime_hours: number;
   notes: string;
-  status: 'draft' | 'submitted' | 'approved' | 'rejected';
+  submitted_at: string | null;
+  approved_at: string | null;
+  entries?: TimesheetEntry[];
 }
 
 export function TimesheetManagement() {
   const { profile } = useAuth();
   const queryClient = useQueryClient();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isEntryOpen, setIsEntryOpen] = useState(false);
   const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [timerStart, setTimerStart] = useState<Date | null>(null);
   const [elapsedMinutes, setElapsedMinutes] = useState(0);
-  
-  const [newEntry, setNewEntry] = useState({
-    period_start: format(currentWeekStart, 'yyyy-MM-dd'),
-    period_end: format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'yyyy-MM-dd'),
-    total_hours: '40',
-    overtime_hours: '0',
-    notes: '',
-  });
+  const [selectedTimesheetId, setSelectedTimesheetId] = useState<string | null>(null);
 
-  // Fetch timesheet entries
-  const { data: timesheetEntries, isLoading } = useQuery({
-    queryKey: ['timesheet-entries', profile?.id],
+  // Fetch timesheets with entries
+  const { data: timesheets, isLoading } = useQuery({
+    queryKey: ['timesheets-with-entries', profile?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      if (!profile?.id) return [];
+      
+      const { data: timesheetData, error } = await supabase
         .from('timesheets')
         .select('*')
-        .eq('employee_id', profile?.id)
+        .eq('employee_id', profile.id)
         .order('period_start', { ascending: false });
 
       if (error) throw error;
-      
-      return (data || []).map(entry => ({
-        id: entry.id,
-        period_start: entry.period_start,
-        period_end: entry.period_end,
-        total_hours: Number(entry.total_hours) || 0,
-        overtime_hours: Number(entry.overtime_hours) || 0,
-        notes: entry.notes || '',
-        status: entry.status as 'draft' | 'submitted' | 'approved' | 'rejected',
-      })) as TimesheetEntry[];
+
+      // Fetch entries for each timesheet
+      const timesheetsWithEntries = await Promise.all(
+        (timesheetData || []).map(async (ts) => {
+          const { data: entries } = await supabase
+            .from('timesheet_entries')
+            .select(`
+              *,
+              project:projects(id, name),
+              task:tasks(id, title, task_number)
+            `)
+            .eq('timesheet_id', ts.id)
+            .order('work_date', { ascending: false });
+
+          return {
+            ...ts,
+            entries: entries || [],
+          } as Timesheet;
+        })
+      );
+
+      return timesheetsWithEntries;
     },
     enabled: !!profile?.id,
   });
 
-  // Create timesheet entry mutation
-  const createEntryMutation = useMutation({
-    mutationFn: async (entry: typeof newEntry) => {
+  // Create timesheet mutation
+  const createTimesheetMutation = useMutation({
+    mutationFn: async () => {
+      const periodStart = format(currentWeekStart, 'yyyy-MM-dd');
+      const periodEnd = format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+      
       const { data, error } = await supabase
         .from('timesheets')
         .insert({
           organization_id: profile?.organization_id,
           employee_id: profile?.id,
-          period_start: entry.period_start,
-          period_end: entry.period_end,
-          total_hours: parseFloat(entry.total_hours) || 0,
-          overtime_hours: parseFloat(entry.overtime_hours) || 0,
-          notes: entry.notes,
+          period_start: periodStart,
+          period_end: periodEnd,
+          total_hours: 0,
+          overtime_hours: 0,
           status: 'draft',
         })
         .select()
@@ -99,36 +130,104 @@ export function TimesheetManagement() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['timesheet-entries'] });
-      setIsCreateOpen(false);
-      setNewEntry({
-        period_start: format(currentWeekStart, 'yyyy-MM-dd'),
-        period_end: format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'yyyy-MM-dd'),
-        total_hours: '40',
-        overtime_hours: '0',
-        notes: '',
-      });
-      toast({ title: 'Timesheet entry created successfully' });
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['timesheets-with-entries'] });
+      setSelectedTimesheetId(data.id);
+      setIsEntryOpen(true);
+      toast({ title: 'Timesheet created successfully' });
     },
     onError: (error) => {
-      toast({ title: 'Error creating entry', description: error.message, variant: 'destructive' });
+      toast({ title: 'Error creating timesheet', description: error.message, variant: 'destructive' });
     },
   });
 
-  // Submit timesheet for approval
+  // Create entry mutation
+  const createEntryMutation = useMutation({
+    mutationFn: async (entry: any) => {
+      const { data, error } = await supabase
+        .from('timesheet_entries')
+        .insert({
+          timesheet_id: selectedTimesheetId,
+          organization_id: profile?.organization_id,
+          ...entry,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Update timesheet totals
+      await updateTimesheetTotals(selectedTimesheetId!);
+      
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['timesheets-with-entries'] });
+      setIsEntryOpen(false);
+      toast({ title: 'Entry added successfully' });
+    },
+    onError: (error) => {
+      toast({ title: 'Error adding entry', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  const updateTimesheetTotals = async (timesheetId: string) => {
+    const { data: entries } = await supabase
+      .from('timesheet_entries')
+      .select('regular_hours, overtime_hours')
+      .eq('timesheet_id', timesheetId);
+
+    if (entries) {
+      const totalRegular = entries.reduce((sum, e) => sum + (e.regular_hours || 0), 0);
+      const totalOvertime = entries.reduce((sum, e) => sum + (e.overtime_hours || 0), 0);
+      
+      await supabase
+        .from('timesheets')
+        .update({
+          total_hours: totalRegular,
+          overtime_hours: totalOvertime,
+        })
+        .eq('id', timesheetId);
+    }
+  };
+
+  // Submit timesheet mutation
   const submitTimesheetMutation = useMutation({
-    mutationFn: async (entryId: string) => {
+    mutationFn: async (timesheetId: string) => {
       const { error } = await supabase
         .from('timesheets')
         .update({ status: 'submitted', submitted_at: new Date().toISOString() })
-        .eq('id', entryId);
+        .eq('id', timesheetId);
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['timesheet-entries'] });
+      queryClient.invalidateQueries({ queryKey: ['timesheets-with-entries'] });
       toast({ title: 'Timesheet submitted for approval' });
+    },
+  });
+
+  // Sync LMS hours mutation
+  const syncLMSHoursMutation = useMutation({
+    mutationFn: async () => {
+      const periodStart = format(currentWeekStart, 'yyyy-MM-dd');
+      const periodEnd = format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+      
+      const { data, error } = await supabase.rpc('sync_lms_hours_to_timesheet', {
+        p_user_id: profile?.id,
+        p_start_date: periodStart,
+        p_end_date: periodEnd,
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ['timesheets-with-entries'] });
+      toast({ title: `Synced ${count || 0} LMS training hours` });
+    },
+    onError: (error) => {
+      toast({ title: 'Error syncing LMS hours', description: error.message, variant: 'destructive' });
     },
   });
 
@@ -148,21 +247,25 @@ export function TimesheetManagement() {
   };
 
   // Navigation
-  const goToPreviousWeek = () => {
-    setCurrentWeekStart(prev => addDays(prev, -7));
-  };
+  const goToPreviousWeek = () => setCurrentWeekStart(prev => addDays(prev, -7));
+  const goToNextWeek = () => setCurrentWeekStart(prev => addDays(prev, 7));
+  const goToCurrentWeek = () => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
 
-  const goToNextWeek = () => {
-    setCurrentWeekStart(prev => addDays(prev, 7));
-  };
-
-  const goToCurrentWeek = () => {
-    setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
-  };
-
-  // Calculate totals
-  const totalHours = timesheetEntries?.reduce((sum, e) => sum + e.total_hours, 0) || 0;
-  const approvedCount = timesheetEntries?.filter(e => e.status === 'approved').length || 0;
+  // Calculate summary
+  const summary = useMemo(() => {
+    const allEntries = timesheets?.flatMap(ts => ts.entries || []) || [];
+    return {
+      totalHours: allEntries.reduce((sum, e) => sum + (e.regular_hours || 0) + (e.overtime_hours || 0), 0),
+      billableHours: allEntries.filter(e => e.is_billable).reduce((sum, e) => sum + (e.regular_hours || 0) + (e.overtime_hours || 0), 0),
+      nonBillableHours: allEntries.filter(e => !e.is_billable).reduce((sum, e) => sum + (e.regular_hours || 0) + (e.overtime_hours || 0), 0),
+      regularHours: allEntries.reduce((sum, e) => sum + (e.regular_hours || 0), 0),
+      overtimeHours: allEntries.reduce((sum, e) => sum + (e.overtime_hours || 0), 0),
+      trainingHours: allEntries.filter(e => e.hours_type === 'training').reduce((sum, e) => sum + (e.regular_hours || 0), 0),
+      ptoHours: allEntries.filter(e => e.hours_type === 'pto').reduce((sum, e) => sum + (e.regular_hours || 0), 0),
+      estimatedRevenue: allEntries.filter(e => e.is_billable && e.billing_rate).reduce((sum, e) => sum + ((e.regular_hours || 0) + (e.overtime_hours || 0)) * (e.billing_rate || 0), 0),
+      targetHours: 40,
+    };
+  }, [timesheets]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -190,190 +293,218 @@ export function TimesheetManagement() {
     return elapsedMinutes;
   };
 
+  const currentWeekTimesheet = timesheets?.find(ts => {
+    const tsStart = parseISO(ts.period_start);
+    return format(tsStart, 'yyyy-MM-dd') === format(currentWeekStart, 'yyyy-MM-dd');
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Timesheet Management</h1>
-          <p className="text-muted-foreground">Track your work hours and submit timesheets</p>
+          <p className="text-muted-foreground">Track your work hours with billable/non-billable breakdown</p>
         </div>
-        <div className="flex gap-2">
-          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Timesheet
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add Timesheet Entry</DialogTitle>
-                <DialogDescription>Record your work hours for a pay period</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 pt-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Period Start</Label>
-                    <Input 
-                      type="date" 
-                      value={newEntry.period_start}
-                      onChange={(e) => setNewEntry(prev => ({ ...prev, period_start: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <Label>Period End</Label>
-                    <Input 
-                      type="date" 
-                      value={newEntry.period_end}
-                      onChange={(e) => setNewEntry(prev => ({ ...prev, period_end: e.target.value }))}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Total Hours</Label>
-                    <Input 
-                      type="number" 
-                      value={newEntry.total_hours}
-                      onChange={(e) => setNewEntry(prev => ({ ...prev, total_hours: e.target.value }))}
-                      placeholder="40"
-                    />
-                  </div>
-                  <div>
-                    <Label>Overtime Hours</Label>
-                    <Input 
-                      type="number" 
-                      value={newEntry.overtime_hours}
-                      onChange={(e) => setNewEntry(prev => ({ ...prev, overtime_hours: e.target.value }))}
-                      placeholder="0"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label>Notes</Label>
-                  <Textarea 
-                    value={newEntry.notes}
-                    onChange={(e) => setNewEntry(prev => ({ ...prev, notes: e.target.value }))}
-                    placeholder="Additional notes about this period"
-                    rows={3}
-                  />
-                </div>
-                <Button 
-                  className="w-full" 
-                  onClick={() => createEntryMutation.mutate(newEntry)}
-                  disabled={createEntryMutation.isPending}
-                >
-                  {createEntryMutation.isPending ? 'Adding...' : 'Add Timesheet'}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+        <div className="flex gap-2 flex-wrap">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => syncLMSHoursMutation.mutate()}
+            disabled={syncLMSHoursMutation.isPending}
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Import LMS Hours
+          </Button>
+          {currentWeekTimesheet ? (
+            <Button 
+              size="sm"
+              onClick={() => {
+                setSelectedTimesheetId(currentWeekTimesheet.id);
+                setIsEntryOpen(true);
+              }}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Entry
+            </Button>
+          ) : (
+            <Button 
+              size="sm"
+              onClick={() => createTimesheetMutation.mutate()}
+              disabled={createTimesheetMutation.isPending}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              New Timesheet
+            </Button>
+          )}
         </div>
       </div>
 
+      {/* Week Navigation */}
+      <Card>
+        <CardContent className="py-3">
+          <div className="flex items-center justify-between">
+            <Button variant="ghost" size="icon" onClick={goToPreviousWeek}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <div className="text-center">
+              <p className="font-medium">
+                {format(currentWeekStart, 'MMM dd')} - {format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'MMM dd, yyyy')}
+              </p>
+              <Button variant="link" size="sm" className="h-auto p-0" onClick={goToCurrentWeek}>
+                Go to current week
+              </Button>
+            </div>
+            <Button variant="ghost" size="icon" onClick={goToNextWeek}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       <Tabs defaultValue="entries" className="w-full">
-        <TabsList>
-          <TabsTrigger value="entries">Timesheet Entries</TabsTrigger>
-          <TabsTrigger value="timer">Time Tracker</TabsTrigger>
+        <TabsList className="w-full sm:w-auto">
+          <TabsTrigger value="entries" className="flex-1 sm:flex-none">Entries</TabsTrigger>
+          <TabsTrigger value="summary" className="flex-1 sm:flex-none">Summary</TabsTrigger>
+          <TabsTrigger value="timer" className="flex-1 sm:flex-none">Timer</TabsTrigger>
         </TabsList>
 
         <TabsContent value="entries" className="mt-6 space-y-6">
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Total Hours</CardTitle>
-                <Clock className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{totalHours.toFixed(1)}h</div>
-                <p className="text-xs text-muted-foreground">All time logged</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Entries</CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{timesheetEntries?.length || 0}</div>
-                <p className="text-xs text-muted-foreground">Total timesheets</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Approved</CardTitle>
-                <CheckCircle className="h-4 w-4 text-green-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">{approvedCount}</div>
-                <p className="text-xs text-muted-foreground">Entries approved</p>
-              </CardContent>
-            </Card>
-          </div>
+          <TimesheetSummaryCards summary={summary} />
 
-          {/* Timesheet Entries Table */}
+          {/* Timesheet Entries */}
           <Card>
             <CardHeader>
               <CardTitle>Timesheet Entries</CardTitle>
-              <CardDescription>Your logged work hours</CardDescription>
+              <CardDescription>Your logged work hours with project and billing details</CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
-              ) : timesheetEntries && timesheetEntries.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Period</TableHead>
-                        <TableHead className="text-right">Regular</TableHead>
-                        <TableHead className="text-right">Overtime</TableHead>
-                        <TableHead className="text-right">Total</TableHead>
-                        <TableHead>Notes</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {timesheetEntries.map((entry) => (
-                        <TableRow key={entry.id}>
-                          <TableCell className="font-medium">
-                            {format(parseISO(entry.period_start), 'MMM dd')} - {format(parseISO(entry.period_end), 'MMM dd, yyyy')}
-                          </TableCell>
-                          <TableCell className="text-right">{entry.total_hours}h</TableCell>
-                          <TableCell className="text-right text-orange-600">{entry.overtime_hours}h</TableCell>
-                          <TableCell className="text-right font-bold">{entry.total_hours + entry.overtime_hours}h</TableCell>
-                          <TableCell className="max-w-[200px] truncate">
-                            {entry.notes || '-'}
-                          </TableCell>
-                          <TableCell>{getStatusBadge(entry.status)}</TableCell>
-                          <TableCell>
-                            {entry.status === 'draft' && (
+              ) : timesheets && timesheets.length > 0 ? (
+                <div className="space-y-4">
+                  {timesheets.map((timesheet) => (
+                    <Card key={timesheet.id} className="border-dashed">
+                      <CardHeader className="py-3">
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <div>
+                            <CardTitle className="text-sm">
+                              {format(parseISO(timesheet.period_start), 'MMM dd')} - {format(parseISO(timesheet.period_end), 'MMM dd, yyyy')}
+                            </CardTitle>
+                            <CardDescription>
+                              {timesheet.total_hours}h regular, {timesheet.overtime_hours}h overtime
+                            </CardDescription>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {getStatusBadge(timesheet.status)}
+                            {timesheet.status === 'draft' && (
                               <Button 
                                 variant="outline" 
                                 size="sm"
-                                onClick={() => submitTimesheetMutation.mutate(entry.id)}
+                                onClick={() => submitTimesheetMutation.mutate(timesheet.id)}
                                 disabled={submitTimesheetMutation.isPending}
                               >
                                 Submit
                               </Button>
                             )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedTimesheetId(timesheet.id);
+                                setIsEntryOpen(true);
+                              }}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      {timesheet.entries && timesheet.entries.length > 0 && (
+                        <CardContent className="pt-0">
+                          <div className="overflow-x-auto -mx-4 px-4">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead className="min-w-[100px]">Date</TableHead>
+                                  <TableHead className="min-w-[120px]">Project</TableHead>
+                                  <TableHead className="text-right min-w-[80px]">Hours</TableHead>
+                                  <TableHead className="min-w-[80px]">Type</TableHead>
+                                  <TableHead className="min-w-[80px]">Billable</TableHead>
+                                  <TableHead className="hidden sm:table-cell">Description</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {timesheet.entries.map((entry) => (
+                                  <TableRow key={entry.id}>
+                                    <TableCell className="font-medium">
+                                      {format(parseISO(entry.work_date), 'MMM dd')}
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="truncate max-w-[150px]">
+                                        {entry.project?.name || '-'}
+                                        {entry.task && (
+                                          <span className="text-xs text-muted-foreground block truncate">
+                                            {entry.task.task_number}: {entry.task.title}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="text-right font-medium">
+                                      {entry.regular_hours}h
+                                      {entry.overtime_hours > 0 && (
+                                        <span className="text-orange-600 ml-1">+{entry.overtime_hours}</span>
+                                      )}
+                                    </TableCell>
+                                    <TableCell>
+                                      <Badge variant="outline" className="text-xs">
+                                        {entry.hours_type || 'regular'}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                      {entry.is_billable ? (
+                                        <Badge className="bg-green-100 text-green-800 text-xs">
+                                          ${entry.billing_rate || 0}/hr
+                                        </Badge>
+                                      ) : (
+                                        <Badge variant="secondary" className="text-xs">No</Badge>
+                                      )}
+                                    </TableCell>
+                                    <TableCell className="hidden sm:table-cell max-w-[200px] truncate">
+                                      {entry.description || '-'}
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </CardContent>
+                      )}
+                    </Card>
+                  ))}
                 </div>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>No timesheet entries found</p>
-                  <p className="text-sm">Click "Add Timesheet" to log your hours</p>
+                  <p className="text-sm">Click "New Timesheet" to start logging your hours</p>
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="summary" className="mt-6">
+          <TimesheetSummaryCards summary={summary} />
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Weekly Breakdown</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8 text-muted-foreground">
+                <p>Detailed weekly breakdown charts coming soon</p>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -415,12 +546,12 @@ export function TimesheetManagement() {
                     <Button 
                       variant="outline" 
                       onClick={() => {
-                        const hours = Math.round(elapsedMinutes / 60 * 10) / 10;
-                        setNewEntry(prev => ({
-                          ...prev,
-                          total_hours: String(hours),
-                        }));
-                        setIsCreateOpen(true);
+                        if (currentWeekTimesheet) {
+                          setSelectedTimesheetId(currentWeekTimesheet.id);
+                        } else {
+                          createTimesheetMutation.mutate();
+                        }
+                        setIsEntryOpen(true);
                         setElapsedMinutes(0);
                       }}
                     >
@@ -433,6 +564,22 @@ export function TimesheetManagement() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Add Entry Dialog */}
+      <Dialog open={isEntryOpen} onOpenChange={setIsEntryOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add Timesheet Entry</DialogTitle>
+            <DialogDescription>Log your work hours with project and billing details</DialogDescription>
+          </DialogHeader>
+          <EnhancedTimesheetEntry
+            initialData={elapsedMinutes > 0 ? { regular_hours: Math.round(elapsedMinutes / 60 * 10) / 10 } : undefined}
+            onSubmit={(data) => createEntryMutation.mutate(data)}
+            onCancel={() => setIsEntryOpen(false)}
+            isSubmitting={createEntryMutation.isPending}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
