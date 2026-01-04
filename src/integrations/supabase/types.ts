@@ -246,6 +246,183 @@ export type Database = {
           },
         ]
       }
+      ai_conversations: {
+        Row: {
+          context: string | null
+          conversation_type: string | null
+          created_at: string | null
+          escalated_to: string | null
+          id: string
+          is_resolved: boolean | null
+          messages: Json | null
+          metadata: Json | null
+          organization_id: string | null
+          session_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          context?: string | null
+          conversation_type?: string | null
+          created_at?: string | null
+          escalated_to?: string | null
+          id?: string
+          is_resolved?: boolean | null
+          messages?: Json | null
+          metadata?: Json | null
+          organization_id?: string | null
+          session_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          context?: string | null
+          conversation_type?: string | null
+          created_at?: string | null
+          escalated_to?: string | null
+          id?: string
+          is_resolved?: boolean | null
+          messages?: Json | null
+          metadata?: Json | null
+          organization_id?: string | null
+          session_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_conversations_escalated_to_fkey"
+            columns: ["escalated_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_conversations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_conversations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_insights: {
+        Row: {
+          action_taken: boolean | null
+          confidence_score: number | null
+          content: Json
+          created_at: string | null
+          entity_id: string | null
+          entity_type: string | null
+          expires_at: string | null
+          id: string
+          insight_type: string
+          is_actionable: boolean | null
+          organization_id: string | null
+          severity: string | null
+          title: string
+        }
+        Insert: {
+          action_taken?: boolean | null
+          confidence_score?: number | null
+          content: Json
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          expires_at?: string | null
+          id?: string
+          insight_type: string
+          is_actionable?: boolean | null
+          organization_id?: string | null
+          severity?: string | null
+          title: string
+        }
+        Update: {
+          action_taken?: boolean | null
+          confidence_score?: number | null
+          content?: Json
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          expires_at?: string | null
+          id?: string
+          insight_type?: string
+          is_actionable?: boolean | null
+          organization_id?: string | null
+          severity?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_insights_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_usage_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          error_message: string | null
+          feature_type: string
+          id: string
+          organization_id: string | null
+          response_time_ms: number | null
+          success: boolean | null
+          tokens_used: number | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          error_message?: string | null
+          feature_type: string
+          id?: string
+          organization_id?: string | null
+          response_time_ms?: number | null
+          success?: boolean | null
+          tokens_used?: number | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          error_message?: string | null
+          feature_type?: string
+          id?: string
+          organization_id?: string | null
+          response_time_ms?: number | null
+          success?: boolean | null
+          tokens_used?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_usage_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       announcement_reads: {
         Row: {
           announcement_id: string
@@ -7606,6 +7783,81 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resume_analyses: {
+        Row: {
+          ai_match_score: number | null
+          candidate_email: string | null
+          candidate_name: string | null
+          created_at: string | null
+          document_url: string | null
+          education: Json | null
+          experience_summary: string | null
+          experience_years: number | null
+          extracted_skills: string[] | null
+          id: string
+          interview_questions: Json | null
+          job_fit_analysis: Json | null
+          organization_id: string | null
+          recommendations: Json | null
+          status: string | null
+          updated_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          ai_match_score?: number | null
+          candidate_email?: string | null
+          candidate_name?: string | null
+          created_at?: string | null
+          document_url?: string | null
+          education?: Json | null
+          experience_summary?: string | null
+          experience_years?: number | null
+          extracted_skills?: string[] | null
+          id?: string
+          interview_questions?: Json | null
+          job_fit_analysis?: Json | null
+          organization_id?: string | null
+          recommendations?: Json | null
+          status?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          ai_match_score?: number | null
+          candidate_email?: string | null
+          candidate_name?: string | null
+          created_at?: string | null
+          document_url?: string | null
+          education?: Json | null
+          experience_summary?: string | null
+          experience_years?: number | null
+          extracted_skills?: string[] | null
+          id?: string
+          interview_questions?: Json | null
+          job_fit_analysis?: Json | null
+          organization_id?: string | null
+          recommendations?: Json | null
+          status?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resume_analyses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resume_analyses_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]

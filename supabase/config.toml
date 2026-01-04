@@ -36,5 +36,20 @@ verify_jwt = true
 [functions.phonepe-payment]
 verify_jwt = false
 
+[functions.ai-hr-chatbot]
+verify_jwt = true
+
+[functions.ai-communication-assistant]
+verify_jwt = true
+
+[functions.ai-document-generator]
+verify_jwt = true
+
+[functions.ai-performance-assistant]
+verify_jwt = true
+
+[functions.ai-insights-analyzer]
+verify_jwt = true
+
 [edge_runtime]
 policy = "per_worker"
