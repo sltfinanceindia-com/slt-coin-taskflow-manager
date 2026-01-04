@@ -144,18 +144,18 @@ export function GanttChartView({ projectId }: GanttChartViewProps) {
             />
           </div>
         ) : (
-          <div className="flex">
-            {/* Task names column - fixed */}
-            <div className="w-48 sm:w-64 shrink-0 border-r bg-muted/30">
+          <div className="flex flex-col sm:flex-row">
+            {/* Task names column - fixed, hidden on very small screens with toggle */}
+            <div className="hidden sm:block w-48 sm:w-64 shrink-0 border-r bg-muted/30">
               {/* Header */}
-              <div className="h-14 border-b px-4 flex items-center font-medium text-sm bg-muted/50">
+              <div className="h-14 border-b px-3 sm:px-4 flex items-center font-medium text-sm bg-muted/50">
                 Tasks
               </div>
               {/* Task rows */}
               {projectTasks.map((task) => (
                 <div
                   key={task.id}
-                  className="h-12 border-b px-4 flex items-center gap-2 hover:bg-accent/5 transition-colors"
+                  className="h-12 border-b px-3 sm:px-4 flex items-center gap-2 hover:bg-accent/5 transition-colors"
                 >
                   {task.is_milestone && (
                     <Diamond className="h-3 w-3 text-primary shrink-0" />
@@ -166,7 +166,7 @@ export function GanttChartView({ projectId }: GanttChartViewProps) {
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="text-sm truncate cursor-default">
+                        <span className="text-xs sm:text-sm truncate cursor-default">
                           {task.title}
                         </span>
                       </TooltipTrigger>
@@ -185,6 +185,23 @@ export function GanttChartView({ projectId }: GanttChartViewProps) {
                   </TooltipProvider>
                 </div>
               ))}
+            </div>
+            
+            {/* Mobile task list - shown only on small screens */}
+            <div className="sm:hidden border-b">
+              <div className="p-3 bg-muted/30">
+                <p className="text-xs text-muted-foreground mb-2">{projectTasks.length} tasks</p>
+                <div className="flex flex-wrap gap-1">
+                  {projectTasks.slice(0, 3).map(task => (
+                    <Badge key={task.id} variant="outline" className="text-xs truncate max-w-[120px]">
+                      {task.title}
+                    </Badge>
+                  ))}
+                  {projectTasks.length > 3 && (
+                    <Badge variant="secondary" className="text-xs">+{projectTasks.length - 3} more</Badge>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Scrollable chart area */}
@@ -294,27 +311,31 @@ export function GanttChartView({ projectId }: GanttChartViewProps) {
           </div>
         )}
 
-        {/* Legend */}
-        <div className="p-4 border-t flex flex-wrap gap-4 text-xs">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-3 rounded bg-blue-500" />
-            <span>In Progress</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-3 rounded bg-yellow-500" />
-            <span>Assigned</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-3 rounded bg-green-500" />
-            <span>Completed</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-3 rounded bg-destructive" />
-            <span>Critical Path</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Diamond className="h-3 w-3 text-primary" />
-            <span>Milestone</span>
+        {/* Legend - responsive */}
+        <div className="p-3 sm:p-4 border-t">
+          <div className="flex flex-wrap gap-3 sm:gap-4 text-xs">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-2.5 sm:w-4 sm:h-3 rounded bg-blue-500" />
+              <span className="hidden xs:inline">In Progress</span>
+              <span className="xs:hidden">Active</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-2.5 sm:w-4 sm:h-3 rounded bg-yellow-500" />
+              <span className="hidden xs:inline">Assigned</span>
+              <span className="xs:hidden">New</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-2.5 sm:w-4 sm:h-3 rounded bg-green-500" />
+              <span>Done</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-2.5 sm:w-4 sm:h-3 rounded bg-destructive" />
+              <span>Critical</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Diamond className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-primary" />
+              <span>Milestone</span>
+            </div>
           </div>
         </div>
       </CardContent>

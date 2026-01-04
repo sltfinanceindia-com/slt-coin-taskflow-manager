@@ -59,11 +59,14 @@ import { DocumentManager } from '@/components/documents/DocumentManager';
 import { AssetManagement } from '@/components/assets/AssetManagement';
 import { CustomReportBuilder } from '@/components/reports/CustomReportBuilder';
 import { TimesheetManager } from '@/components/timesheet/TimesheetManager';
+import { TimesheetManagement } from '@/components/timesheets/TimesheetManagement';
 import { HolidayCalendar } from '@/components/workforce/HolidayCalendar';
 import { LoanManagement } from '@/components/loans/LoanManagement';
 import { ExpenseCategoryManager } from '@/components/expenses/ExpenseCategoryManager';
 import { GanttChart } from '@/components/project/GanttChart';
 import { EmployeeSelfServicePortal } from '@/components/employee/EmployeeSelfServicePortal';
+import { EnhancedProjectManagement } from '@/components/projects/EnhancedProjectManagement';
+import { EnhancedTaskManager } from '@/components/tasks/EnhancedTaskManager';
 import { KudosWall } from '@/components/kudos/KudosWall';
 import { PulseSurveyWidget } from '@/components/pulse/PulseSurveyWidget';
 import { PulseSurveyAdmin } from '@/components/pulse/PulseSurveyAdmin';
@@ -364,7 +367,7 @@ export default function ModernDashboard() {
         return <FeedbackForm userEmail={profile?.email} userName={profile?.full_name} />;
       
       case 'timesheets':
-        return <TimesheetManager />;
+        return <TimesheetManagement />;
       
       case 'holidays':
         return isAdmin ? <HolidayCalendar /> : null;
