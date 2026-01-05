@@ -8,7 +8,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AIChatbot } from "@/components/ai/AIChatbot";
+import { UnifiedAssistant } from "@/components/ai/UnifiedAssistant";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { OrganizationProvider } from "@/hooks/useOrganization";
 import { useAuthEmailNotifications } from "@/hooks/useAuthEmailNotifications";
@@ -124,7 +124,7 @@ function AppContent() {
         <Toaster />
         <Sonner />
         <PWAInstallPrompt />
-        {user && <AIChatbot />}
+        {user && <UnifiedAssistant />}
       <BrowserRouter>
         <Routes>
           {/* Public Routes */}

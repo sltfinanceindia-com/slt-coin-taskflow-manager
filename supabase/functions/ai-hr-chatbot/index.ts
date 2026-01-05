@@ -10,25 +10,116 @@ const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-const systemPrompt = `You are an intelligent HR Assistant for a workforce management platform. Your role is to help employees and HR professionals with:
+// Fetch organization context for AI
+async function getOrganizationContext(supabase: any, organizationId: string, userId: string) {
+  let context = '';
+  
+  try {
+    // Get organization details
+    const { data: org } = await supabase
+      .from('organizations')
+      .select('name, domain, settings')
+      .eq('id', organizationId)
+      .single();
+    
+    if (org) {
+      context += `Organization: ${org.name}\n`;
+    }
 
-1. **HR Policies & Procedures**: Answer questions about leave policies, benefits, workplace rules
-2. **Employee Support**: Guide employees through HR processes like leave applications, expense claims
-3. **Performance Management**: Help with goal setting, feedback, performance reviews
-4. **Onboarding**: Assist new employees with orientation questions
-5. **Time & Attendance**: Answer questions about timesheets, overtime, work schedules
-6. **Training & Development**: Guide employees to relevant training resources
+    // Get user's profile and role
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('full_name, role, department_id, departments(name)')
+      .eq('id', userId)
+      .single();
+    
+    if (userProfile) {
+      context += `Current User: ${userProfile.full_name}, Role: ${userProfile.role}`;
+      if (userProfile.departments?.name) {
+        context += `, Department: ${userProfile.departments.name}`;
+      }
+      context += '\n';
+    }
 
-Guidelines:
-- Be professional, helpful, and empathetic
-- If you don't know something specific to their organization, acknowledge it and suggest they contact HR directly
-- For sensitive issues (harassment, discrimination, termination), always recommend speaking with HR directly
-- Provide clear, actionable guidance when possible
-- Keep responses concise but comprehensive
-- Use bullet points for multi-step processes
-- If the question is outside HR scope, politely redirect
+    // Get user's tasks
+    const { data: tasks } = await supabase
+      .from('tasks')
+      .select('id, title, status, priority, end_date')
+      .eq('assigned_to', userId)
+      .in('status', ['assigned', 'in_progress'])
+      .order('end_date', { ascending: true })
+      .limit(10);
+    
+    if (tasks?.length > 0) {
+      context += `\nUser's Active Tasks (${tasks.length}):\n`;
+      tasks.forEach((t: any, i: number) => {
+        context += `${i + 1}. ${t.title} - Status: ${t.status}, Priority: ${t.priority}, Due: ${t.end_date}\n`;
+      });
+    }
 
-Remember: You're here to make HR processes easier and more accessible for everyone.`;
+    // Get team members (direct reports or same department)
+    const { data: teamMembers } = await supabase
+      .from('profiles')
+      .select('id, full_name, role, email')
+      .eq('organization_id', organizationId)
+      .eq('is_active', true)
+      .limit(20);
+    
+    if (teamMembers?.length > 0) {
+      context += `\nOrganization Team Members (${teamMembers.length}):\n`;
+      teamMembers.slice(0, 10).forEach((m: any) => {
+        context += `- ${m.full_name} (${m.role})\n`;
+      });
+      if (teamMembers.length > 10) {
+        context += `... and ${teamMembers.length - 10} more\n`;
+      }
+    }
+
+    // Get departments
+    const { data: departments } = await supabase
+      .from('departments')
+      .select('name, description')
+      .eq('organization_id', organizationId);
+    
+    if (departments?.length > 0) {
+      context += `\nDepartments: ${departments.map((d: any) => d.name).join(', ')}\n`;
+    }
+
+    // Get active projects
+    const { data: projects } = await supabase
+      .from('projects')
+      .select('name, status, description')
+      .eq('organization_id', organizationId)
+      .eq('status', 'active')
+      .limit(10);
+    
+    if (projects?.length > 0) {
+      context += `\nActive Projects:\n`;
+      projects.forEach((p: any) => {
+        context += `- ${p.name}: ${p.description || 'No description'}\n`;
+      });
+    }
+
+    // Get leave balance (if table exists)
+    const { data: leaveBalance } = await supabase
+      .from('leave_balances')
+      .select('leave_type, balance, used')
+      .eq('user_id', userId)
+      .limit(5);
+    
+    if (leaveBalance?.length > 0) {
+      context += `\nUser's Leave Balance:\n`;
+      leaveBalance.forEach((l: any) => {
+        context += `- ${l.leave_type}: ${l.balance} days (${l.used} used)\n`;
+      });
+    }
+
+  } catch (error) {
+    console.error('Error fetching org context:', error);
+  }
+  
+  return context;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -44,7 +135,38 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    // Log usage
+    // Fetch organization context
+    let orgContext = '';
+    if (organizationId && userId) {
+      orgContext = await getOrganizationContext(supabase, organizationId, userId);
+      console.log('Organization context loaded:', orgContext.substring(0, 200) + '...');
+    }
+
+    const systemPrompt = `You are an intelligent AI Assistant for a workforce management platform. You have access to real-time organization data and can help with various tasks.
+
+## Organization Context
+${orgContext || 'No organization context available.'}
+
+## Your Capabilities
+1. **HR Policies & Procedures**: Answer questions about leave policies, benefits, workplace rules
+2. **Task Management**: Help users understand their tasks, priorities, and deadlines
+3. **Team Information**: Provide information about team members, departments, and org structure
+4. **Project Updates**: Share information about active projects and their status
+5. **Employee Support**: Guide employees through HR processes like leave applications, expense claims
+6. **Performance Management**: Help with goal setting, feedback, performance reviews
+7. **Time & Attendance**: Answer questions about timesheets, overtime, work schedules
+
+## Guidelines
+- Be professional, helpful, and conversational
+- Use the organization context above to provide personalized responses
+- If asked about specific employees or data not in your context, acknowledge the limitation
+- For sensitive issues (harassment, discrimination, termination), recommend speaking with HR directly
+- Provide clear, actionable guidance when possible
+- Keep responses concise but comprehensive
+- Use bullet points for multi-step processes
+
+Remember: You have access to real organization data - use it to provide relevant, personalized assistance!`;
+
     const startTime = Date.now();
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -66,7 +188,6 @@ serve(async (req) => {
     if (!response.ok) {
       const responseTime = Date.now() - startTime;
       
-      // Log failed usage
       await supabase.from('ai_usage_logs').insert({
         user_id: userId,
         organization_id: organizationId,
