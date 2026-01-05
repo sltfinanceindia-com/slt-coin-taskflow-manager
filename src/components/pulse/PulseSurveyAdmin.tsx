@@ -8,23 +8,20 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { 
   MessageCircle, 
   Plus, 
-  BarChart3, 
   Users, 
   TrendingUp, 
   Smile, 
   Meh, 
   Frown,
-  Trash2,
-  Edit,
+  Eye,
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { PulseSurveyResponses } from './PulseSurveyResponses';
 
 interface Question {
   id: string;
@@ -48,6 +45,7 @@ export function PulseSurveyAdmin() {
   const { profile } = useAuth();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [viewingResponsesFor, setViewingResponsesFor] = useState<{ id: string; title: string } | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -160,6 +158,17 @@ export function PulseSurveyAdmin() {
   const avgSentiment = surveys.length > 0
     ? surveys.reduce((sum, s) => sum + (s.avg_sentiment || 0), 0) / surveys.length
     : 0;
+
+  // If viewing responses for a specific survey
+  if (viewingResponsesFor) {
+    return (
+      <PulseSurveyResponses 
+        surveyId={viewingResponsesFor.id}
+        surveyTitle={viewingResponsesFor.title}
+        onBack={() => setViewingResponsesFor(null)}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -320,6 +329,14 @@ export function PulseSurveyAdmin() {
                         {((survey.avg_sentiment || 0) * 100).toFixed(0)}%
                       </span>
                     </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setViewingResponsesFor({ id: survey.id, title: survey.title })}
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      View Responses
+                    </Button>
                     <Switch
                       checked={survey.is_active}
                       onCheckedChange={(checked) => 
