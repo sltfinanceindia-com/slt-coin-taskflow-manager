@@ -21,6 +21,7 @@ export function useTasks() {
         return [];
       }
 
+      // Filter out subtasks from main task list - they should only appear nested in parent tasks
       const { data, error } = await supabase
         .from('tasks')
         .select(`
@@ -30,6 +31,7 @@ export function useTasks() {
           project_owner_profile:profiles!tasks_project_owner_id_fkey(id, full_name, email, avatar_url)
         `)
         .eq('organization_id', profile.organization_id)
+        .is('parent_task_id', null)  // Only get main tasks, not subtasks
         .order('created_at', { ascending: false });
 
       if (error) throw error;

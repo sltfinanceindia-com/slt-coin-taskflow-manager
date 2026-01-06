@@ -6563,8 +6563,10 @@ export type Database = {
           spent_budget: number | null
           start_date: string | null
           status: string
+          strategic_goals: Json | null
           target_end_date: string | null
           target_roi: number | null
+          template_config: Json | null
           updated_at: string
         }
         Insert: {
@@ -6579,8 +6581,10 @@ export type Database = {
           spent_budget?: number | null
           start_date?: string | null
           status?: string
+          strategic_goals?: Json | null
           target_end_date?: string | null
           target_roi?: number | null
+          template_config?: Json | null
           updated_at?: string
         }
         Update: {
@@ -6595,8 +6599,10 @@ export type Database = {
           spent_budget?: number | null
           start_date?: string | null
           status?: string
+          strategic_goals?: Json | null
           target_end_date?: string | null
           target_roi?: number | null
+          template_config?: Json | null
           updated_at?: string
         }
         Relationships: [
@@ -6757,11 +6763,13 @@ export type Database = {
           budget: number | null
           created_at: string
           description: string | null
+          health_score: number | null
           id: string
           name: string
           organization_id: string | null
           owner_id: string | null
           portfolio_id: string | null
+          program_type: string | null
           spent_budget: number | null
           start_date: string | null
           status: string
@@ -6772,11 +6780,13 @@ export type Database = {
           budget?: number | null
           created_at?: string
           description?: string | null
+          health_score?: number | null
           id?: string
           name: string
           organization_id?: string | null
           owner_id?: string | null
           portfolio_id?: string | null
+          program_type?: string | null
           spent_budget?: number | null
           start_date?: string | null
           status?: string
@@ -6787,11 +6797,13 @@ export type Database = {
           budget?: number | null
           created_at?: string
           description?: string | null
+          health_score?: number | null
           id?: string
           name?: string
           organization_id?: string | null
           owner_id?: string | null
           portfolio_id?: string | null
+          program_type?: string | null
           spent_budget?: number | null
           start_date?: string | null
           status?: string
@@ -9189,6 +9201,7 @@ export type Database = {
           actual_start_date: string | null
           admin_feedback: string | null
           assigned_to: string | null
+          completion_percentage: number | null
           created_at: string
           created_by: string
           description: string | null
@@ -9197,6 +9210,7 @@ export type Database = {
           id: string
           is_critical: boolean | null
           is_milestone: boolean | null
+          is_subtask: boolean | null
           organization_id: string | null
           parent_task_id: string | null
           planned_end_date: string | null
@@ -9214,6 +9228,7 @@ export type Database = {
           task_type: string | null
           title: string
           updated_at: string
+          visibility_scope: string | null
         }
         Insert: {
           actual_end_date?: string | null
@@ -9221,6 +9236,7 @@ export type Database = {
           actual_start_date?: string | null
           admin_feedback?: string | null
           assigned_to?: string | null
+          completion_percentage?: number | null
           created_at?: string
           created_by: string
           description?: string | null
@@ -9229,6 +9245,7 @@ export type Database = {
           id?: string
           is_critical?: boolean | null
           is_milestone?: boolean | null
+          is_subtask?: boolean | null
           organization_id?: string | null
           parent_task_id?: string | null
           planned_end_date?: string | null
@@ -9246,6 +9263,7 @@ export type Database = {
           task_type?: string | null
           title: string
           updated_at?: string
+          visibility_scope?: string | null
         }
         Update: {
           actual_end_date?: string | null
@@ -9253,6 +9271,7 @@ export type Database = {
           actual_start_date?: string | null
           admin_feedback?: string | null
           assigned_to?: string | null
+          completion_percentage?: number | null
           created_at?: string
           created_by?: string
           description?: string | null
@@ -9261,6 +9280,7 @@ export type Database = {
           id?: string
           is_critical?: boolean | null
           is_milestone?: boolean | null
+          is_subtask?: boolean | null
           organization_id?: string | null
           parent_task_id?: string | null
           planned_end_date?: string | null
@@ -9278,6 +9298,7 @@ export type Database = {
           task_type?: string | null
           title?: string
           updated_at?: string
+          visibility_scope?: string | null
         }
         Relationships: [
           {

@@ -36,6 +36,8 @@ export const useUniversalSearch = () => {
   const [loading, setLoading] = useState(false);
 
   const searchTasks = async (query: string): Promise<UniversalSearchResult[]> => {
+    if (!profile?.organization_id) return [];
+    
     try {
       const { data, error } = await supabase
         .from('tasks')
@@ -49,13 +51,19 @@ export const useUniversalSearch = () => {
           assigned_to,
           project_id,
           created_at,
+          parent_task_id,
           assigned_profile:profiles!tasks_assigned_to_fkey(full_name),
           project:projects!tasks_project_id_fkey(name)
         `)
+        .eq('organization_id', profile.organization_id)
+        .is('parent_task_id', null) // Exclude subtasks from search
         .or(`title.ilike.%${query}%,description.ilike.%${query}%,task_number.ilike.%${query}%`)
         .limit(10);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Task search error:', error);
+        throw error;
+      }
 
       return (data || []).map(task => {
         const assignedProfile = task.assigned_profile as unknown as { full_name: string } | null;
@@ -73,7 +81,7 @@ export const useUniversalSearch = () => {
             project: projectData?.name
           },
           created_at: task.created_at,
-          url: `?tab=tasks&task=${task.id}`
+          url: `/tasks/${task.id}` // Open in new tab route
         };
       });
     } catch (error) {
@@ -83,6 +91,8 @@ export const useUniversalSearch = () => {
   };
 
   const searchProjects = async (query: string): Promise<UniversalSearchResult[]> => {
+    if (!profile?.organization_id) return [];
+    
     try {
       const { data, error } = await supabase
         .from('projects')
@@ -94,10 +104,14 @@ export const useUniversalSearch = () => {
           created_at,
           creator_profile:profiles!projects_created_by_fkey(full_name)
         `)
+        .eq('organization_id', profile.organization_id)
         .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
         .limit(10);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Project search error:', error);
+        throw error;
+      }
 
       return (data || []).map(project => {
         const creator = project.creator_profile as unknown as { full_name: string } | null;
@@ -109,7 +123,7 @@ export const useUniversalSearch = () => {
           description: `${project.status} • Created by ${creator?.full_name || 'Unknown'}`,
           metadata: { status: project.status },
           created_at: project.created_at,
-          url: `?tab=projects&project=${project.id}`
+          url: `/dashboard?tab=projects&project=${project.id}`
         };
       });
     } catch (error) {

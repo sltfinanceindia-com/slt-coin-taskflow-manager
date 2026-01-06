@@ -6,6 +6,7 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -13,8 +14,11 @@ serve(async (req) => {
   try {
     const { action, taskTitle, taskDescription, projectContext } = await req.json();
 
+    console.log(`AI Task Assistant called with action: ${action}, title: ${taskTitle}`);
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
+      console.error("LOVABLE_API_KEY not configured");
       throw new Error("LOVABLE_API_KEY not configured");
     }
 
@@ -71,9 +75,12 @@ Respond with ONLY the improved description text, no formatting or labels.`;
         break;
 
       default:
+        console.error(`Unknown action: ${action}`);
         throw new Error(`Unknown action: ${action}`);
     }
 
+    console.log("Making request to AI Gateway...");
+    
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -95,12 +102,14 @@ Respond with ONLY the improved description text, no formatting or labels.`;
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("AI Gateway Error:", errorText);
-      throw new Error(`AI Gateway error: ${response.status}`);
+      console.error("AI Gateway Error:", response.status, errorText);
+      throw new Error(`AI Gateway error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
     const result = data.choices?.[0]?.message?.content?.trim() || "";
+    
+    console.log(`AI response received for action ${action}: ${result.substring(0, 100)}...`);
 
     return new Response(
       JSON.stringify({ result, action }),

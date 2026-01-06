@@ -5,13 +5,20 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import { toast } from '@/hooks/use-toast';
-import { format, startOfWeek, endOfWeek, addDays, parseISO } from 'date-fns';
+import { format, startOfWeek, endOfWeek, addDays, parseISO, isWithinInterval, startOfMonth, subMonths } from 'date-fns';
 import { TimesheetSummaryCards } from './TimesheetSummaryCards';
 import { EnhancedTimesheetEntry } from './EnhancedTimesheetEntry';
+import { exportToCSV } from '@/lib/export';
 import { 
   Clock, 
   Plus, 
@@ -23,7 +30,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
-  Upload
+  Upload,
+  Filter,
+  CalendarIcon,
+  X
 } from 'lucide-react';
 
 interface TimesheetEntry {
@@ -59,6 +69,7 @@ interface Timesheet {
 
 export function TimesheetManagement() {
   const { profile } = useAuth();
+  const { isAdmin } = useUserRole();
   const queryClient = useQueryClient();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEntryOpen, setIsEntryOpen] = useState(false);
@@ -67,6 +78,15 @@ export function TimesheetManagement() {
   const [timerStart, setTimerStart] = useState<Date | null>(null);
   const [elapsedMinutes, setElapsedMinutes] = useState(0);
   const [selectedTimesheetId, setSelectedTimesheetId] = useState<string | null>(null);
+  
+  // Filter states
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterDateRange, setFilterDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: startOfMonth(subMonths(new Date(), 1)),
+    to: new Date()
+  });
+  const [filterEmployee, setFilterEmployee] = useState<string>('all');
+  const [filterProject, setFilterProject] = useState<string>('all');
 
   // Fetch timesheets with entries
   const { data: timesheets, isLoading } = useQuery({
@@ -105,6 +125,34 @@ export function TimesheetManagement() {
       return timesheetsWithEntries;
     },
     enabled: !!profile?.id,
+  });
+
+  // Fetch employees for filter (admin only)
+  const { data: employees = [] } = useQuery({
+    queryKey: ['org-employees-filter', profile?.organization_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .eq('organization_id', profile?.organization_id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profile?.organization_id && isAdmin,
+  });
+
+  // Fetch projects for filter
+  const { data: projects = [] } = useQuery({
+    queryKey: ['org-projects-filter', profile?.organization_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('id, name')
+        .eq('organization_id', profile?.organization_id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profile?.organization_id,
   });
 
   // Create timesheet mutation
@@ -251,21 +299,68 @@ export function TimesheetManagement() {
   const goToNextWeek = () => setCurrentWeekStart(prev => addDays(prev, 7));
   const goToCurrentWeek = () => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
 
-  // Calculate summary
-  const summary = useMemo(() => {
+  // Filter all entries based on filter criteria
+  const filteredEntries = useMemo(() => {
     const allEntries = timesheets?.flatMap(ts => ts.entries || []) || [];
+    return allEntries.filter(entry => {
+      // Date range filter
+      if (filterDateRange.from && filterDateRange.to) {
+        const entryDate = parseISO(entry.work_date);
+        if (!isWithinInterval(entryDate, { start: filterDateRange.from, end: filterDateRange.to })) {
+          return false;
+        }
+      }
+      // Project filter
+      if (filterProject !== 'all' && entry.project_id !== filterProject) {
+        return false;
+      }
+      return true;
+    });
+  }, [timesheets, filterDateRange, filterProject]);
+
+  // Calculate summary from filtered entries
+  const summary = useMemo(() => {
     return {
-      totalHours: allEntries.reduce((sum, e) => sum + (e.regular_hours || 0) + (e.overtime_hours || 0), 0),
-      billableHours: allEntries.filter(e => e.is_billable).reduce((sum, e) => sum + (e.regular_hours || 0) + (e.overtime_hours || 0), 0),
-      nonBillableHours: allEntries.filter(e => !e.is_billable).reduce((sum, e) => sum + (e.regular_hours || 0) + (e.overtime_hours || 0), 0),
-      regularHours: allEntries.reduce((sum, e) => sum + (e.regular_hours || 0), 0),
-      overtimeHours: allEntries.reduce((sum, e) => sum + (e.overtime_hours || 0), 0),
-      trainingHours: allEntries.filter(e => e.hours_type === 'training').reduce((sum, e) => sum + (e.regular_hours || 0), 0),
-      ptoHours: allEntries.filter(e => e.hours_type === 'pto').reduce((sum, e) => sum + (e.regular_hours || 0), 0),
-      estimatedRevenue: allEntries.filter(e => e.is_billable && e.billing_rate).reduce((sum, e) => sum + ((e.regular_hours || 0) + (e.overtime_hours || 0)) * (e.billing_rate || 0), 0),
+      totalHours: filteredEntries.reduce((sum, e) => sum + (e.regular_hours || 0) + (e.overtime_hours || 0), 0),
+      billableHours: filteredEntries.filter(e => e.is_billable).reduce((sum, e) => sum + (e.regular_hours || 0) + (e.overtime_hours || 0), 0),
+      nonBillableHours: filteredEntries.filter(e => !e.is_billable).reduce((sum, e) => sum + (e.regular_hours || 0) + (e.overtime_hours || 0), 0),
+      regularHours: filteredEntries.reduce((sum, e) => sum + (e.regular_hours || 0), 0),
+      overtimeHours: filteredEntries.reduce((sum, e) => sum + (e.overtime_hours || 0), 0),
+      trainingHours: filteredEntries.filter(e => e.hours_type === 'training').reduce((sum, e) => sum + (e.regular_hours || 0), 0),
+      ptoHours: filteredEntries.filter(e => e.hours_type === 'pto').reduce((sum, e) => sum + (e.regular_hours || 0), 0),
+      estimatedRevenue: filteredEntries.filter(e => e.is_billable && e.billing_rate).reduce((sum, e) => sum + ((e.regular_hours || 0) + (e.overtime_hours || 0)) * (e.billing_rate || 0), 0),
       targetHours: 40,
     };
-  }, [timesheets]);
+  }, [filteredEntries]);
+
+  // Export to CSV
+  const handleExportCSV = () => {
+    const exportData = filteredEntries.map(entry => ({
+      Date: format(parseISO(entry.work_date), 'yyyy-MM-dd'),
+      Project: entry.project?.name || '-',
+      Task: entry.task ? `${entry.task.task_number}: ${entry.task.title}` : '-',
+      'Regular Hours': entry.regular_hours,
+      'Overtime Hours': entry.overtime_hours,
+      'Total Hours': (entry.regular_hours || 0) + (entry.overtime_hours || 0),
+      Type: entry.hours_type || 'regular',
+      Billable: entry.is_billable ? 'Yes' : 'No',
+      'Billing Rate': entry.billing_rate || 0,
+      Description: entry.description || '',
+    }));
+
+    const result = exportToCSV(exportData, `timesheet-export-${format(new Date(), 'yyyy-MM-dd')}`);
+    if (result.success) {
+      toast({ title: 'Export successful', description: `Exported ${result.recordCount || 0} entries` });
+    } else {
+      toast({ title: 'Export failed', description: result.message, variant: 'destructive' });
+    }
+  };
+
+  const clearFilters = () => {
+    setFilterDateRange({ from: startOfMonth(subMonths(new Date(), 1)), to: new Date() });
+    setFilterEmployee('all');
+    setFilterProject('all');
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -309,6 +404,22 @@ export function TimesheetManagement() {
           <Button 
             variant="outline" 
             size="sm"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            Filters
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleExportCSV}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export CSV
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
             onClick={() => syncLMSHoursMutation.mutate()}
             disabled={syncLMSHoursMutation.isPending}
           >
@@ -338,6 +449,91 @@ export function TimesheetManagement() {
           )}
         </div>
       </div>
+
+      {/* Filter Panel */}
+      {showFilters && (
+        <Card>
+          <CardContent className="pt-4">
+            <div className="flex flex-wrap items-end gap-4">
+              {/* Date Range Filter */}
+              <div className="space-y-2">
+                <Label className="text-sm">Date Range</Label>
+                <div className="flex gap-2">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="sm" className="w-[130px] justify-start">
+                        <CalendarIcon className="h-4 w-4 mr-2" />
+                        {filterDateRange.from ? format(filterDateRange.from, 'MMM dd') : 'From'}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={filterDateRange.from}
+                        onSelect={(date) => setFilterDateRange(prev => ({ ...prev, from: date }))}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="sm" className="w-[130px] justify-start">
+                        <CalendarIcon className="h-4 w-4 mr-2" />
+                        {filterDateRange.to ? format(filterDateRange.to, 'MMM dd') : 'To'}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={filterDateRange.to}
+                        onSelect={(date) => setFilterDateRange(prev => ({ ...prev, to: date }))}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
+
+              {/* Project Filter */}
+              <div className="space-y-2">
+                <Label className="text-sm">Project</Label>
+                <Select value={filterProject} onValueChange={setFilterProject}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="All Projects" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Projects</SelectItem>
+                    {projects.map(p => (
+                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Employee Filter (Admin only) */}
+              {isAdmin && (
+                <div className="space-y-2">
+                  <Label className="text-sm">Employee</Label>
+                  <Select value={filterEmployee} onValueChange={setFilterEmployee}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="All Employees" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Employees</SelectItem>
+                      {employees.map(e => (
+                        <SelectItem key={e.id} value={e.id}>{e.full_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              <Button variant="ghost" size="sm" onClick={clearFilters}>
+                <X className="h-4 w-4 mr-1" />
+                Clear
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Week Navigation */}
       <Card>

@@ -117,9 +117,15 @@ export function DashboardBuilder() {
     },
   });
 
-  // Add widget mutation
+  // Add widget mutation - with duplicate check
   const addWidget = useMutation({
     mutationFn: async (widgetType: string) => {
+      // Check for duplicates before adding
+      const existingTypes = localWidgets.map(w => w.widget_type);
+      if (existingTypes.includes(widgetType)) {
+        throw new Error('This widget is already on your dashboard');
+      }
+
       const widgetInfo = AVAILABLE_WIDGETS.find(w => w.type === widgetType);
       if (!widgetInfo) throw new Error('Widget not found');
 
@@ -138,6 +144,9 @@ export function DashboardBuilder() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dashboard-widgets'] });
       toast.success('Widget added!');
+    },
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 
@@ -240,18 +249,19 @@ export function DashboardBuilder() {
             </DragDropContext>
           </div>
 
-          {/* Available Widgets */}
+          {/* Available Widgets - responsive grid */}
           {availableToAdd.length > 0 && (
             <div>
               <h3 className="text-sm font-medium mb-3">Add Widgets</h3>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {availableToAdd.map((widget) => {
                   const Icon = widget.icon;
                   return (
                     <button
                       key={widget.type}
                       onClick={() => addWidget.mutate(widget.type)}
-                      className="flex items-center gap-2 p-3 rounded-lg border border-dashed hover:border-primary hover:bg-primary/5 transition-colors text-left"
+                      disabled={addWidget.isPending}
+                      className="flex items-center gap-2 p-3 rounded-lg border border-dashed hover:border-primary hover:bg-primary/5 transition-colors text-left disabled:opacity-50"
                     >
                       <Icon className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">{widget.title}</span>
