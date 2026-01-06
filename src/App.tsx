@@ -47,6 +47,7 @@ import KudosWallPage from "./pages/KudosWall";
 import PulseSurveysPage from "./pages/PulseSurveys";
 import MyGoalsPage from "./pages/MyGoals";
 import TutorialPage from "./pages/Tutorial";
+import TaskDetailPage from "./pages/TaskDetailPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -199,6 +200,9 @@ function AppContent() {
           <Route path="/pulse-surveys" element={<ProtectedRoute><PulseSurveysPage /></ProtectedRoute>} />
           <Route path="/my-goals" element={<ProtectedRoute><MyGoalsPage /></ProtectedRoute>} />
           <Route path="/tutorial" element={<ProtectedRoute><TutorialPage /></ProtectedRoute>} />
+          
+          {/* Task Detail - Full Page View (opens in new tab) */}
+          <Route path="/tasks/:id" element={<ProtectedRoute><TaskDetailPage /></ProtectedRoute>} />
           
           {/* 404 */}
           <Route path="*" element={<NotFound />} />

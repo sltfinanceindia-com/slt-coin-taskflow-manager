@@ -112,7 +112,7 @@ const SplashScreen = ({ onComplete, minDuration = 2000 }: SplashScreenProps) => 
                 isDark ? 'text-foreground' : 'text-white'
               }`}
             >
-              <span className="text-amber-400">Tenexa</span>
+              <span className="text-blue-500">Tenexa</span>
             </motion.h1>
 
             {/* Tagline */}

@@ -62,11 +62,21 @@ export function GlobalSearch() {
     setQuery('');
     
     if (result.url) {
-      const params = new URLSearchParams(result.url.replace('?', ''));
-      const tab = params.get('tab');
-      if (tab) {
-        // Navigate directly to dashboard with tab parameter
-        navigate(`/dashboard?tab=${tab}`);
+      // If it's a full path (starts with /), navigate directly
+      if (result.url.startsWith('/')) {
+        // For task details, open in new tab
+        if (result.url.startsWith('/tasks/')) {
+          window.open(result.url, '_blank');
+        } else {
+          navigate(result.url);
+        }
+      } else {
+        // Legacy URL format with query params
+        const params = new URLSearchParams(result.url.replace('?', ''));
+        const tab = params.get('tab');
+        if (tab) {
+          navigate(`/dashboard?tab=${tab}`);
+        }
       }
     }
   }, [navigate]);
