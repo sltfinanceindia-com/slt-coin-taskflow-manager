@@ -130,12 +130,12 @@ export function UnifiedAssistant() {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-hr-chatbot`,
+        `https://orybzmkhccrqmjuvioln.supabase.co/functions/v1/ai-hr-chatbot`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yeWJ6bWtoY2NycW1qdXZpb2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0MjIxMjMsImV4cCI6MjA2Njk5ODEyM30.7ExzbKzuM2Vu7sMBVaLOoWGs1nHEOW2KyTcomRR8QsQ`,
           },
           body: JSON.stringify({
             messages: [...messages, userMessage].map(m => ({
@@ -144,6 +144,7 @@ export function UnifiedAssistant() {
             })),
             userId: profile?.id,
             organizationId: profile?.organization_id,
+            userRole: profile?.role || 'employee',
             stream: true,
           }),
         }
@@ -222,8 +223,8 @@ export function UnifiedAssistant() {
         className={cn(
           "fixed z-50 h-14 w-14 rounded-full shadow-lg",
           "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70",
-          // Mobile: bottom-right with safe area
-          "bottom-4 right-4",
+          // Mobile: bottom-right, moved up for better visibility
+          "bottom-20 right-4 sm:bottom-8 sm:right-6",
           // Ensure it's above other content
           "hover:scale-105 transition-transform"
         )}

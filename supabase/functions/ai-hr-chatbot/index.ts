@@ -127,7 +127,7 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, conversationId, userId, organizationId, stream = true } = await req.json();
+    const { messages, conversationId, userId, organizationId, userRole = 'employee', stream = true } = await req.json();
 
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
@@ -142,7 +142,39 @@ serve(async (req) => {
       console.log('Organization context loaded:', orgContext.substring(0, 200) + '...');
     }
 
+    // Role-based access level
+    const roleAccessLevel = {
+      super_admin: 'full access to all organization data',
+      org_admin: 'full access to organization data, employee records, and settings',
+      manager: 'access to team data, own team members, and department information',
+      team_lead: 'access to assigned team members and their tasks',
+      employee: 'access to own data, tasks, and general policies only',
+    }[userRole] || 'limited access to own data only';
+
     const systemPrompt = `You are an intelligent AI Assistant for a workforce management platform. You have access to real-time organization data and can help with various tasks.
+
+## CRITICAL: Role-Based Access Control
+Current User Role: ${userRole}
+Access Level: ${roleAccessLevel}
+
+### STRICT RULES BASED ON ROLE:
+${userRole === 'employee' ? `
+- DO NOT reveal other employees' salary, performance ratings, or personal data
+- DO NOT share confidential HR decisions or management discussions
+- DO NOT provide access to data outside of the user's own records
+- For HR policy questions, provide general policy information only
+- For questions about other employees, only share publicly available info (name, department, role)
+` : userRole === 'manager' || userRole === 'team_lead' ? `
+- Only share team member data for employees who report to this user
+- DO NOT share data about employees outside their team
+- DO NOT reveal executive decisions or confidential HR matters
+` : `
+- Full access is granted for administrative purposes
+`}
+
+### HANDLING IRRELEVANT QUESTIONS:
+If a user asks about topics unrelated to work (politics, personal advice, entertainment, etc.), respond politely:
+"I'm here to help with work-related questions. For [topic], please consult appropriate resources. Is there anything work-related I can help you with?"
 
 ## Organization Context
 ${orgContext || 'No organization context available.'}

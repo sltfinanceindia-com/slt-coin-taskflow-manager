@@ -104,20 +104,66 @@ export const useGeoAttendance = () => {
     enabled: !!profile?.id,
   });
 
-  // Fetch all attendance (admin) - uses RLS policy for admin visibility
+  // Fetch all attendance (admin) - includes all employees, even those without attendance records
   const { data: allAttendance = [], isLoading: loadingAllAttendance } = useQuery({
     queryKey: ['all-attendance', profile?.organization_id],
     queryFn: async () => {
       if (!profile?.organization_id) return [];
       const today = new Date().toISOString().split('T')[0];
-      const { data, error } = await supabase
+      
+      // First get all active employees
+      const { data: employees, error: empError } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, avatar_url')
+        .eq('organization_id', profile.organization_id)
+        .eq('is_active', true);
+      
+      if (empError) throw empError;
+      
+      // Then get today's attendance records
+      const { data: attendance, error: attError } = await supabase
         .from('attendance_records')
         .select(`*, employee:profiles(full_name, email, avatar_url)`)
         .eq('organization_id', profile.organization_id)
-        .eq('attendance_date', today)
-        .order('clock_in_time', { ascending: false });
-      if (error) throw error;
-      return data as AttendanceRecord[];
+        .eq('attendance_date', today);
+      
+      if (attError) throw attError;
+      
+      // Merge: include all employees, mark those without records as absent
+      const attendanceMap = new Map(attendance?.map(a => [a.employee_id, a]) || []);
+      
+      const allRecords = (employees || []).map(emp => {
+        const record = attendanceMap.get(emp.id);
+        if (record) {
+          return record as AttendanceRecord;
+        }
+        // Create a placeholder for employees without attendance
+        return {
+          id: `absent-${emp.id}`,
+          employee_id: emp.id,
+          attendance_date: today,
+          clock_in_time: null,
+          clock_out_time: null,
+          clock_in_latitude: null,
+          clock_in_longitude: null,
+          clock_out_latitude: null,
+          clock_out_longitude: null,
+          clock_in_within_geofence: null,
+          clock_out_within_geofence: null,
+          status: 'absent' as const,
+          total_hours: null,
+          overtime_hours: null,
+          notes: null,
+          employee: { full_name: emp.full_name, email: emp.email, avatar_url: emp.avatar_url },
+        } as AttendanceRecord;
+      });
+      
+      // Sort: present/late first, then absent
+      return allRecords.sort((a, b) => {
+        if (a.clock_in_time && !b.clock_in_time) return -1;
+        if (!a.clock_in_time && b.clock_in_time) return 1;
+        return 0;
+      });
     },
     enabled: !!profile?.organization_id,
   });
