@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { PayrollApprovalActions } from './PayrollApprovalActions';
 import { 
   DollarSign, 
   Users, 
@@ -315,6 +316,7 @@ export function PayrollDashboard() {
                     <TableHead className="text-right">Deductions</TableHead>
                     <TableHead className="text-right">Net Salary</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -333,6 +335,12 @@ export function PayrollDashboard() {
                       </TableCell>
                       <TableCell className="text-right font-bold">₹{Number(record.net_salary).toLocaleString()}</TableCell>
                       <TableCell>{getStatusBadge(record.payment_status)}</TableCell>
+                      <TableCell className="text-right">
+                        <PayrollApprovalActions 
+                          record={record} 
+                          onSuccess={() => queryClient.invalidateQueries({ queryKey: ['payroll-records'] })}
+                        />
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

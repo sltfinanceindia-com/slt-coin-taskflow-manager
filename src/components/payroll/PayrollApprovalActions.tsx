@@ -19,22 +19,23 @@ interface PayrollRecord {
   pay_period_end: string;
   basic_salary: number;
   bonus: number;
-  allowances: Record<string, number> | null;
+  allowances?: Record<string, number> | unknown;
   tax_deduction: number;
   pf_deduction: number;
-  other_deductions: number;
+  other_deductions?: number;
   net_salary: number;
   payment_status: string;
-  payment_date: string | null;
-  transaction_reference: string | null;
-  employee?: { full_name: string; email: string };
+  payment_date?: string | null;
+  transaction_reference?: string | null;
+  employee?: { full_name: string; email: string } | unknown;
 }
 
 interface PayrollApprovalActionsProps {
   record: PayrollRecord;
+  onSuccess?: () => void;
 }
 
-export function PayrollApprovalActions({ record }: PayrollApprovalActionsProps) {
+export function PayrollApprovalActions({ record, onSuccess }: PayrollApprovalActionsProps) {
   const queryClient = useQueryClient();
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [isProcessOpen, setIsProcessOpen] = useState(false);
@@ -56,6 +57,7 @@ export function PayrollApprovalActions({ record }: PayrollApprovalActionsProps) 
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payroll-records'] });
+      onSuccess?.();
       toast({ title: 'Payroll approved successfully' });
     },
     onError: (error) => {
@@ -136,10 +138,16 @@ export function PayrollApprovalActions({ record }: PayrollApprovalActionsProps) 
   const isLoading = approveMutation.isPending || rejectMutation.isPending || 
                     processPaymentMutation.isPending || markPaidMutation.isPending;
 
-  const totalAllowances = record.allowances 
-    ? Object.values(record.allowances).reduce((sum, val) => sum + (Number(val) || 0), 0)
+  const allowancesObj = record.allowances && typeof record.allowances === 'object' && !Array.isArray(record.allowances)
+    ? record.allowances as Record<string, number>
+    : null;
+  const totalAllowances = allowancesObj 
+    ? Object.values(allowancesObj).reduce((sum, val) => sum + (Number(val) || 0), 0)
     : 0;
   const totalDeductions = Number(record.tax_deduction) + Number(record.pf_deduction) + Number(record.other_deductions || 0);
+  const employeeData = record.employee && typeof record.employee === 'object' 
+    ? record.employee as { full_name?: string; email?: string }
+    : null;
 
   return (
     <>
@@ -205,7 +213,7 @@ export function PayrollApprovalActions({ record }: PayrollApprovalActionsProps) 
               Payroll Details
             </DialogTitle>
             <DialogDescription>
-              {record.employee?.full_name} - {format(new Date(record.pay_period_start), 'MMM d')} to {format(new Date(record.pay_period_end), 'MMM d, yyyy')}
+              {employeeData?.full_name || 'Employee'} - {format(new Date(record.pay_period_start), 'MMM d')} to {format(new Date(record.pay_period_end), 'MMM d, yyyy')}
             </DialogDescription>
           </DialogHeader>
           
@@ -213,8 +221,8 @@ export function PayrollApprovalActions({ record }: PayrollApprovalActionsProps) 
             <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
               <User className="h-5 w-5 text-muted-foreground" />
               <div>
-                <p className="font-medium">{record.employee?.full_name}</p>
-                <p className="text-sm text-muted-foreground">{record.employee?.email}</p>
+                <p className="font-medium">{employeeData?.full_name || 'Employee'}</p>
+                <p className="text-sm text-muted-foreground">{employeeData?.email || ''}</p>
               </div>
             </div>
 
@@ -241,7 +249,7 @@ export function PayrollApprovalActions({ record }: PayrollApprovalActionsProps) 
                   <span className="text-muted-foreground">Bonus</span>
                   <span className="text-green-600">+₹{Number(record.bonus).toLocaleString()}</span>
                 </div>
-                {record.allowances && Object.entries(record.allowances).map(([key, value]) => (
+                {allowancesObj && Object.entries(allowancesObj).map(([key, value]) => (
                   <div key={key} className="flex justify-between">
                     <span className="text-muted-foreground capitalize">{key.replace(/_/g, ' ')}</span>
                     <span className="text-green-600">+₹{Number(value).toLocaleString()}</span>
