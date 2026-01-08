@@ -49,6 +49,11 @@ export function TaskDetailDialog({ task }: TaskDetailDialogProps) {
     }
   };
 
+  const handleOpenFullView = () => {
+    window.open(`/tasks/${task.id}`, '_blank');
+    setOpen(false);
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -58,10 +63,21 @@ export function TaskDetailDialog({ task }: TaskDetailDialogProps) {
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Task Details & Analytics
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Task Details & Analytics
+            </DialogTitle>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleOpenFullView}
+              className="gap-2"
+            >
+              <Eye className="h-4 w-4" />
+              Open Full View
+            </Button>
+          </div>
           <DialogDescription>
             Comprehensive overview of task progress, time tracking, and user activity
           </DialogDescription>

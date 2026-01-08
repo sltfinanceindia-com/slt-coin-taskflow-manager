@@ -10,9 +10,10 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { SubtaskList } from '@/components/tasks/SubtaskList';
+import { EnhancedSubtaskList } from '@/components/tasks/EnhancedSubtaskList';
 import { ChecklistEditor } from '@/components/tasks/ChecklistEditor';
 import { TaskComments } from '@/components/TaskComments';
+import { SubtaskTemplates } from '@/components/tasks/SubtaskTemplates';
 import { format, parseISO } from 'date-fns';
 import { 
   ArrowLeft, 
@@ -25,7 +26,10 @@ import {
   ListChecks,
   MessageSquare,
   Activity,
-  ExternalLink
+  ExternalLink,
+  FileText,
+  DollarSign,
+  Users
 } from 'lucide-react';
 
 const statusColors: Record<string, string> = {
@@ -194,12 +198,12 @@ export default function TaskDetailPage() {
               </CardContent>
             </Card>
 
-            {/* Tabs for Subtasks, Checklists, Comments */}
+            {/* Tabs for Subtasks, Checklists, Comments, Controls */}
             <Tabs defaultValue="subtasks" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="subtasks" className="gap-2">
                   <CheckSquare className="h-4 w-4" />
-                  Subtasks
+                  <span className="hidden sm:inline">Subtasks</span>
                   {subtasksData && subtasksData.total > 0 && (
                     <Badge variant="secondary" className="ml-1">
                       {subtasksData.total}
@@ -208,18 +212,33 @@ export default function TaskDetailPage() {
                 </TabsTrigger>
                 <TabsTrigger value="checklists" className="gap-2">
                   <ListChecks className="h-4 w-4" />
-                  Checklists
+                  <span className="hidden sm:inline">Checklists</span>
                 </TabsTrigger>
                 <TabsTrigger value="comments" className="gap-2">
                   <MessageSquare className="h-4 w-4" />
-                  Comments
+                  <span className="hidden sm:inline">Comments</span>
+                </TabsTrigger>
+                <TabsTrigger value="controls" className="gap-2">
+                  <Activity className="h-4 w-4" />
+                  <span className="hidden sm:inline">Controls</span>
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="subtasks" className="mt-4">
                 <Card>
-                  <CardContent className="pt-6">
-                    <SubtaskList parentTaskId={task.id} />
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-base">Subtasks</CardTitle>
+                      {task.project_id && (
+                        <SubtaskTemplates 
+                          parentTaskId={task.id} 
+                          projectId={task.project_id} 
+                        />
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <EnhancedSubtaskList parentTaskId={task.id} />
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -238,6 +257,78 @@ export default function TaskDetailPage() {
                     <TaskComments taskId={task.id} />
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              <TabsContent value="controls" className="mt-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  {/* Finance Controls */}
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <DollarSign className="h-4 w-4" />
+                        Finance
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Coin Value</span>
+                        <span className="font-medium">{task.slt_coin_value} coins</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Estimated Hours</span>
+                        <span className="font-medium">{task.estimated_hours || 0}h</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Actual Hours</span>
+                        <span className="font-medium">{task.actual_hours || 0}h</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Time & Resources */}
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Clock className="h-4 w-4" />
+                        Time & Resources
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Progress</span>
+                        <span className="font-medium">{task.progress_percentage || 0}%</span>
+                      </div>
+                      <Progress value={task.progress_percentage || 0} className="h-2" />
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Is Critical</span>
+                        <Badge variant={task.is_critical ? 'destructive' : 'secondary'}>
+                          {task.is_critical ? 'Yes' : 'No'}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Is Milestone</span>
+                        <Badge variant={task.is_milestone ? 'default' : 'secondary'}>
+                          {task.is_milestone ? 'Yes' : 'No'}
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Documents */}
+                  <Card className="md:col-span-2">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        Documents & Attachments
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground">
+                        No documents attached to this task yet.
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
               </TabsContent>
             </Tabs>
           </div>
