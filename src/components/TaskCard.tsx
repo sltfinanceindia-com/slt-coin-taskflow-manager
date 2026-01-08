@@ -1,14 +1,13 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Coins, User, Calendar, Edit, Crown } from 'lucide-react';
+import { Coins, User, Calendar, Edit, Crown, ExternalLink } from 'lucide-react';
 import { Task } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { format } from 'date-fns';
 import { TaskComments } from '@/components/TaskComments';
 import { TaskEditDialog } from '@/components/TaskEditDialog';
-import { TaskDetailDialog } from '@/components/TaskDetailDialog';
 import { TaskDescription } from '@/components/TaskDescription';
 import { TaskActions } from '@/components/TaskActions';
 import { TaskStatusIndicator } from '@/components/TaskStatusIndicator';
@@ -27,6 +26,10 @@ interface TaskCardProps {
 export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isUpdating, onAdminOverride }: TaskCardProps) {
   const { profile } = useAuth();
   const { isAdmin } = useUserRole();
+
+  const handleOpenTaskDetails = () => {
+    window.open(`/tasks/${task.id}`, '_blank');
+  };
 
   const getStatusColor = (status: Task['status']) => {
     switch (status) {
@@ -69,20 +72,29 @@ export function TaskCard({ task, onUpdateStatus, onVerifyTask, onUpdateTask, isU
               <span className="font-bold text-primary text-xs">{task.slt_coin_value}</span>
             </div>
           </div>
-          <h3 className="font-semibold text-foreground text-sm sm:text-base leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+          <h3 
+            className="font-semibold text-foreground text-sm sm:text-base leading-snug line-clamp-2 group-hover:text-primary transition-colors cursor-pointer"
+            onClick={handleOpenTaskDetails}
+          >
             {task.title}
           </h3>
         </div>
         
-        {/* Admin Actions */}
-        {isAdmin && (
-          <div className="flex gap-1 shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">
-            <TaskDetailDialog task={task} />
-            {onUpdateTask && (
-              <TaskEditDialog task={task} onUpdateTask={onUpdateTask} isUpdating={isUpdating || false} />
-            )}
-          </div>
-        )}
+        {/* Actions */}
+        <div className="flex gap-1 shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 w-8 p-0"
+            onClick={handleOpenTaskDetails}
+            title="Open in new tab"
+          >
+            <ExternalLink className="h-4 w-4" />
+          </Button>
+          {isAdmin && onUpdateTask && (
+            <TaskEditDialog task={task} onUpdateTask={onUpdateTask} isUpdating={isUpdating || false} />
+          )}
+        </div>
       </div>
 
       {/* Badges Row */}

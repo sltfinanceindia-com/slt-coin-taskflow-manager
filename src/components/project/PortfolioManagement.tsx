@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,7 +39,8 @@ import {
   Users,
   FolderOpen,
   TrendingUp,
-  AlertTriangle
+  AlertTriangle,
+  ExternalLink
 } from 'lucide-react';
 import { usePortfolios, Portfolio, CreatePortfolioData } from '@/hooks/usePortfolios';
 import { useEmployeeDirectory } from '@/hooks/useEmployeeDirectory';
@@ -237,15 +239,22 @@ interface PortfolioCardProps {
 }
 
 const PortfolioCard: React.FC<PortfolioCardProps> = ({ portfolio, onEdit, onDelete, onClick }) => {
+  const navigate = useNavigate();
   const riskConfig = riskOptions.find(r => r.value === portfolio.risk_level);
   const budgetUsed = portfolio.budget > 0 
     ? Math.round((portfolio.spent_budget / portfolio.budget) * 100) 
     : 0;
 
+  const handleClick = () => {
+    // Navigate to portfolio detail page
+    navigate(`/portfolios/${portfolio.id}`);
+    onClick(portfolio);
+  };
+
   return (
     <Card 
       className="group hover:shadow-md transition-all cursor-pointer"
-      onClick={() => onClick(portfolio)}
+      onClick={handleClick}
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">

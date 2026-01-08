@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,7 +37,8 @@ import {
   DollarSign,
   FolderOpen,
   ArrowLeft,
-  Calendar
+  Calendar,
+  ExternalLink
 } from 'lucide-react';
 import { usePrograms, Program, CreateProgramData } from '@/hooks/usePrograms';
 import { usePortfolios, Portfolio } from '@/hooks/usePortfolios';
@@ -219,15 +221,22 @@ interface ProgramCardProps {
 }
 
 const ProgramCard: React.FC<ProgramCardProps> = ({ program, onEdit, onDelete, onClick }) => {
+  const navigate = useNavigate();
   const statusConfig = statusOptions.find(s => s.value === program.status);
   const budgetUsed = program.budget > 0 
     ? Math.round((program.spent_budget / program.budget) * 100) 
     : 0;
 
+  const handleClick = () => {
+    // Navigate to program detail page
+    navigate(`/programs/${program.id}`);
+    onClick(program);
+  };
+
   return (
     <Card 
       className="group hover:shadow-md transition-all cursor-pointer"
-      onClick={() => onClick(program)}
+      onClick={handleClick}
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
