@@ -238,16 +238,16 @@ export function UnifiedAssistant() {
 
   return (
     <Card className={cn(
-      "fixed z-50 shadow-2xl transition-all duration-300",
+      "fixed z-50 shadow-2xl transition-all duration-300 flex flex-col",
       isMinimized 
         ? "bottom-4 right-4 w-72" 
         : cn(
-          // Mobile: full width with padding
-          "bottom-4 right-4 left-4 sm:left-auto",
+          // Mobile: full width with padding, above bottom nav
+          "bottom-20 right-4 left-4 sm:bottom-4 sm:left-auto",
           // Desktop: fixed width
           "sm:w-96",
-          // Height
-          "h-[calc(100vh-8rem)] sm:h-[600px] max-h-[80vh]"
+          // Height - use fixed height on mobile for proper scrolling
+          "h-[60vh] sm:h-[500px]"
         )
     )}>
       <CardHeader className="flex flex-row items-center justify-between py-3 px-4 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-t-lg">
@@ -297,8 +297,8 @@ export function UnifiedAssistant() {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="chat" className="flex-1 flex flex-col m-0 overflow-hidden data-[state=inactive]:hidden">
-              <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+            <TabsContent value="chat" className="flex-1 flex flex-col m-0 min-h-0 data-[state=inactive]:hidden">
+              <div className="flex-1 overflow-y-auto p-4" ref={scrollRef}>
                 {messages.length === 0 ? (
                   <div className="space-y-4">
                     <div className="text-center py-4">
@@ -367,7 +367,7 @@ export function UnifiedAssistant() {
                     ))}
                   </div>
                 )}
-              </ScrollArea>
+              </div>
 
               <form onSubmit={handleSubmit} className="p-3 border-t shrink-0 bg-background">
                 <div className="flex gap-2">
