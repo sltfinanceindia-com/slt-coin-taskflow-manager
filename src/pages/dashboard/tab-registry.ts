@@ -1,0 +1,205 @@
+/**
+ * Dashboard Tab Registry
+ * Lazy-loaded tab components for ModernDashboard
+ */
+
+import { lazy, ComponentType, LazyExoticComponent } from 'react';
+
+export interface TabConfig {
+  component: LazyExoticComponent<ComponentType<any>>;
+  adminOnly?: boolean;
+  internOnly?: boolean;
+  redirectTo?: string;
+}
+
+/**
+ * Registry of all dashboard tab components
+ * Components are lazy-loaded to reduce initial bundle size
+ */
+export const tabRegistry: Record<string, TabConfig> = {
+  // Main tabs - inline rendering (no lazy loading for frequently used)
+  overview: {
+    component: lazy(() => import('./tabs/OverviewTab').then(m => ({ default: m.OverviewTab }))),
+  },
+  tasks: {
+    component: lazy(() => import('./tabs/TasksTab').then(m => ({ default: m.TasksTab }))),
+  },
+  
+  // Projects
+  projects: {
+    component: lazy(() => import('@/components/project/ProjectPortfolioHub').then(m => ({ default: m.ProjectPortfolioHub }))),
+  },
+  
+  // Time Management
+  time: {
+    component: lazy(() => import('./tabs/TimeLogsTab').then(m => ({ default: m.TimeLogsTab }))),
+  },
+  timesheets: {
+    component: lazy(() => import('@/components/timesheets/TimesheetManagement').then(m => ({ default: m.TimesheetManagement }))),
+  },
+  
+  // Workforce
+  shifts: {
+    component: lazy(() => import('@/components/workforce/ShiftManagement').then(m => ({ default: m.ShiftManagement }))),
+    adminOnly: true,
+  },
+  leave: {
+    component: lazy(() => import('@/components/workforce/LeaveManagement').then(m => ({ default: m.LeaveManagement }))),
+  },
+  attendance: {
+    component: lazy(() => import('@/components/workforce/GeoAttendance').then(m => ({ default: m.GeoAttendance }))),
+  },
+  wfh: {
+    component: lazy(() => import('@/components/workforce/WFHManagement').then(m => ({ default: m.WFHManagement }))),
+  },
+  holidays: {
+    component: lazy(() => import('@/components/workforce/HolidayCalendar').then(m => ({ default: m.HolidayCalendar }))),
+    adminOnly: true,
+  },
+  
+  // Performance
+  okrs: {
+    component: lazy(() => import('@/components/performance/OKRManagement').then(m => ({ default: m.OKRManagement }))),
+  },
+  feedback: {
+    component: lazy(() => import('@/components/performance/FeedbackManagement').then(m => ({ default: m.FeedbackManagement }))),
+    adminOnly: true,
+  },
+  meetings: {
+    component: lazy(() => import('@/components/performance/OneOnOneMeetings').then(m => ({ default: m.OneOnOneMeetings }))),
+  },
+  pips: {
+    component: lazy(() => import('@/components/performance/PIPManagement').then(m => ({ default: m.PIPManagement }))),
+    adminOnly: true,
+  },
+  
+  // Project Controls
+  baselines: {
+    component: lazy(() => import('@/components/baselines/ProjectBaselineHub').then(m => ({ default: m.ProjectBaselineHub }))),
+    adminOnly: true,
+  },
+  changes: {
+    component: lazy(() => import('@/components/changes/ChangeRequestHub').then(m => ({ default: m.ChangeRequestHub }))),
+    adminOnly: true,
+  },
+  scoring: {
+    component: lazy(() => import('@/components/scoring/ScoringHub').then(m => ({ default: m.ScoringHub }))),
+    adminOnly: true,
+  },
+  gantt: {
+    component: lazy(() => import('@/components/project/GanttChart').then(m => ({ default: m.GanttChart }))),
+  },
+  
+  // Finance & HR
+  payroll: {
+    component: lazy(() => import('@/components/payroll/PayrollDashboard').then(m => ({ default: m.PayrollDashboard }))),
+    adminOnly: true,
+  },
+  expenses: {
+    component: lazy(() => import('@/components/expenses/ExpenseManagement').then(m => ({ default: m.ExpenseManagement }))),
+  },
+  'expense-categories': {
+    component: lazy(() => import('@/components/expenses/ExpenseCategoryManager').then(m => ({ default: m.ExpenseCategoryManager }))),
+    adminOnly: true,
+  },
+  loans: {
+    component: lazy(() => import('@/components/loans/LoanManagement').then(m => ({ default: m.LoanManagement }))),
+  },
+  documents: {
+    component: lazy(() => import('@/components/documents/DocumentManager').then(m => ({ default: m.DocumentManager }))),
+  },
+  assets: {
+    component: lazy(() => import('@/components/assets/AssetManagement').then(m => ({ default: m.AssetManagement }))),
+    adminOnly: true,
+  },
+  
+  // Admin Tools
+  templates: {
+    component: lazy(() => import('./tabs/TemplatesTab').then(m => ({ default: m.TemplatesTab }))),
+    adminOnly: true,
+  },
+  approvals: {
+    component: lazy(() => import('./tabs/ApprovalsTab').then(m => ({ default: m.ApprovalsTab }))),
+  },
+  'work-health': {
+    component: lazy(() => import('@/components/health/WorkHealthDashboard').then(m => ({ default: m.WorkHealthDashboard }))),
+    adminOnly: true,
+  },
+  automation: {
+    component: lazy(() => import('./tabs/AutomationTab').then(m => ({ default: m.AutomationTab }))),
+    adminOnly: true,
+  },
+  audit: {
+    component: lazy(() => import('@/components/audit/AuditHub').then(m => ({ default: m.AuditHub }))),
+    adminOnly: true,
+  },
+  lifecycle: {
+    component: lazy(() => import('@/components/lifecycle/LifecycleHub').then(m => ({ default: m.LifecycleHub }))),
+    adminOnly: true,
+  },
+  reports: {
+    component: lazy(() => import('@/components/reports/CustomReportBuilder').then(m => ({ default: m.CustomReportBuilder }))),
+    adminOnly: true,
+  },
+  coins: {
+    component: lazy(() => import('@/components/CoinManagement').then(m => ({ default: m.CoinManagement }))),
+    adminOnly: true,
+  },
+  interns: {
+    component: lazy(() => import('@/components/InternManagement').then(m => ({ default: m.InternManagement }))),
+    adminOnly: true,
+  },
+  analytics: {
+    component: lazy(() => import('@/components/AnalyticsPage').then(m => ({ default: m.AnalyticsPage }))),
+  },
+  
+  // Communication
+  communication: {
+    component: lazy(() => import('@/components/ModernCommunication').then(m => ({ default: m.default }))),
+  },
+  updates: {
+    component: lazy(() => import('@/components/updates/ProjectUpdatesFeed').then(m => ({ default: m.ProjectUpdatesFeed }))),
+  },
+  
+  // User specific
+  'my-coins': {
+    component: lazy(() => import('@/components/MyCoins').then(m => ({ default: m.MyCoins }))),
+    internOnly: true,
+  },
+  'self-service': {
+    component: lazy(() => import('@/components/employee/EmployeeSelfServicePortal').then(m => ({ default: m.EmployeeSelfServicePortal }))),
+  },
+  'app-feedback': {
+    component: lazy(() => import('@/components/feedback/FeedbackForm').then(m => ({ default: m.default }))),
+  },
+  capacity: {
+    component: lazy(() => import('@/components/capacity/CapacityHub').then(m => ({ default: m.CapacityHub }))),
+    adminOnly: true,
+  },
+  requests: {
+    component: lazy(() => import('@/components/requests/RequestHub').then(m => ({ default: m.RequestHub }))),
+  },
+};
+
+/**
+ * Get tab component if user has access
+ */
+export function getTabComponent(tabId: string, isAdmin: boolean): TabConfig | null {
+  const config = tabRegistry[tabId];
+  
+  if (!config) return null;
+  
+  // Check access restrictions
+  if (config.adminOnly && !isAdmin) return null;
+  if (config.internOnly && isAdmin) return null;
+  
+  return config;
+}
+
+/**
+ * Check if tab requires redirect
+ */
+export function getTabRedirect(tabId: string): string | null {
+  const config = tabRegistry[tabId];
+  return config?.redirectTo || null;
+}
