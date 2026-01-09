@@ -284,9 +284,9 @@ export function UnifiedAssistant() {
       </CardHeader>
 
       {!isMinimized && (
-        <CardContent className="flex flex-col h-[calc(100%-60px)] p-0">
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'chat' | 'actions')} className="flex flex-col h-full">
-            <TabsList className="grid w-full grid-cols-2 rounded-none border-b">
+        <CardContent className="flex flex-col flex-1 overflow-hidden p-0">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'chat' | 'actions')} className="flex flex-col flex-1 overflow-hidden">
+            <TabsList className="grid w-full grid-cols-2 rounded-none border-b shrink-0">
               <TabsTrigger value="chat" className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
                 <MessageCircle className="h-4 w-4 mr-2" />
                 Chat
@@ -297,7 +297,7 @@ export function UnifiedAssistant() {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="chat" className="flex-1 flex flex-col m-0 overflow-hidden">
+            <TabsContent value="chat" className="flex-1 flex flex-col m-0 overflow-hidden data-[state=inactive]:hidden">
               <ScrollArea className="flex-1 p-4" ref={scrollRef}>
                 {messages.length === 0 ? (
                   <div className="space-y-4">
@@ -369,7 +369,7 @@ export function UnifiedAssistant() {
                 )}
               </ScrollArea>
 
-              <form onSubmit={handleSubmit} className="p-3 border-t">
+              <form onSubmit={handleSubmit} className="p-3 border-t shrink-0 bg-background">
                 <div className="flex gap-2">
                   <Input
                     ref={inputRef}
@@ -386,27 +386,25 @@ export function UnifiedAssistant() {
               </form>
             </TabsContent>
 
-            <TabsContent value="actions" className="flex-1 m-0 overflow-hidden">
-              <ScrollArea className="h-full p-4">
-                <div className="grid grid-cols-2 gap-3">
-                  {quickActions.map((action) => {
-                    const Icon = action.icon;
-                    return (
-                      <Button
-                        key={action.label}
-                        variant="outline"
-                        className="h-auto py-4 flex flex-col items-center gap-2 hover:bg-muted"
-                        onClick={action.action}
-                      >
-                        <div className={cn("p-2 rounded-full bg-muted", action.color)}>
-                          <Icon className="h-5 w-5" />
-                        </div>
-                        <span className="text-sm font-medium">{action.label}</span>
-                      </Button>
-                    );
-                  })}
-                </div>
-              </ScrollArea>
+            <TabsContent value="actions" className="flex-1 m-0 overflow-auto p-4 data-[state=inactive]:hidden">
+              <div className="grid grid-cols-2 gap-3">
+                {quickActions.map((action) => {
+                  const Icon = action.icon;
+                  return (
+                    <Button
+                      key={action.label}
+                      variant="outline"
+                      className="h-auto py-4 flex flex-col items-center gap-2 hover:bg-muted"
+                      onClick={action.action}
+                    >
+                      <div className={cn("p-2 rounded-full bg-muted", action.color)}>
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <span className="text-sm font-medium">{action.label}</span>
+                    </Button>
+                  );
+                })}
+              </div>
             </TabsContent>
           </Tabs>
         </CardContent>
