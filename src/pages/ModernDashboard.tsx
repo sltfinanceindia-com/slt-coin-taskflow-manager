@@ -72,7 +72,7 @@ import { PulseSurveyWidget } from '@/components/pulse/PulseSurveyWidget';
 import { PulseSurveyAdmin } from '@/components/pulse/PulseSurveyAdmin';
 import { PersonalGoalsWidget } from '@/components/goals/PersonalGoalsWidget';
 import { DashboardBuilder } from '@/components/dashboard/DashboardBuilder';
-import { QuickActionsMenu } from '@/components/QuickActionsMenu';
+
 
 import { Coins, Clock, CheckCircle, Plus, Crown, ArrowRight, Shield, Building2 } from 'lucide-react';
 
@@ -459,9 +459,6 @@ export default function ModernDashboard() {
         
         {/* Bottom Navigation for Mobile */}
         <BottomNavigation variant="private" activeTab={activeTab} onTabChange={setActiveTab} />
-        
-        {/* Quick Actions Menu for Mobile */}
-        <QuickActionsMenu />
       </div>
     </SidebarProvider>
   );
