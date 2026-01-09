@@ -58,7 +58,6 @@ import { ExpenseManagement } from '@/components/expenses/ExpenseManagement';
 import { DocumentManager } from '@/components/documents/DocumentManager';
 import { AssetManagement } from '@/components/assets/AssetManagement';
 import { CustomReportBuilder } from '@/components/reports/CustomReportBuilder';
-import { TimesheetManager } from '@/components/timesheet/TimesheetManager';
 import { TimesheetManagement } from '@/components/timesheets/TimesheetManagement';
 import { HolidayCalendar } from '@/components/workforce/HolidayCalendar';
 import { LoanManagement } from '@/components/loans/LoanManagement';
