@@ -90,7 +90,7 @@ export function SubtaskTemplates({ parentTaskId, projectId, onTemplateApplied }:
   // Apply template mutation
   const applyTemplateMutation = useMutation({
     mutationFn: async (subtasks: SubtaskTemplateItem[]) => {
-      const subtasksToCreate = subtasks.map((subtask, index) => ({
+      const subtasksToCreate = subtasks.map((subtask) => ({
         title: subtask.title,
         project_id: projectId,
         parent_task_id: parentTaskId,
@@ -100,7 +100,6 @@ export function SubtaskTemplates({ parentTaskId, projectId, onTemplateApplied }:
         status: 'assigned' as const,
         priority: 'medium' as const,
         estimated_hours: subtask.estimated_hours || null,
-        task_order: index,
       }));
 
       const { error } = await supabase

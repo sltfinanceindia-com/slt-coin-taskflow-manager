@@ -84,8 +84,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+import { useVisibilityHandler } from '@/hooks/useVisibilityHandler';
+
 function AppContent() {
   useAuthEmailNotifications();
+  useVisibilityHandler(); // Handle tab switching / sleep mode
   const { user, loading } = useAuth();
   const { isSuperAdmin } = useUserRole();
   const [showSplash, setShowSplash] = useState(true);

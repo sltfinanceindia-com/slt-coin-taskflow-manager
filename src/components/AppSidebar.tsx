@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { NavLink, useNavigate } from "react-router-dom"
+import { Button } from "@/components/ui/button"
 import { 
   LayoutDashboard, 
   CheckSquare, 
@@ -253,15 +254,33 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
   };
 
   // Track which groups are open - default first group open
-  const [openGroups, setOpenGroups] = useState<string[]>(["Main"])
+  const [openGroups, setOpenGroups] = useState<string[]>(() => {
+    const saved = localStorage.getItem('sidebar-open-groups');
+    return saved ? JSON.parse(saved) : ["Main"];
+  });
 
   const toggleGroup = (label: string) => {
-    setOpenGroups(prev => 
-      prev.includes(label) 
+    setOpenGroups(prev => {
+      const next = prev.includes(label) 
         ? prev.filter(g => g !== label)
-        : [...prev, label]
-    )
-  }
+        : [...prev, label];
+      localStorage.setItem('sidebar-open-groups', JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const expandAllGroups = () => {
+    const allLabels = navGroups.map(g => g.label);
+    setOpenGroups(allLabels);
+    localStorage.setItem('sidebar-open-groups', JSON.stringify(allLabels));
+  };
+
+  const collapseAllGroups = () => {
+    setOpenGroups([]);
+    localStorage.setItem('sidebar-open-groups', JSON.stringify([]));
+  };
+
+  const allExpanded = openGroups.length === navGroups.length;
 
   const isActive = (tab: string) => activeTab === tab
 
@@ -393,6 +412,20 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
         <div className="px-3 py-2 shrink-0">
           <SidebarNotificationWidget collapsed={collapsed} />
         </div>
+
+        {/* Expand/Collapse All Button */}
+        {!collapsed && (
+          <div className="px-3 py-2 border-b border-sidebar-border shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start text-xs text-muted-foreground hover:text-foreground"
+              onClick={allExpanded ? collapseAllGroups : expandAllGroups}
+            >
+              {allExpanded ? '⊟ Collapse All' : '⊞ Expand All'}
+            </Button>
+          </div>
+        )}
 
         {/* Navigation with Collapsible Groups */}
         <ScrollArea className="flex-1">
