@@ -185,38 +185,38 @@ const handler = async (req: Request): Promise<Response> => {
     switch (type) {
       case 'message':
         subject = `New message from ${data.sender_name} in ${data.channel_name}`;
-        html = `${baseStyles}<div class="email-container"><div class="header"><h1>💬 New Message</h1></div><div class="content"><p>Hi ${recipient_name},</p><p><strong>${data.sender_name}</strong> sent a message in <strong>${data.channel_name}</strong>:</p><div class="highlight-box"><p>${data.message_content}</p></div></div><div class="footer"><p class="footer-text"><span class="company-name">SLT work HuB Team</span></p></div></div>`;
+        html = `${baseStyles}<div class="email-container"><div class="header"><h1>💬 New Message</h1></div><div class="content"><p>Hi ${recipient_name},</p><p><strong>${data.sender_name}</strong> sent a message in <strong>${data.channel_name}</strong>:</p><div class="highlight-box"><p>${data.message_content}</p></div></div><div class="footer"><p class="footer-text"><span class="company-name">Tenexa Team</span></p></div></div>`;
         break;
 
       case 'mention':
         subject = `You were mentioned by ${data.sender_name}`;
-        html = `${baseStyles}<div class="email-container"><div class="header"><h1>📢 You were mentioned!</h1></div><div class="content"><p>Hi ${recipient_name},</p><p><strong>${data.sender_name}</strong> mentioned you in <strong>${data.channel_name}</strong>:</p><div class="highlight-box"><p>${data.message_content}</p></div></div><div class="footer"><p class="footer-text"><span class="company-name">SLT work HuB Team</span></p></div></div>`;
+        html = `${baseStyles}<div class="email-container"><div class="header"><h1>📢 You were mentioned!</h1></div><div class="content"><p>Hi ${recipient_name},</p><p><strong>${data.sender_name}</strong> mentioned you in <strong>${data.channel_name}</strong>:</p><div class="highlight-box"><p>${data.message_content}</p></div></div><div class="footer"><p class="footer-text"><span class="company-name">Tenexa Team</span></p></div></div>`;
         break;
 
       case 'channel_invite':
         subject = `You've been invited to join ${data.channel_name}`;
-        html = `${baseStyles}<div class="email-container"><div class="header"><h1>📨 Channel Invitation</h1></div><div class="content"><p>Hi ${recipient_name},</p><p><strong>${data.sender_name}</strong> has invited you to join <strong>${data.channel_name}</strong>.</p></div><div class="footer"><p class="footer-text"><span class="company-name">SLT work HuB Team</span></p></div></div>`;
+        html = `${baseStyles}<div class="email-container"><div class="header"><h1>📨 Channel Invitation</h1></div><div class="content"><p>Hi ${recipient_name},</p><p><strong>${data.sender_name}</strong> has invited you to join <strong>${data.channel_name}</strong>.</p></div><div class="footer"><p class="footer-text"><span class="company-name">Tenexa Team</span></p></div></div>`;
         break;
 
       case 'task_assignment':
       case 'task_assigned':
         subject = `📋 New Task Assigned: ${data.task_title || requestData.taskTitle || 'New Task'}`;
-        html = `${baseStyles}<div class="email-container"><div class="header"><h1>🎯 New Task Assigned</h1><p>You have a new task</p></div><div class="content"><p>Hi ${recipient_name},</p><p>${data.sender_name || requestData.assignerName || 'Your manager'} has assigned you a new task.</p><div class="highlight-box"><h3>📋 ${data.task_title || requestData.taskTitle || 'New Task'}</h3></div><p>Log in to your dashboard to view the task details.</p></div><div class="footer"><p class="footer-text"><span class="company-name">SLT work HuB Team</span></p></div></div>`;
+        html = `${baseStyles}<div class="email-container"><div class="header"><h1>🎯 New Task Assigned</h1><p>You have a new task</p></div><div class="content"><p>Hi ${recipient_name},</p><p>${data.sender_name || requestData.assignerName || 'Your manager'} has assigned you a new task.</p><div class="highlight-box"><h3>📋 ${data.task_title || requestData.taskTitle || 'New Task'}</h3></div><p>Log in to your dashboard to view the task details.</p></div><div class="footer"><p class="footer-text"><span class="company-name">Tenexa Team</span></p></div></div>`;
         break;
 
       case 'task_completed':
         subject = `✅ Task Completed: ${requestData.taskTitle || 'Task'}`;
-        html = `${baseStyles}<div class="email-container"><div class="header"><h1>✅ Task Completed</h1><p>Ready for review</p></div><div class="content"><p>Hi ${recipient_name},</p><p>A task has been completed and is awaiting your review.</p><div class="highlight-box"><h3>✅ ${requestData.taskTitle || 'Task'}</h3><p style="color: #16a34a; font-weight: 600;">Status: Awaiting Review</p></div></div><div class="footer"><p class="footer-text"><span class="company-name">SLT work HuB Team</span></p></div></div>`;
+        html = `${baseStyles}<div class="email-container"><div class="header"><h1>✅ Task Completed</h1><p>Ready for review</p></div><div class="content"><p>Hi ${recipient_name},</p><p>A task has been completed and is awaiting your review.</p><div class="highlight-box"><h3>✅ ${requestData.taskTitle || 'Task'}</h3><p style="color: #16a34a; font-weight: 600;">Status: Awaiting Review</p></div></div><div class="footer"><p class="footer-text"><span class="company-name">Tenexa Team</span></p></div></div>`;
         break;
 
       case 'comment_added':
         subject = `💬 New Comment: ${requestData.taskTitle || 'Task'}`;
-        html = `${baseStyles}<div class="email-container"><div class="header"><h1>💬 New Comment</h1></div><div class="content"><p>Hi ${recipient_name},</p><p>${requestData.commenterName || 'A team member'} added a comment to your task.</p><div class="highlight-box"><h3>💬 ${requestData.taskTitle || 'Task'}</h3></div></div><div class="footer"><p class="footer-text"><span class="company-name">SLT work HuB Team</span></p></div></div>`;
+        html = `${baseStyles}<div class="email-container"><div class="header"><h1>💬 New Comment</h1></div><div class="content"><p>Hi ${recipient_name},</p><p>${requestData.commenterName || 'A team member'} added a comment to your task.</p><div class="highlight-box"><h3>💬 ${requestData.taskTitle || 'Task'}</h3></div></div><div class="footer"><p class="footer-text"><span class="company-name">Tenexa Team</span></p></div></div>`;
         break;
 
       case 'coins_earned':
-        subject = `🪙 Congratulations! You've Earned ${requestData.coinAmount || 0} SLT Coins!`;
-        html = `${baseStyles}<div class="email-container"><div class="header"><h1>🎉 Congratulations!</h1><p>You've earned SLT Coins</p></div><div class="content"><p>Hi ${recipient_name},</p><p>Outstanding work! Your effort has been rewarded.</p><div class="coins-earned">🪙 ${requestData.coinAmount || 0} SLT Coins Earned!</div><div class="highlight-box"><h3>🏆 ${requestData.taskTitle || 'Task'}</h3><p style="color: #16a34a; font-weight: 600;">Status: Verified & Approved</p></div></div><div class="footer"><p class="footer-text"><span class="company-name">SLT work HuB Team</span></p></div></div>`;
+        subject = `🪙 Congratulations! You've Earned ${requestData.coinAmount || 0} Coins!`;
+        html = `${baseStyles}<div class="email-container"><div class="header"><h1>🎉 Congratulations!</h1><p>You've earned Coins</p></div><div class="content"><p>Hi ${recipient_name},</p><p>Outstanding work! Your effort has been rewarded.</p><div class="coins-earned">🪙 ${requestData.coinAmount || 0} Coins Earned!</div><div class="highlight-box"><h3>🏆 ${requestData.taskTitle || 'Task'}</h3><p style="color: #16a34a; font-weight: 600;">Status: Verified & Approved</p></div></div><div class="footer"><p class="footer-text"><span class="company-name">Tenexa Team</span></p></div></div>`;
         break;
 
       case 'login_notification':

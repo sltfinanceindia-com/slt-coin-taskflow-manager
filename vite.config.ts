@@ -18,9 +18,9 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'robots.txt', 'lovable-uploads/*.png'],
       manifest: {
-        name: 'SLT work HuB',
-        short_name: 'SLT HuB',
-        description: 'Complete Workplace Management Platform with task management, team collaboration, and SLT coin rewards',
+        name: 'Tenexa',
+        short_name: 'Tenexa',
+        description: 'Complete Workplace Management Platform with task management, team collaboration, and productivity rewards',
         theme_color: '#1e3a5f',
         background_color: '#ffffff',
         display: 'standalone',

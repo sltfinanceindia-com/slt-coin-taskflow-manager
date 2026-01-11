@@ -402,7 +402,7 @@ const handler = async (req: Request): Promise<Response> => {
     
     // Send email using Resend (use onboarding@resend.dev for unverified domains)
     const emailResponse = await resend.emails.send({
-      from: 'SLT work HuB <onboarding@resend.dev>',
+      from: 'Tenexa <onboarding@resend.dev>',
       to: [emailData.to],
       subject: template.subject,
       html: template.html,

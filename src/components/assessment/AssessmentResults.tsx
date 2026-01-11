@@ -24,7 +24,7 @@ export function AssessmentResults({ assessment, attempt, onReturnToTraining }: A
           <div className="flex items-center justify-center mb-2 sm:mb-4">
             <img 
               src="/slt-hub-icon.png" 
-              alt="SLT work HuB"
+              alt="Tenexa"
               className="h-12 sm:h-16 w-auto object-contain"
             />
           </div>
