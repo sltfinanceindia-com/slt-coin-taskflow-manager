@@ -413,19 +413,25 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
           <SidebarNotificationWidget collapsed={collapsed} />
         </div>
 
-        {/* Expand/Collapse All Button */}
-        {!collapsed && (
-          <div className="px-3 py-2 border-b border-sidebar-border shrink-0">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full justify-start text-xs text-muted-foreground hover:text-foreground"
-              onClick={allExpanded ? collapseAllGroups : expandAllGroups}
-            >
-              {allExpanded ? '⊟ Collapse All' : '⊞ Expand All'}
-            </Button>
-          </div>
-        )}
+        {/* Expand/Collapse All Button - Always visible */}
+        <div className="px-3 py-2 border-b border-sidebar-border shrink-0">
+          <Button
+            variant="ghost"
+            size="sm"
+            className={cn(
+              "text-xs text-muted-foreground hover:text-foreground transition-all",
+              collapsed ? "w-full justify-center p-2" : "w-full justify-start"
+            )}
+            onClick={allExpanded ? collapseAllGroups : expandAllGroups}
+            title={allExpanded ? 'Collapse All Groups' : 'Expand All Groups'}
+          >
+            {collapsed ? (
+              allExpanded ? '⊟' : '⊞'
+            ) : (
+              allExpanded ? '⊟ Collapse All' : '⊞ Expand All'
+            )}
+          </Button>
+        </div>
 
         {/* Navigation with Collapsible Groups */}
         <ScrollArea className="flex-1">

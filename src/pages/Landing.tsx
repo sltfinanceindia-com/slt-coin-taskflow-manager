@@ -443,7 +443,7 @@ export default function Landing() {
                   Ready to Transform Your Workplace?
                 </h2>
                 <p className="text-base sm:text-lg text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-                  Join thousands of teams already using SLT work HuB to manage tasks, 
+                  Join thousands of teams already using Tenexa to manage tasks, 
                   collaborate effectively, and reward productivity.
                 </p>
                 <Link to="/signup">

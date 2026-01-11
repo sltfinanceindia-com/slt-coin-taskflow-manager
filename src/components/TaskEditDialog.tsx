@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Task } from '@/types/task';
-import { Edit, Calendar, AlertCircle, User, Clock, Target, Coins } from 'lucide-react';
+import { Edit, Calendar, AlertCircle, User, Clock, Target, Coins, Activity } from 'lucide-react';
 import { validateTaskData } from '@/utils/security';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useQuery } from '@tanstack/react-query';
@@ -15,6 +15,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useEntityActivityLog } from '@/hooks/useEntityActivityLog';
+import { ActivityLogViewer } from '@/components/common/ActivityLogViewer';
 
 interface TaskEditDialogProps {
   task: Task;
@@ -26,6 +28,10 @@ export function TaskEditDialog({ task, onUpdateTask, isUpdating }: TaskEditDialo
   const { profile } = useAuth();
   const [open, setOpen] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const originalDataRef = useRef<any>(null);
+  
+  // Activity logging
+  const { activities, isLoading: activitiesLoading, logTaskEdit } = useEntityActivityLog('task', task.id);
   const [formData, setFormData] = useState({
     title: task.title,
     description: task.description || '',
@@ -57,7 +63,7 @@ export function TaskEditDialog({ task, onUpdateTask, isUpdating }: TaskEditDialo
   });
 
   useEffect(() => {
-    setFormData({
+    const data = {
       title: task.title,
       description: task.description || '',
       priority: task.priority,
@@ -69,10 +75,13 @@ export function TaskEditDialog({ task, onUpdateTask, isUpdating }: TaskEditDialo
       estimated_hours: task.estimated_hours || 0,
       actual_hours: task.actual_hours || 0,
       progress_percentage: task.progress_percentage || 0,
-    });
+      project_id: task.project_id || '',
+    };
+    setFormData(data);
+    originalDataRef.current = data;
   }, [task]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setValidationErrors([]);
 
@@ -92,6 +101,15 @@ export function TaskEditDialog({ task, onUpdateTask, isUpdating }: TaskEditDialo
     if (errors.length > 0) {
       setValidationErrors(errors);
       return;
+    }
+
+    // Log activity before updating
+    if (originalDataRef.current) {
+      try {
+        await logTaskEdit(task.id, originalDataRef.current, formData);
+      } catch (err) {
+        console.error('Failed to log activity:', err);
+      }
     }
 
     onUpdateTask(task.id, {
@@ -146,11 +164,15 @@ export function TaskEditDialog({ task, onUpdateTask, isUpdating }: TaskEditDialo
         
         <form onSubmit={handleSubmit}>
           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="basic">Basic</TabsTrigger>
               <TabsTrigger value="assignment">Assignment</TabsTrigger>
               <TabsTrigger value="timeline">Timeline</TabsTrigger>
               <TabsTrigger value="effort">Effort</TabsTrigger>
+              <TabsTrigger value="activity" className="flex items-center gap-1">
+                <Activity className="h-3 w-3" />
+                Activity
+              </TabsTrigger>
             </TabsList>
 
             {/* Basic Info Tab */}
@@ -395,6 +417,22 @@ export function TaskEditDialog({ task, onUpdateTask, isUpdating }: TaskEditDialo
                   </div>
                 </div>
               )}
+            </TabsContent>
+
+            {/* Activity Tab */}
+            <TabsContent value="activity" className="mt-4">
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Activity className="h-4 w-4" />
+                  <span>Recent changes to this task</span>
+                </div>
+                <ActivityLogViewer 
+                  activities={activities} 
+                  isLoading={activitiesLoading}
+                  maxHeight="300px"
+                  emptyMessage="No activity recorded for this task yet"
+                />
+              </div>
             </TabsContent>
           </Tabs>
 
