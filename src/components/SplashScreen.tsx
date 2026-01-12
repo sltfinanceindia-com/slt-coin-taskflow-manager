@@ -88,7 +88,7 @@ const SplashScreen = ({ onComplete, minDuration = 2000 }: SplashScreenProps) => 
             >
               <div className="relative">
                 <motion.img
-                  src="/slt-hub-icon.png"
+                  src="/tenexa-icon.png"
                   alt="Tenexa"
                   className={`w-24 h-24 md:w-32 md:h-32 object-contain drop-shadow-2xl rounded-3xl ${
                     isDark ? 'bg-card/50 p-2' : ''

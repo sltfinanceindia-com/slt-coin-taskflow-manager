@@ -21,7 +21,7 @@ export function SEOHead({
   description = 'All-in-one workplace management platform with task tracking, team collaboration, training, attendance, and a rewarding coin system to boost productivity.',
   keywords = 'workplace management, task management, team collaboration, employee training, attendance tracking, HR software, project management, Tenexa',
   canonical,
-  ogImage = '/slt-hub-icon.png',
+  ogImage = '/tenexa-icon.png',
   ogType = 'website',
   twitterCard = 'summary_large_image',
   noIndex = false,

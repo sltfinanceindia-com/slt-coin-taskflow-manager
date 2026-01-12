@@ -328,7 +328,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <img 
-                src="/slt-hub-icon.png" 
+                src="/tenexa-icon.png" 
                 alt="Tenexa"
                 className="h-9 w-auto object-contain shrink-0 rounded-xl"
               />

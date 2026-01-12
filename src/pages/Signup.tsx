@@ -167,7 +167,7 @@ export default function Signup() {
           <div className="text-center">
             <Link to="/" className="inline-flex items-center gap-2 mb-4 sm:mb-6">
               <img 
-                src="/slt-hub-icon.png" 
+                src="/tenexa-icon.png" 
                 alt="Tenexa"
                 className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg object-contain"
               />
