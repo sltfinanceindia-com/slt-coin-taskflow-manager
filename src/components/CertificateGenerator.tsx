@@ -457,7 +457,7 @@ export function CertificateGenerator({ internData, onClose }: CertificateGenerat
                     {/* Left: Logo */}
                     <div className="flex items-center justify-start">
                       <img 
-                        src="/slt-hub-icon.png" 
+                        src="/tenexa-icon.png" 
                         alt="Tenexa Logo" 
                         className="h-16 w-auto"
                       />

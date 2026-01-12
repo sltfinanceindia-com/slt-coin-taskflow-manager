@@ -94,7 +94,7 @@ export default function Dashboard() {
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-3">
                 <img 
-                  src="/slt-hub-icon.png" 
+                  src="/tenexa-icon.png" 
                   alt="Tenexa"
                   className="h-10 sm:h-12 w-auto object-contain"
                 />

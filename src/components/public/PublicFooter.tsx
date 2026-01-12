@@ -10,7 +10,7 @@ export function PublicFooter() {
             <div className="flex flex-col items-center md:items-start gap-3">
               <div className="flex items-center gap-2 sm:gap-3">
                 <img 
-                  src="/slt-hub-icon.png" 
+                  src="/tenexa-icon.png" 
                   alt="Tenexa"
                   className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg object-contain"
                 />

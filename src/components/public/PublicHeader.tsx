@@ -73,7 +73,7 @@ export function PublicHeader() {
         <nav className="flex h-14 sm:h-16 items-center justify-between" aria-label="Main navigation">
           <Link to="/" className="flex items-center gap-2 sm:gap-3">
             <img 
-              src="/slt-hub-icon.png" 
+              src="/tenexa-icon.png" 
               alt="Tenexa"
               className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg object-contain"
               width="40"

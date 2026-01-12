@@ -1,6 +1,7 @@
 /**
  * Centralized Navigation Configuration
  * Single source of truth for all navigation items across the app
+ * Enhanced with 50+ enterprise features for Finance/HR and Work Management
  */
 
 import { 
@@ -48,6 +49,44 @@ import {
   GanttChart,
   UserCircle,
   LucideIcon,
+  Calculator,
+  DollarSign,
+  FileCheck,
+  Award,
+  GraduationCap,
+  Handshake,
+  Scale,
+  FileSignature,
+  UserPlus,
+  UserMinus,
+  BadgeCheck,
+  ScrollText,
+  MessageSquareWarning,
+  Gavel,
+  TrendingDown,
+  Layers,
+  GitMerge,
+  UserSearch,
+  Repeat,
+  CalendarClock,
+  Flame,
+  IterationCw,
+  Route,
+  Milestone,
+  Bug,
+  ClipboardList,
+  Lightbulb,
+  RefreshCcw,
+  Link2,
+  Timer,
+  Coffee,
+  ArrowLeftRight,
+  Phone,
+  Shuffle,
+  Building,
+  Copy,
+  LayoutTemplate,
+  ListTodo,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -97,7 +136,7 @@ export function getRouteForTab(tab: string): string {
 }
 
 /**
- * Admin navigation groups
+ * Admin navigation groups - Enhanced with 50+ features
  */
 export const adminNavGroups: NavGroup[] = [
   {
@@ -121,6 +160,32 @@ export const adminNavGroups: NavGroup[] = [
       { title: "Attendance", url: "attendance", icon: MapPin },
       { title: "Leave", url: "leave", icon: Palmtree },
       { title: "WFH", url: "wfh", icon: Home },
+      // NEW Work Management Features (25+)
+      { title: "Sprint Planning", url: "sprints", icon: IterationCw },
+      { title: "Backlog", url: "backlog", icon: ListTodo },
+      { title: "Story Points", url: "story-points", icon: Target },
+      { title: "Burndown Charts", url: "burndown", icon: TrendingDown },
+      { title: "Velocity", url: "velocity", icon: Flame },
+      { title: "Release Planning", url: "releases", icon: GitMerge },
+      { title: "Roadmap", url: "roadmap", icon: Route },
+      { title: "Resource Allocation", url: "resource-allocation", icon: Users2 },
+      { title: "Skills Inventory", url: "skills-inventory", icon: GraduationCap },
+      { title: "Workload Balancing", url: "workload", icon: Scale },
+      { title: "Overtime Tracking", url: "overtime", icon: Timer },
+      { title: "Comp-Off", url: "comp-off", icon: RefreshCcw },
+      { title: "On-Call Rotation", url: "on-call", icon: Phone },
+      { title: "Shift Swapping", url: "shift-swap", icon: ArrowLeftRight },
+      { title: "Break Management", url: "breaks", icon: Coffee },
+      { title: "Project Templates", url: "project-templates", icon: Copy },
+      { title: "Task Templates", url: "task-templates", icon: LayoutTemplate },
+      { title: "Recurring Tasks", url: "recurring-tasks", icon: Repeat },
+      { title: "Dependencies", url: "dependencies", icon: Link2 },
+      { title: "Milestones", url: "milestones", icon: Milestone },
+      { title: "Risk Register", url: "risks", icon: AlertTriangle },
+      { title: "Issue Tracker", url: "issues", icon: Bug },
+      { title: "Meeting Notes", url: "meeting-notes", icon: ClipboardList },
+      { title: "Decision Log", url: "decisions", icon: Gavel },
+      { title: "Lessons Learned", url: "lessons", icon: Lightbulb },
     ]
   },
   {
@@ -155,6 +220,35 @@ export const adminNavGroups: NavGroup[] = [
       { title: "Documents", url: "documents", icon: FileText },
       { title: "Assets", url: "assets", icon: Package },
       { title: "Holidays", url: "holidays", icon: Calendar },
+      // NEW Finance & HR Features (25+)
+      { title: "Tax Management", url: "tax-management", icon: Calculator },
+      { title: "Salary Structure", url: "salary-structure", icon: DollarSign },
+      { title: "Salary Revisions", url: "salary-revisions", icon: TrendingUp },
+      { title: "Bonus Management", url: "bonus", icon: Award },
+      { title: "Reimbursements", url: "reimbursements", icon: Receipt },
+      { title: "Statutory Compliance", url: "compliance", icon: Scale },
+      { title: "Form 16", url: "form-16", icon: FileCheck },
+      { title: "Investment Declarations", url: "investments", icon: PieChart },
+      { title: "Employee Benefits", url: "benefits", icon: HeartPulse },
+      { title: "Full & Final", url: "full-final", icon: FileSignature },
+      { title: "Gratuity", url: "gratuity", icon: Coins },
+      { title: "Onboarding", url: "onboarding", icon: UserPlus },
+      { title: "Exit Management", url: "exit-management", icon: UserMinus },
+      { title: "Contracts", url: "contracts", icon: ScrollText },
+      { title: "Background Verification", url: "bgv", icon: UserSearch },
+      { title: "Probation Tracking", url: "probation", icon: CalendarClock },
+      { title: "Confirmation Letters", url: "confirmations", icon: BadgeCheck },
+      { title: "Employee Handbook", url: "handbook", icon: BookOpen },
+      { title: "Grievances", url: "grievances", icon: MessageSquareWarning },
+      { title: "Disciplinary Actions", url: "disciplinary", icon: Gavel },
+      { title: "HR Analytics", url: "hr-analytics", icon: BarChart3 },
+      { title: "Compensation Benchmarking", url: "benchmarking", icon: TrendingUp },
+      { title: "Succession Planning", url: "succession", icon: Layers },
+      { title: "Career Pathing", url: "career-path", icon: Route },
+      { title: "Job Postings", url: "job-postings", icon: Briefcase },
+      { title: "Recruitment Pipeline", url: "recruitment", icon: Users },
+      { title: "Interview Scheduling", url: "interviews", icon: CalendarDays },
+      { title: "Offer Management", url: "offers", icon: Handshake },
     ]
   },
   {
@@ -190,7 +284,7 @@ export const adminNavGroups: NavGroup[] = [
 ];
 
 /**
- * Intern/Employee navigation groups
+ * Intern/Employee navigation groups - Enhanced with relevant features
  */
 export const internNavGroups: NavGroup[] = [
   {
@@ -216,6 +310,11 @@ export const internNavGroups: NavGroup[] = [
       { title: "Leave", url: "leave", icon: Palmtree },
       { title: "WFH", url: "wfh", icon: Home },
       { title: "Holidays", url: "holidays", icon: Calendar },
+      // Employee-accessible new features
+      { title: "My Backlog", url: "backlog", icon: ListTodo },
+      { title: "Shift Swap Request", url: "shift-swap", icon: ArrowLeftRight },
+      { title: "Overtime Request", url: "overtime", icon: Timer },
+      { title: "Comp-Off Request", url: "comp-off", icon: RefreshCcw },
     ]
   },
   {
@@ -224,6 +323,11 @@ export const internNavGroups: NavGroup[] = [
     items: [
       { title: "Expenses", url: "expenses", icon: Receipt },
       { title: "Loans & Advances", url: "loans", icon: Banknote },
+      // Employee-accessible new features
+      { title: "My Payslips", url: "payslips", icon: FileText },
+      { title: "Tax Declarations", url: "investments", icon: Calculator },
+      { title: "Reimbursements", url: "reimbursements", icon: Receipt },
+      { title: "My Benefits", url: "benefits", icon: HeartPulse },
     ]
   },
   {
@@ -240,6 +344,9 @@ export const internNavGroups: NavGroup[] = [
       { title: "My Coins", url: "my-coins", icon: Coins },
       { title: "Analytics", url: "analytics", icon: BarChart3 },
       { title: "Feedback", url: "feedback", icon: MessageCircle },
+      { title: "Employee Handbook", url: "handbook", icon: BookOpen },
+      { title: "Career Path", url: "career-path", icon: Route },
+      { title: "Job Postings", url: "job-postings", icon: Briefcase },
     ]
   },
 ];
