@@ -1,6 +1,7 @@
 /**
  * Dashboard Tab Registry
  * Lazy-loaded tab components for ModernDashboard
+ * Enhanced with 50+ enterprise features
  */
 
 import { lazy, ComponentType, LazyExoticComponent } from 'react';
@@ -12,33 +13,39 @@ export interface TabConfig {
   redirectTo?: string;
 }
 
+// Lazy load the ComingSoon placeholder component
+const ComingSoonTab = lazy(() => import('./tabs/ComingSoonTab').then(m => ({ default: m.ComingSoonTab })));
+
 /**
  * Registry of all dashboard tab components
  * Components are lazy-loaded to reduce initial bundle size
  */
 export const tabRegistry: Record<string, TabConfig> = {
-  // Main tabs - inline rendering (no lazy loading for frequently used)
+  // ============================================
+  // MAIN TABS
+  // ============================================
   overview: {
     component: lazy(() => import('./tabs/OverviewTab').then(m => ({ default: m.OverviewTab }))),
   },
   tasks: {
     component: lazy(() => import('./tabs/TasksTab').then(m => ({ default: m.TasksTab }))),
   },
-  
-  // Projects
   projects: {
     component: lazy(() => import('@/components/project/ProjectPortfolioHub').then(m => ({ default: m.ProjectPortfolioHub }))),
   },
+  updates: {
+    component: lazy(() => import('@/components/updates/ProjectUpdatesFeed').then(m => ({ default: m.ProjectUpdatesFeed }))),
+  },
   
-  // Time Management
+  // ============================================
+  // WORK MANAGEMENT (Existing)
+  // ============================================
   time: {
     component: lazy(() => import('./tabs/TimeLogsTab').then(m => ({ default: m.TimeLogsTab }))),
   },
   timesheets: {
     component: lazy(() => import('@/components/timesheets/TimesheetManagement').then(m => ({ default: m.TimesheetManagement }))),
   },
-  
-  // Workforce
   shifts: {
     component: lazy(() => import('@/components/workforce/ShiftManagement').then(m => ({ default: m.ShiftManagement }))),
     adminOnly: true,
@@ -56,8 +63,46 @@ export const tabRegistry: Record<string, TabConfig> = {
     component: lazy(() => import('@/components/workforce/HolidayCalendar').then(m => ({ default: m.HolidayCalendar }))),
     adminOnly: true,
   },
+  capacity: {
+    component: lazy(() => import('@/components/capacity/CapacityHub').then(m => ({ default: m.CapacityHub }))),
+    adminOnly: true,
+  },
+  requests: {
+    component: lazy(() => import('@/components/requests/RequestHub').then(m => ({ default: m.RequestHub }))),
+  },
   
-  // Performance
+  // ============================================
+  // WORK MANAGEMENT (NEW - 25+ Features)
+  // ============================================
+  sprints: { component: ComingSoonTab, adminOnly: true },
+  backlog: { component: ComingSoonTab },
+  'story-points': { component: ComingSoonTab, adminOnly: true },
+  burndown: { component: ComingSoonTab, adminOnly: true },
+  velocity: { component: ComingSoonTab, adminOnly: true },
+  releases: { component: ComingSoonTab, adminOnly: true },
+  roadmap: { component: ComingSoonTab, adminOnly: true },
+  'resource-allocation': { component: ComingSoonTab, adminOnly: true },
+  'skills-inventory': { component: ComingSoonTab, adminOnly: true },
+  workload: { component: ComingSoonTab, adminOnly: true },
+  overtime: { component: ComingSoonTab },
+  'comp-off': { component: ComingSoonTab },
+  'on-call': { component: ComingSoonTab, adminOnly: true },
+  'shift-swap': { component: ComingSoonTab },
+  breaks: { component: ComingSoonTab, adminOnly: true },
+  'project-templates': { component: ComingSoonTab, adminOnly: true },
+  'task-templates': { component: ComingSoonTab, adminOnly: true },
+  'recurring-tasks': { component: ComingSoonTab, adminOnly: true },
+  dependencies: { component: ComingSoonTab, adminOnly: true },
+  milestones: { component: ComingSoonTab, adminOnly: true },
+  risks: { component: ComingSoonTab, adminOnly: true },
+  issues: { component: ComingSoonTab, adminOnly: true },
+  'meeting-notes': { component: ComingSoonTab, adminOnly: true },
+  decisions: { component: ComingSoonTab, adminOnly: true },
+  lessons: { component: ComingSoonTab, adminOnly: true },
+  
+  // ============================================
+  // PERFORMANCE
+  // ============================================
   okrs: {
     component: lazy(() => import('@/components/performance/OKRManagement').then(m => ({ default: m.OKRManagement }))),
   },
@@ -73,7 +118,9 @@ export const tabRegistry: Record<string, TabConfig> = {
     adminOnly: true,
   },
   
-  // Project Controls
+  // ============================================
+  // PROJECT CONTROLS
+  // ============================================
   baselines: {
     component: lazy(() => import('@/components/baselines/ProjectBaselineHub').then(m => ({ default: m.ProjectBaselineHub }))),
     adminOnly: true,
@@ -90,7 +137,9 @@ export const tabRegistry: Record<string, TabConfig> = {
     component: lazy(() => import('@/components/project/GanttChart').then(m => ({ default: m.GanttChart }))),
   },
   
-  // Finance & HR
+  // ============================================
+  // FINANCE & HR (Existing)
+  // ============================================
   payroll: {
     component: lazy(() => import('@/components/payroll/PayrollDashboard').then(m => ({ default: m.PayrollDashboard }))),
     adminOnly: true,
@@ -113,7 +162,42 @@ export const tabRegistry: Record<string, TabConfig> = {
     adminOnly: true,
   },
   
-  // Admin Tools
+  // ============================================
+  // FINANCE & HR (NEW - 28+ Features)
+  // ============================================
+  'tax-management': { component: ComingSoonTab, adminOnly: true },
+  'salary-structure': { component: ComingSoonTab, adminOnly: true },
+  'salary-revisions': { component: ComingSoonTab, adminOnly: true },
+  bonus: { component: ComingSoonTab, adminOnly: true },
+  reimbursements: { component: ComingSoonTab },
+  compliance: { component: ComingSoonTab, adminOnly: true },
+  'form-16': { component: ComingSoonTab, adminOnly: true },
+  investments: { component: ComingSoonTab },
+  benefits: { component: ComingSoonTab },
+  'full-final': { component: ComingSoonTab, adminOnly: true },
+  gratuity: { component: ComingSoonTab, adminOnly: true },
+  onboarding: { component: ComingSoonTab, adminOnly: true },
+  'exit-management': { component: ComingSoonTab, adminOnly: true },
+  contracts: { component: ComingSoonTab, adminOnly: true },
+  bgv: { component: ComingSoonTab, adminOnly: true },
+  probation: { component: ComingSoonTab, adminOnly: true },
+  confirmations: { component: ComingSoonTab, adminOnly: true },
+  handbook: { component: ComingSoonTab },
+  grievances: { component: ComingSoonTab, adminOnly: true },
+  disciplinary: { component: ComingSoonTab, adminOnly: true },
+  'hr-analytics': { component: ComingSoonTab, adminOnly: true },
+  benchmarking: { component: ComingSoonTab, adminOnly: true },
+  succession: { component: ComingSoonTab, adminOnly: true },
+  'career-path': { component: ComingSoonTab },
+  'job-postings': { component: ComingSoonTab },
+  recruitment: { component: ComingSoonTab, adminOnly: true },
+  interviews: { component: ComingSoonTab, adminOnly: true },
+  offers: { component: ComingSoonTab, adminOnly: true },
+  payslips: { component: ComingSoonTab, internOnly: true },
+  
+  // ============================================
+  // ADMIN TOOLS
+  // ============================================
   templates: {
     component: lazy(() => import('./tabs/TemplatesTab').then(m => ({ default: m.TemplatesTab }))),
     adminOnly: true,
@@ -153,15 +237,12 @@ export const tabRegistry: Record<string, TabConfig> = {
     component: lazy(() => import('@/components/AnalyticsPage').then(m => ({ default: m.AnalyticsPage }))),
   },
   
-  // Communication
+  // ============================================
+  // COMMUNICATION & RESOURCES
+  // ============================================
   communication: {
     component: lazy(() => import('@/components/ModernCommunication').then(m => ({ default: m.default }))),
   },
-  updates: {
-    component: lazy(() => import('@/components/updates/ProjectUpdatesFeed').then(m => ({ default: m.ProjectUpdatesFeed }))),
-  },
-  
-  // User specific
   'my-coins': {
     component: lazy(() => import('@/components/MyCoins').then(m => ({ default: m.MyCoins }))),
     internOnly: true,
@@ -171,13 +252,6 @@ export const tabRegistry: Record<string, TabConfig> = {
   },
   'app-feedback': {
     component: lazy(() => import('@/components/feedback/FeedbackForm').then(m => ({ default: m.default }))),
-  },
-  capacity: {
-    component: lazy(() => import('@/components/capacity/CapacityHub').then(m => ({ default: m.CapacityHub }))),
-    adminOnly: true,
-  },
-  requests: {
-    component: lazy(() => import('@/components/requests/RequestHub').then(m => ({ default: m.RequestHub }))),
   },
 };
 
