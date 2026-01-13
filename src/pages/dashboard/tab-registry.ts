@@ -90,7 +90,7 @@ export const tabRegistry: Record<string, TabConfig> = {
     component: lazy(() => import('@/components/project/GanttChart').then(m => ({ default: m.GanttChart }))),
   },
   
-  // Finance & HR
+  // Finance & HR - Existing
   payroll: {
     component: lazy(() => import('@/components/payroll/PayrollDashboard').then(m => ({ default: m.PayrollDashboard }))),
     adminOnly: true,
@@ -111,6 +111,196 @@ export const tabRegistry: Record<string, TabConfig> = {
   assets: {
     component: lazy(() => import('@/components/assets/AssetManagement').then(m => ({ default: m.AssetManagement }))),
     adminOnly: true,
+  },
+
+  // Finance & HR - NEW FEATURES
+  'tax-management': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.TaxManagementTab }))),
+    adminOnly: true,
+  },
+  'salary-structure': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.SalaryStructureTab }))),
+    adminOnly: true,
+  },
+  'salary-revisions': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.SalaryRevisionsTab }))),
+    adminOnly: true,
+  },
+  'bonus': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.BonusManagementTab }))),
+    adminOnly: true,
+  },
+  'reimbursements': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.ReimbursementsTab }))),
+  },
+  'compliance': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.ComplianceTab }))),
+    adminOnly: true,
+  },
+  'form16': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.Form16Tab }))),
+    adminOnly: true,
+  },
+  'investments': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.InvestmentsTab }))),
+  },
+  'benefits': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.BenefitsTab }))),
+  },
+  'fnf': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.FnFTab }))),
+    adminOnly: true,
+  },
+  'gratuity': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.GratuityTab }))),
+    adminOnly: true,
+  },
+  'onboarding': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.OnboardingTab }))),
+    adminOnly: true,
+  },
+  'exit': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.ExitManagementTab }))),
+    adminOnly: true,
+  },
+  'contracts': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.ContractsTab }))),
+    adminOnly: true,
+  },
+  'verification': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.VerificationTab }))),
+    adminOnly: true,
+  },
+  'probation': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.ProbationTab }))),
+    adminOnly: true,
+  },
+  'confirmations': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.ConfirmationsTab }))),
+    adminOnly: true,
+  },
+  'handbook': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.HandbookTab }))),
+  },
+  'grievances': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.GrievancesTab }))),
+    adminOnly: true,
+  },
+  'disciplinary': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.DisciplinaryTab }))),
+    adminOnly: true,
+  },
+  'hr-analytics': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.HRAnalyticsTab }))),
+    adminOnly: true,
+  },
+  'benchmarking': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.BenchmarkingTab }))),
+    adminOnly: true,
+  },
+  'succession': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.SuccessionTab }))),
+    adminOnly: true,
+  },
+  'career-paths': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.CareerPathsTab }))),
+  },
+  'job-postings': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.JobPostingsTab }))),
+    adminOnly: true,
+  },
+  'recruitment': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.RecruitmentTab }))),
+    adminOnly: true,
+  },
+  'interviews': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.InterviewsTab }))),
+    adminOnly: true,
+  },
+  'offers': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.OffersTab }))),
+    adminOnly: true,
+  },
+  'budget-planning': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.BudgetPlanningTab }))),
+    adminOnly: true,
+  },
+  'cost-centers': {
+    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.CostCentersTab }))),
+    adminOnly: true,
+  },
+
+  // Work Management - NEW FEATURES
+  'sprints': {
+    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.SprintsTab }))),
+    adminOnly: true,
+  },
+  'backlog': {
+    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.BacklogTab }))),
+    adminOnly: true,
+  },
+  'milestones': {
+    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.MilestonesTab }))),
+  },
+  'dependencies': {
+    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.DependenciesTab }))),
+  },
+  'risks': {
+    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.RisksTab }))),
+    adminOnly: true,
+  },
+  'issues': {
+    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.IssuesTab }))),
+  },
+  'resources': {
+    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.ResourcesTab }))),
+    adminOnly: true,
+  },
+  'workload': {
+    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.WorkloadTab }))),
+    adminOnly: true,
+  },
+  'overtime': {
+    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.OvertimeTab }))),
+    adminOnly: true,
+  },
+  'comp-off': {
+    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.CompOffTab }))),
+  },
+  'on-call': {
+    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.OnCallTab }))),
+    adminOnly: true,
+  },
+  'shift-swap': {
+    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.ShiftSwapTab }))),
+  },
+  'remote-policies': {
+    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.RemotePoliciesTab }))),
+    adminOnly: true,
+  },
+  'project-templates': {
+    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.ProjectTemplatesTab }))),
+    adminOnly: true,
+  },
+  'task-templates': {
+    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.TaskTemplatesTab }))),
+    adminOnly: true,
+  },
+  'recurring-tasks': {
+    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.RecurringTasksTab }))),
+    adminOnly: true,
+  },
+  'meeting-notes': {
+    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.MeetingNotesTab }))),
+  },
+  'decisions': {
+    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.DecisionsTab }))),
+  },
+  'lessons': {
+    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.LessonsTab }))),
+  },
+  'work-calendars': {
+    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.WorkCalendarsTab }))),
   },
   
   // Admin Tools
