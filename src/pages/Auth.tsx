@@ -243,7 +243,7 @@ export default function Auth() {
           <div className="text-center">
             <Link to="/" className="inline-flex items-center justify-center mb-3 sm:mb-4">
               <img 
-                src="/tenexa-icon.png" 
+                src="/slt-hub-icon.png" 
                 alt="Tenexa"
                 className="h-10 sm:h-12 w-auto object-contain rounded-xl"
               />

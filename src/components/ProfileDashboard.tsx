@@ -83,7 +83,7 @@ export function ProfileDashboard() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <img 
-                src="/tenexa-icon.png" 
+                src="/slt-hub-icon.png" 
                 alt="Tenexa"
                 className="h-8 sm:h-10 w-auto object-contain"
               />

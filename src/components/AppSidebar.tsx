@@ -2,23 +2,61 @@ import { useState } from "react"
 import { NavLink, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { 
-  ChevronDown,
-  Crown,
+  LayoutDashboard, 
+  CheckSquare, 
+  Clock, 
+  Coins, 
+  Users, 
+  BarChart3, 
+  FolderOpen,
+  BookOpen,
+  User,
+  Settings,
+  MessageSquare,
   Building2,
   Shield,
-  Users,
+  Crown,
+  CalendarDays,
+  MapPin,
+  Home,
+  Palmtree,
+  Target,
+  MessageCircle,
   UserCheck,
-  User,
-  Coins,
-  Settings,
+  AlertTriangle,
+  Activity,
+  HeartPulse,
+  Zap,
+  ChevronDown,
+  Briefcase,
+  TrendingUp,
+  Users2,
+  FileBox,
+  GitBranch,
+  Gauge,
+  Inbox,
+  Wallet,
+  Receipt,
+  FileText,
+  Package,
+  PieChart,
+  ClipboardCheck,
+  Calendar,
+  Banknote,
+  Tags,
+  GanttChart,
+  UserCircle
 } from "lucide-react"
-import { standaloneRoutes, adminNavGroups, internNavGroups } from "@/config/navigation"
+import { standaloneRoutes } from "@/config/navigation"
 import { useOrganization } from "@/hooks/useOrganization"
 import { cn } from "@/lib/utils"
 
 import {
   Sidebar,
   SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -32,10 +70,154 @@ import {
 import { useAuth } from "@/hooks/useAuth"
 import { useUserRole } from "@/hooks/useUserRole"
 import { useViewMode } from "@/hooks/useViewMode"
+import { Badge } from "@/components/ui/badge"
 import { NotificationCenter } from "@/components/NotificationCenter"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { SidebarNotificationWidget } from "@/components/SidebarNotificationWidget"
+
+// Navigation structure with groups
+const adminNavGroups = [
+  {
+    label: "Main",
+    icon: LayoutDashboard,
+    items: [
+      { title: "Overview", url: "overview", icon: LayoutDashboard },
+      { title: "Kanban Board", url: "tasks", icon: CheckSquare },
+      { title: "Projects", url: "projects", icon: FolderOpen },
+      { title: "Updates", url: "updates", icon: Activity },
+    ]
+  },
+  {
+    label: "Work Management",
+    icon: Briefcase,
+    items: [
+      { title: "Requests", url: "requests", icon: Inbox },
+      { title: "Time Logs", url: "time", icon: Clock },
+      { title: "Capacity", url: "capacity", icon: Gauge },
+      { title: "Shifts", url: "shifts", icon: CalendarDays },
+      { title: "Attendance", url: "attendance", icon: MapPin },
+      { title: "Leave", url: "leave", icon: Palmtree },
+      { title: "WFH", url: "wfh", icon: Home },
+    ]
+  },
+  {
+    label: "Performance",
+    icon: TrendingUp,
+    items: [
+      { title: "OKRs", url: "okrs", icon: Target },
+      { title: "360° Feedback", url: "feedback", icon: MessageCircle },
+      { title: "1:1 Meetings", url: "meetings", icon: UserCheck },
+      { title: "PIPs", url: "pips", icon: AlertTriangle },
+    ]
+  },
+  {
+    label: "Project Controls",
+    icon: GitBranch,
+    items: [
+      { title: "Baselines", url: "baselines", icon: GitBranch },
+      { title: "Changes", url: "changes", icon: FileBox },
+      { title: "Scoring", url: "scoring", icon: Target },
+      { title: "Gantt Chart", url: "gantt", icon: GanttChart },
+    ]
+  },
+  {
+    label: "Finance & HR",
+    icon: Wallet,
+    items: [
+      { title: "Payroll", url: "payroll", icon: Wallet },
+      { title: "Timesheets", url: "timesheets", icon: ClipboardCheck },
+      { title: "Expenses", url: "expenses", icon: Receipt },
+      { title: "Expense Categories", url: "expense-categories", icon: Tags },
+      { title: "Loans & Advances", url: "loans", icon: Banknote },
+      { title: "Documents", url: "documents", icon: FileText },
+      { title: "Assets", url: "assets", icon: Package },
+      { title: "Holidays", url: "holidays", icon: Calendar },
+    ]
+  },
+  {
+    label: "Admin Tools",
+    icon: Shield,
+    items: [
+      { title: "Roles & Permissions", url: "roles", icon: Shield },
+      { title: "Org Chart", url: "org-chart", icon: Users2 },
+      { title: "Templates", url: "templates", icon: FileBox },
+      { title: "Approvals", url: "approvals", icon: GitBranch },
+      { title: "Work Health", url: "work-health", icon: HeartPulse },
+      { title: "Automation", url: "automation", icon: Zap },
+      { title: "Audit Packs", url: "audit", icon: FileBox },
+      { title: "Lifecycle", url: "lifecycle", icon: Users2 },
+      { title: "Reports", url: "reports", icon: PieChart },
+      { title: "Coins", url: "coins", icon: Coins },
+      { title: "Employees", url: "interns", icon: Users },
+      { title: "Analytics", url: "analytics", icon: BarChart3 },
+    ]
+  },
+  {
+    label: "Resources",
+    icon: BookOpen,
+    items: [
+      { title: "Tutorial", url: "tutorial", icon: BookOpen },
+      { title: "Training", url: "training", icon: BookOpen },
+      { title: "Communication", url: "communication", icon: MessageSquare },
+      { title: "Kudos Wall", url: "kudos", icon: HeartPulse },
+      { title: "Pulse Surveys", url: "pulse-surveys", icon: MessageCircle },
+      { title: "App Feedback", url: "app-feedback", icon: MessageCircle },
+    ]
+  },
+]
+
+const internNavGroups = [
+  {
+    label: "Main",
+    icon: LayoutDashboard,
+    items: [
+      { title: "Overview", url: "overview", icon: LayoutDashboard },
+      { title: "My Tasks", url: "tasks", icon: CheckSquare },
+      { title: "Projects", url: "projects", icon: FolderOpen },
+      { title: "Updates", url: "updates", icon: Activity },
+      { title: "Self-Service", url: "self-service", icon: UserCircle },
+    ]
+  },
+  {
+    label: "Work Management",
+    icon: Briefcase,
+    items: [
+      { title: "Requests", url: "requests", icon: Inbox },
+      { title: "Time Logs", url: "time", icon: Clock },
+      { title: "Timesheets", url: "timesheets", icon: ClipboardCheck },
+      { title: "My Shifts", url: "shifts", icon: CalendarDays },
+      { title: "Attendance", url: "attendance", icon: MapPin },
+      { title: "Leave", url: "leave", icon: Palmtree },
+      { title: "WFH", url: "wfh", icon: Home },
+      { title: "Holidays", url: "holidays", icon: Calendar },
+    ]
+  },
+  {
+    label: "Finance",
+    icon: Wallet,
+    items: [
+      { title: "Expenses", url: "expenses", icon: Receipt },
+      { title: "Loans & Advances", url: "loans", icon: Banknote },
+    ]
+  },
+  {
+    label: "Resources",
+    icon: BookOpen,
+    items: [
+      { title: "Tutorial", url: "tutorial", icon: BookOpen },
+      { title: "Approvals", url: "approvals", icon: GitBranch },
+      { title: "Training", url: "training", icon: BookOpen },
+      { title: "Communication", url: "communication", icon: MessageSquare },
+      { title: "Kudos Wall", url: "kudos", icon: HeartPulse },
+      { title: "Pulse Surveys", url: "pulse-surveys", icon: MessageCircle },
+      { title: "My Goals", url: "my-goals", icon: Target },
+      { title: "My Coins", url: "my-coins", icon: Coins },
+      { title: "Analytics", url: "analytics", icon: BarChart3 },
+      { title: "Feedback", url: "feedback", icon: MessageCircle },
+    ]
+  },
+]
 
 interface AppSidebarProps {
   activeTab: string
@@ -50,9 +232,11 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
   const { organization } = useOrganization()
   const navigate = useNavigate()
   
-  // Use centralized navigation from config
+  // isAdmin includes org_admin and admin with same privileges
   const navGroups = isAdmin ? adminNavGroups : internNavGroups
   const collapsed = state === "collapsed"
+
+  // standaloneRoutes imported from @/config/navigation
 
   // Handle tab change and close sidebar on mobile
   const handleTabChange = (tab: string) => {
@@ -60,6 +244,8 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
     if (standaloneRoutes[tab]) {
       navigate(standaloneRoutes[tab]);
     } else {
+      // Always navigate to dashboard with the tab parameter
+      // This ensures navigation works even from standalone pages
       navigate(`/dashboard?tab=${tab}`);
     }
     if (isMobile) {
@@ -126,6 +312,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
   }
 
   const roleBadge = getRoleBadge()
+  const RoleIcon = roleBadge.icon
 
   return (
     <Sidebar
@@ -141,7 +328,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <img 
-                src="/tenexa-icon.png" 
+                src="/slt-hub-icon.png" 
                 alt="Tenexa"
                 className="h-9 w-auto object-contain shrink-0 rounded-xl"
               />
@@ -258,28 +445,25 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
                 // In collapsed mode, show only icons for first item of each group
                 return (
                   <div key={group.label} className="space-y-1">
-                    {group.items.map((item) => {
-                      const ItemIcon = item.icon
-                      return (
-                        <SidebarMenuItem key={item.title}>
-                          <SidebarMenuButton 
-                            asChild
-                            className={cn(
-                              "h-9 w-full px-3 py-2 rounded-lg gap-3 hover:bg-muted transition-colors",
-                              isActive(item.url) && "bg-primary/10 text-primary font-medium"
-                            )}
+                    {group.items.map((item) => (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton 
+                          asChild
+                          className={cn(
+                            "h-9 w-full px-3 py-2 rounded-lg gap-3 hover:bg-muted transition-colors",
+                            isActive(item.url) && "bg-primary/10 text-primary font-medium"
+                          )}
+                        >
+                          <button
+                            onClick={() => handleTabChange(item.url)}
+                            className="w-full flex items-center justify-center"
+                            title={item.title}
                           >
-                            <button
-                              onClick={() => handleTabChange(item.url)}
-                              className="w-full flex items-center justify-center"
-                              title={item.title}
-                            >
-                              <ItemIcon className="h-4 w-4 shrink-0" />
-                            </button>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      )
-                    })}
+                            <item.icon className="h-4 w-4 shrink-0" />
+                          </button>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
                   </div>
                 )
               }
@@ -310,28 +494,25 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
                   </CollapsibleTrigger>
                   <CollapsibleContent className="pl-4 mt-1 space-y-0.5">
                     <SidebarMenu>
-                      {group.items.map((item) => {
-                        const ItemIcon = item.icon
-                        return (
-                          <SidebarMenuItem key={item.title}>
-                            <SidebarMenuButton 
-                              asChild
-                              className={cn(
-                                "h-8 w-full px-3 py-1.5 rounded-md gap-2 hover:bg-muted transition-colors text-sm",
-                                isActive(item.url) && "bg-primary/10 text-primary font-medium"
-                              )}
+                      {group.items.map((item) => (
+                        <SidebarMenuItem key={item.title}>
+                          <SidebarMenuButton 
+                            asChild
+                            className={cn(
+                              "h-8 w-full px-3 py-1.5 rounded-md gap-2 hover:bg-muted transition-colors text-sm",
+                              isActive(item.url) && "bg-primary/10 text-primary font-medium"
+                            )}
+                          >
+                            <button
+                              onClick={() => handleTabChange(item.url)}
+                              className="w-full flex items-center gap-2"
                             >
-                              <button
-                                onClick={() => handleTabChange(item.url)}
-                                className="w-full flex items-center gap-2"
-                              >
-                                <ItemIcon className="h-4 w-4 shrink-0" />
-                                <span className="truncate">{item.title}</span>
-                              </button>
-                            </SidebarMenuButton>
-                          </SidebarMenuItem>
-                        )
-                      })}
+                              <item.icon className="h-4 w-4 shrink-0" />
+                              <span className="truncate">{item.title}</span>
+                            </button>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      ))}
                     </SidebarMenu>
                   </CollapsibleContent>
                 </Collapsible>
