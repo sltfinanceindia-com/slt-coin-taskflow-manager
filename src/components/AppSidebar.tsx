@@ -99,6 +99,27 @@ const adminNavGroups = [
       { title: "Attendance", url: "attendance", icon: MapPin },
       { title: "Leave", url: "leave", icon: Palmtree },
       { title: "WFH", url: "wfh", icon: Home },
+      // New Work Management Features
+      { title: "Sprint Planning", url: "sprints", icon: Target },
+      { title: "Backlog", url: "backlog", icon: FileBox },
+      { title: "Milestones", url: "milestones", icon: Target },
+      { title: "Dependencies", url: "dependencies", icon: GitBranch },
+      { title: "Risk Register", url: "risks", icon: AlertTriangle },
+      { title: "Issue Tracker", url: "issues", icon: AlertTriangle },
+      { title: "Resource Allocation", url: "resources", icon: Users2 },
+      { title: "Workload", url: "workload", icon: Gauge },
+      { title: "Overtime", url: "overtime", icon: Clock },
+      { title: "Comp-Off", url: "comp-off", icon: CalendarDays },
+      { title: "On-Call", url: "on-call", icon: CalendarDays },
+      { title: "Shift Swap", url: "shift-swap", icon: CalendarDays },
+      { title: "Remote Policies", url: "remote-policies", icon: Home },
+      { title: "Project Templates", url: "project-templates", icon: FileBox },
+      { title: "Task Templates", url: "task-templates", icon: FileBox },
+      { title: "Recurring Tasks", url: "recurring-tasks", icon: Clock },
+      { title: "Meeting Notes", url: "meeting-notes", icon: FileText },
+      { title: "Decision Log", url: "decisions", icon: FileText },
+      { title: "Lessons Learned", url: "lessons", icon: BookOpen },
+      { title: "Work Calendars", url: "work-calendars", icon: Calendar },
     ]
   },
   {
@@ -133,6 +154,38 @@ const adminNavGroups = [
       { title: "Documents", url: "documents", icon: FileText },
       { title: "Assets", url: "assets", icon: Package },
       { title: "Holidays", url: "holidays", icon: Calendar },
+      // New Finance Features
+      { title: "Tax Management", url: "tax-management", icon: Receipt },
+      { title: "Salary Structure", url: "salary-structure", icon: Wallet },
+      { title: "Salary Revisions", url: "salary-revisions", icon: TrendingUp },
+      { title: "Bonus Management", url: "bonus", icon: Coins },
+      { title: "Reimbursements", url: "reimbursements", icon: Receipt },
+      { title: "Compliance", url: "compliance", icon: Shield },
+      { title: "Form 16", url: "form16", icon: FileText },
+      { title: "Investments", url: "investments", icon: Coins },
+      { title: "Benefits", url: "benefits", icon: HeartPulse },
+      { title: "F&F Settlement", url: "fnf", icon: FileBox },
+      { title: "Gratuity", url: "gratuity", icon: Coins },
+      // New HR Features
+      { title: "Onboarding", url: "onboarding", icon: UserCheck },
+      { title: "Exit Management", url: "exit", icon: Users2 },
+      { title: "Contracts", url: "contracts", icon: FileText },
+      { title: "Verification", url: "verification", icon: Shield },
+      { title: "Probation", url: "probation", icon: Clock },
+      { title: "Confirmations", url: "confirmations", icon: FileText },
+      { title: "Handbook", url: "handbook", icon: BookOpen },
+      { title: "Grievances", url: "grievances", icon: MessageCircle },
+      { title: "Disciplinary", url: "disciplinary", icon: AlertTriangle },
+      { title: "HR Analytics", url: "hr-analytics", icon: BarChart3 },
+      { title: "Benchmarking", url: "benchmarking", icon: TrendingUp },
+      { title: "Succession", url: "succession", icon: Users2 },
+      { title: "Career Paths", url: "career-paths", icon: GitBranch },
+      { title: "Job Postings", url: "job-postings", icon: Inbox },
+      { title: "Recruitment", url: "recruitment", icon: Users },
+      { title: "Interviews", url: "interviews", icon: UserCheck },
+      { title: "Offers", url: "offers", icon: FileText },
+      { title: "Budget Planning", url: "budget-planning", icon: Wallet },
+      { title: "Cost Centers", url: "cost-centers", icon: Building2 },
     ]
   },
   {
@@ -408,19 +461,14 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
           </div>
         )}
 
-        {/* Pending Items Notification */}
-        <div className="px-3 py-2 shrink-0">
-          <SidebarNotificationWidget collapsed={collapsed} />
-        </div>
-
-        {/* Expand/Collapse All Button - Always visible */}
-        <div className="px-3 py-2 border-b border-sidebar-border shrink-0">
+        {/* Expand/Collapse All + Notification Widget - Compact */}
+        <div className="px-3 py-1 border-b border-sidebar-border shrink-0 space-y-1">
           <Button
             variant="ghost"
             size="sm"
             className={cn(
-              "text-xs text-muted-foreground hover:text-foreground transition-all",
-              collapsed ? "w-full justify-center p-2" : "w-full justify-start"
+              "h-7 text-xs text-muted-foreground hover:text-foreground transition-all",
+              collapsed ? "w-full justify-center p-1" : "w-full justify-start px-2"
             )}
             onClick={allExpanded ? collapseAllGroups : expandAllGroups}
             title={allExpanded ? 'Collapse All Groups' : 'Expand All Groups'}
@@ -431,6 +479,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
               allExpanded ? '⊟ Collapse All' : '⊞ Expand All'
             )}
           </Button>
+          <SidebarNotificationWidget collapsed={collapsed} />
         </div>
 
         {/* Navigation with Collapsible Groups */}

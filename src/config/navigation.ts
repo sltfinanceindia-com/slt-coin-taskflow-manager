@@ -121,6 +121,11 @@ export const adminNavGroups: NavGroup[] = [
       { title: "Attendance", url: "attendance", icon: MapPin },
       { title: "Leave", url: "leave", icon: Palmtree },
       { title: "WFH", url: "wfh", icon: Home },
+      { title: "Sprints", url: "sprints", icon: Target },
+      { title: "Backlog", url: "backlog", icon: FileBox },
+      { title: "Milestones", url: "milestones", icon: Target },
+      { title: "Risks", url: "risks", icon: AlertTriangle },
+      { title: "Resources", url: "resources", icon: Users2 },
     ]
   },
   {
@@ -150,11 +155,15 @@ export const adminNavGroups: NavGroup[] = [
       { title: "Payroll", url: "payroll", icon: Wallet },
       { title: "Timesheets", url: "timesheets", icon: ClipboardCheck },
       { title: "Expenses", url: "expenses", icon: Receipt },
-      { title: "Expense Categories", url: "expense-categories", icon: Tags },
-      { title: "Loans & Advances", url: "loans", icon: Banknote },
+      { title: "Loans", url: "loans", icon: Banknote },
       { title: "Documents", url: "documents", icon: FileText },
       { title: "Assets", url: "assets", icon: Package },
       { title: "Holidays", url: "holidays", icon: Calendar },
+      { title: "Tax", url: "tax-management", icon: Receipt },
+      { title: "Salary", url: "salary-structure", icon: Wallet },
+      { title: "Onboarding", url: "onboarding", icon: UserCheck },
+      { title: "Recruitment", url: "recruitment", icon: Users },
+      { title: "HR Analytics", url: "hr-analytics", icon: BarChart3 },
     ]
   },
   {
