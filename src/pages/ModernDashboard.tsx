@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, Suspense } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useViewMode } from '@/hooks/useViewMode';
@@ -8,6 +8,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useOrganization } from '@/hooks/useOrganization';
 import { useTabPersistence } from '@/hooks/useTabPersistence';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { getTabComponent } from './dashboard/tab-registry';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TaskCard } from '@/components/TaskCard';
@@ -393,6 +394,23 @@ export default function ModernDashboard() {
         return <PersonalGoalsWidget />;
       
       default:
+        // Try to load from tab registry for new dynamic features
+        const tabConfig = getTabComponent(activeTab, isAdmin);
+        if (tabConfig) {
+          const TabComponent = tabConfig.component;
+          return (
+            <Suspense fallback={
+              <div className="flex items-center justify-center py-20">
+                <div className="text-center">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
+                  <p className="text-muted-foreground">Loading...</p>
+                </div>
+              </div>
+            }>
+              <TabComponent />
+            </Suspense>
+          );
+        }
         return <EnhancedDashboardWidgets />;
     }
   };
