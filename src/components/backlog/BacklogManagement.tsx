@@ -27,7 +27,7 @@ export function BacklogManagement() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [filter, setFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [newItem, setNewItem] = useState({ title: '', description: '', story_points: '0', priority: 'medium' as const, project_id: '' });
+  const [newItem, setNewItem] = useState<{ title: string; description: string; story_points: string; priority: 'high' | 'low' | 'medium' | 'urgent'; project_id: string }>({ title: '', description: '', story_points: '0', priority: 'medium', project_id: '' });
 
   const { data: backlogItems, isLoading } = useQuery({
     queryKey: ['backlog-items', profile?.organization_id, filter],
@@ -54,13 +54,16 @@ export function BacklogManagement() {
   const createItemMutation = useMutation({
     mutationFn: async (item: typeof newItem) => {
       const { data, error } = await supabase.from('tasks').insert({
-        organization_id: profile?.organization_id,
         title: item.title,
         description: item.description,
         priority: item.priority,
-        status: 'pending',
+        status: 'assigned',
         project_id: item.project_id || null,
         created_by: profile?.id || '',
+        assigned_to: profile?.id || '',
+        slt_coin_value: 0,
+        start_date: new Date().toISOString(),
+        end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       }).select().single();
       if (error) throw error;
       return data;
