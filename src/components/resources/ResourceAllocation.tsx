@@ -26,7 +26,7 @@ export function ResourceAllocationManagement() {
   const { data: tasks } = useQuery({
     queryKey: ['resource-tasks', profile?.organization_id],
     queryFn: async () => {
-      const { data, error } = await supabase.from('tasks').select('id, assigned_to, status').eq('organization_id', profile?.organization_id).in('status', ['pending', 'in_progress']);
+      const { data, error } = await supabase.from('tasks').select('id, assigned_to, status').eq('organization_id', profile?.organization_id).in('status', ['assigned', 'in_progress']);
       if (error) throw error;
       return data;
     },
