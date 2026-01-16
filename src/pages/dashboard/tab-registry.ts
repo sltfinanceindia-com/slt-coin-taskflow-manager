@@ -92,7 +92,7 @@ export const tabRegistry: Record<string, TabConfig> = {
   
   // Finance & HR - Existing
   payroll: {
-    component: lazy(() => import('@/components/payroll/PayrollDashboard').then(m => ({ default: m.PayrollDashboard }))),
+    component: lazy(() => import('@/components/finance/PayrollManagement').then(m => ({ default: m.PayrollManagement }))),
     adminOnly: true,
   },
   expenses: {
@@ -119,7 +119,7 @@ export const tabRegistry: Record<string, TabConfig> = {
     adminOnly: true,
   },
   'salary-structure': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.SalaryStructureTab }))),
+    component: lazy(() => import('@/components/finance/SalaryStructureManagement').then(m => ({ default: m.SalaryStructureManagement }))),
     adminOnly: true,
   },
   'salary-revisions': {
@@ -156,7 +156,7 @@ export const tabRegistry: Record<string, TabConfig> = {
     adminOnly: true,
   },
   'onboarding': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.OnboardingTab }))),
+    component: lazy(() => import('@/components/hr/OnboardingManagement').then(m => ({ default: m.OnboardingManagement }))),
     adminOnly: true,
   },
   'exit': {
@@ -210,7 +210,7 @@ export const tabRegistry: Record<string, TabConfig> = {
     adminOnly: true,
   },
   'recruitment': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.RecruitmentTab }))),
+    component: lazy(() => import('@/components/hr/RecruitmentPipeline').then(m => ({ default: m.RecruitmentPipeline }))),
     adminOnly: true,
   },
   'interviews': {
@@ -232,11 +232,11 @@ export const tabRegistry: Record<string, TabConfig> = {
 
   // Work Management - NEW FEATURES
   'sprints': {
-    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.SprintsTab }))),
+    component: lazy(() => import('@/components/sprints/SprintManagement').then(m => ({ default: m.SprintManagement }))),
     adminOnly: true,
   },
   'backlog': {
-    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.BacklogTab }))),
+    component: lazy(() => import('@/components/backlog/BacklogManagement').then(m => ({ default: m.BacklogManagement }))),
     adminOnly: true,
   },
   'milestones': {
@@ -253,11 +253,11 @@ export const tabRegistry: Record<string, TabConfig> = {
     component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.IssuesTab }))),
   },
   'resources': {
-    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.ResourcesTab }))),
+    component: lazy(() => import('@/components/resources/ResourceAllocation').then(m => ({ default: m.ResourceAllocationManagement }))),
     adminOnly: true,
   },
   'workload': {
-    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.WorkloadTab }))),
+    component: lazy(() => import('@/components/workload/WorkloadBalancing').then(m => ({ default: m.WorkloadBalancing }))),
     adminOnly: true,
   },
   'overtime': {
