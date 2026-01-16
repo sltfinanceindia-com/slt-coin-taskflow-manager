@@ -115,7 +115,7 @@ export const tabRegistry: Record<string, TabConfig> = {
 
   // Finance & HR - NEW FEATURES
   'tax-management': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.TaxManagementTab }))),
+    component: lazy(() => import('@/components/finance/TaxManagement').then(m => ({ default: m.TaxManagement }))),
     adminOnly: true,
   },
   'salary-structure': {
@@ -127,7 +127,7 @@ export const tabRegistry: Record<string, TabConfig> = {
     adminOnly: true,
   },
   'bonus': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.BonusManagementTab }))),
+    component: lazy(() => import('@/components/finance/BonusManagement').then(m => ({ default: m.BonusManagement }))),
     adminOnly: true,
   },
   'reimbursements': {
@@ -160,7 +160,7 @@ export const tabRegistry: Record<string, TabConfig> = {
     adminOnly: true,
   },
   'exit': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.ExitManagementTab }))),
+    component: lazy(() => import('@/components/hr/ExitManagement').then(m => ({ default: m.ExitManagement }))),
     adminOnly: true,
   },
   'contracts': {
@@ -240,17 +240,17 @@ export const tabRegistry: Record<string, TabConfig> = {
     adminOnly: true,
   },
   'milestones': {
-    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.MilestonesTab }))),
+    component: lazy(() => import('@/components/work/MilestoneManagement').then(m => ({ default: m.MilestoneManagement }))),
   },
   'dependencies': {
     component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.DependenciesTab }))),
   },
   'risks': {
-    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.RisksTab }))),
+    component: lazy(() => import('@/components/work/RiskManagement').then(m => ({ default: m.RiskManagement }))),
     adminOnly: true,
   },
   'issues': {
-    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.IssuesTab }))),
+    component: lazy(() => import('@/components/work/IssueTracker').then(m => ({ default: m.IssueTracker }))),
   },
   'resources': {
     component: lazy(() => import('@/components/resources/ResourceAllocation').then(m => ({ default: m.ResourceAllocationManagement }))),
