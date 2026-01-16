@@ -57,24 +57,29 @@ export function SalaryStructureManagement() {
   // Mock data for salary templates (stored in projects table as salary_templates type)
   const { data: templates, isLoading } = useQuery({
     queryKey: ['salary-templates', profile?.organization_id],
-    queryFn: async () => {
+    queryFn: async (): Promise<SalaryTemplate[]> => {
+      if (!profile?.organization_id) return [];
+      
       // Using projects table with type 'salary_template' to store templates
-      const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const client = supabase as any;
+      const { data, error } = await client
         .from('projects')
-        .select('*')
-        .eq('organization_id', profile?.organization_id as string)
+        .select('id, name, priority, budget, description, created_at')
+        .eq('organization_id', profile.organization_id)
         .eq('project_type', 'salary_template')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return (data || []).map(p => ({
+      
+      return (data || []).map((p: any) => ({
         id: p.id,
         name: p.name,
         grade: p.priority || 'Standard',
         basic_salary: p.budget || 0,
         components: (p.description ? JSON.parse(p.description) : []) as SalaryComponent[],
         created_at: p.created_at,
-      })) as SalaryTemplate[];
+      }));
     },
     enabled: !!profile?.organization_id,
   });
@@ -90,23 +95,19 @@ export function SalaryStructureManagement() {
         { id: '6', name: 'Professional Tax', type: 'deduction', calculation_type: 'fixed', value: 200, is_taxable: false },
       ];
 
-      const { data, error } = await supabase
-        .from('projects')
-        .insert([{
-          name: template.name,
-          priority: template.grade,
-          budget: parseFloat(template.basic_salary) || 0,
-          description: JSON.stringify(defaultComponents),
-          project_type: 'salary_template',
-          owner_id: profile?.id || '',
-          status: 'active',
-          created_by: profile?.id || '',
-        }])
-        .select()
-        .single();
+      const insertData = {
+        name: template.name,
+        priority: template.grade,
+        budget: parseFloat(template.basic_salary) || 0,
+        description: JSON.stringify(defaultComponents),
+        project_type: 'salary_template' as const,
+        owner_id: profile?.id || '',
+        status: 'active' as const,
+        created_by: profile?.id || '',
+      };
 
+      const { error } = await supabase.from('projects').insert(insertData);
       if (error) throw error;
-      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['salary-templates'] });
