@@ -243,7 +243,7 @@ export const tabRegistry: Record<string, TabConfig> = {
     component: lazy(() => import('@/components/work/MilestoneManagement').then(m => ({ default: m.MilestoneManagement }))),
   },
   'dependencies': {
-    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.DependenciesTab }))),
+    component: lazy(() => import('@/components/work/DependencyManagement').then(m => ({ default: m.DependencyManagement }))),
   },
   'risks': {
     component: lazy(() => import('@/components/work/RiskManagement').then(m => ({ default: m.RiskManagement }))),
@@ -261,11 +261,11 @@ export const tabRegistry: Record<string, TabConfig> = {
     adminOnly: true,
   },
   'overtime': {
-    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.OvertimeTab }))),
+    component: lazy(() => import('@/components/work/OvertimeManagement').then(m => ({ default: m.OvertimeManagement }))),
     adminOnly: true,
   },
   'comp-off': {
-    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.CompOffTab }))),
+    component: lazy(() => import('@/components/work/CompOffManagement').then(m => ({ default: m.CompOffManagement }))),
   },
   'on-call': {
     component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.OnCallTab }))),
