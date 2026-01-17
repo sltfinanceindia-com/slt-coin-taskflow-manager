@@ -10834,6 +10834,7 @@ export type Database = {
         Args: { p_module: string; p_user_id: string }
         Returns: string
       }
+      has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       increment_user_coins: {
         Args: { p_coins: number; p_user_id: string }
         Returns: undefined
@@ -10849,6 +10850,14 @@ export type Database = {
       is_any_admin: { Args: { p_user_id?: string }; Returns: boolean }
       is_channel_member: {
         Args: { p_channel_id: string; p_profile_id: string }
+        Returns: boolean
+      }
+      is_group_admin: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_group_member: {
+        Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
       is_org_admin: { Args: { _org_id?: string }; Returns: boolean }
