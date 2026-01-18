@@ -123,7 +123,7 @@ export const tabRegistry: Record<string, TabConfig> = {
     adminOnly: true,
   },
   'salary-revisions': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.SalaryRevisionsTab }))),
+    component: lazy(() => import('@/components/finance/SalaryRevisionsManagement').then(m => ({ default: m.SalaryRevisionsManagement }))),
     adminOnly: true,
   },
   'bonus': {
@@ -131,28 +131,28 @@ export const tabRegistry: Record<string, TabConfig> = {
     adminOnly: true,
   },
   'reimbursements': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.ReimbursementsTab }))),
+    component: lazy(() => import('@/components/finance/ReimbursementsManagement').then(m => ({ default: m.ReimbursementsManagement }))),
   },
   'compliance': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.ComplianceTab }))),
+    component: lazy(() => import('@/components/finance/ComplianceManagement').then(m => ({ default: m.ComplianceManagement }))),
     adminOnly: true,
   },
   'form16': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.Form16Tab }))),
+    component: lazy(() => import('@/components/finance/Form16Generator').then(m => ({ default: m.Form16Generator }))),
     adminOnly: true,
   },
   'investments': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.InvestmentsTab }))),
+    component: lazy(() => import('@/components/finance/InvestmentDeclarations').then(m => ({ default: m.InvestmentDeclarations }))),
   },
   'benefits': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.BenefitsTab }))),
+    component: lazy(() => import('@/components/hr/BenefitsManagement').then(m => ({ default: m.BenefitsManagement }))),
   },
   'fnf': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.FnFTab }))),
+    component: lazy(() => import('@/components/hr/FnFSettlement').then(m => ({ default: m.FnFSettlement }))),
     adminOnly: true,
   },
   'gratuity': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.GratuityTab }))),
+    component: lazy(() => import('@/components/hr/GratuityManagement').then(m => ({ default: m.GratuityManagement }))),
     adminOnly: true,
   },
   'onboarding': {
