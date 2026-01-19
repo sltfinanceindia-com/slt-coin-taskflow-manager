@@ -164,49 +164,49 @@ export const tabRegistry: Record<string, TabConfig> = {
     adminOnly: true,
   },
   'contracts': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.ContractsTab }))),
+    component: lazy(() => import('@/components/hr/ContractsManagement').then(m => ({ default: m.ContractsManagement }))),
     adminOnly: true,
   },
   'verification': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.VerificationTab }))),
+    component: lazy(() => import('@/components/hr/VerificationManagement').then(m => ({ default: m.VerificationManagement }))),
     adminOnly: true,
   },
   'probation': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.ProbationTab }))),
+    component: lazy(() => import('@/components/hr/ProbationManagement').then(m => ({ default: m.ProbationManagement }))),
     adminOnly: true,
   },
   'confirmations': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.ConfirmationsTab }))),
+    component: lazy(() => import('@/components/hr/ConfirmationsManagement').then(m => ({ default: m.ConfirmationsManagement }))),
     adminOnly: true,
   },
   'handbook': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.HandbookTab }))),
+    component: lazy(() => import('@/components/hr/HandbookManagement').then(m => ({ default: m.HandbookManagement }))),
   },
   'grievances': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.GrievancesTab }))),
+    component: lazy(() => import('@/components/hr/GrievanceManagement').then(m => ({ default: m.GrievanceManagement }))),
     adminOnly: true,
   },
   'disciplinary': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.DisciplinaryTab }))),
+    component: lazy(() => import('@/components/hr/DisciplinaryManagement').then(m => ({ default: m.DisciplinaryManagement }))),
     adminOnly: true,
   },
   'hr-analytics': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.HRAnalyticsTab }))),
+    component: lazy(() => import('@/components/hr/HRAnalytics').then(m => ({ default: m.HRAnalytics }))),
     adminOnly: true,
   },
   'benchmarking': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.BenchmarkingTab }))),
+    component: lazy(() => import('@/components/hr/BenchmarkingManagement').then(m => ({ default: m.BenchmarkingManagement }))),
     adminOnly: true,
   },
   'succession': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.SuccessionTab }))),
+    component: lazy(() => import('@/components/hr/SuccessionManagement').then(m => ({ default: m.SuccessionManagement }))),
     adminOnly: true,
   },
   'career-paths': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.CareerPathsTab }))),
+    component: lazy(() => import('@/components/hr/CareerPathsManagement').then(m => ({ default: m.CareerPathsManagement }))),
   },
   'job-postings': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.JobPostingsTab }))),
+    component: lazy(() => import('@/components/hr/JobPostingsManagement').then(m => ({ default: m.JobPostingsManagement }))),
     adminOnly: true,
   },
   'recruitment': {
@@ -214,19 +214,19 @@ export const tabRegistry: Record<string, TabConfig> = {
     adminOnly: true,
   },
   'interviews': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.InterviewsTab }))),
+    component: lazy(() => import('@/components/hr/InterviewsManagement').then(m => ({ default: m.InterviewsManagement }))),
     adminOnly: true,
   },
   'offers': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.OffersTab }))),
+    component: lazy(() => import('@/components/hr/OffersManagement').then(m => ({ default: m.OffersManagement }))),
     adminOnly: true,
   },
   'budget-planning': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.BudgetPlanningTab }))),
+    component: lazy(() => import('@/components/finance/BudgetPlanningManagement').then(m => ({ default: m.BudgetPlanningManagement }))),
     adminOnly: true,
   },
   'cost-centers': {
-    component: lazy(() => import('./tabs/FinanceHRFeatures').then(m => ({ default: m.CostCentersTab }))),
+    component: lazy(() => import('@/components/finance/CostCentersManagement').then(m => ({ default: m.CostCentersManagement }))),
     adminOnly: true,
   },
 
