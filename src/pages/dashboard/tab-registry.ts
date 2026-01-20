@@ -268,39 +268,39 @@ export const tabRegistry: Record<string, TabConfig> = {
     component: lazy(() => import('@/components/work/CompOffManagement').then(m => ({ default: m.CompOffManagement }))),
   },
   'on-call': {
-    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.OnCallTab }))),
+    component: lazy(() => import('@/components/work/OnCallManagement').then(m => ({ default: m.OnCallManagement }))),
     adminOnly: true,
   },
   'shift-swap': {
-    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.ShiftSwapTab }))),
+    component: lazy(() => import('@/components/work/ShiftSwapManagement').then(m => ({ default: m.ShiftSwapManagement }))),
   },
   'remote-policies': {
-    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.RemotePoliciesTab }))),
+    component: lazy(() => import('@/components/work/RemotePoliciesManagement').then(m => ({ default: m.RemotePoliciesManagement }))),
     adminOnly: true,
   },
   'project-templates': {
-    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.ProjectTemplatesTab }))),
+    component: lazy(() => import('@/components/work/ProjectTemplatesManagement').then(m => ({ default: m.ProjectTemplatesManagement }))),
     adminOnly: true,
   },
   'task-templates': {
-    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.TaskTemplatesTab }))),
+    component: lazy(() => import('@/components/work/TaskTemplatesManagement').then(m => ({ default: m.TaskTemplatesManagement }))),
     adminOnly: true,
   },
   'recurring-tasks': {
-    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.RecurringTasksTab }))),
+    component: lazy(() => import('@/components/work/RecurringTasksManagement').then(m => ({ default: m.RecurringTasksManagement }))),
     adminOnly: true,
   },
   'meeting-notes': {
-    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.MeetingNotesTab }))),
+    component: lazy(() => import('@/components/work/MeetingNotesManagement').then(m => ({ default: m.MeetingNotesManagement }))),
   },
   'decisions': {
-    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.DecisionsTab }))),
+    component: lazy(() => import('@/components/work/DecisionsManagement').then(m => ({ default: m.DecisionsManagement }))),
   },
   'lessons': {
-    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.LessonsTab }))),
+    component: lazy(() => import('@/components/work/LessonsLearnedManagement').then(m => ({ default: m.LessonsLearnedManagement }))),
   },
   'work-calendars': {
-    component: lazy(() => import('./tabs/WorkManagementFeatures').then(m => ({ default: m.WorkCalendarsTab }))),
+    component: lazy(() => import('@/components/work/WorkCalendarsManagement').then(m => ({ default: m.WorkCalendarsManagement }))),
   },
   
   // Admin Tools
