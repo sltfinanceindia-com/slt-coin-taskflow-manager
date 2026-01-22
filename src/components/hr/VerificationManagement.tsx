@@ -2,63 +2,70 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
-import { Shield, Plus, Search, CheckCircle, Clock, AlertTriangle, XCircle } from 'lucide-react';
+import { Shield, Plus, Search, CheckCircle, Clock, AlertTriangle, XCircle, Loader2, FileX } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-
-interface Verification {
-  id: string;
-  employee_name: string;
-  verification_type: string;
-  status: 'pending' | 'in_progress' | 'verified' | 'failed';
-  vendor: string;
-  initiated_on: string;
-  completed_on: string | null;
-  progress: number;
-}
+import { format } from 'date-fns';
+import { useVerifications, BackgroundVerification } from '@/hooks/useVerifications';
 
 export function VerificationManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    employee_id: '',
+    verification_type: 'education' as BackgroundVerification['verification_type'],
+    vendor: '',
+  });
+
+  const { verifications, isLoading, error, createVerification, updateVerification } = useVerifications();
 
   const { data: employees = [] } = useQuery({
     queryKey: ['employees-for-verification'],
     queryFn: async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('id, full_name, email')
-        .order('full_name');
+      const { data } = await supabase.from('profiles').select('id, full_name, email').order('full_name');
       return data || [];
     }
   });
 
-  // Mock data
-  const verifications: Verification[] = [
-    { id: '1', employee_name: 'John Doe', verification_type: 'Education', status: 'verified', vendor: 'AuthBridge', initiated_on: '2024-01-15', completed_on: '2024-01-20', progress: 100 },
-    { id: '2', employee_name: 'John Doe', verification_type: 'Employment History', status: 'in_progress', vendor: 'AuthBridge', initiated_on: '2024-01-15', completed_on: null, progress: 60 },
-    { id: '3', employee_name: 'Jane Smith', verification_type: 'Criminal Background', status: 'pending', vendor: 'SpringVerify', initiated_on: '2024-02-01', completed_on: null, progress: 0 },
-    { id: '4', employee_name: 'Bob Wilson', verification_type: 'Address', status: 'failed', vendor: 'AuthBridge', initiated_on: '2024-01-10', completed_on: '2024-01-18', progress: 100 },
-  ];
+  const handleSubmit = () => {
+    createVerification.mutate({
+      employee_id: formData.employee_id || null,
+      verification_type: formData.verification_type,
+      vendor: formData.vendor || null,
+      status: 'pending',
+      progress: 0,
+      initiated_on: null,
+      completed_on: null,
+      findings: null,
+      initiated_by: null,
+      organization_id: null,
+    });
+    setIsDialogOpen(false);
+    setFormData({ employee_id: '', verification_type: 'education', vendor: '' });
+  };
 
   const filteredVerifications = verifications.filter(v => {
-    const matchesSearch = v.employee_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const employeeName = v.employee?.full_name || '';
+    const matchesSearch = employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          v.verification_type.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || v.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  const getStatusBadge = (status: Verification['status']) => {
-    const config: Record<Verification['status'], { variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: React.ReactNode; label: string }> = {
+  const getStatusBadge = (status: BackgroundVerification['status']) => {
+    const config: Record<BackgroundVerification['status'], { variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: React.ReactNode; label: string }> = {
       pending: { variant: 'secondary', icon: <Clock className="h-3 w-3" />, label: 'Pending' },
       in_progress: { variant: 'outline', icon: <Clock className="h-3 w-3" />, label: 'In Progress' },
       verified: { variant: 'default', icon: <CheckCircle className="h-3 w-3" />, label: 'Verified' },
       failed: { variant: 'destructive', icon: <XCircle className="h-3 w-3" />, label: 'Failed' },
+      inconclusive: { variant: 'secondary', icon: <AlertTriangle className="h-3 w-3" />, label: 'Inconclusive' },
     };
     const { variant, icon, label } = config[status];
     return (
@@ -69,10 +76,28 @@ export function VerificationManagement() {
     );
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="p-8 text-center border-destructive">
+        <FileX className="h-12 w-12 mx-auto text-destructive" />
+        <h3 className="mt-4 font-semibold">Error loading verifications</h3>
+        <p className="text-muted-foreground">{error.message}</p>
+      </Card>
+    );
+  }
+
   const stats = {
     total: verifications.length,
     verified: verifications.filter(v => v.status === 'verified').length,
-    inProgress: verifications.filter(v => v.status === 'in_progress').length,
+    inProgress: verifications.filter(v => v.status === 'in_progress' || v.status === 'pending').length,
     failed: verifications.filter(v => v.status === 'failed').length,
   };
 
@@ -95,39 +120,45 @@ export function VerificationManagement() {
               <DialogTitle>Initiate Background Verification</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-4">
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Employee" />
-                </SelectTrigger>
-                <SelectContent>
-                  {employees.map((emp: any) => (
-                    <SelectItem key={emp.id} value={emp.id}>{emp.full_name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Verification Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="education">Education</SelectItem>
-                  <SelectItem value="employment">Employment History</SelectItem>
-                  <SelectItem value="criminal">Criminal Background</SelectItem>
-                  <SelectItem value="address">Address Verification</SelectItem>
-                  <SelectItem value="reference">Reference Check</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Verification Vendor" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="authbridge">AuthBridge</SelectItem>
-                  <SelectItem value="springverify">SpringVerify</SelectItem>
-                  <SelectItem value="internal">Internal Team</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button className="w-full" onClick={() => setIsDialogOpen(false)}>Initiate Verification</Button>
+              <div className="space-y-2">
+                <Label>Employee</Label>
+                <Select value={formData.employee_id} onValueChange={(v) => setFormData({...formData, employee_id: v})}>
+                  <SelectTrigger><SelectValue placeholder="Select Employee" /></SelectTrigger>
+                  <SelectContent>
+                    {employees.map((emp: any) => (
+                      <SelectItem key={emp.id} value={emp.id}>{emp.full_name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Verification Type</Label>
+                <Select value={formData.verification_type} onValueChange={(v: BackgroundVerification['verification_type']) => setFormData({...formData, verification_type: v})}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="identity">Identity</SelectItem>
+                    <SelectItem value="education">Education</SelectItem>
+                    <SelectItem value="employment">Employment History</SelectItem>
+                    <SelectItem value="criminal">Criminal Background</SelectItem>
+                    <SelectItem value="reference">Reference Check</SelectItem>
+                    <SelectItem value="address">Address Verification</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Vendor</Label>
+                <Select value={formData.vendor} onValueChange={(v) => setFormData({...formData, vendor: v})}>
+                  <SelectTrigger><SelectValue placeholder="Select Vendor" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="AuthBridge">AuthBridge</SelectItem>
+                    <SelectItem value="SpringVerify">SpringVerify</SelectItem>
+                    <SelectItem value="Internal">Internal Team</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button className="w-full" onClick={handleSubmit} disabled={createVerification.isPending || !formData.employee_id}>
+                {createVerification.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Initiating...</> : 'Initiate Verification'}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -187,17 +218,10 @@ export function VerificationManagement() {
           <div className="flex gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search verifications..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+              <Input placeholder="Search verifications..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
+              <SelectTrigger className="w-48"><SelectValue placeholder="Filter by status" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
@@ -216,35 +240,45 @@ export function VerificationManagement() {
           <CardTitle>Verification Records</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Employee</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Vendor</TableHead>
-                <TableHead>Progress</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Initiated</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredVerifications.map((verification) => (
-                <TableRow key={verification.id}>
-                  <TableCell className="font-medium">{verification.employee_name}</TableCell>
-                  <TableCell>{verification.verification_type}</TableCell>
-                  <TableCell>{verification.vendor}</TableCell>
-                  <TableCell>
-                    <div className="w-24">
-                      <Progress value={verification.progress} className="h-2" />
-                      <span className="text-xs text-muted-foreground">{verification.progress}%</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{getStatusBadge(verification.status)}</TableCell>
-                  <TableCell>{verification.initiated_on}</TableCell>
+          {filteredVerifications.length === 0 ? (
+            <div className="text-center py-8">
+              <FileX className="h-12 w-12 mx-auto text-muted-foreground" />
+              <p className="mt-4 text-muted-foreground">No verifications found</p>
+              <Button className="mt-4" onClick={() => setIsDialogOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />Initiate Verification
+              </Button>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Employee</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Vendor</TableHead>
+                  <TableHead>Progress</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Initiated</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredVerifications.map((verification) => (
+                  <TableRow key={verification.id}>
+                    <TableCell className="font-medium">{verification.employee?.full_name || 'Unknown'}</TableCell>
+                    <TableCell className="capitalize">{verification.verification_type.replace('_', ' ')}</TableCell>
+                    <TableCell>{verification.vendor || 'N/A'}</TableCell>
+                    <TableCell>
+                      <div className="w-24">
+                        <Progress value={verification.progress || 0} className="h-2" />
+                        <span className="text-xs text-muted-foreground">{verification.progress || 0}%</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{getStatusBadge(verification.status)}</TableCell>
+                    <TableCell>{verification.initiated_on ? format(new Date(verification.initiated_on), 'MMM dd, yyyy') : 'N/A'}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>

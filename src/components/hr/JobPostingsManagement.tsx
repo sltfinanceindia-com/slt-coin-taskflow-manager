@@ -2,40 +2,64 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
-import { Briefcase, Plus, Search, Eye, Users, Clock, MapPin, Building } from 'lucide-react';
+import { Briefcase, Plus, Search, Eye, Users, Clock, MapPin, Building, Loader2, FileX } from 'lucide-react';
 import { format } from 'date-fns';
-
-interface JobPosting {
-  id: string;
-  title: string;
-  department: string;
-  location: string;
-  type: 'full_time' | 'part_time' | 'contract' | 'intern';
-  experience: string;
-  status: 'draft' | 'open' | 'on_hold' | 'closed';
-  applications: number;
-  posted_on: string;
-  hiring_manager: string;
-}
+import { useJobPostings, JobPosting } from '@/hooks/useJobPostings';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 export function JobPostingsManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    department: '',
+    location: '',
+    type: 'full_time' as JobPosting['type'],
+    experience: '',
+    description: '',
+    requirements: '',
+    hiring_manager_id: '',
+  });
 
-  // Mock data
-  const postings: JobPosting[] = [
-    { id: '1', title: 'Senior Software Engineer', department: 'Engineering', location: 'Bangalore', type: 'full_time', experience: '4-6 years', status: 'open', applications: 45, posted_on: '2024-03-01', hiring_manager: 'John Doe' },
-    { id: '2', title: 'Product Manager', department: 'Product', location: 'Remote', type: 'full_time', experience: '3-5 years', status: 'open', applications: 32, posted_on: '2024-03-05', hiring_manager: 'Jane Smith' },
-    { id: '3', title: 'UX Designer', department: 'Design', location: 'Mumbai', type: 'full_time', experience: '2-4 years', status: 'on_hold', applications: 28, posted_on: '2024-02-20', hiring_manager: 'Alice Brown' },
-    { id: '4', title: 'Data Analyst Intern', department: 'Analytics', location: 'Bangalore', type: 'intern', experience: '0-1 years', status: 'open', applications: 120, posted_on: '2024-03-10', hiring_manager: 'Bob Wilson' },
-    { id: '5', title: 'DevOps Engineer', department: 'Engineering', location: 'Hyderabad', type: 'full_time', experience: '3-5 years', status: 'draft', applications: 0, posted_on: '2024-03-15', hiring_manager: 'Carol White' },
-  ];
+  const { postings, isLoading, error, createPosting, updatePosting } = useJobPostings();
+
+  const { data: managers = [] } = useQuery({
+    queryKey: ['managers-for-postings'],
+    queryFn: async () => {
+      const { data } = await supabase.from('profiles').select('id, full_name').order('full_name');
+      return data || [];
+    }
+  });
+
+  const handleSubmit = (publish: boolean) => {
+    createPosting.mutate({
+      title: formData.title,
+      department: formData.department,
+      location: formData.location || null,
+      type: formData.type,
+      experience: formData.experience || null,
+      description: formData.description || null,
+      requirements: formData.requirements || null,
+      salary_range_min: null,
+      salary_range_max: null,
+      status: publish ? 'open' : 'draft',
+      applications_count: 0,
+      hiring_manager_id: formData.hiring_manager_id || null,
+      posted_on: publish ? new Date().toISOString().split('T')[0] : null,
+      closes_on: null,
+      organization_id: null,
+    });
+    setIsDialogOpen(false);
+    setFormData({ title: '', department: '', location: '', type: 'full_time', experience: '', description: '', requirements: '', hiring_manager_id: '' });
+  };
 
   const filteredPostings = postings.filter(p => {
     const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -64,11 +88,31 @@ export function JobPostingsManagement() {
     return <Badge variant="outline">{labels[type]}</Badge>;
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="p-8 text-center border-destructive">
+        <FileX className="h-12 w-12 mx-auto text-destructive" />
+        <h3 className="mt-4 font-semibold">Error loading job postings</h3>
+        <p className="text-muted-foreground">{error.message}</p>
+      </Card>
+    );
+  }
+
   const stats = {
     total: postings.length,
     open: postings.filter(p => p.status === 'open').length,
-    totalApplications: postings.reduce((acc, p) => acc + p.applications, 0),
-    avgApplications: Math.round(postings.filter(p => p.status === 'open').reduce((acc, p) => acc + p.applications, 0) / postings.filter(p => p.status === 'open').length) || 0,
+    totalApplications: postings.reduce((acc, p) => acc + (p.applications_count || 0), 0),
+    avgApplications: postings.filter(p => p.status === 'open').length > 0 
+      ? Math.round(postings.filter(p => p.status === 'open').reduce((acc, p) => acc + (p.applications_count || 0), 0) / postings.filter(p => p.status === 'open').length) 
+      : 0,
   };
 
   return (
@@ -90,47 +134,72 @@ export function JobPostingsManagement() {
               <DialogTitle>Create Job Posting</DialogTitle>
             </DialogHeader>
             <div className="grid grid-cols-2 gap-4 pt-4">
-              <Input placeholder="Job Title" className="col-span-2" />
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Department" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="engineering">Engineering</SelectItem>
-                  <SelectItem value="product">Product</SelectItem>
-                  <SelectItem value="design">Design</SelectItem>
-                  <SelectItem value="sales">Sales</SelectItem>
-                  <SelectItem value="hr">HR</SelectItem>
-                </SelectContent>
-              </Select>
-              <Input placeholder="Location" />
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Employment Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="full_time">Full Time</SelectItem>
-                  <SelectItem value="part_time">Part Time</SelectItem>
-                  <SelectItem value="contract">Contract</SelectItem>
-                  <SelectItem value="intern">Internship</SelectItem>
-                </SelectContent>
-              </Select>
-              <Input placeholder="Experience Required" />
-              <Textarea placeholder="Job Description" className="col-span-2" rows={4} />
-              <Textarea placeholder="Requirements" className="col-span-2" rows={3} />
-              <Input placeholder="Salary Range (Optional)" />
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Hiring Manager" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">John Doe</SelectItem>
-                  <SelectItem value="2">Jane Smith</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="col-span-2 space-y-2">
+                <Label>Job Title</Label>
+                <Input value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} placeholder="e.g., Senior Software Engineer" />
+              </div>
+              <div className="space-y-2">
+                <Label>Department</Label>
+                <Select value={formData.department} onValueChange={(v) => setFormData({...formData, department: v})}>
+                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Engineering">Engineering</SelectItem>
+                    <SelectItem value="Product">Product</SelectItem>
+                    <SelectItem value="Design">Design</SelectItem>
+                    <SelectItem value="Sales">Sales</SelectItem>
+                    <SelectItem value="HR">HR</SelectItem>
+                    <SelectItem value="Marketing">Marketing</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Location</Label>
+                <Input value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})} placeholder="e.g., Bangalore, Remote" />
+              </div>
+              <div className="space-y-2">
+                <Label>Employment Type</Label>
+                <Select value={formData.type} onValueChange={(v: JobPosting['type']) => setFormData({...formData, type: v})}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="full_time">Full Time</SelectItem>
+                    <SelectItem value="part_time">Part Time</SelectItem>
+                    <SelectItem value="contract">Contract</SelectItem>
+                    <SelectItem value="intern">Internship</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Experience</Label>
+                <Input value={formData.experience} onChange={(e) => setFormData({...formData, experience: e.target.value})} placeholder="e.g., 3-5 years" />
+              </div>
+              <div className="col-span-2 space-y-2">
+                <Label>Description</Label>
+                <Textarea value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} placeholder="Job description..." rows={4} />
+              </div>
+              <div className="col-span-2 space-y-2">
+                <Label>Requirements</Label>
+                <Textarea value={formData.requirements} onChange={(e) => setFormData({...formData, requirements: e.target.value})} placeholder="Requirements..." rows={3} />
+              </div>
+              <div className="space-y-2">
+                <Label>Hiring Manager</Label>
+                <Select value={formData.hiring_manager_id} onValueChange={(v) => setFormData({...formData, hiring_manager_id: v})}>
+                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>
+                    {managers.map((m: any) => (
+                      <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="col-span-2 flex gap-2 justify-end">
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Save as Draft</Button>
-                <Button onClick={() => setIsDialogOpen(false)}>Publish</Button>
+                <Button variant="outline" onClick={() => handleSubmit(false)} disabled={createPosting.isPending || !formData.title || !formData.department}>
+                  {createPosting.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                  Save as Draft
+                </Button>
+                <Button onClick={() => handleSubmit(true)} disabled={createPosting.isPending || !formData.title || !formData.department}>
+                  {createPosting.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                  Publish
+                </Button>
               </div>
             </div>
           </DialogContent>
@@ -191,17 +260,10 @@ export function JobPostingsManagement() {
           <div className="flex gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search postings..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+              <Input placeholder="Search postings..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
+              <SelectTrigger className="w-48"><SelectValue placeholder="Status" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="draft">Draft</SelectItem>
@@ -220,48 +282,58 @@ export function JobPostingsManagement() {
           <CardTitle>Job Listings</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Position</TableHead>
-                <TableHead>Department</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Applications</TableHead>
-                <TableHead>Posted</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredPostings.map((posting) => (
-                <TableRow key={posting.id}>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{posting.title}</p>
-                      <p className="text-xs text-muted-foreground">{posting.experience}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>{posting.department}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      {posting.location}
-                    </div>
-                  </TableCell>
-                  <TableCell>{getTypeBadge(posting.type)}</TableCell>
-                  <TableCell>
-                    <span className="font-medium">{posting.applications}</span>
-                  </TableCell>
-                  <TableCell>{format(new Date(posting.posted_on), 'MMM dd, yyyy')}</TableCell>
-                  <TableCell>{getStatusBadge(posting.status)}</TableCell>
-                  <TableCell>
-                    <Button size="sm" variant="ghost"><Eye className="h-4 w-4" /></Button>
-                  </TableCell>
+          {filteredPostings.length === 0 ? (
+            <div className="text-center py-8">
+              <FileX className="h-12 w-12 mx-auto text-muted-foreground" />
+              <p className="mt-4 text-muted-foreground">No job postings found</p>
+              <Button className="mt-4" onClick={() => setIsDialogOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />Create Posting
+              </Button>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Position</TableHead>
+                  <TableHead>Department</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Applications</TableHead>
+                  <TableHead>Posted</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredPostings.map((posting) => (
+                  <TableRow key={posting.id}>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{posting.title}</p>
+                        <p className="text-xs text-muted-foreground">{posting.experience || 'Experience not specified'}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>{posting.department}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        {posting.location || 'N/A'}
+                      </div>
+                    </TableCell>
+                    <TableCell>{getTypeBadge(posting.type)}</TableCell>
+                    <TableCell>
+                      <span className="font-medium">{posting.applications_count || 0}</span>
+                    </TableCell>
+                    <TableCell>{posting.posted_on ? format(new Date(posting.posted_on), 'MMM dd, yyyy') : 'Not posted'}</TableCell>
+                    <TableCell>{getStatusBadge(posting.status)}</TableCell>
+                    <TableCell>
+                      <Button size="sm" variant="ghost"><Eye className="h-4 w-4" /></Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>
