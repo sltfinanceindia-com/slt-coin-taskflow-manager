@@ -2,40 +2,65 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { FileText, Search, Download, Send, CheckCircle, Clock, Mail } from 'lucide-react';
+import { FileText, Search, Download, Send, CheckCircle, Clock, Mail, Loader2, FileX, Plus } from 'lucide-react';
 import { format } from 'date-fns';
-
-interface Confirmation {
-  id: string;
-  employee_name: string;
-  department: string;
-  probation_end_date: string;
-  confirmation_date: string;
-  letter_status: 'pending' | 'generated' | 'sent' | 'acknowledged';
-  salary_revision: boolean;
-  new_designation: string | null;
-}
+import { useConfirmations, Confirmation } from '@/hooks/useConfirmations';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 export function ConfirmationsManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    employee_id: '',
+    confirmation_date: '',
+    salary_revision: false,
+    previous_salary: '',
+    revised_salary: '',
+  });
 
-  // Mock data
-  const confirmations: Confirmation[] = [
-    { id: '1', employee_name: 'Jane Smith', department: 'Marketing', probation_end_date: '2024-05-15', confirmation_date: '2024-05-15', letter_status: 'acknowledged', salary_revision: true, new_designation: 'Senior Marketing Executive' },
-    { id: '2', employee_name: 'Tom Wilson', department: 'Engineering', probation_end_date: '2024-04-01', confirmation_date: '2024-04-01', letter_status: 'sent', salary_revision: true, new_designation: null },
-    { id: '3', employee_name: 'Emily Davis', department: 'Sales', probation_end_date: '2024-05-20', confirmation_date: '2024-05-20', letter_status: 'generated', salary_revision: false, new_designation: null },
-    { id: '4', employee_name: 'Chris Lee', department: 'HR', probation_end_date: '2024-06-01', confirmation_date: '2024-06-01', letter_status: 'pending', salary_revision: false, new_designation: null },
-  ];
+  const { confirmations, isLoading, error, createConfirmation, updateConfirmation } = useConfirmations();
+
+  const { data: employees = [] } = useQuery({
+    queryKey: ['employees-for-confirmations'],
+    queryFn: async () => {
+      const { data } = await supabase.from('profiles').select('id, full_name, email, department').order('full_name');
+      return data || [];
+    }
+  });
+
+  const handleSubmit = () => {
+    createConfirmation.mutate({
+      employee_id: formData.employee_id || null,
+      probation_id: null,
+      confirmation_date: formData.confirmation_date || null,
+      letter_status: 'generated',
+      salary_revision: formData.salary_revision,
+      previous_salary: formData.previous_salary ? Number(formData.previous_salary) : null,
+      revised_salary: formData.revised_salary ? Number(formData.revised_salary) : null,
+      letter_url: null,
+      generated_by: null,
+      organization_id: null,
+    });
+    setIsDialogOpen(false);
+    setFormData({ employee_id: '', confirmation_date: '', salary_revision: false, previous_salary: '', revised_salary: '' });
+  };
+
+  const handleSendLetter = (id: string) => {
+    updateConfirmation.mutate({ id, letter_status: 'sent' });
+  };
 
   const filteredConfirmations = confirmations.filter(c => {
-    const matchesSearch = c.employee_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         c.department.toLowerCase().includes(searchTerm.toLowerCase());
+    const employeeName = c.employee?.full_name || '';
+    const department = c.employee?.department || '';
+    const matchesSearch = employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         department.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || c.letter_status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -56,6 +81,24 @@ export function ConfirmationsManagement() {
     );
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="p-8 text-center border-destructive">
+        <FileX className="h-12 w-12 mx-auto text-destructive" />
+        <h3 className="mt-4 font-semibold">Error loading confirmations</h3>
+        <p className="text-muted-foreground">{error.message}</p>
+      </Card>
+    );
+  }
+
   const stats = {
     total: confirmations.length,
     pending: confirmations.filter(c => c.letter_status === 'pending').length,
@@ -73,8 +116,8 @@ export function ConfirmationsManagement() {
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
-              <FileText className="mr-2 h-4 w-4" />
-              Generate Letters
+              <Plus className="mr-2 h-4 w-4" />
+              Generate Letter
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-md">
@@ -82,31 +125,40 @@ export function ConfirmationsManagement() {
               <DialogTitle>Generate Confirmation Letter</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-4">
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Employee" />
-                </SelectTrigger>
-                <SelectContent>
-                  {confirmations.filter(c => c.letter_status === 'pending').map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{c.employee_name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Letter Template" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="standard">Standard Confirmation</SelectItem>
-                  <SelectItem value="promotion">Confirmation with Promotion</SelectItem>
-                  <SelectItem value="revision">Confirmation with Salary Revision</SelectItem>
-                </SelectContent>
-              </Select>
-              <Input type="date" placeholder="Effective Date" />
-              <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => setIsDialogOpen(false)}>Preview</Button>
-                <Button className="flex-1" onClick={() => setIsDialogOpen(false)}>Generate</Button>
+              <div className="space-y-2">
+                <Label>Employee</Label>
+                <Select value={formData.employee_id} onValueChange={(v) => setFormData({...formData, employee_id: v})}>
+                  <SelectTrigger><SelectValue placeholder="Select Employee" /></SelectTrigger>
+                  <SelectContent>
+                    {employees.map((emp: any) => (
+                      <SelectItem key={emp.id} value={emp.id}>{emp.full_name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
+              <div className="space-y-2">
+                <Label>Confirmation Date</Label>
+                <Input type="date" value={formData.confirmation_date} onChange={(e) => setFormData({...formData, confirmation_date: e.target.value})} />
+              </div>
+              <div className="flex items-center gap-2">
+                <input type="checkbox" id="salary_revision" checked={formData.salary_revision} onChange={(e) => setFormData({...formData, salary_revision: e.target.checked})} />
+                <label htmlFor="salary_revision" className="text-sm">Include salary revision</label>
+              </div>
+              {formData.salary_revision && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Previous Salary</Label>
+                    <Input type="number" value={formData.previous_salary} onChange={(e) => setFormData({...formData, previous_salary: e.target.value})} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Revised Salary</Label>
+                    <Input type="number" value={formData.revised_salary} onChange={(e) => setFormData({...formData, revised_salary: e.target.value})} />
+                  </div>
+                </div>
+              )}
+              <Button className="w-full" onClick={handleSubmit} disabled={createConfirmation.isPending || !formData.employee_id}>
+                {createConfirmation.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Generating...</> : 'Generate Letter'}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -166,17 +218,10 @@ export function ConfirmationsManagement() {
           <div className="flex gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+              <Input placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
+              <SelectTrigger className="w-48"><SelectValue placeholder="Filter by status" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
@@ -195,43 +240,53 @@ export function ConfirmationsManagement() {
           <CardTitle>Confirmation Records</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Employee</TableHead>
-                <TableHead>Department</TableHead>
-                <TableHead>Confirmation Date</TableHead>
-                <TableHead>Salary Revision</TableHead>
-                <TableHead>New Designation</TableHead>
-                <TableHead>Letter Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredConfirmations.map((confirmation) => (
-                <TableRow key={confirmation.id}>
-                  <TableCell className="font-medium">{confirmation.employee_name}</TableCell>
-                  <TableCell>{confirmation.department}</TableCell>
-                  <TableCell>{format(new Date(confirmation.confirmation_date), 'MMM dd, yyyy')}</TableCell>
-                  <TableCell>
-                    <Badge variant={confirmation.salary_revision ? 'default' : 'secondary'}>
-                      {confirmation.salary_revision ? 'Yes' : 'No'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{confirmation.new_designation || '-'}</TableCell>
-                  <TableCell>{getStatusBadge(confirmation.letter_status)}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="ghost"><Download className="h-4 w-4" /></Button>
-                      {confirmation.letter_status === 'generated' && (
-                        <Button size="sm" variant="ghost"><Send className="h-4 w-4" /></Button>
-                      )}
-                    </div>
-                  </TableCell>
+          {filteredConfirmations.length === 0 ? (
+            <div className="text-center py-8">
+              <FileX className="h-12 w-12 mx-auto text-muted-foreground" />
+              <p className="mt-4 text-muted-foreground">No confirmation records found</p>
+              <Button className="mt-4" onClick={() => setIsDialogOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />Generate Letter
+              </Button>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Employee</TableHead>
+                  <TableHead>Department</TableHead>
+                  <TableHead>Confirmation Date</TableHead>
+                  <TableHead>Salary Revision</TableHead>
+                  <TableHead>Letter Status</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredConfirmations.map((confirmation) => (
+                  <TableRow key={confirmation.id}>
+                    <TableCell className="font-medium">{confirmation.employee?.full_name || 'Unknown'}</TableCell>
+                    <TableCell>{confirmation.employee?.department || 'N/A'}</TableCell>
+                    <TableCell>{confirmation.confirmation_date ? format(new Date(confirmation.confirmation_date), 'MMM dd, yyyy') : 'N/A'}</TableCell>
+                    <TableCell>
+                      <Badge variant={confirmation.salary_revision ? 'default' : 'secondary'}>
+                        {confirmation.salary_revision ? 'Yes' : 'No'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{getStatusBadge(confirmation.letter_status)}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="ghost"><Download className="h-4 w-4" /></Button>
+                        {confirmation.letter_status === 'generated' && (
+                          <Button size="sm" variant="ghost" onClick={() => handleSendLetter(confirmation.id)} disabled={updateConfirmation.isPending}>
+                            <Send className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>

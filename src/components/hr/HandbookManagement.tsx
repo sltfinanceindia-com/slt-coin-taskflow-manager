@@ -2,42 +2,47 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { BookOpen, Plus, Search, FileText, Users, Clock, Edit, Eye } from 'lucide-react';
+import { BookOpen, Plus, Search, FileText, Users, Clock, Edit, Eye, Loader2, FileX } from 'lucide-react';
+import { useHandbookPolicies, HandbookPolicy } from '@/hooks/useHandbookPolicies';
 
-interface Policy {
-  id: string;
-  title: string;
-  category: string;
-  version: string;
-  last_updated: string;
-  status: 'draft' | 'published' | 'archived';
-  acknowledgments: number;
-  total_employees: number;
-  content: string;
-}
+const CATEGORIES = ['General', 'HR', 'Work', 'IT', 'Finance', 'Compliance'];
 
 export function HandbookManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    category: '',
+    content: '',
+    version: '1.0',
+    status: 'draft' as HandbookPolicy['status'],
+    acknowledgment_required: false,
+  });
 
-  // Mock data
-  const policies: Policy[] = [
-    { id: '1', title: 'Code of Conduct', category: 'General', version: '3.0', last_updated: '2024-01-15', status: 'published', acknowledgments: 145, total_employees: 150, content: 'All employees are expected to maintain professional conduct...' },
-    { id: '2', title: 'Leave Policy', category: 'HR', version: '2.1', last_updated: '2024-02-01', status: 'published', acknowledgments: 148, total_employees: 150, content: 'Employees are entitled to various types of leave...' },
-    { id: '3', title: 'Remote Work Policy', category: 'Work', version: '1.5', last_updated: '2024-03-10', status: 'published', acknowledgments: 120, total_employees: 150, content: 'Guidelines for working from home...' },
-    { id: '4', title: 'Data Security Policy', category: 'IT', version: '2.0', last_updated: '2024-02-20', status: 'published', acknowledgments: 142, total_employees: 150, content: 'Security protocols for handling company data...' },
-    { id: '5', title: 'Travel & Expense Policy', category: 'Finance', version: '1.8', last_updated: '2024-01-25', status: 'published', acknowledgments: 135, total_employees: 150, content: 'Guidelines for business travel and expense claims...' },
-    { id: '6', title: 'Anti-Harassment Policy', category: 'Compliance', version: '2.2', last_updated: '2024-03-01', status: 'published', acknowledgments: 150, total_employees: 150, content: 'Zero tolerance policy for harassment...' },
-    { id: '7', title: 'Performance Review Process', category: 'HR', version: '1.0', last_updated: '2024-04-01', status: 'draft', acknowledgments: 0, total_employees: 150, content: 'Draft: Performance evaluation guidelines...' },
-  ];
+  const { policies, isLoading, error, createPolicy } = useHandbookPolicies();
 
-  const categories = ['General', 'HR', 'Work', 'IT', 'Finance', 'Compliance'];
+  const handleSubmit = (publish: boolean) => {
+    createPolicy.mutate({
+      title: formData.title,
+      category: formData.category,
+      content: formData.content,
+      version: formData.version || null,
+      status: publish ? 'published' : 'draft',
+      effective_date: publish ? new Date().toISOString().split('T')[0] : null,
+      acknowledgment_required: formData.acknowledgment_required,
+      created_by: null,
+      organization_id: null,
+    });
+    setIsDialogOpen(false);
+    setFormData({ title: '', category: '', content: '', version: '1.0', status: 'draft', acknowledgment_required: false });
+  };
 
   const filteredPolicies = policies.filter(p => {
     const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase());
@@ -45,8 +50,8 @@ export function HandbookManagement() {
     return matchesSearch && matchesCategory;
   });
 
-  const getStatusBadge = (status: Policy['status']) => {
-    const config: Record<Policy['status'], { variant: 'default' | 'secondary' | 'outline' }> = {
+  const getStatusBadge = (status: HandbookPolicy['status']) => {
+    const config: Record<HandbookPolicy['status'], { variant: 'default' | 'secondary' | 'outline' }> = {
       draft: { variant: 'secondary' },
       published: { variant: 'default' },
       archived: { variant: 'outline' },
@@ -54,21 +59,34 @@ export function HandbookManagement() {
     return <Badge variant={config[status].variant}>{status.charAt(0).toUpperCase() + status.slice(1)}</Badge>;
   };
 
-  const getAcknowledgmentRate = (ack: number, total: number) => {
-    const rate = Math.round((ack / total) * 100);
-    return { rate, color: rate === 100 ? 'text-green-600' : rate >= 80 ? 'text-yellow-600' : 'text-red-600' };
-  };
-
-  const groupedPolicies = categories.reduce((acc, category) => {
+  const groupedPolicies = CATEGORIES.reduce((acc, category) => {
     acc[category] = filteredPolicies.filter(p => p.category === category);
     return acc;
-  }, {} as Record<string, Policy[]>);
+  }, {} as Record<string, HandbookPolicy[]>);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="p-8 text-center border-destructive">
+        <FileX className="h-12 w-12 mx-auto text-destructive" />
+        <h3 className="mt-4 font-semibold">Error loading policies</h3>
+        <p className="text-muted-foreground">{error.message}</p>
+      </Card>
+    );
+  }
 
   const stats = {
     total: policies.length,
     published: policies.filter(p => p.status === 'published').length,
     drafts: policies.filter(p => p.status === 'draft').length,
-    fullAcknowledgment: policies.filter(p => p.acknowledgments === p.total_employees && p.status === 'published').length,
+    requireAck: policies.filter(p => p.acknowledgment_required).length,
   };
 
   return (
@@ -90,21 +108,44 @@ export function HandbookManagement() {
               <DialogTitle>Create New Policy</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-4">
-              <Input placeholder="Policy Title" />
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map(cat => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Textarea placeholder="Policy content..." rows={10} />
+              <div className="space-y-2">
+                <Label>Policy Title</Label>
+                <Input value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} placeholder="e.g., Code of Conduct" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Category</Label>
+                  <Select value={formData.category} onValueChange={(v) => setFormData({...formData, category: v})}>
+                    <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                    <SelectContent>
+                      {CATEGORIES.map(cat => (
+                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Version</Label>
+                  <Input value={formData.version} onChange={(e) => setFormData({...formData, version: e.target.value})} placeholder="1.0" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Content</Label>
+                <Textarea value={formData.content} onChange={(e) => setFormData({...formData, content: e.target.value})} placeholder="Policy content..." rows={10} />
+              </div>
+              <div className="flex items-center gap-2">
+                <input type="checkbox" id="ack_required" checked={formData.acknowledgment_required} onChange={(e) => setFormData({...formData, acknowledgment_required: e.target.checked})} />
+                <label htmlFor="ack_required" className="text-sm">Require employee acknowledgment</label>
+              </div>
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => setIsDialogOpen(false)}>Save as Draft</Button>
-                <Button className="flex-1" onClick={() => setIsDialogOpen(false)}>Publish</Button>
+                <Button variant="outline" className="flex-1" onClick={() => handleSubmit(false)} disabled={createPolicy.isPending || !formData.title || !formData.category}>
+                  {createPolicy.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                  Save as Draft
+                </Button>
+                <Button className="flex-1" onClick={() => handleSubmit(true)} disabled={createPolicy.isPending || !formData.title || !formData.category}>
+                  {createPolicy.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                  Publish
+                </Button>
               </div>
             </div>
           </DialogContent>
@@ -150,8 +191,8 @@ export function HandbookManagement() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">100% Acknowledged</p>
-                <p className="text-2xl font-bold text-blue-600">{stats.fullAcknowledgment}</p>
+                <p className="text-sm text-muted-foreground">Require Ack.</p>
+                <p className="text-2xl font-bold text-blue-600">{stats.requireAck}</p>
               </div>
               <Users className="h-8 w-8 text-blue-600" />
             </div>
@@ -165,20 +206,13 @@ export function HandbookManagement() {
           <div className="flex gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search policies..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+              <Input placeholder="Search policies..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
             </div>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
+              <SelectTrigger className="w-48"><SelectValue placeholder="Category" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                {categories.map(cat => (
+                {CATEGORIES.map(cat => (
                   <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                 ))}
               </SelectContent>
@@ -193,39 +227,40 @@ export function HandbookManagement() {
           <CardTitle>Policy Documents</CardTitle>
         </CardHeader>
         <CardContent>
-          <Accordion type="multiple" className="w-full">
-            {categories.map(category => {
-              const categoryPolicies = groupedPolicies[category] || [];
-              if (categoryPolicies.length === 0 && categoryFilter !== 'all') return null;
-              if (categoryPolicies.length === 0) return null;
-              
-              return (
-                <AccordionItem key={category} value={category}>
-                  <AccordionTrigger>
-                    <div className="flex items-center gap-2">
-                      <span>{category}</span>
-                      <Badge variant="secondary">{categoryPolicies.length}</Badge>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="space-y-3">
-                      {categoryPolicies.map(policy => {
-                        const ackInfo = getAcknowledgmentRate(policy.acknowledgments, policy.total_employees);
-                        return (
+          {filteredPolicies.length === 0 ? (
+            <div className="text-center py-8">
+              <FileX className="h-12 w-12 mx-auto text-muted-foreground" />
+              <p className="mt-4 text-muted-foreground">No policies found</p>
+              <Button className="mt-4" onClick={() => setIsDialogOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />Add Policy
+              </Button>
+            </div>
+          ) : (
+            <Accordion type="multiple" className="w-full">
+              {CATEGORIES.map(category => {
+                const categoryPolicies = groupedPolicies[category] || [];
+                if (categoryPolicies.length === 0) return null;
+                
+                return (
+                  <AccordionItem key={category} value={category}>
+                    <AccordionTrigger>
+                      <div className="flex items-center gap-2">
+                        <span>{category}</span>
+                        <Badge variant="secondary">{categoryPolicies.length}</Badge>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-3">
+                        {categoryPolicies.map(policy => (
                           <div key={policy.id} className="flex items-center justify-between p-3 border rounded-lg">
                             <div className="flex items-center gap-4">
                               <FileText className="h-5 w-5 text-muted-foreground" />
                               <div>
                                 <p className="font-medium">{policy.title}</p>
-                                <p className="text-sm text-muted-foreground">v{policy.version} • Updated {policy.last_updated}</p>
+                                <p className="text-sm text-muted-foreground">v{policy.version || '1.0'} • Updated {policy.updated_at ? new Date(policy.updated_at).toLocaleDateString() : 'N/A'}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-4">
-                              {policy.status === 'published' && (
-                                <span className={`text-sm font-medium ${ackInfo.color}`}>
-                                  {ackInfo.rate}% acknowledged
-                                </span>
-                              )}
                               {getStatusBadge(policy.status)}
                               <div className="flex gap-1">
                                 <Button size="sm" variant="ghost"><Eye className="h-4 w-4" /></Button>
@@ -233,14 +268,14 @@ export function HandbookManagement() {
                               </div>
                             </div>
                           </div>
-                        );
-                      })}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              );
-            })}
-          </Accordion>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                );
+              })}
+            </Accordion>
+          )}
         </CardContent>
       </Card>
     </div>
