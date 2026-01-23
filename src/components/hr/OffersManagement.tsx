@@ -2,38 +2,47 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { FileText, Plus, Search, Send, Download, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { FileText, Plus, Search, Send, Download, CheckCircle, XCircle, Clock, Loader2, FileX } from 'lucide-react';
 import { format } from 'date-fns';
-
-interface Offer {
-  id: string;
-  candidate_name: string;
-  position: string;
-  department: string;
-  salary_offered: number;
-  joining_date: string;
-  status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'negotiating' | 'withdrawn';
-  created_at: string;
-  expires_at: string;
-}
+import { useOffers } from '@/hooks/useOffers';
 
 export function OffersManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    candidate_name: '',
+    position: '',
+    department: '',
+    salary_offered: 0,
+    joining_date: '',
+    expires_at: '',
+  });
 
-  // Mock data
-  const offers: Offer[] = [
-    { id: '1', candidate_name: 'Rahul Kumar', position: 'Senior Software Engineer', department: 'Engineering', salary_offered: 2500000, joining_date: '2024-04-01', status: 'sent', created_at: '2024-03-10', expires_at: '2024-03-20' },
-    { id: '2', candidate_name: 'Priya Sharma', position: 'Product Manager', department: 'Product', salary_offered: 2000000, joining_date: '2024-04-15', status: 'accepted', created_at: '2024-03-05', expires_at: '2024-03-15' },
-    { id: '3', candidate_name: 'Amit Patel', position: 'UX Designer', department: 'Design', salary_offered: 1500000, joining_date: '2024-04-01', status: 'negotiating', created_at: '2024-03-08', expires_at: '2024-03-18' },
-    { id: '4', candidate_name: 'Sneha Gupta', position: 'Data Analyst', department: 'Analytics', salary_offered: 1200000, joining_date: '2024-05-01', status: 'draft', created_at: '2024-03-15', expires_at: '2024-03-25' },
-    { id: '5', candidate_name: 'Vikram Singh', position: 'DevOps Engineer', department: 'Engineering', salary_offered: 1800000, joining_date: '2024-04-15', status: 'rejected', created_at: '2024-03-01', expires_at: '2024-03-11' },
-  ];
+  const { offers, isLoading, error, createOffer, updateOffer } = useOffers();
+
+  const handleSubmit = (asDraft: boolean) => {
+    if (!formData.candidate_name || !formData.position) return;
+    
+    createOffer.mutate({
+      candidate_name: formData.candidate_name,
+      candidate_email: '',
+      position: formData.position,
+      department: formData.department,
+      salary_offered: formData.salary_offered,
+      joining_date: formData.joining_date || null,
+      expires_at: formData.expires_at || null,
+      status: asDraft ? 'draft' : 'sent',
+    } as any);
+    
+    setIsDialogOpen(false);
+    setFormData({ candidate_name: '', position: '', department: '', salary_offered: 0, joining_date: '', expires_at: '' });
+  };
 
   const filteredOffers = offers.filter(o => {
     const matchesSearch = o.candidate_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -42,8 +51,8 @@ export function OffersManagement() {
     return matchesSearch && matchesStatus;
   });
 
-  const getStatusBadge = (status: Offer['status']) => {
-    const config: Record<Offer['status'], { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }> = {
+  const getStatusBadge = (status: string) => {
+    const config: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }> = {
       draft: { variant: 'secondary', label: 'Draft' },
       sent: { variant: 'outline', label: 'Sent' },
       accepted: { variant: 'default', label: 'Accepted' },
@@ -51,7 +60,8 @@ export function OffersManagement() {
       negotiating: { variant: 'secondary', label: 'Negotiating' },
       withdrawn: { variant: 'outline', label: 'Withdrawn' },
     };
-    return <Badge variant={config[status].variant}>{config[status].label}</Badge>;
+    const cfg = config[status] || { variant: 'secondary', label: status };
+    return <Badge variant={cfg.variant}>{cfg.label}</Badge>;
   };
 
   const formatCurrency = (amount: number) => {
@@ -64,6 +74,24 @@ export function OffersManagement() {
     pending: offers.filter(o => o.status === 'sent' || o.status === 'negotiating').length,
     rejected: offers.filter(o => o.status === 'rejected').length,
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="p-8 text-center border-destructive">
+        <FileX className="h-12 w-12 mx-auto text-destructive" />
+        <h3 className="mt-4 font-semibold">Error loading offers</h3>
+        <p className="text-muted-foreground">{error.message}</p>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -84,33 +112,75 @@ export function OffersManagement() {
               <DialogTitle>Create Offer Letter</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-4">
-              <Input placeholder="Candidate Name" />
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Position" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="swe">Senior Software Engineer</SelectItem>
-                  <SelectItem value="pm">Product Manager</SelectItem>
-                  <SelectItem value="ux">UX Designer</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Department" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="engineering">Engineering</SelectItem>
-                  <SelectItem value="product">Product</SelectItem>
-                  <SelectItem value="design">Design</SelectItem>
-                </SelectContent>
-              </Select>
-              <Input type="number" placeholder="Annual CTC (₹)" />
-              <Input type="date" placeholder="Proposed Joining Date" />
-              <Input type="date" placeholder="Offer Expiry Date" />
+              <div>
+                <Label>Candidate Name</Label>
+                <Input 
+                  placeholder="Enter candidate name"
+                  value={formData.candidate_name}
+                  onChange={(e) => setFormData(p => ({ ...p, candidate_name: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label>Position</Label>
+                <Select value={formData.position} onValueChange={(v) => setFormData(p => ({ ...p, position: v }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select position" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Senior Software Engineer">Senior Software Engineer</SelectItem>
+                    <SelectItem value="Product Manager">Product Manager</SelectItem>
+                    <SelectItem value="UX Designer">UX Designer</SelectItem>
+                    <SelectItem value="Data Analyst">Data Analyst</SelectItem>
+                    <SelectItem value="DevOps Engineer">DevOps Engineer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Department</Label>
+                <Select value={formData.department} onValueChange={(v) => setFormData(p => ({ ...p, department: v }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Engineering">Engineering</SelectItem>
+                    <SelectItem value="Product">Product</SelectItem>
+                    <SelectItem value="Design">Design</SelectItem>
+                    <SelectItem value="Analytics">Analytics</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Annual CTC (₹)</Label>
+                <Input 
+                  type="number" 
+                  placeholder="Enter CTC"
+                  value={formData.salary_offered || ''}
+                  onChange={(e) => setFormData(p => ({ ...p, salary_offered: Number(e.target.value) }))}
+                />
+              </div>
+              <div>
+                <Label>Proposed Joining Date</Label>
+                <Input 
+                  type="date"
+                  value={formData.joining_date}
+                  onChange={(e) => setFormData(p => ({ ...p, joining_date: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label>Offer Expiry Date</Label>
+                <Input 
+                  type="date"
+                  value={formData.expires_at}
+                  onChange={(e) => setFormData(p => ({ ...p, expires_at: e.target.value }))}
+                />
+              </div>
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => setIsDialogOpen(false)}>Save Draft</Button>
-                <Button className="flex-1" onClick={() => setIsDialogOpen(false)}>Send Offer</Button>
+                <Button variant="outline" className="flex-1" onClick={() => handleSubmit(true)} disabled={createOffer.isPending}>
+                  Save Draft
+                </Button>
+                <Button className="flex-1" onClick={() => handleSubmit(false)} disabled={createOffer.isPending}>
+                  {createOffer.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /></> : 'Send Offer'}
+                </Button>
               </div>
             </div>
           </DialogContent>
@@ -201,45 +271,67 @@ export function OffersManagement() {
           <CardTitle>Offer Letters</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Candidate</TableHead>
-                <TableHead>Position</TableHead>
-                <TableHead>Department</TableHead>
-                <TableHead>Salary</TableHead>
-                <TableHead>Joining Date</TableHead>
-                <TableHead>Expires</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredOffers.map((offer) => (
-                <TableRow key={offer.id}>
-                  <TableCell className="font-medium">{offer.candidate_name}</TableCell>
-                  <TableCell>{offer.position}</TableCell>
-                  <TableCell>{offer.department}</TableCell>
-                  <TableCell className="font-mono">{formatCurrency(offer.salary_offered)}</TableCell>
-                  <TableCell>{format(new Date(offer.joining_date), 'MMM dd, yyyy')}</TableCell>
-                  <TableCell>
-                    <span className={new Date(offer.expires_at) < new Date() ? 'text-red-600' : ''}>
-                      {format(new Date(offer.expires_at), 'MMM dd')}
-                    </span>
-                  </TableCell>
-                  <TableCell>{getStatusBadge(offer.status)}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      <Button size="sm" variant="ghost"><Download className="h-4 w-4" /></Button>
-                      {offer.status === 'draft' && (
-                        <Button size="sm" variant="ghost"><Send className="h-4 w-4" /></Button>
-                      )}
-                    </div>
-                  </TableCell>
+          {filteredOffers.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <FileX className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No offers found</p>
+              <p className="text-sm">Create your first offer to get started</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Candidate</TableHead>
+                  <TableHead>Position</TableHead>
+                  <TableHead>Department</TableHead>
+                  <TableHead>Salary</TableHead>
+                  <TableHead>Joining Date</TableHead>
+                  <TableHead>Expires</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredOffers.map((offer) => (
+                  <TableRow key={offer.id}>
+                    <TableCell className="font-medium">{offer.candidate_name}</TableCell>
+                    <TableCell>{offer.position}</TableCell>
+                    <TableCell>{offer.department}</TableCell>
+                    <TableCell className="font-mono">{formatCurrency(offer.salary_offered)}</TableCell>
+                    <TableCell>{offer.joining_date ? format(new Date(offer.joining_date), 'MMM dd, yyyy') : '-'}</TableCell>
+                    <TableCell>
+                      {offer.expires_at && (
+                        <span className={new Date(offer.expires_at) < new Date() ? 'text-red-600' : ''}>
+                          {format(new Date(offer.expires_at), 'MMM dd')}
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell>{getStatusBadge(offer.status)}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="ghost"><Download className="h-4 w-4" /></Button>
+                        {offer.status === 'draft' && (
+                          <Button size="sm" variant="ghost" onClick={() => updateOffer.mutate({ id: offer.id, status: 'sent' })}>
+                            <Send className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {offer.status === 'sent' && (
+                          <>
+                            <Button size="sm" variant="outline" onClick={() => updateOffer.mutate({ id: offer.id, status: 'accepted' })}>
+                              Accept
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={() => updateOffer.mutate({ id: offer.id, status: 'rejected' })}>
+                              Reject
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>

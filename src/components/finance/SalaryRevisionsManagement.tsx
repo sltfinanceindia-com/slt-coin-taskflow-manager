@@ -8,102 +8,124 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, TrendingUp, Search, FileText, Calendar, DollarSign } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { Plus, TrendingUp, Search, FileText, Calendar, DollarSign, Loader2, FileX } from "lucide-react";
 import { format } from "date-fns";
-
-interface SalaryRevision {
-  id: string;
-  employee_id: string;
-  employee_name: string;
-  previous_salary: number;
-  new_salary: number;
-  increment_percentage: number;
-  effective_date: string;
-  revision_type: string;
-  status: string;
-  approved_by?: string;
-  remarks?: string;
-  created_at: string;
-}
+import { useSalaryRevisions } from "@/hooks/useSalaryRevisions";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export function SalaryRevisionsManagement() {
+  const { profile } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [formData, setFormData] = useState({
     employee_id: "",
-    previous_salary: "",
-    new_salary: "",
-    effective_date: "",
+    previous_salary: 0,
+    new_salary: 0,
+    effective_date: format(new Date(), 'yyyy-MM-dd'),
     revision_type: "annual",
     remarks: ""
   });
-  const queryClient = useQueryClient();
 
-  // Mock data for demonstration
-  const revisions: SalaryRevision[] = [
-    {
-      id: "1",
-      employee_id: "emp1",
-      employee_name: "John Doe",
-      previous_salary: 50000,
-      new_salary: 55000,
-      increment_percentage: 10,
-      effective_date: "2024-04-01",
-      revision_type: "annual",
-      status: "approved",
-      approved_by: "HR Manager",
-      remarks: "Annual performance review",
-      created_at: new Date().toISOString()
+  const { revisions, isLoading, error, createRevision, updateRevision } = useSalaryRevisions();
+
+  const { data: employees } = useQuery({
+    queryKey: ['employees-for-revision', profile?.organization_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .eq('organization_id', profile?.organization_id)
+        .eq('is_active', true)
+        .order('full_name');
+      if (error) throw error;
+      return data || [];
     },
-    {
-      id: "2",
-      employee_id: "emp2",
-      employee_name: "Jane Smith",
-      previous_salary: 60000,
-      new_salary: 72000,
-      increment_percentage: 20,
-      effective_date: "2024-04-01",
-      revision_type: "promotion",
-      status: "pending",
-      remarks: "Promotion to Senior Developer",
-      created_at: new Date().toISOString()
-    }
-  ];
+    enabled: !!profile?.organization_id,
+  });
 
   const calculateIncrement = (prev: number, newSal: number) => {
     if (prev === 0) return 0;
     return ((newSal - prev) / prev * 100).toFixed(2);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success("Salary revision submitted for approval");
+  const handleSubmit = () => {
+    if (!formData.employee_id || formData.new_salary <= 0) return;
+    
+    createRevision.mutate({
+      employee_id: formData.employee_id,
+      previous_salary: formData.previous_salary,
+      new_salary: formData.new_salary,
+      effective_date: formData.effective_date,
+      revision_type: formData.revision_type as 'annual' | 'market_adjustment' | 'performance' | 'promotion' | 'special',
+      remarks: formData.remarks,
+      status: 'pending',
+    });
+    
     setIsDialogOpen(false);
     setFormData({
       employee_id: "",
-      previous_salary: "",
-      new_salary: "",
-      effective_date: "",
+      previous_salary: 0,
+      new_salary: 0,
+      effective_date: format(new Date(), 'yyyy-MM-dd'),
       revision_type: "annual",
       remarks: ""
     });
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "approved": return "bg-green-500";
-      case "pending": return "bg-yellow-500";
-      case "rejected": return "bg-red-500";
-      default: return "bg-gray-500";
-    }
+  const getStatusBadge = (status: string) => {
+    const badges: Record<string, JSX.Element> = {
+      pending: <Badge variant="secondary">Pending</Badge>,
+      approved: <Badge className="bg-green-100 text-green-800">Approved</Badge>,
+      rejected: <Badge variant="destructive">Rejected</Badge>,
+      implemented: <Badge className="bg-blue-100 text-blue-800">Implemented</Badge>,
+    };
+    return badges[status] || <Badge variant="secondary">{status}</Badge>;
   };
 
   const filteredRevisions = revisions.filter(rev =>
-    rev.employee_name.toLowerCase().includes(searchTerm.toLowerCase())
+    rev.employee?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || false
   );
+
+  const stats = {
+    pending: revisions.filter(r => r.status === 'pending').length,
+    thisMonth: revisions.filter(r => {
+      const created = new Date(r.created_at);
+      const now = new Date();
+      return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+    }).length,
+    avgIncrement: revisions.length > 0
+      ? (revisions.reduce((acc, r) => {
+          const inc = r.previous_salary ? ((r.new_salary - r.previous_salary) / r.previous_salary) * 100 : 0;
+          return acc + inc;
+        }, 0) / revisions.length).toFixed(1)
+      : '0',
+    totalBudget: revisions.filter(r => r.status === 'approved').reduce((acc, r) => acc + (r.new_salary - r.previous_salary), 0),
+  };
+
+  const formatCurrency = (amount: number) => {
+    if (amount >= 100000) return `₹${(amount / 100000).toFixed(1)}L`;
+    return `₹${amount.toLocaleString()}`;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="p-8 text-center border-destructive">
+        <FileX className="h-12 w-12 mx-auto text-destructive" />
+        <h3 className="mt-4 font-semibold">Error loading revisions</h3>
+        <p className="text-muted-foreground">{error.message}</p>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6 p-6">
@@ -123,57 +145,58 @@ export function SalaryRevisionsManagement() {
             <DialogHeader>
               <DialogTitle>Create Salary Revision</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
+            <div className="space-y-4 pt-4">
+              <div>
                 <Label>Employee</Label>
-                <Select value={formData.employee_id} onValueChange={(v) => setFormData({...formData, employee_id: v})}>
+                <Select value={formData.employee_id} onValueChange={(v) => setFormData(p => ({...p, employee_id: v}))}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select employee" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="emp1">John Doe</SelectItem>
-                    <SelectItem value="emp2">Jane Smith</SelectItem>
+                    {employees?.map((e) => (
+                      <SelectItem key={e.id} value={e.id}>{e.full_name}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+                <div>
                   <Label>Previous Salary</Label>
                   <Input
                     type="number"
-                    value={formData.previous_salary}
-                    onChange={(e) => setFormData({...formData, previous_salary: e.target.value})}
+                    value={formData.previous_salary || ''}
+                    onChange={(e) => setFormData(p => ({...p, previous_salary: Number(e.target.value)}))}
                     placeholder="50000"
                   />
                 </div>
-                <div className="space-y-2">
+                <div>
                   <Label>New Salary</Label>
                   <Input
                     type="number"
-                    value={formData.new_salary}
-                    onChange={(e) => setFormData({...formData, new_salary: e.target.value})}
+                    value={formData.new_salary || ''}
+                    onChange={(e) => setFormData(p => ({...p, new_salary: Number(e.target.value)}))}
                     placeholder="55000"
                   />
                 </div>
               </div>
-              {formData.previous_salary && formData.new_salary && (
+              {formData.previous_salary > 0 && formData.new_salary > 0 && (
                 <div className="p-3 bg-muted rounded-lg">
                   <p className="text-sm">
-                    Increment: <strong>{calculateIncrement(Number(formData.previous_salary), Number(formData.new_salary))}%</strong>
+                    Increment: <strong>{calculateIncrement(formData.previous_salary, formData.new_salary)}%</strong>
                   </p>
                 </div>
               )}
-              <div className="space-y-2">
+              <div>
                 <Label>Effective Date</Label>
                 <Input
                   type="date"
                   value={formData.effective_date}
-                  onChange={(e) => setFormData({...formData, effective_date: e.target.value})}
+                  onChange={(e) => setFormData(p => ({...p, effective_date: e.target.value}))}
                 />
               </div>
-              <div className="space-y-2">
+              <div>
                 <Label>Revision Type</Label>
-                <Select value={formData.revision_type} onValueChange={(v) => setFormData({...formData, revision_type: v})}>
+                <Select value={formData.revision_type} onValueChange={(v) => setFormData(p => ({...p, revision_type: v}))}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -185,16 +208,18 @@ export function SalaryRevisionsManagement() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
+              <div>
                 <Label>Remarks</Label>
                 <Textarea
                   value={formData.remarks}
-                  onChange={(e) => setFormData({...formData, remarks: e.target.value})}
+                  onChange={(e) => setFormData(p => ({...p, remarks: e.target.value}))}
                   placeholder="Reason for revision..."
                 />
               </div>
-              <Button type="submit" className="w-full">Submit for Approval</Button>
-            </form>
+              <Button className="w-full" onClick={handleSubmit} disabled={createRevision.isPending}>
+                {createRevision.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Submitting...</> : 'Submit for Approval'}
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
@@ -207,7 +232,7 @@ export function SalaryRevisionsManagement() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">5</div>
+            <div className="text-2xl font-bold">{stats.pending}</div>
             <p className="text-xs text-muted-foreground">Awaiting review</p>
           </CardContent>
         </Card>
@@ -217,7 +242,7 @@ export function SalaryRevisionsManagement() {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12</div>
+            <div className="text-2xl font-bold">{stats.thisMonth}</div>
             <p className="text-xs text-muted-foreground">Revisions processed</p>
           </CardContent>
         </Card>
@@ -227,17 +252,17 @@ export function SalaryRevisionsManagement() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">8.5%</div>
+            <div className="text-2xl font-bold">{stats.avgIncrement}%</div>
             <p className="text-xs text-muted-foreground">This cycle</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
+            <CardTitle className="text-sm font-medium">Approved Budget</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹2.5L</div>
+            <div className="text-2xl font-bold">{formatCurrency(stats.totalBudget)}</div>
             <p className="text-xs text-muted-foreground">Monthly increase</p>
           </CardContent>
         </Card>
@@ -262,38 +287,63 @@ export function SalaryRevisionsManagement() {
           <CardTitle>Recent Revisions</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Employee</TableHead>
-                <TableHead>Previous</TableHead>
-                <TableHead>New</TableHead>
-                <TableHead>Increment</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Effective Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredRevisions.map((rev) => (
-                <TableRow key={rev.id}>
-                  <TableCell className="font-medium">{rev.employee_name}</TableCell>
-                  <TableCell>₹{rev.previous_salary.toLocaleString()}</TableCell>
-                  <TableCell>₹{rev.new_salary.toLocaleString()}</TableCell>
-                  <TableCell className="text-green-600">+{rev.increment_percentage}%</TableCell>
-                  <TableCell className="capitalize">{rev.revision_type}</TableCell>
-                  <TableCell>{format(new Date(rev.effective_date), "MMM dd, yyyy")}</TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(rev.status)}>{rev.status}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="sm">View</Button>
-                  </TableCell>
+          {filteredRevisions.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <FileX className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No salary revisions found</p>
+              <p className="text-sm">Create your first revision to get started</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Employee</TableHead>
+                  <TableHead>Previous</TableHead>
+                  <TableHead>New</TableHead>
+                  <TableHead>Increment</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Effective Date</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredRevisions.map((rev) => {
+                  const increment = rev.previous_salary ? ((rev.new_salary - rev.previous_salary) / rev.previous_salary * 100).toFixed(1) : '0';
+                  return (
+                    <TableRow key={rev.id}>
+                      <TableCell className="font-medium">{rev.employee?.full_name || 'Unknown'}</TableCell>
+                      <TableCell>₹{rev.previous_salary.toLocaleString()}</TableCell>
+                      <TableCell>₹{rev.new_salary.toLocaleString()}</TableCell>
+                      <TableCell className="text-green-600">+{increment}%</TableCell>
+                      <TableCell className="capitalize">{rev.revision_type}</TableCell>
+                      <TableCell>{format(new Date(rev.effective_date), "MMM dd, yyyy")}</TableCell>
+                      <TableCell>{getStatusBadge(rev.status)}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          {rev.status === 'pending' && (
+                            <>
+                              <Button size="sm" variant="outline" onClick={() => updateRevision.mutate({ id: rev.id, status: 'approved' })}>
+                                Approve
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => updateRevision.mutate({ id: rev.id, status: 'rejected' })}>
+                                Reject
+                              </Button>
+                            </>
+                          )}
+                          {rev.status === 'approved' && (
+                            <Button size="sm" variant="outline" onClick={() => updateRevision.mutate({ id: rev.id, status: 'implemented' })}>
+                              Implement
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>
