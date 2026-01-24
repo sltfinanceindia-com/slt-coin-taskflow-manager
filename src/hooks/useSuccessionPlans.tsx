@@ -44,7 +44,7 @@ export function useSuccessionPlans() {
   });
 
   const createPlan = useMutation({
-    mutationFn: async (plan: Omit<SuccessionPlan, 'id' | 'created_at' | 'updated_at' | 'current_holder' | 'candidates'>) => {
+    mutationFn: async (plan: Omit<SuccessionPlan, 'id' | 'created_at' | 'updated_at' | 'current_holder' | 'candidates' | 'organization_id' | 'created_by' | 'notes'> & { notes?: string | null }) => {
       const { data, error } = await supabase.from('succession_plans').insert({ ...plan, organization_id: profile?.organization_id, created_by: profile?.id }).select().single();
       if (error) throw error;
       return data;

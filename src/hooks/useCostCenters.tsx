@@ -45,7 +45,7 @@ export function useCostCenters() {
   });
 
   const createCostCenter = useMutation({
-    mutationFn: async (costCenter: Omit<CostCenter, 'id' | 'created_at' | 'updated_at' | 'manager'>) => {
+    mutationFn: async (costCenter: Omit<CostCenter, 'id' | 'created_at' | 'updated_at' | 'manager' | 'organization_id' | 'status'> & { status?: 'active' | 'inactive' | 'frozen' }) => {
       const { data, error } = await supabase
         .from('cost_centers')
         .insert({ ...costCenter, organization_id: profile?.organization_id })

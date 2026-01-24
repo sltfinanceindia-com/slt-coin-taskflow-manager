@@ -52,7 +52,7 @@ export function useSalaryRevisions() {
   });
 
   const createRevision = useMutation({
-    mutationFn: async (revision: Omit<SalaryRevision, 'id' | 'created_at' | 'updated_at' | 'employee' | 'approver'>) => {
+    mutationFn: async (revision: Omit<SalaryRevision, 'id' | 'created_at' | 'updated_at' | 'employee' | 'approver' | 'organization_id' | 'approved_by'> & { approved_by?: string | null }) => {
       const { data, error } = await supabase
         .from('salary_revisions')
         .insert({ ...revision, organization_id: profile?.organization_id })
