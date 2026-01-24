@@ -3,23 +3,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, Minus, DollarSign, Users, Target, BarChart3 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Target, Loader2, FileX, AlertCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
+import { useSalaryBenchmarks } from '@/hooks/useSalaryBenchmarks';
 
 export function BenchmarkingManagement() {
+  const { benchmarks, isLoading, error } = useSalaryBenchmarks();
   const [industry, setIndustry] = useState('tech');
   const [region, setRegion] = useState('india');
 
-  // Mock salary benchmark data
-  const salaryBenchmarks = [
-    { role: 'Software Engineer', internal: 1200000, market_25: 1000000, market_50: 1300000, market_75: 1600000, status: 'below' },
-    { role: 'Senior Engineer', internal: 2000000, market_25: 1800000, market_50: 2200000, market_75: 2800000, status: 'at' },
-    { role: 'Engineering Manager', internal: 3500000, market_25: 3200000, market_50: 3800000, market_75: 4500000, status: 'at' },
-    { role: 'Product Manager', internal: 2500000, market_25: 2200000, market_50: 2600000, market_75: 3200000, status: 'at' },
-    { role: 'Data Scientist', internal: 1800000, market_25: 1600000, market_50: 2000000, market_75: 2500000, status: 'at' },
-    { role: 'UX Designer', internal: 1100000, market_25: 1200000, market_50: 1500000, market_75: 1800000, status: 'below' },
-  ];
+  const filteredBenchmarks = benchmarks.filter(b => 
+    (industry === 'all' || b.industry === industry) &&
+    (region === 'all' || b.region === region)
+  );
 
+  // Aggregated comparison data from benchmarks
   const comparisonData = [
     { metric: 'Avg Salary', company: 18, industry: 20 },
     { metric: 'Benefits %', company: 15, industry: 18 },
@@ -37,7 +35,7 @@ export function BenchmarkingManagement() {
     { subject: 'Stability', A: 82, B: 80, fullMark: 100 },
   ];
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string | null) => {
     switch (status) {
       case 'above':
         return <TrendingUp className="h-4 w-4 text-green-600" />;
@@ -48,25 +46,43 @@ export function BenchmarkingManagement() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string | null) => {
     const config: Record<string, { variant: 'default' | 'secondary' | 'destructive' }> = {
       above: { variant: 'default' },
       at: { variant: 'secondary' },
       below: { variant: 'destructive' },
     };
-    return <Badge variant={config[status]?.variant || 'secondary'}>{status.toUpperCase()}</Badge>;
+    return <Badge variant={config[status || 'at']?.variant || 'secondary'}>{(status || 'at').toUpperCase()}</Badge>;
   };
 
-  const formatCurrency = (value: number) => {
+  const formatCurrency = (value: number | null) => {
+    if (!value) return '₹0';
     return `₹${(value / 100000).toFixed(1)}L`;
   };
 
   const stats = {
-    avgMarketPosition: 'At Market',
-    rolesAbove: 0,
-    rolesBelow: 2,
-    rolesAtMarket: 4,
+    rolesAbove: filteredBenchmarks.filter(b => b.status === 'above').length,
+    rolesBelow: filteredBenchmarks.filter(b => b.status === 'below').length,
+    rolesAtMarket: filteredBenchmarks.filter(b => b.status === 'at').length,
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="p-8 text-center border-destructive">
+        <AlertCircle className="h-12 w-12 mx-auto text-destructive" />
+        <h3 className="mt-4 font-semibold">Error loading benchmarks</h3>
+        <p className="text-muted-foreground">{error.message}</p>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -81,6 +97,7 @@ export function BenchmarkingManagement() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="all">All Industries</SelectItem>
               <SelectItem value="tech">Technology</SelectItem>
               <SelectItem value="finance">Finance</SelectItem>
               <SelectItem value="manufacturing">Manufacturing</SelectItem>
@@ -92,6 +109,7 @@ export function BenchmarkingManagement() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="all">All Regions</SelectItem>
               <SelectItem value="india">India</SelectItem>
               <SelectItem value="usa">USA</SelectItem>
               <SelectItem value="europe">Europe</SelectItem>
@@ -108,7 +126,10 @@ export function BenchmarkingManagement() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Market Position</p>
-                <p className="text-xl font-bold text-yellow-600">{stats.avgMarketPosition}</p>
+                <p className="text-xl font-bold text-yellow-600">
+                  {stats.rolesAtMarket > stats.rolesAbove && stats.rolesAtMarket > stats.rolesBelow ? 'At Market' : 
+                   stats.rolesAbove > stats.rolesBelow ? 'Above Market' : 'Below Market'}
+                </p>
               </div>
               <Target className="h-8 w-8 text-yellow-600" />
             </div>
@@ -196,35 +217,43 @@ export function BenchmarkingManagement() {
           <CardTitle>Role-wise Salary Benchmarks</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Role</TableHead>
-                <TableHead className="text-right">Internal Avg</TableHead>
-                <TableHead className="text-right">25th %ile</TableHead>
-                <TableHead className="text-right">50th %ile</TableHead>
-                <TableHead className="text-right">75th %ile</TableHead>
-                <TableHead className="text-center">Position</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {salaryBenchmarks.map((benchmark, index) => (
-                <TableRow key={index}>
-                  <TableCell className="font-medium">{benchmark.role}</TableCell>
-                  <TableCell className="text-right">{formatCurrency(benchmark.internal)}</TableCell>
-                  <TableCell className="text-right text-muted-foreground">{formatCurrency(benchmark.market_25)}</TableCell>
-                  <TableCell className="text-right font-medium">{formatCurrency(benchmark.market_50)}</TableCell>
-                  <TableCell className="text-right text-muted-foreground">{formatCurrency(benchmark.market_75)}</TableCell>
-                  <TableCell className="text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      {getStatusIcon(benchmark.status)}
-                      {getStatusBadge(benchmark.status)}
-                    </div>
-                  </TableCell>
+          {filteredBenchmarks.length === 0 ? (
+            <div className="text-center py-8">
+              <FileX className="h-12 w-12 mx-auto text-muted-foreground" />
+              <h3 className="mt-4 font-semibold">No benchmarks found</h3>
+              <p className="text-muted-foreground">Add salary benchmarks to compare with market data</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Role</TableHead>
+                  <TableHead className="text-right">Internal Avg</TableHead>
+                  <TableHead className="text-right">25th %ile</TableHead>
+                  <TableHead className="text-right">50th %ile</TableHead>
+                  <TableHead className="text-right">75th %ile</TableHead>
+                  <TableHead className="text-center">Position</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredBenchmarks.map((benchmark) => (
+                  <TableRow key={benchmark.id}>
+                    <TableCell className="font-medium">{benchmark.role}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(benchmark.internal_avg)}</TableCell>
+                    <TableCell className="text-right text-muted-foreground">{formatCurrency(benchmark.market_25)}</TableCell>
+                    <TableCell className="text-right font-medium">{formatCurrency(benchmark.market_50)}</TableCell>
+                    <TableCell className="text-right text-muted-foreground">{formatCurrency(benchmark.market_75)}</TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        {getStatusIcon(benchmark.status)}
+                        {getStatusBadge(benchmark.status)}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>

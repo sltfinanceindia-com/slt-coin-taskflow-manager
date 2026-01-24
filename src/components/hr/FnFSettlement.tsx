@@ -3,101 +3,70 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FileBox, Search, CheckCircle, Clock, AlertTriangle, DollarSign, Calendar, FileText } from "lucide-react";
+import { FileBox, Search, CheckCircle, Clock, DollarSign, Loader2, FileX, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
-import { toast } from "sonner";
-
-interface FnFRecord {
-  id: string;
-  employee_name: string;
-  employee_id: string;
-  department: string;
-  resignation_date: string;
-  last_working_day: string;
-  notice_period_days: number;
-  notice_served: number;
-  pending_salary: number;
-  leave_encashment: number;
-  gratuity: number;
-  deductions: number;
-  net_payable: number;
-  status: string;
-  clearance_progress: number;
-}
+import { useFnFSettlements } from "@/hooks/useFnFSettlements";
 
 export function FnFSettlement() {
+  const { settlements, isLoading, error, updateSettlement } = useFnFSettlements();
   const [activeTab, setActiveTab] = useState("pending");
   const [searchTerm, setSearchTerm] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const records: FnFRecord[] = [
-    {
-      id: "1",
-      employee_name: "John Doe",
-      employee_id: "EMP001",
-      department: "Engineering",
-      resignation_date: "2024-01-01",
-      last_working_day: "2024-01-31",
-      notice_period_days: 30,
-      notice_served: 30,
-      pending_salary: 85000,
-      leave_encashment: 42500,
-      gratuity: 125000,
-      deductions: 15000,
-      net_payable: 237500,
-      status: "processing",
-      clearance_progress: 75
-    },
-    {
-      id: "2",
-      employee_name: "Jane Smith",
-      employee_id: "EMP002",
-      department: "Design",
-      resignation_date: "2024-01-15",
-      last_working_day: "2024-02-14",
-      notice_period_days: 30,
-      notice_served: 20,
-      pending_salary: 65000,
-      leave_encashment: 32500,
-      gratuity: 0,
-      deductions: 32500,
-      net_payable: 65000,
-      status: "clearance_pending",
-      clearance_progress: 40
-    }
-  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed": return "bg-green-500";
       case "processing": return "bg-blue-500";
-      case "clearance_pending": return "bg-yellow-500";
-      case "on_hold": return "bg-red-500";
+      case "pending": return "bg-yellow-500";
+      case "disputed": return "bg-red-500";
       default: return "bg-gray-500";
     }
   };
 
-  const clearanceItems = [
-    { id: "1", label: "IT Asset Return", department: "IT", completed: true },
-    { id: "2", label: "ID Card Return", department: "Admin", completed: true },
-    { id: "3", label: "Access Revocation", department: "IT", completed: true },
-    { id: "4", label: "Library Books Return", department: "Admin", completed: false },
-    { id: "5", label: "Finance Clearance", department: "Finance", completed: false },
-    { id: "6", label: "Manager Sign-off", department: "HR", completed: true },
-    { id: "7", label: "Exit Interview", department: "HR", completed: false },
-    { id: "8", label: "Knowledge Transfer", department: "Department", completed: true }
-  ];
+  const getClearanceProgress = (settlement: typeof settlements[0]) => {
+    const items = [
+      settlement.clearance_hr,
+      settlement.clearance_it,
+      settlement.clearance_finance,
+      settlement.clearance_admin,
+      settlement.clearance_manager,
+    ];
+    const completed = items.filter(Boolean).length;
+    return Math.round((completed / items.length) * 100);
+  };
 
-  const filteredRecords = records.filter(r =>
-    r.employee_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.employee_id.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredSettlements = settlements.filter(s => {
+    const matchesSearch = (s.employee?.full_name || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesTab = activeTab === 'all' || s.status === activeTab;
+    return matchesSearch && matchesTab;
+  });
+
+  const pendingCount = settlements.filter(s => s.status === 'pending').length;
+  const processingCount = settlements.filter(s => s.status === 'processing').length;
+  const completedCount = settlements.filter(s => s.status === 'completed').length;
+  const totalPending = settlements.filter(s => s.status !== 'completed').reduce((sum, s) => sum + (s.net_payable || 0), 0);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="p-8 text-center border-destructive">
+        <AlertCircle className="h-12 w-12 mx-auto text-destructive" />
+        <h3 className="mt-4 font-semibold">Error loading F&F settlements</h3>
+        <p className="text-muted-foreground">{error.message}</p>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6 p-6">
@@ -116,7 +85,7 @@ export function FnFSettlement() {
             <Clock className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">5</div>
+            <div className="text-2xl font-bold">{pendingCount}</div>
             <p className="text-xs text-muted-foreground">Awaiting clearance</p>
           </CardContent>
         </Card>
@@ -126,7 +95,7 @@ export function FnFSettlement() {
             <FileBox className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3</div>
+            <div className="text-2xl font-bold">{processingCount}</div>
             <p className="text-xs text-muted-foreground">Being calculated</p>
           </CardContent>
         </Card>
@@ -136,7 +105,7 @@ export function FnFSettlement() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹4.5L</div>
+            <div className="text-2xl font-bold">₹{(totalPending / 100000).toFixed(1)}L</div>
             <p className="text-xs text-muted-foreground">Total amount</p>
           </CardContent>
         </Card>
@@ -146,7 +115,7 @@ export function FnFSettlement() {
             <CheckCircle className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12</div>
+            <div className="text-2xl font-bold">{completedCount}</div>
             <p className="text-xs text-muted-foreground">This quarter</p>
           </CardContent>
         </Card>
@@ -157,7 +126,7 @@ export function FnFSettlement() {
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by name or ID..."
+            placeholder="Search by name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -173,135 +142,153 @@ export function FnFSettlement() {
           <TabsTrigger value="completed">Completed</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="pending" className="space-y-4">
+        <TabsContent value={activeTab} className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Pending Settlements</CardTitle>
+              <CardTitle>Settlements - {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Employee</TableHead>
-                    <TableHead>Last Working Day</TableHead>
-                    <TableHead>Notice Period</TableHead>
-                    <TableHead>Clearance</TableHead>
-                    <TableHead>Estimated Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredRecords.map((record) => (
-                    <TableRow key={record.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{record.employee_name}</p>
-                          <p className="text-xs text-muted-foreground">{record.employee_id} • {record.department}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>{format(new Date(record.last_working_day), "MMM dd, yyyy")}</TableCell>
-                      <TableCell>
-                        {record.notice_served}/{record.notice_period_days} days
-                        {record.notice_served < record.notice_period_days && (
-                          <Badge variant="outline" className="ml-2 text-xs">Buyout</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="w-24">
-                          <Progress value={record.clearance_progress} className="h-2" />
-                          <p className="text-xs text-muted-foreground mt-1">{record.clearance_progress}% complete</p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-medium">₹{record.net_payable.toLocaleString()}</TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(record.status)}>
-                          {record.status.replace("_", " ")}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button variant="outline" size="sm">View Details</Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-2xl">
-                            <DialogHeader>
-                              <DialogTitle>F&F Settlement - {record.employee_name}</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-6">
-                              {/* Settlement Breakdown */}
-                              <div className="space-y-4">
-                                <h4 className="font-semibold">Settlement Breakdown</h4>
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div className="flex justify-between p-3 bg-muted rounded-lg">
-                                    <span>Pending Salary</span>
-                                    <span className="font-medium">₹{record.pending_salary.toLocaleString()}</span>
+              {filteredSettlements.length === 0 ? (
+                <div className="text-center py-8">
+                  <FileBox className="h-12 w-12 mx-auto text-muted-foreground" />
+                  <p className="mt-4 text-muted-foreground">No {activeTab} settlements found</p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Employee</TableHead>
+                      <TableHead>Last Working Day</TableHead>
+                      <TableHead>Notice Period</TableHead>
+                      <TableHead>Clearance</TableHead>
+                      <TableHead>Net Payable</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredSettlements.map((settlement) => (
+                      <TableRow key={settlement.id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">{settlement.employee?.full_name || 'Unknown'}</p>
+                            <p className="text-xs text-muted-foreground">{settlement.employee?.department}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell>{format(new Date(settlement.last_working_day), "MMM dd, yyyy")}</TableCell>
+                        <TableCell>
+                          {settlement.notice_served_days}/{settlement.notice_period_days} days
+                          {(settlement.notice_served_days || 0) < (settlement.notice_period_days || 0) && (
+                            <Badge variant="outline" className="ml-2 text-xs">Buyout</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="w-24">
+                            <Progress value={getClearanceProgress(settlement)} className="h-2" />
+                            <p className="text-xs text-muted-foreground mt-1">{getClearanceProgress(settlement)}% complete</p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-medium">₹{(settlement.net_payable || 0).toLocaleString()}</TableCell>
+                        <TableCell>
+                          <Badge className={getStatusColor(settlement.status)}>
+                            {settlement.status.replace("_", " ")}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" size="sm">View Details</Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-2xl">
+                              <DialogHeader>
+                                <DialogTitle>F&F Settlement - {settlement.employee?.full_name}</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-6">
+                                {/* Settlement Breakdown */}
+                                <div className="space-y-4">
+                                  <h4 className="font-semibold">Settlement Breakdown</h4>
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div className="flex justify-between p-3 bg-muted rounded-lg">
+                                      <span>Basic Salary</span>
+                                      <span className="font-medium">₹{(settlement.basic_salary || 0).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between p-3 bg-muted rounded-lg">
+                                      <span>Leave Encashment</span>
+                                      <span className="font-medium">₹{(settlement.leave_encashment || 0).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between p-3 bg-muted rounded-lg">
+                                      <span>Gratuity</span>
+                                      <span className="font-medium">₹{(settlement.gratuity || 0).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                                      <span>Deductions</span>
+                                      <span className="font-medium text-red-600">-₹{((settlement.notice_recovery || 0) + (settlement.loan_recovery || 0) + (settlement.other_deductions || 0)).toLocaleString()}</span>
+                                    </div>
                                   </div>
-                                  <div className="flex justify-between p-3 bg-muted rounded-lg">
-                                    <span>Leave Encashment</span>
-                                    <span className="font-medium">₹{record.leave_encashment.toLocaleString()}</span>
-                                  </div>
-                                  <div className="flex justify-between p-3 bg-muted rounded-lg">
-                                    <span>Gratuity</span>
-                                    <span className="font-medium">₹{record.gratuity.toLocaleString()}</span>
-                                  </div>
-                                  <div className="flex justify-between p-3 bg-red-50 rounded-lg">
-                                    <span>Deductions</span>
-                                    <span className="font-medium text-red-600">-₹{record.deductions.toLocaleString()}</span>
+                                  <div className="flex justify-between p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                                    <span className="font-semibold">Net Payable</span>
+                                    <span className="font-bold text-green-600 text-xl">₹{(settlement.net_payable || 0).toLocaleString()}</span>
                                   </div>
                                 </div>
-                                <div className="flex justify-between p-4 bg-green-50 rounded-lg border border-green-200">
-                                  <span className="font-semibold">Net Payable</span>
-                                  <span className="font-bold text-green-600 text-xl">₹{record.net_payable.toLocaleString()}</span>
-                                </div>
-                              </div>
 
-                              {/* Clearance Checklist */}
-                              <div className="space-y-4">
-                                <h4 className="font-semibold">Clearance Checklist</h4>
-                                <div className="grid grid-cols-2 gap-2">
-                                  {clearanceItems.map((item) => (
-                                    <div key={item.id} className="flex items-center gap-2 p-2 border rounded">
-                                      <Checkbox checked={item.completed} disabled />
+                                {/* Clearance Checklist */}
+                                <div className="space-y-4">
+                                  <h4 className="font-semibold">Clearance Checklist</h4>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div className="flex items-center gap-2 p-2 border rounded">
+                                      <Checkbox checked={settlement.clearance_hr || false} disabled />
                                       <div>
-                                        <p className="text-sm">{item.label}</p>
-                                        <p className="text-xs text-muted-foreground">{item.department}</p>
+                                        <p className="text-sm">HR Clearance</p>
                                       </div>
                                     </div>
-                                  ))}
+                                    <div className="flex items-center gap-2 p-2 border rounded">
+                                      <Checkbox checked={settlement.clearance_it || false} disabled />
+                                      <div>
+                                        <p className="text-sm">IT Clearance</p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 p-2 border rounded">
+                                      <Checkbox checked={settlement.clearance_finance || false} disabled />
+                                      <div>
+                                        <p className="text-sm">Finance Clearance</p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 p-2 border rounded">
+                                      <Checkbox checked={settlement.clearance_admin || false} disabled />
+                                      <div>
+                                        <p className="text-sm">Admin Clearance</p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 p-2 border rounded">
+                                      <Checkbox checked={settlement.clearance_manager || false} disabled />
+                                      <div>
+                                        <p className="text-sm">Manager Sign-off</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="flex gap-2">
+                                  {settlement.status !== 'completed' && (
+                                    <Button 
+                                      className="flex-1"
+                                      onClick={() => updateSettlement.mutate({ id: settlement.id, status: 'completed' })}
+                                      disabled={updateSettlement.isPending}
+                                    >
+                                      {updateSettlement.isPending ? 'Processing...' : 'Complete F&F'}
+                                    </Button>
+                                  )}
+                                  <Button variant="outline">Generate Letter</Button>
                                 </div>
                               </div>
-
-                              <div className="flex gap-2">
-                                <Button className="flex-1">Process F&F</Button>
-                                <Button variant="outline">Generate Letter</Button>
-                              </div>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="processing">
-          <Card>
-            <CardContent className="py-8 text-center">
-              <FileBox className="mx-auto h-12 w-12 text-muted-foreground" />
-              <p className="mt-4 text-muted-foreground">Settlements being processed will appear here</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="completed">
-          <Card>
-            <CardContent className="py-8 text-center">
-              <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
-              <p className="mt-4 text-muted-foreground">Completed settlements will appear here</p>
+                            </DialogContent>
+                          </Dialog>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
