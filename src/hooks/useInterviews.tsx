@@ -38,7 +38,7 @@ export function useInterviews() {
   });
 
   const createInterview = useMutation({
-    mutationFn: async (interview: Omit<Interview, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (interview: Omit<Interview, 'id' | 'created_at' | 'updated_at' | 'organization_id' | 'job_posting_id' | 'candidate_email' | 'feedback' | 'rating'> & { job_posting_id?: string | null; candidate_email?: string | null; feedback?: string | null; rating?: number | null }) => {
       const { data, error } = await supabase.from('interviews').insert({ ...interview, organization_id: profile?.organization_id }).select().single();
       if (error) throw error;
       return data;

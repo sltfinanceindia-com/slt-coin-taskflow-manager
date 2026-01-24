@@ -39,7 +39,7 @@ export function useBudgets() {
   });
 
   const createBudget = useMutation({
-    mutationFn: async (budget: Omit<BudgetAllocation, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (budget: Omit<BudgetAllocation, 'id' | 'created_at' | 'updated_at' | 'organization_id' | 'created_by' | 'notes'> & { notes?: string | null }) => {
       const { data, error } = await supabase
         .from('budget_allocations')
         .insert({ 
