@@ -6,23 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Coins, Search, Calculator, Users, Clock, CheckCircle, DollarSign } from "lucide-react";
+import { Coins, Search, Calculator, Users, Clock, CheckCircle, DollarSign, Loader2, FileX, AlertCircle } from "lucide-react";
 import { format, differenceInYears, differenceInMonths } from "date-fns";
-
-interface GratuityRecord {
-  id: string;
-  employee_name: string;
-  employee_id: string;
-  joining_date: string;
-  last_drawn_salary: number;
-  years_of_service: number;
-  months_of_service: number;
-  eligible: boolean;
-  gratuity_amount: number;
-  status: string;
-}
+import { useGratuityRecords } from "@/hooks/useGratuityRecords";
 
 export function GratuityManagement() {
+  const { records, isLoading, error } = useGratuityRecords();
   const [searchTerm, setSearchTerm] = useState("");
   const [calculatorData, setCalculatorData] = useState({
     basicSalary: "",
@@ -30,45 +19,6 @@ export function GratuityManagement() {
     monthsOfService: ""
   });
   const [calculatedGratuity, setCalculatedGratuity] = useState<number | null>(null);
-
-  const records: GratuityRecord[] = [
-    {
-      id: "1",
-      employee_name: "John Doe",
-      employee_id: "EMP001",
-      joining_date: "2018-06-15",
-      last_drawn_salary: 85000,
-      years_of_service: 5,
-      months_of_service: 7,
-      eligible: true,
-      gratuity_amount: 245192,
-      status: "eligible"
-    },
-    {
-      id: "2",
-      employee_name: "Jane Smith",
-      employee_id: "EMP002",
-      joining_date: "2021-03-01",
-      last_drawn_salary: 65000,
-      years_of_service: 2,
-      months_of_service: 10,
-      eligible: false,
-      gratuity_amount: 0,
-      status: "not_eligible"
-    },
-    {
-      id: "3",
-      employee_name: "Mike Johnson",
-      employee_id: "EMP003",
-      joining_date: "2014-01-10",
-      last_drawn_salary: 120000,
-      years_of_service: 10,
-      months_of_service: 0,
-      eligible: true,
-      gratuity_amount: 692308,
-      status: "eligible"
-    }
-  ];
 
   const calculateGratuity = () => {
     const basic = parseFloat(calculatorData.basicSalary);
@@ -90,18 +40,37 @@ export function GratuityManagement() {
     switch (status) {
       case "eligible": return "bg-green-500";
       case "not_eligible": return "bg-gray-500";
+      case "nearing_eligibility": return "bg-yellow-500";
       case "paid": return "bg-blue-500";
       default: return "bg-gray-500";
     }
   };
 
-  const eligibleCount = records.filter(r => r.eligible).length;
-  const totalProvision = records.reduce((sum, r) => sum + r.gratuity_amount, 0);
+  const eligibleCount = records.filter(r => r.status === 'eligible' || r.status === 'paid').length;
+  const nearingCount = records.filter(r => r.status === 'nearing_eligibility').length;
+  const totalProvision = records.reduce((sum, r) => sum + (r.gratuity_amount || 0), 0);
 
   const filteredRecords = records.filter(r =>
-    r.employee_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.employee_id.toLowerCase().includes(searchTerm.toLowerCase())
+    (r.employee?.full_name || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="p-8 text-center border-destructive">
+        <AlertCircle className="h-12 w-12 mx-auto text-destructive" />
+        <h3 className="mt-4 font-semibold">Error loading gratuity records</h3>
+        <p className="text-muted-foreground">{error.message}</p>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6 p-6">
@@ -154,7 +123,7 @@ export function GratuityManagement() {
               <Button onClick={calculateGratuity} className="w-full">Calculate</Button>
               
               {calculatedGratuity !== null && (
-                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
                   <p className="text-sm text-muted-foreground">Estimated Gratuity Amount</p>
                   <p className="text-2xl font-bold text-green-600">₹{calculatedGratuity.toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground mt-2">
@@ -204,7 +173,7 @@ export function GratuityManagement() {
             <Clock className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">4</div>
+            <div className="text-2xl font-bold text-yellow-600">{nearingCount}</div>
             <p className="text-xs text-muted-foreground">Within 1 year</p>
           </CardContent>
         </Card>
@@ -240,43 +209,51 @@ export function GratuityManagement() {
           <CardDescription>Gratuity eligibility and amounts for all employees</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Employee</TableHead>
-                <TableHead>Joining Date</TableHead>
-                <TableHead>Service Period</TableHead>
-                <TableHead>Last Salary</TableHead>
-                <TableHead>Gratuity Amount</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredRecords.map((record) => (
-                <TableRow key={record.id}>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{record.employee_name}</p>
-                      <p className="text-xs text-muted-foreground">{record.employee_id}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>{format(new Date(record.joining_date), "MMM dd, yyyy")}</TableCell>
-                  <TableCell>
-                    {record.years_of_service} years, {record.months_of_service} months
-                  </TableCell>
-                  <TableCell>₹{record.last_drawn_salary.toLocaleString()}</TableCell>
-                  <TableCell className="font-medium">
-                    {record.eligible ? `₹${record.gratuity_amount.toLocaleString()}` : "-"}
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(record.status)}>
-                      {record.status.replace("_", " ")}
-                    </Badge>
-                  </TableCell>
+          {filteredRecords.length === 0 ? (
+            <div className="text-center py-8">
+              <FileX className="h-12 w-12 mx-auto text-muted-foreground" />
+              <h3 className="mt-4 font-semibold">No gratuity records found</h3>
+              <p className="text-muted-foreground">Gratuity records will appear here</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Employee</TableHead>
+                  <TableHead>Joining Date</TableHead>
+                  <TableHead>Service Period</TableHead>
+                  <TableHead>Last Basic</TableHead>
+                  <TableHead>Gratuity Amount</TableHead>
+                  <TableHead>Status</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredRecords.map((record) => (
+                  <TableRow key={record.id}>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{record.employee?.full_name || 'Unknown'}</p>
+                        <p className="text-xs text-muted-foreground">{record.employee?.department}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>{format(new Date(record.joining_date), "MMM dd, yyyy")}</TableCell>
+                    <TableCell>
+                      {record.years_of_service || 0} years
+                    </TableCell>
+                    <TableCell>₹{(record.last_drawn_basic || 0).toLocaleString()}</TableCell>
+                    <TableCell className="font-medium">
+                      {record.gratuity_amount ? `₹${record.gratuity_amount.toLocaleString()}` : "-"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getStatusColor(record.status)}>
+                        {record.status.replace("_", " ")}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 

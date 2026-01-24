@@ -47,7 +47,7 @@ export function useFnFSettlements() {
   });
 
   const createSettlement = useMutation({
-    mutationFn: async (settlement: Omit<FnFSettlement, 'id' | 'created_at' | 'updated_at' | 'employee'>) => {
+    mutationFn: async (settlement: Omit<FnFSettlement, 'id' | 'created_at' | 'updated_at' | 'employee' | 'organization_id'>) => {
       const { data, error } = await supabase.from('fnf_settlements').insert({ ...settlement, organization_id: profile?.organization_id }).select().single();
       if (error) throw error;
       return data;

@@ -34,7 +34,7 @@ export function useGratuityRecords() {
   });
 
   const createRecord = useMutation({
-    mutationFn: async (record: Omit<GratuityRecord, 'id' | 'created_at' | 'updated_at' | 'employee'>) => {
+    mutationFn: async (record: Omit<GratuityRecord, 'id' | 'created_at' | 'updated_at' | 'employee' | 'organization_id'>) => {
       const { data, error } = await supabase.from('gratuity_records').insert({ ...record, organization_id: profile?.organization_id }).select().single();
       if (error) throw error;
       return data;
