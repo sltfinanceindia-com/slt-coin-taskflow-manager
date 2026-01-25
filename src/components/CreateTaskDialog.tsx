@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,13 +7,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Coins, X, AlertCircle, FolderOpen, User } from 'lucide-react';
+import { Plus, Coins, X, AlertCircle, FolderOpen, User, Search, FileText, Loader2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { validateTaskData } from '@/utils/security';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AITaskAssistant } from '@/components/tasks/AITaskAssistant';
+import { useTaskTemplates, TemplateTask } from '@/hooks/useTaskTemplates';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface CreateTaskDialogProps {
   onCreateTask: (taskData: {
@@ -33,6 +35,7 @@ interface CreateTaskDialogProps {
 export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogProps) {
   const [open, setOpen] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [employeeSearch, setEmployeeSearch] = useState('');
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -46,9 +49,10 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
   });
 
   const { profile } = useAuth();
+  const { templates, isLoading: templatesLoading, parseTemplateTasks } = useTaskTemplates();
 
   // Fetch employee profiles (including interns) from the same organization
-  const { data: employees } = useQuery({
+  const { data: employees, isLoading: employeesLoading } = useQuery({
     queryKey: ['assignable-employees', profile?.organization_id],
     queryFn: async () => {
       if (!profile?.organization_id) return [];
@@ -68,13 +72,11 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
   });
 
   // Fetch managers/admins for project owner selection
-  // Fetch admins for project owner selection (those who can be accountable)
-  const { data: projectOwners } = useQuery({
+  const { data: projectOwners, isLoading: ownersLoading } = useQuery({
     queryKey: ['project-owners', profile?.organization_id],
     queryFn: async () => {
       if (!profile?.organization_id) return [];
       
-      // Fetch all active users who could be project owners (admins + regular employees with higher responsibility)
       const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, email, avatar_url, role')
@@ -83,14 +85,13 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
         .order('full_name');
 
       if (error) throw error;
-      // Filter to only admins and org_admins for project ownership
       return data?.filter(p => ['admin', 'org_admin', 'employee'].includes(p.role)) || [];
     },
     enabled: !!profile?.organization_id,
   });
 
   // Fetch projects from the same organization
-  const { data: projects } = useQuery({
+  const { data: projects, isLoading: projectsLoading } = useQuery({
     queryKey: ['assignable-projects', profile?.organization_id],
     queryFn: async () => {
       if (!profile?.organization_id) return [];
@@ -107,6 +108,38 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
     },
     enabled: !!profile?.organization_id,
   });
+
+  // Filter employees based on search
+  const filteredEmployees = useMemo(() => {
+    if (!employees) return [];
+    if (!employeeSearch.trim()) return employees;
+    
+    const search = employeeSearch.toLowerCase();
+    return employees.filter(emp => 
+      emp.full_name?.toLowerCase().includes(search) ||
+      emp.email?.toLowerCase().includes(search)
+    );
+  }, [employees, employeeSearch]);
+
+  // Apply template
+  const handleTemplateSelect = (templateId: string) => {
+    if (templateId === 'none') return;
+    
+    const template = templates.find(t => t.id === templateId);
+    if (!template) return;
+
+    const tasks = parseTemplateTasks(template);
+    if (tasks.length > 0) {
+      const firstTask = tasks[0];
+      setFormData(prev => ({
+        ...prev,
+        title: firstTask.title || prev.title,
+        description: firstTask.description || prev.description,
+        priority: firstTask.priority || prev.priority,
+        slt_coin_value: firstTask.slt_coin_value || prev.slt_coin_value,
+      }));
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -151,6 +184,7 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
     
     setOpen(false);
     setValidationErrors([]);
+    setEmployeeSearch('');
     setFormData({
       title: '',
       description: '',
@@ -192,7 +226,7 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
           Create New Task
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] max-h-[85vh] overflow-y-auto mx-2 p-4 sm:p-6">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto mx-2 p-4 sm:p-6">
         <DialogHeader className="pb-2">
           <DialogTitle className="flex items-center space-x-2 text-base sm:text-lg">
             <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-coin-gold" />
@@ -217,6 +251,36 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
         )}
 
         <form onSubmit={handleSubmit} className="space-y-3">
+          {/* Template Selection */}
+          {templates.length > 0 && (
+            <div className="space-y-1.5">
+              <Label className="flex items-center gap-2 text-sm">
+                <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                Use Template
+              </Label>
+              <Select onValueChange={handleTemplateSelect}>
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="Select a template..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No Template</SelectItem>
+                  {templates.map((template) => (
+                    <SelectItem key={template.id} value={template.id}>
+                      <div className="flex items-center gap-2">
+                        <span>{template.name}</span>
+                        {template.category && (
+                          <Badge variant="outline" className="text-xs">
+                            {template.category}
+                          </Badge>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div className="space-y-1.5">
             <Label htmlFor="title" className="text-sm">Task Title *</Label>
             <Input
@@ -249,26 +313,68 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
             />
           </div>
 
+          {/* Employee Assignment with Search */}
           <div className="space-y-1.5">
             <Label className="text-sm">Assign to Employees *</Label>
-            <div className="border rounded-md p-2 max-h-28 overflow-y-auto space-y-1">
-              {employees?.map((employee) => (
-                <div key={employee.id} className="flex items-center gap-2 py-0.5">
-                  <Checkbox
-                    id={employee.id}
-                    checked={formData.assigned_to.includes(employee.id)}
-                    onCheckedChange={() => handleEmployeeToggle(employee.id)}
-                    className="h-4 w-4"
-                  />
-                  <Label htmlFor={employee.id} className="flex-1 cursor-pointer text-sm">
-                    {employee.full_name}
-                  </Label>
-                </div>
-              ))}
-              {(!employees || employees.length === 0) && (
-                <p className="text-xs text-muted-foreground py-1">No employees available</p>
-              )}
+            
+            {/* Selected Employees */}
+            {formData.assigned_to.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {formData.assigned_to.map((id) => (
+                  <Badge key={id} variant="secondary" className="gap-1 pr-1">
+                    {getEmployeeName(id)}
+                    <button
+                      type="button"
+                      onClick={() => removeEmployee(id)}
+                      className="ml-1 hover:bg-muted-foreground/20 rounded-full p-0.5"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search employees..."
+                value={employeeSearch}
+                onChange={(e) => setEmployeeSearch(e.target.value)}
+                className="h-8 pl-8 text-sm"
+              />
             </div>
+
+            {/* Employee List */}
+            <ScrollArea className="border rounded-md h-32">
+              {employeesLoading ? (
+                <div className="flex items-center justify-center h-full">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                </div>
+              ) : filteredEmployees.length > 0 ? (
+                <div className="p-2 space-y-1">
+                  {filteredEmployees.map((employee) => (
+                    <div key={employee.id} className="flex items-center gap-2 py-1 px-1 hover:bg-muted/50 rounded">
+                      <Checkbox
+                        id={employee.id}
+                        checked={formData.assigned_to.includes(employee.id)}
+                        onCheckedChange={() => handleEmployeeToggle(employee.id)}
+                        className="h-4 w-4"
+                      />
+                      <Label htmlFor={employee.id} className="flex-1 cursor-pointer text-sm">
+                        <span>{employee.full_name}</span>
+                        <span className="text-xs text-muted-foreground ml-2">{employee.email}</span>
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
+                  {employeeSearch ? 'No employees found' : 'No employees available'}
+                </div>
+              )}
+            </ScrollArea>
           </div>
 
           <div className="space-y-1.5">
@@ -302,7 +408,11 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
               onValueChange={(value) => setFormData({ ...formData, project_id: value === 'none' ? '' : value })}
             >
               <SelectTrigger className="h-9">
-                <SelectValue placeholder="Select project" />
+                {projectsLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <SelectValue placeholder="Select project" />
+                )}
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">No Project</SelectItem>
@@ -326,7 +436,11 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
               onValueChange={(value) => setFormData({ ...formData, project_owner_id: value === 'none' ? '' : value })}
             >
               <SelectTrigger className="h-9">
-                <SelectValue placeholder="Select project owner" />
+                {ownersLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <SelectValue placeholder="Select project owner" />
+                )}
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">No Owner</SelectItem>
@@ -397,7 +511,14 @@ export function CreateTaskDialog({ onCreateTask, isCreating }: CreateTaskDialogP
               Cancel
             </Button>
             <Button type="submit" disabled={isCreating} size="sm">
-              {isCreating ? "Creating..." : "Create Task"}
+              {isCreating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create Task"
+              )}
             </Button>
           </div>
         </form>
