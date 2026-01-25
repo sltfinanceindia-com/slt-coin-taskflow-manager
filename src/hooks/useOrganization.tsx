@@ -1,6 +1,20 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth, Profile } from './useAuth';
+export interface EnabledFeatures {
+  training?: boolean;
+  leave_management?: boolean;
+  attendance?: boolean;
+  projects?: boolean;
+  communication?: boolean;
+  assessments?: boolean;
+  coin_rewards?: boolean;
+  hr_management?: boolean;
+  finance?: boolean;
+  work_management?: boolean;
+  performance?: boolean;
+}
+
 export interface Organization {
   id: string;
   name: string;
@@ -23,6 +37,7 @@ export interface Organization {
   coin_name: string | null;
   coin_rate: number | null;
   two_fa_policy: string | null;
+  enabled_features?: EnabledFeatures | null;
   subscription_plan?: {
     name: string;
     code: string;
