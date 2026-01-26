@@ -8,41 +8,88 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
-import { MessageCircle, Plus, Search, AlertTriangle, Clock, CheckCircle, Eye, Lock, Loader2, FileX } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { MessageCircle, Plus, Search, AlertTriangle, Clock, CheckCircle, Eye, Lock, Loader2, FileX, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useGrievances, Grievance } from '@/hooks/useGrievances';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+
+const defaultFormData = {
+  category: '',
+  subject: '',
+  description: '',
+  priority: 'medium' as Grievance['priority'],
+  is_anonymous: false,
+  status: 'open' as Grievance['status'],
+  assigned_to: '',
+};
 
 export function GrievanceManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    category: '',
-    subject: '',
-    description: '',
-    priority: 'medium' as Grievance['priority'],
-    is_anonymous: false,
+  const [editingGrievance, setEditingGrievance] = useState<Grievance | null>(null);
+  const [formData, setFormData] = useState(defaultFormData);
+
+  const { grievances, isLoading, error, createGrievance, updateGrievance, deleteGrievance } = useGrievances();
+
+  const { data: employees = [] } = useQuery({
+    queryKey: ['employees-for-grievances'],
+    queryFn: async () => {
+      const { data } = await supabase.from('profiles').select('id, full_name, email').order('full_name');
+      return data || [];
+    }
   });
 
-  const { grievances, isLoading, error, createGrievance, updateGrievance } = useGrievances();
+  const handleEdit = (grievance: Grievance) => {
+    setEditingGrievance(grievance);
+    setFormData({
+      category: grievance.category,
+      subject: grievance.subject,
+      description: grievance.description || '',
+      priority: grievance.priority,
+      is_anonymous: grievance.is_anonymous || false,
+      status: grievance.status,
+      assigned_to: grievance.assigned_to || '',
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm('Are you sure you want to delete this grievance?')) {
+      deleteGrievance.mutate(id);
+    }
+  };
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+    setEditingGrievance(null);
+    setFormData(defaultFormData);
+  };
 
   const handleSubmit = () => {
-    createGrievance.mutate({
+    const grievanceData = {
       category: formData.category,
       subject: formData.subject,
       description: formData.description || null,
       priority: formData.priority,
       is_anonymous: formData.is_anonymous,
-      status: 'open',
+      status: formData.status,
       ticket_id: '',
       employee_id: formData.is_anonymous ? null : null,
-      assigned_to: null,
+      assigned_to: formData.assigned_to || null,
       resolution_date: null,
       resolution_notes: null,
       organization_id: null,
-    });
-    setIsDialogOpen(false);
-    setFormData({ category: '', subject: '', description: '', priority: 'medium', is_anonymous: false });
+    };
+
+    if (editingGrievance) {
+      updateGrievance.mutate({ id: editingGrievance.id, ...grievanceData });
+    } else {
+      createGrievance.mutate(grievanceData);
+    }
+    handleCloseDialog();
   };
 
   const filteredGrievances = grievances.filter(g => {
@@ -66,10 +113,10 @@ export function GrievanceManagement() {
 
   const getPriorityBadge = (priority: Grievance['priority']) => {
     const colors: Record<Grievance['priority'], string> = {
-      low: 'bg-gray-100 text-gray-800',
-      medium: 'bg-yellow-100 text-yellow-800',
-      high: 'bg-orange-100 text-orange-800',
-      critical: 'bg-red-100 text-red-800',
+      low: 'bg-muted text-muted-foreground',
+      medium: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+      high: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+      critical: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
     };
     return <span className={`px-2 py-1 rounded-full text-xs font-medium ${colors[priority]}`}>{priority.toUpperCase()}</span>;
   };
@@ -106,16 +153,16 @@ export function GrievanceManagement() {
           <h2 className="text-2xl font-bold">Grievance Management</h2>
           <p className="text-muted-foreground">Employee grievance portal for complaints and resolutions</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={(open) => { if (!open) handleCloseDialog(); else setIsDialogOpen(true); }}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
               Log Grievance
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Submit Grievance</DialogTitle>
+              <DialogTitle>{editingGrievance ? 'Edit Grievance' : 'Submit Grievance'}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-4">
               <div className="space-y-2">
@@ -152,12 +199,45 @@ export function GrievanceManagement() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex items-center gap-2">
-                <input type="checkbox" id="anonymous" className="rounded" checked={formData.is_anonymous} onChange={(e) => setFormData({...formData, is_anonymous: e.target.checked})} />
-                <label htmlFor="anonymous" className="text-sm">Submit anonymously</label>
-              </div>
-              <Button className="w-full" onClick={handleSubmit} disabled={createGrievance.isPending || !formData.category || !formData.subject}>
-                {createGrievance.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Submitting...</> : 'Submit Grievance'}
+              {editingGrievance && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Status</Label>
+                    <Select value={formData.status} onValueChange={(v: Grievance['status']) => setFormData({...formData, status: v})}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="open">Open</SelectItem>
+                        <SelectItem value="under_investigation">Under Investigation</SelectItem>
+                        <SelectItem value="resolved">Resolved</SelectItem>
+                        <SelectItem value="closed">Closed</SelectItem>
+                        <SelectItem value="escalated">Escalated</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Assigned To</Label>
+                    <Select value={formData.assigned_to} onValueChange={(v) => setFormData({...formData, assigned_to: v})}>
+                      <SelectTrigger><SelectValue placeholder="Select assignee" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">Unassigned</SelectItem>
+                        {employees.map((emp: any) => (
+                          <SelectItem key={emp.id} value={emp.id}>{emp.full_name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
+              {!editingGrievance && (
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" id="anonymous" className="rounded" checked={formData.is_anonymous} onChange={(e) => setFormData({...formData, is_anonymous: e.target.checked})} />
+                  <label htmlFor="anonymous" className="text-sm">Submit anonymously</label>
+                </div>
+              )}
+              <Button className="w-full" onClick={handleSubmit} disabled={createGrievance.isPending || updateGrievance.isPending || !formData.category || !formData.subject}>
+                {(createGrievance.isPending || updateGrievance.isPending) ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
+                ) : editingGrievance ? 'Update Grievance' : 'Submit Grievance'}
               </Button>
             </div>
           </DialogContent>
@@ -171,9 +251,9 @@ export function GrievanceManagement() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Open</p>
-                <p className="text-2xl font-bold text-red-600">{stats.open}</p>
+                <p className="text-2xl font-bold text-destructive">{stats.open}</p>
               </div>
-              <AlertTriangle className="h-8 w-8 text-red-600" />
+              <AlertTriangle className="h-8 w-8 text-destructive" />
             </div>
           </CardContent>
         </Card>
@@ -275,7 +355,21 @@ export function GrievanceManagement() {
                     <TableCell>{grievance.assignee?.full_name || '-'}</TableCell>
                     <TableCell>{getStatusBadge(grievance.status)}</TableCell>
                     <TableCell>
-                      <Button size="sm" variant="ghost"><Eye className="h-4 w-4" /></Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button size="sm" variant="ghost">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleEdit(grievance)}>
+                            <Edit className="h-4 w-4 mr-2" /> Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(grievance.id)}>
+                            <Trash2 className="h-4 w-4 mr-2" /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}

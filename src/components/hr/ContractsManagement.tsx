@@ -7,26 +7,31 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { FileText, Plus, Search, Download, Send, Clock, CheckCircle, AlertCircle, Loader2, FileX } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { FileText, Plus, Search, Download, Send, Clock, CheckCircle, AlertCircle, Loader2, FileX, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { useContracts, EmployeeContract } from '@/hooks/useContracts';
 
+const defaultFormData = {
+  employee_id: '',
+  contract_type: 'permanent' as EmployeeContract['contract_type'],
+  start_date: '',
+  end_date: '',
+  salary: '',
+  terms: '',
+  status: 'draft' as EmployeeContract['status'],
+};
+
 export function ContractsManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    employee_id: '',
-    contract_type: 'permanent' as EmployeeContract['contract_type'],
-    start_date: '',
-    end_date: '',
-    salary: '',
-    terms: '',
-  });
+  const [editingContract, setEditingContract] = useState<EmployeeContract | null>(null);
+  const [formData, setFormData] = useState(defaultFormData);
 
-  const { contracts, isLoading, error, createContract } = useContracts();
+  const { contracts, isLoading, error, createContract, updateContract, deleteContract } = useContracts();
 
   const { data: employees = [] } = useQuery({
     queryKey: ['employees-for-contracts'],
@@ -36,21 +41,52 @@ export function ContractsManagement() {
     }
   });
 
+  const handleEdit = (contract: EmployeeContract) => {
+    setEditingContract(contract);
+    setFormData({
+      employee_id: contract.employee_id || '',
+      contract_type: contract.contract_type,
+      start_date: contract.start_date,
+      end_date: contract.end_date || '',
+      salary: contract.salary?.toString() || '',
+      terms: contract.terms || '',
+      status: contract.status,
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm('Are you sure you want to delete this contract?')) {
+      deleteContract.mutate(id);
+    }
+  };
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+    setEditingContract(null);
+    setFormData(defaultFormData);
+  };
+
   const handleSubmit = () => {
-    createContract.mutate({
+    const contractData = {
       employee_id: formData.employee_id || null,
       contract_type: formData.contract_type,
       start_date: formData.start_date,
       end_date: formData.end_date || null,
       salary: formData.salary ? Number(formData.salary) : null,
       terms: formData.terms || null,
-      status: 'draft',
+      status: formData.status,
       document_url: null,
       created_by: null,
       organization_id: null,
-    });
-    setIsDialogOpen(false);
-    setFormData({ employee_id: '', contract_type: 'permanent', start_date: '', end_date: '', salary: '', terms: '' });
+    };
+
+    if (editingContract) {
+      updateContract.mutate({ id: editingContract.id, ...contractData });
+    } else {
+      createContract.mutate(contractData);
+    }
+    handleCloseDialog();
   };
 
   const filteredContracts = contracts.filter(contract => {
@@ -111,16 +147,16 @@ export function ContractsManagement() {
           <h2 className="text-2xl font-bold">Employee Contracts</h2>
           <p className="text-muted-foreground">Manage offer letters, employment contracts, and agreements</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={(open) => { if (!open) handleCloseDialog(); else setIsDialogOpen(true); }}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
               New Contract
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Create New Contract</DialogTitle>
+              <DialogTitle>{editingContract ? 'Edit Contract' : 'Create New Contract'}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-4">
               <div className="space-y-2">
@@ -147,6 +183,22 @@ export function ContractsManagement() {
                   </SelectContent>
                 </Select>
               </div>
+              {editingContract && (
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <Select value={formData.status} onValueChange={(v: EmployeeContract['status']) => setFormData({...formData, status: v})}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">Draft</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="signed">Signed</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="expired">Expired</SelectItem>
+                      <SelectItem value="terminated">Terminated</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Start Date</Label>
@@ -161,8 +213,10 @@ export function ContractsManagement() {
                 <Label>Salary</Label>
                 <Input type="number" value={formData.salary} onChange={(e) => setFormData({...formData, salary: e.target.value})} placeholder="Annual salary" />
               </div>
-              <Button className="w-full" onClick={handleSubmit} disabled={createContract.isPending || !formData.employee_id || !formData.start_date}>
-                {createContract.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating...</> : 'Create Contract'}
+              <Button className="w-full" onClick={handleSubmit} disabled={createContract.isPending || updateContract.isPending || !formData.employee_id || !formData.start_date}>
+                {(createContract.isPending || updateContract.isPending) ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
+                ) : editingContract ? 'Update Contract' : 'Create Contract'}
               </Button>
             </div>
           </DialogContent>
@@ -209,9 +263,9 @@ export function ContractsManagement() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Expiring Soon</p>
-                <p className="text-2xl font-bold text-red-600">{stats.expiring}</p>
+                <p className="text-2xl font-bold text-destructive">{stats.expiring}</p>
               </div>
-              <AlertCircle className="h-8 w-8 text-red-600" />
+              <AlertCircle className="h-8 w-8 text-destructive" />
             </div>
           </CardContent>
         </Card>
@@ -277,10 +331,27 @@ export function ContractsManagement() {
                     <TableCell>{contract.salary ? `₹${contract.salary.toLocaleString()}` : 'N/A'}</TableCell>
                     <TableCell>{getStatusBadge(contract.status)}</TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="ghost"><Download className="h-4 w-4" /></Button>
-                        <Button size="sm" variant="ghost"><Send className="h-4 w-4" /></Button>
-                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button size="sm" variant="ghost">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleEdit(contract)}>
+                            <Edit className="h-4 w-4 mr-2" /> Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Download className="h-4 w-4 mr-2" /> Download
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Send className="h-4 w-4 mr-2" /> Send for Signing
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(contract.id)}>
+                            <Trash2 className="h-4 w-4 mr-2" /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}
