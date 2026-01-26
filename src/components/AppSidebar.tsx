@@ -285,8 +285,55 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
   const { organization } = useOrganization()
   const navigate = useNavigate()
   
+  // Get enabled features from organization
+  const enabledFeatures = organization?.enabled_features || {};
+  
+  // Feature to navigation item mapping
+  const featureNavMapping: Record<string, string[]> = {
+    training: ['training', 'tutorial'],
+    leave_management: ['leave', 'wfh', 'holidays', 'comp-off'],
+    attendance: ['attendance', 'shifts', 'shift-swap', 'on-call'],
+    projects: ['projects', 'tasks', 'sprints', 'backlog', 'milestones', 'dependencies', 'risks', 'issues', 'gantt', 'project-templates', 'task-templates', 'recurring-tasks'],
+    communication: ['communication', 'kudos', 'pulse-surveys', 'app-feedback'],
+    assessments: ['assessments'],
+    coin_rewards: ['coins', 'my-coins'],
+    hr_management: ['onboarding', 'exit', 'contracts', 'verification', 'probation', 'confirmations', 'handbook', 'grievances', 'disciplinary', 'hr-analytics', 'succession', 'career-paths', 'job-postings', 'recruitment', 'interviews', 'offers'],
+    finance: ['payroll', 'expenses', 'expense-categories', 'loans', 'tax-management', 'salary-structure', 'salary-revisions', 'bonus', 'reimbursements', 'compliance', 'form16', 'investments', 'benefits', 'fnf', 'gratuity', 'budget-planning', 'cost-centers'],
+    work_management: ['time', 'timesheets', 'capacity', 'resources', 'workload', 'overtime', 'remote-policies', 'meeting-notes', 'decisions', 'lessons', 'work-calendars'],
+    performance: ['okrs', 'feedback', 'meetings', 'pips', 'my-goals'],
+  };
+  
+  // Filter navigation items based on enabled features
+  const filterNavItems = (items: { title: string; url: string; icon: any }[]) => {
+    return items.filter(item => {
+      // Always show Main group items (overview, updates, etc.)
+      const alwaysShow = ['overview', 'updates', 'requests', 'interns', 'analytics', 'roles', 'org-chart', 'templates', 'approvals', 'work-health', 'automation', 'audit', 'lifecycle', 'reports', 'baselines', 'changes', 'scoring', 'documents', 'assets', 'benchmarking', 'self-service'];
+      if (alwaysShow.includes(item.url)) return true;
+      
+      // Check if this item's feature is enabled
+      for (const [feature, urls] of Object.entries(featureNavMapping)) {
+        if (urls.includes(item.url)) {
+          // Feature key in enabled_features
+          const featureKey = feature as keyof typeof enabledFeatures;
+          // Default to true if feature not explicitly set
+          return enabledFeatures[featureKey] !== false;
+        }
+      }
+      
+      // Show by default if not mapped
+      return true;
+    });
+  };
+  
   // isAdmin includes org_admin and admin with same privileges
-  const navGroups = isAdmin ? adminNavGroups : internNavGroups
+  const baseNavGroups = isAdmin ? adminNavGroups : internNavGroups;
+  
+  // Apply feature filtering to nav groups
+  const navGroups = baseNavGroups.map(group => ({
+    ...group,
+    items: filterNavItems(group.items)
+  })).filter(group => group.items.length > 0);
+  
   const collapsed = state === "collapsed"
 
   // standaloneRoutes imported from @/config/navigation

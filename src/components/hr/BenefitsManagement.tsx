@@ -3,35 +3,39 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { HeartPulse, Shield, Users, FileText, Plus, CheckCircle, DollarSign, Loader2, FileX } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { HeartPulse, Shield, Users, FileText, Plus, CheckCircle, DollarSign, Loader2, FileX, MoreVertical, Edit, Trash2, Search } from "lucide-react";
 import { format } from "date-fns";
 import { useBenefits, EmployeeBenefit } from "@/hooks/useBenefits";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+const defaultFormData = {
+  employee_id: "",
+  name: "",
+  type: "health" as EmployeeBenefit['type'],
+  provider: "",
+  coverage_amount: "",
+  premium: "",
+  employer_contribution: "",
+  employee_contribution: "",
+  valid_from: "",
+  valid_until: "",
+  dependents_count: "0",
+};
+
 export function BenefitsManagement() {
   const [activeTab, setActiveTab] = useState("overview");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    employee_id: "",
-    name: "",
-    type: "health" as EmployeeBenefit['type'],
-    provider: "",
-    coverage_amount: "",
-    premium: "",
-    employer_contribution: "",
-    employee_contribution: "",
-    valid_from: "",
-    valid_until: "",
-    dependents_count: "0",
-  });
+  const [editingBenefit, setEditingBenefit] = useState<EmployeeBenefit | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [formData, setFormData] = useState(defaultFormData);
 
-  const { benefits, isLoading, error, createBenefit } = useBenefits();
+  const { benefits, isLoading, error, createBenefit, updateBenefit, deleteBenefit } = useBenefits();
 
   const { data: employees = [] } = useQuery({
     queryKey: ['employees-for-benefits'],
@@ -41,8 +45,32 @@ export function BenefitsManagement() {
     }
   });
 
+  const handleEdit = (benefit: EmployeeBenefit) => {
+    setEditingBenefit(benefit);
+    setFormData({
+      employee_id: benefit.employee_id || "",
+      name: benefit.name,
+      type: benefit.type,
+      provider: benefit.provider || "",
+      coverage_amount: benefit.coverage_amount?.toString() || "",
+      premium: benefit.premium?.toString() || "",
+      employer_contribution: benefit.employer_contribution?.toString() || "",
+      employee_contribution: benefit.employee_contribution?.toString() || "",
+      valid_from: benefit.valid_from || "",
+      valid_until: benefit.valid_until || "",
+      dependents_count: benefit.dependents_count?.toString() || "0",
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm('Are you sure you want to delete this benefit?')) {
+      deleteBenefit.mutate(id);
+    }
+  };
+
   const handleSubmit = () => {
-    createBenefit.mutate({
+    const benefitData = {
       employee_id: formData.employee_id || null,
       name: formData.name,
       type: formData.type,
@@ -54,15 +82,22 @@ export function BenefitsManagement() {
       valid_from: formData.valid_from || null,
       valid_until: formData.valid_until || null,
       dependents_count: formData.dependents_count ? Number(formData.dependents_count) : null,
-      status: 'active',
+      status: 'active' as const,
       organization_id: null,
-    });
+    };
+
+    if (editingBenefit) {
+      updateBenefit.mutate({ id: editingBenefit.id, ...benefitData });
+    } else {
+      createBenefit.mutate(benefitData);
+    }
+    handleCloseDialog();
+  };
+
+  const handleCloseDialog = () => {
     setIsDialogOpen(false);
-    setFormData({
-      employee_id: "", name: "", type: "health", provider: "", coverage_amount: "",
-      premium: "", employer_contribution: "", employee_contribution: "",
-      valid_from: "", valid_until: "", dependents_count: "0",
-    });
+    setEditingBenefit(null);
+    setFormData(defaultFormData);
   };
 
   const getTypeIcon = (type: string) => {
@@ -98,6 +133,12 @@ export function BenefitsManagement() {
   const totalEmployeeContribution = activeBenefits.reduce((sum, b) => sum + (b.employee_contribution || 0), 0);
   const totalDependents = activeBenefits.reduce((sum, b) => sum + (b.dependents_count || 0), 0);
 
+  const filteredBenefits = benefits.filter(b => 
+    b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    b.provider?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    b.employee?.full_name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
@@ -105,16 +146,16 @@ export function BenefitsManagement() {
           <h1 className="text-3xl font-bold">Employee Benefits</h1>
           <p className="text-muted-foreground">Track insurance, health benefits, and other perks</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={(open) => { if (!open) handleCloseDialog(); else setIsDialogOpen(true); }}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
               Add Benefit
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Add New Benefit</DialogTitle>
+              <DialogTitle>{editingBenefit ? 'Edit Benefit' : 'Add New Benefit'}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-4">
               <div className="space-y-2">
@@ -183,8 +224,14 @@ export function BenefitsManagement() {
                   <Input type="date" value={formData.valid_until} onChange={(e) => setFormData({...formData, valid_until: e.target.value})} />
                 </div>
               </div>
-              <Button className="w-full" onClick={handleSubmit} disabled={createBenefit.isPending || !formData.name}>
-                {createBenefit.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Adding...</> : 'Add Benefit'}
+              <div className="space-y-2">
+                <Label>Dependents Count</Label>
+                <Input type="number" value={formData.dependents_count} onChange={(e) => setFormData({...formData, dependents_count: e.target.value})} placeholder="0" />
+              </div>
+              <Button className="w-full" onClick={handleSubmit} disabled={createBenefit.isPending || updateBenefit.isPending || !formData.name}>
+                {(createBenefit.isPending || updateBenefit.isPending) ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
+                ) : editingBenefit ? 'Update Benefit' : 'Add Benefit'}
               </Button>
             </div>
           </DialogContent>
@@ -235,6 +282,17 @@ export function BenefitsManagement() {
         </Card>
       </div>
 
+      {/* Search */}
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input 
+          placeholder="Search benefits..." 
+          value={searchTerm} 
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10"
+        />
+      </div>
+
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="overview">All Benefits</TabsTrigger>
@@ -243,7 +301,7 @@ export function BenefitsManagement() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          {benefits.length === 0 ? (
+          {filteredBenefits.length === 0 ? (
             <Card className="p-8 text-center">
               <FileX className="h-12 w-12 mx-auto text-muted-foreground" />
               <h3 className="mt-4 font-semibold">No benefits found</h3>
@@ -254,8 +312,8 @@ export function BenefitsManagement() {
             </Card>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
-              {benefits.map((benefit) => (
-                <Card key={benefit.id}>
+              {filteredBenefits.map((benefit) => (
+                <Card key={benefit.id} className="group">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -265,9 +323,26 @@ export function BenefitsManagement() {
                           <CardDescription>{benefit.provider || 'No provider'}</CardDescription>
                         </div>
                       </div>
-                      <Badge variant={benefit.status === 'active' ? 'default' : 'secondary'}>
-                        {benefit.status.charAt(0).toUpperCase() + benefit.status.slice(1)}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={benefit.status === 'active' ? 'default' : 'secondary'}>
+                          {benefit.status.charAt(0).toUpperCase() + benefit.status.slice(1)}
+                        </Badge>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEdit(benefit)}>
+                              <Edit className="h-4 w-4 mr-2" /> Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(benefit.id)}>
+                              <Trash2 className="h-4 w-4 mr-2" /> Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
