@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useAutoUpdate } from '@/hooks/useAutoUpdate';
 import { toast } from '@/hooks/use-toast';
 
 export interface TimeLog {
@@ -25,6 +26,7 @@ export interface TimeLog {
 export function useTimeLogs(userId?: string, dateRange?: { start: string; end: string }) {
   const { profile } = useAuth();
   const queryClient = useQueryClient();
+  const { logTimeLogged } = useAutoUpdate();
 
   const timeLogsQuery = useQuery({
     queryKey: ['time-logs', profile?.organization_id, userId, dateRange?.start, dateRange?.end],
@@ -43,12 +45,10 @@ export function useTimeLogs(userId?: string, dateRange?: { start: string; end: s
         .eq('organization_id', profile.organization_id)
         .order('date_logged', { ascending: false });
 
-      // If a specific userId is provided, filter by that user
       if (userId) {
         query = query.eq('user_id', userId);
       }
 
-      // Apply date range filter if provided
       if (dateRange?.start) {
         query = query.gte('date_logged', dateRange.start);
       }
@@ -78,18 +78,26 @@ export function useTimeLogs(userId?: string, dateRange?: { start: string; end: s
           user_id: profile?.id,
           organization_id: profile?.organization_id,
         }])
-        .select()
+        .select(`
+          *,
+          task:tasks(id, title)
+        `)
         .single();
 
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: async (data) => {
       queryClient.invalidateQueries({ queryKey: ['time-logs'] });
       toast({
         title: "Time Logged",
         description: "Your working hours have been successfully logged.",
       });
+      
+      // Log to activity feed
+      if (data.task?.title) {
+        await logTimeLogged(data.task.title, data.task_id, data.hours_worked);
+      }
     },
     onError: (error) => {
       toast({
@@ -100,7 +108,60 @@ export function useTimeLogs(userId?: string, dateRange?: { start: string; end: s
     },
   });
 
-  const getWeeklyHours = (userId?: string) => {
+  const updateTimeMutation = useMutation({
+    mutationFn: async ({ id, ...updates }: Partial<TimeLog> & { id: string }) => {
+      const { data, error } = await supabase
+        .from('time_logs')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['time-logs'] });
+      toast({
+        title: "Time Log Updated",
+        description: "Your time entry has been updated.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error Updating Time Log",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteTimeMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('time_logs')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['time-logs'] });
+      toast({
+        title: "Time Log Deleted",
+        description: "The time entry has been removed.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error Deleting Time Log",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const getWeeklyHours = (targetUserId?: string) => {
     const logs = timeLogsQuery.data || [];
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
@@ -108,13 +169,13 @@ export function useTimeLogs(userId?: string, dateRange?: { start: string; end: s
     return logs
       .filter(log => {
         const logDate = new Date(log.date_logged);
-        const userMatch = userId ? log.user_id === userId : log.user_id === profile?.id;
+        const userMatch = targetUserId ? log.user_id === targetUserId : log.user_id === profile?.id;
         return userMatch && logDate >= oneWeekAgo;
       })
       .reduce((total, log) => total + log.hours_worked, 0);
   };
 
-  const getMonthlyHours = (userId?: string) => {
+  const getMonthlyHours = (targetUserId?: string) => {
     const logs = timeLogsQuery.data || [];
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
@@ -122,10 +183,15 @@ export function useTimeLogs(userId?: string, dateRange?: { start: string; end: s
     return logs
       .filter(log => {
         const logDate = new Date(log.date_logged);
-        const userMatch = userId ? log.user_id === userId : log.user_id === profile?.id;
+        const userMatch = targetUserId ? log.user_id === targetUserId : log.user_id === profile?.id;
         return userMatch && logDate >= oneMonthAgo;
       })
       .reduce((total, log) => total + log.hours_worked, 0);
+  };
+
+  const getTotalHours = () => {
+    const logs = timeLogsQuery.data || [];
+    return logs.reduce((total, log) => total + log.hours_worked, 0);
   };
 
   return {
@@ -133,8 +199,14 @@ export function useTimeLogs(userId?: string, dateRange?: { start: string; end: s
     isLoading: timeLogsQuery.isLoading,
     error: timeLogsQuery.error,
     logTime: logTimeMutation.mutate,
+    updateTimeLog: updateTimeMutation.mutate,
+    deleteTimeLog: deleteTimeMutation.mutate,
     isLogging: logTimeMutation.isPending,
+    isUpdating: updateTimeMutation.isPending,
+    isDeleting: deleteTimeMutation.isPending,
     getWeeklyHours,
     getMonthlyHours,
+    getTotalHours,
+    refetch: timeLogsQuery.refetch,
   };
 }
