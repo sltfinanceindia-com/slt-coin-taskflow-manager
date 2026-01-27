@@ -4779,6 +4779,96 @@ export type Database = {
           },
         ]
       }
+      issues: {
+        Row: {
+          assignee_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          issue_type: string
+          organization_id: string | null
+          priority: string
+          project_id: string | null
+          reporter_id: string | null
+          resolution: string | null
+          resolved_at: string | null
+          status: string
+          task_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assignee_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          issue_type?: string
+          organization_id?: string | null
+          priority?: string
+          project_id?: string | null
+          reporter_id?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          status?: string
+          task_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assignee_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          issue_type?: string
+          organization_id?: string | null
+          priority?: string
+          project_id?: string | null
+          reporter_id?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          status?: string
+          task_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issues_assignee_id_fkey"
+            columns: ["assignee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "issues_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "issues_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "issues_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "issues_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_postings: {
         Row: {
           applications_count: number | null
@@ -6257,6 +6347,73 @@ export type Database = {
             columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      milestones: {
+        Row: {
+          completion_percentage: number | null
+          created_at: string
+          created_by: string | null
+          deliverables: string[] | null
+          description: string | null
+          due_date: string
+          id: string
+          name: string
+          organization_id: string | null
+          project_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          completion_percentage?: number | null
+          created_at?: string
+          created_by?: string | null
+          deliverables?: string[] | null
+          description?: string | null
+          due_date: string
+          id?: string
+          name: string
+          organization_id?: string | null
+          project_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          completion_percentage?: number | null
+          created_at?: string
+          created_by?: string | null
+          deliverables?: string[] | null
+          description?: string | null
+          due_date?: string
+          id?: string
+          name?: string
+          organization_id?: string | null
+          project_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestones_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestones_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestones_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
@@ -8129,6 +8286,93 @@ export type Database = {
           },
         ]
       }
+      project_issues: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          description: string | null
+          id: string
+          organization_id: string | null
+          project_id: string | null
+          reported_by: string | null
+          resolution: string | null
+          resolved_at: string | null
+          severity: string
+          status: string
+          task_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          organization_id?: string | null
+          project_id?: string | null
+          reported_by?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          task_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          organization_id?: string | null
+          project_id?: string | null
+          reported_by?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          task_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_issues_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_issues_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_issues_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_issues_reported_by_fkey"
+            columns: ["reported_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_issues_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_milestones: {
         Row: {
           completed_at: string | null
@@ -8196,6 +8440,89 @@ export type Database = {
           },
           {
             foreignKeyName: "project_milestones_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_risks: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          identified_date: string | null
+          impact: string
+          mitigation_plan: string | null
+          organization_id: string | null
+          owner_id: string | null
+          probability: string
+          project_id: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          identified_date?: string | null
+          impact?: string
+          mitigation_plan?: string | null
+          organization_id?: string | null
+          owner_id?: string | null
+          probability?: string
+          project_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          identified_date?: string | null
+          impact?: string
+          mitigation_plan?: string | null
+          organization_id?: string | null
+          owner_id?: string | null
+          probability?: string
+          project_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_risks_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_risks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_risks_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_risks_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"

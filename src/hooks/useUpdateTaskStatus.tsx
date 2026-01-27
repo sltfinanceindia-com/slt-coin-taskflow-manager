@@ -1,21 +1,25 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useEmailNotifications } from '@/hooks/useEmailNotifications';
+import { useAutoUpdate } from '@/hooks/useAutoUpdate';
 import { toast } from '@/hooks/use-toast';
 import { Task } from '@/types/task';
 
 export function useUpdateTaskStatus() {
   const queryClient = useQueryClient();
   const emailNotifications = useEmailNotifications();
+  const { logTaskStatusChange, logTaskCompleted, logTaskVerified } = useAutoUpdate();
 
   const updateTaskStatusMutation = useMutation({
     mutationFn: async ({ 
       taskId, 
-      status, 
+      status,
+      previousStatus,
       submissionNotes 
     }: { 
       taskId: string; 
       status: 'assigned' | 'in_progress' | 'completed' | 'verified' | 'rejected';
+      previousStatus?: string;
       submissionNotes?: string;
     }) => {
       const updateData: any = { status };
@@ -33,24 +37,26 @@ export function useUpdateTaskStatus() {
       if (!data || data.length === 0) {
         throw new Error('Task not found or you do not have permission to update it');
       }
-      return data[0];
+      return { task: data[0], previousStatus };
     },
-    onSuccess: async (data, variables) => {
+    onSuccess: async ({ task, previousStatus }, variables) => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      if (variables.status === 'completed') {
-        toast({
-          title: "Task Completed",
-          description: "Task marked as completed. Awaiting admin approval for Coins.",
-        });
+      
+      // Log to activity feed based on status change
+      try {
+        if (variables.status === 'completed') {
+          await logTaskCompleted(task.title, task.id);
+          toast({
+            title: "Task Completed",
+            description: "Task marked as completed. Awaiting admin approval for Coins.",
+          });
 
-        // Send email notification to admin
-        try {
+          // Send email notification to admin
           const { data: adminProfiles } = await supabase
             .from('profiles')
             .select('id, email, full_name, user_id')
-            .eq('organization_id', data.organization_id);
+            .eq('organization_id', task.organization_id);
 
-          // Filter for admins using user_roles
           const { data: adminRoles } = await supabase
             .from('user_roles')
             .select('user_id')
@@ -59,24 +65,35 @@ export function useUpdateTaskStatus() {
           const adminUserIds = new Set(adminRoles?.map(r => r.user_id) || []);
           const admins = adminProfiles?.filter(p => adminUserIds.has(p.user_id)) || [];
 
-          if (admins.length > 0) {
-            for (const admin of admins) {
-              await emailNotifications.sendTaskCompletedEmail({
-                to: admin.email,
-                recipientName: admin.full_name,
-                taskTitle: data.title,
-                taskId: data.id,
-              });
-            }
+          for (const admin of admins) {
+            await emailNotifications.sendTaskCompletedEmail({
+              to: admin.email,
+              recipientName: admin.full_name,
+              taskTitle: task.title,
+              taskId: task.id,
+            });
           }
-        } catch (error) {
-          console.error('Failed to send task completion email:', error);
+        } else if (variables.status === 'verified') {
+          await logTaskVerified(task.title, task.id, true);
+          toast({
+            title: "Task Verified",
+            description: "Task has been approved and Coins will be awarded.",
+          });
+        } else if (variables.status === 'rejected') {
+          await logTaskVerified(task.title, task.id, false);
+          toast({
+            title: "Task Rejected",
+            description: "Task has been rejected. Assignee will be notified.",
+          });
+        } else if (previousStatus) {
+          await logTaskStatusChange(task.title, task.id, previousStatus, variables.status);
+          toast({
+            title: "Task Updated",
+            description: `Task status changed to ${variables.status.replace('_', ' ')}.`,
+          });
         }
-      } else if (variables.status === 'verified') {
-        toast({
-          title: "Task Verified",
-          description: "Task has been approved and Coins will be awarded.",
-        });
+      } catch (error) {
+        console.error('Failed to log status change:', error);
       }
     },
     onError: (error) => {
@@ -88,8 +105,8 @@ export function useUpdateTaskStatus() {
     },
   });
 
-  const updateTaskStatus = (taskId: string, status: Task['status'], submissionNotes?: string) => {
-    updateTaskStatusMutation.mutate({ taskId, status, submissionNotes });
+  const updateTaskStatus = (taskId: string, status: Task['status'], submissionNotes?: string, previousStatus?: string) => {
+    updateTaskStatusMutation.mutate({ taskId, status, submissionNotes, previousStatus });
   };
 
   return {
