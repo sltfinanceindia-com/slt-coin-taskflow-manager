@@ -1,287 +1,347 @@
 
-# Comprehensive Fix Plan: Database Connections, Layout, and Feature Integration
+# Complete Audit & Fix Plan: Convert Mock Data to Real Database Data
 
-## Overview
-This plan addresses multiple critical issues across the application:
-1. **Layout Issues** - Fix bottom spacing on Kanban board and other pages
-2. **Time Logs Enhancement** - Add filter and search functionality
-3. **Create Task Fix** - Add search for assignments, templates loading
-4. **Updates Tab Integration** - Connect with all application feature triggers
-5. **Sidebar Customization** - Filter navigation based on organization's enabled features
-6. **Portfolio/Projects Fix** - Improve layout and functionality
-7. **Remaining Mock Data Replacement** - Connect all placeholders to real data
+## Summary
 
----
+After a thorough audit of the sidebar pages and dashboard components, I found **16+ components** that are using hardcoded mock data instead of fetching real data from Supabase. These components appear to work but show fake/placeholder data that doesn't reflect the organization's actual information.
 
-## Phase 1: Layout Fixes
+## Components Identified with Mock Data
 
-### 1.1 Fix Bottom Space on Kanban Board
-**File:** `src/pages/ModernDashboard.tsx`
+### Work Management Components (High Priority)
+| Component | File | Issue |
+|-----------|------|-------|
+| Decisions Management | `src/components/work/DecisionsManagement.tsx` | Returns hardcoded array with "Adopt TypeScript" and "Switch to Supabase" |
+| Lessons Learned | `src/components/work/LessonsLearnedManagement.tsx` | Returns hardcoded retrospective data |
+| Meeting Notes | `src/components/work/MeetingNotesManagement.tsx` | Returns hardcoded "Weekly Sprint Planning" data |
+| Recurring Tasks | `src/components/work/RecurringTasksManagement.tsx` | Returns hardcoded recurring task list |
+| Work Calendars | `src/components/work/WorkCalendarsManagement.tsx` | Returns simulated calendar events |
+| Shift Swap | `src/components/work/ShiftSwapManagement.tsx` | Returns simulated swap requests |
+| On-Call | `src/components/work/OnCallManagement.tsx` | Returns simulated on-call schedules |
+| Remote Policies | `src/components/work/RemotePoliciesManagement.tsx` | Returns hardcoded policy data |
+| Project Templates | `src/components/work/ProjectTemplatesManagement.tsx` | Returns hardcoded template list |
+| Task Templates | `src/components/work/TaskTemplatesManagement.tsx` | Returns hardcoded template list (but hook exists) |
 
-**Problem:** The `pb-20` padding for mobile bottom navigation is applied on all screen sizes unnecessarily, and the Kanban board has extra spacing.
+### Components That Are Already Connected (Good)
+- `OvertimeManagement.tsx` - Uses `time_logs` table
+- `CompOffManagement.tsx` - Uses `leave_requests` table
+- `SprintManagement.tsx` - Uses `projects` table (repurposed)
+- `BacklogManagement.tsx` - Uses `tasks` table
+- `TaxManagement.tsx` - Uses `tax_declarations` table
 
-**Solution:**
-- Ensure `pb-20 md:pb-0` is correctly applied (already in place but verify)
-- Remove unnecessary padding from KanbanBoard container
+## Solution Architecture
 
-**File:** `src/components/KanbanBoard.tsx`
-- Remove `pb-4` from the scroll container on desktop
-- Change line 347: `pb-4` to `pb-4 sm:pb-0`
+### Phase 1: Create Missing Database Tables
 
-### 1.2 Fix Main Content Container
-**File:** `src/pages/ModernDashboard.tsx`
-- Verify the main container doesn't have extra bottom margin
-- Ensure content fills available space properly
+We need to create these new tables with proper RLS policies:
 
----
+1. **`decisions`** - Track project decisions
+2. **`lessons_learned`** - Store retrospective learnings
+3. **`meeting_notes`** - Store meeting documentation
+4. **`recurring_tasks`** - Define recurring task patterns
+5. **`calendar_events`** - Store work calendar events
+6. **`shift_swaps`** - Track shift swap requests
+7. **`on_call_schedules`** - Track on-call rotations
+8. **`remote_policies`** - Store WFH policies
+9. **`project_templates`** - Store project templates
+10. **`template_tasks`** - Store tasks within templates
 
-## Phase 2: Time Logs Tab Enhancement
+### Phase 2: Create Hooks for Each Table
 
-**File:** `src/pages/dashboard/tabs/TimeLogsTab.tsx`
+For each table, create a hook following the existing pattern (e.g., `useBenefits.tsx`):
 
-**Add Features:**
-1. Search input (by task name, description, employee name)
-2. Date range filter (from/to dates)
-3. Employee filter dropdown (for admins)
-4. Export functionality
-5. Summary statistics (total hours, weekly/monthly breakdown)
-
-**Implementation:**
 ```text
-+-------------------------------------------+
-|  Time Logs                    [Log Hours] |
-|  Track your working hours                 |
-+-------------------------------------------+
-| Search: [___________] | From: [__] To:[__]|
-| Employee: [All ▼]     | [Export CSV]      |
-+-------------------------------------------+
-| Summary: 40h this week | 160h this month  |
-+-------------------------------------------+
-|  Recent Time Entries                      |
-|  ┌─────────────────────────────────────┐  |
-|  │ Task Name         Hours    Date     │  |
-|  │ [Edit] [Delete]                     │  |
-|  └─────────────────────────────────────┘  |
-+-------------------------------------------+
+src/hooks/
+├── useDecisions.tsx
+├── useLessonsLearned.tsx
+├── useMeetingNotes.tsx
+├── useRecurringTasks.tsx (update existing)
+├── useCalendarEvents.tsx
+├── useShiftSwaps.tsx
+├── useOnCallSchedules.tsx
+├── useRemotePolicies.tsx
+├── useProjectTemplates.tsx
+└── useTemplateDetails.tsx
 ```
 
-**Hook Update:** `src/hooks/useTimeLogs.tsx`
-- Add delete mutation
-- Add edit mutation
-- Enhance filtering parameters
+Each hook will include:
+- Query with organization filtering
+- Create mutation
+- Update mutation
+- Delete mutation
+- Proper query invalidation
 
----
+### Phase 3: Update Components
 
-## Phase 3: Create Task Dialog Improvements
-
-**File:** `src/components/CreateTaskDialog.tsx`
-
-### 3.1 Add Search for Employee Assignment
-- Add search/filter input in the employee selection area
-- Filter employees by name as user types
-
-### 3.2 Add Task Templates Support
-- Create new hook `useTaskTemplates.tsx`
-- Add "Use Template" dropdown at top of form
-- Pre-fill form fields when template selected
-
-### 3.3 Add Loading States
-- Show skeleton/spinner while employees load
-- Show skeleton while projects load
-
-**New File:** `src/hooks/useTaskTemplates.tsx`
-- Fetch from `task_templates` table
-- CRUD operations for templates
-
----
-
-## Phase 4: Updates Tab - Connect All Features
-
-**File:** `src/pages/dashboard/tabs/UpdatesTab.tsx`
-**File:** `src/hooks/useProjectUpdates.tsx`
-
-**Problem:** Updates tab only shows manually posted updates, not automated system triggers.
-
-**Solution:** Create automatic update triggers for:
-1. Task status changes
-2. Task assignments
-3. Leave requests approved/rejected
-4. Time logs submitted
-5. Project milestones reached
-6. Attendance clock-in/out
-7. New employee onboarding
-
-**Implementation:**
-- Create edge function `auto-generate-updates` that listens to database changes
-- OR add update creation in existing mutations across all hooks
-
-**Hooks to Update (add update creation):**
-- `useTasks.tsx` - Task status changes, assignments
-- `useLeaveRequests.tsx` - Leave approvals
-- `useTimeLogs.tsx` - Time log submissions
-- `useAttendance.tsx` - Clock-in events
-
----
-
-## Phase 5: Sidebar Customization Based on Enabled Features
-
-**File:** `src/components/AppSidebar.tsx`
-
-**Problem:** Sidebar shows all navigation items regardless of organization's `enabled_features` setting.
-
-**Solution:**
-1. Fetch organization's `enabled_features` from `useOrganization` hook
-2. Filter navigation groups based on enabled features
-3. Map feature keys to navigation items
-
-**Feature to Navigation Mapping:**
-```text
-enabled_features.training -> Training Center, Training items
-enabled_features.leave_management -> Leave, WFH items
-enabled_features.attendance -> Attendance, Shifts items
-enabled_features.projects -> Projects, Kanban items
-enabled_features.communication -> Communication tab
-enabled_features.assessments -> Assessments items
-enabled_features.coin_rewards -> Coins/Rewards items
-```
-
-**Implementation:**
-- Add feature flag check before rendering each nav group
-- Hide entire groups if parent feature disabled
-- Add visual indicator for disabled features in admin view
-
----
-
-## Phase 6: Portfolio & Projects Enhancement
-
-### 6.1 Portfolio Management Improvements
-**File:** `src/components/project/PortfolioManagement.tsx`
-
-- Add better grid layout with proper spacing
-- Add portfolio detail view (drill-down)
-- Add portfolio analytics/charts
-- Connect to Programs properly
-
-### 6.2 Projects Tab Enhancement
-**File:** `src/pages/dashboard/tabs/TasksTab.tsx` or Projects route
-
-- Add project creation with all fields
-- Add project filtering by portfolio/program
-- Add project timeline view
-- Connect Gantt chart to real data
-
----
-
-## Phase 7: Replace Remaining Mock Data
-
-### 7.1 Work Management Features (Convert Placeholders to Real Components)
-**Files:** `src/pages/dashboard/tabs/WorkManagementFeatures.tsx`
-
-Create real implementations for:
-1. **SprintsTab** - Connect to `sprints` table, create hook
-2. **BacklogTab** - Connect to tasks with backlog status
-3. **MilestonesTab** - Create `milestones` table and hook
-4. **DependenciesTab** - Use existing `task_dependencies` table
-5. **RisksTab** - Create `project_risks` table and hook
-6. **IssuesTab** - Create `issues` table and hook
-
-### 7.2 Finance Features
-**Files:** `src/pages/dashboard/tabs/FinanceHRFeatures.tsx`
-
-Connect remaining placeholders:
-1. TaxManagement
-2. SalaryStructure
-3. BonusManagement
-
-### 7.3 Benefits Claims & Dependents
-**File:** `src/components/hr/BenefitsManagement.tsx`
-
-- Create `benefit_claims` table
-- Create `benefit_dependents` table
-- Create hooks and connect UI
-
----
-
-## Phase 8: Fix Edit Actions Across All Features
-
-### Components Needing Edit Implementation:
-
-| Component | Hook | Action |
-|-----------|------|--------|
-| BenefitsManagement | useBenefits | Add updateBenefit call |
-| GrievanceManagement | useGrievances | Add updateGrievance call |
-| ContractsManagement | useContracts | Add updateContract call |
-| All HR components | Respective hooks | Wire up Edit buttons |
-| All Finance components | Respective hooks | Wire up Edit buttons |
-
-**Pattern for Each:**
-1. Add `editingItem` state
-2. Open dialog with pre-filled data when Edit clicked
-3. Call update mutation on submit
-4. Refresh list after success
-
----
+Update each component to:
+1. Import and use the new hook
+2. Replace mock data `queryFn` with real database queries
+3. Wire up Create/Edit/Delete buttons to actual mutations
+4. Add proper loading, error, and empty states
 
 ## Technical Details
 
-### New Database Tables Needed:
-1. `sprints` - Sprint planning
-2. `milestones` - Project milestones
-3. `project_risks` - Risk register
-4. `issues` - Issue tracking
-5. `benefit_claims` - Employee claims
-6. `benefit_dependents` - Covered family members
-7. `task_templates` - Task templates
+### Database Schema Design
 
-### New Hooks to Create:
-1. `useSprints.tsx`
-2. `useMilestones.tsx`
-3. `useProjectRisks.tsx`
-4. `useIssues.tsx`
-5. `useBenefitClaims.tsx`
-6. `useBenefitDependents.tsx`
-7. `useTaskTemplates.tsx`
+**decisions table:**
+```sql
+CREATE TABLE decisions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  title TEXT NOT NULL,
+  description TEXT,
+  context TEXT,
+  alternatives TEXT[],
+  rationale TEXT,
+  impact TEXT CHECK (impact IN ('low', 'medium', 'high')),
+  status TEXT CHECK (status IN ('pending', 'approved', 'implemented', 'rejected')),
+  decision_maker_id UUID REFERENCES profiles(id),
+  stakeholders TEXT[],
+  decision_date DATE,
+  created_by UUID REFERENCES profiles(id),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+```
 
-### Files to Modify:
-1. `src/pages/ModernDashboard.tsx` - Layout fix
-2. `src/components/KanbanBoard.tsx` - Bottom padding fix
-3. `src/pages/dashboard/tabs/TimeLogsTab.tsx` - Complete rewrite with filters
-4. `src/components/CreateTaskDialog.tsx` - Add search & templates
-5. `src/components/AppSidebar.tsx` - Feature-based filtering
-6. `src/hooks/useProjectUpdates.tsx` - Auto-trigger integration
-7. `src/pages/dashboard/tabs/UpdatesTab.tsx` - Enhanced display
-8. Multiple HR components - Add edit functionality
-9. Multiple Finance components - Add edit functionality
-10. Work Management features - Replace placeholders
+**lessons_learned table:**
+```sql
+CREATE TABLE lessons_learned (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  title TEXT NOT NULL,
+  project_id UUID REFERENCES projects(id),
+  project_name TEXT,
+  category TEXT,
+  what_went_well TEXT[],
+  what_went_wrong TEXT[],
+  recommendations TEXT[],
+  impact TEXT CHECK (impact IN ('low', 'medium', 'high')),
+  created_by UUID REFERENCES profiles(id),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+```
 
----
+**meeting_notes table:**
+```sql
+CREATE TABLE meeting_notes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  title TEXT NOT NULL,
+  meeting_date DATE NOT NULL,
+  attendees TEXT[],
+  notes TEXT,
+  action_items JSONB DEFAULT '[]',
+  decisions TEXT[],
+  created_by UUID REFERENCES profiles(id),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
+**recurring_tasks table:**
+```sql
+CREATE TABLE recurring_tasks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  title TEXT NOT NULL,
+  description TEXT,
+  frequency TEXT CHECK (frequency IN ('daily', 'weekly', 'bi-weekly', 'monthly', 'quarterly')),
+  assigned_to UUID REFERENCES profiles(id),
+  next_occurrence DATE,
+  last_created DATE,
+  is_active BOOLEAN DEFAULT true,
+  created_by UUID REFERENCES profiles(id),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
+**shift_swaps table:**
+```sql
+CREATE TABLE shift_swaps (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  requester_id UUID NOT NULL REFERENCES profiles(id),
+  target_id UUID NOT NULL REFERENCES profiles(id),
+  original_shift TEXT NOT NULL,
+  requested_shift TEXT NOT NULL,
+  swap_date DATE,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  reason TEXT,
+  approved_by UUID REFERENCES profiles(id),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
+**on_call_schedules table:**
+```sql
+CREATE TABLE on_call_schedules (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  user_id UUID NOT NULL REFERENCES profiles(id),
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  rotation_type TEXT CHECK (rotation_type IN ('daily', 'weekly', 'bi-weekly', 'monthly')),
+  status TEXT DEFAULT 'upcoming' CHECK (status IN ('upcoming', 'active', 'completed')),
+  notes TEXT,
+  created_by UUID REFERENCES profiles(id),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
+**remote_policies table:**
+```sql
+CREATE TABLE remote_policies (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  name TEXT NOT NULL,
+  description TEXT,
+  max_wfh_days INTEGER DEFAULT 2,
+  requires_approval BOOLEAN DEFAULT true,
+  eligibility_criteria TEXT,
+  equipment_allowance DECIMAL(10,2) DEFAULT 0,
+  is_active BOOLEAN DEFAULT true,
+  created_by UUID REFERENCES profiles(id),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
+**project_templates table:**
+```sql
+CREATE TABLE project_templates (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  name TEXT NOT NULL,
+  description TEXT,
+  category TEXT,
+  estimated_duration INTEGER, -- days
+  is_public BOOLEAN DEFAULT true,
+  created_by UUID REFERENCES profiles(id),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
+**calendar_events table:**
+```sql
+CREATE TABLE calendar_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  title TEXT NOT NULL,
+  start_date TIMESTAMPTZ NOT NULL,
+  end_date TIMESTAMPTZ NOT NULL,
+  event_type TEXT CHECK (event_type IN ('meeting', 'deadline', 'leave', 'holiday', 'task')),
+  attendees TEXT[],
+  description TEXT,
+  created_by UUID REFERENCES profiles(id),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
+### RLS Policies (Same Pattern for All Tables)
+
+Each table will have:
+1. SELECT policy: Users can read data from their organization
+2. INSERT policy: Users can insert into their organization
+3. UPDATE policy: Users can update their organization's data
+4. DELETE policy: Admins can delete from their organization
+
+### Hook Implementation Pattern
+
+Each hook will follow this structure:
+```typescript
+export function useDecisions() {
+  const { profile } = useAuth();
+  const queryClient = useQueryClient();
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['decisions', profile?.organization_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('decisions')
+        .select('*, decision_maker:profiles!decision_maker_id(full_name)')
+        .eq('organization_id', profile?.organization_id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!profile?.organization_id
+  });
+
+  const createMutation = useMutation({...});
+  const updateMutation = useMutation({...});
+  const deleteMutation = useMutation({...});
+
+  return {
+    decisions: data || [],
+    isLoading,
+    error,
+    createDecision: createMutation.mutateAsync,
+    updateDecision: updateMutation.mutateAsync,
+    deleteDecision: deleteMutation.mutateAsync,
+    isCreating: createMutation.isPending,
+    isUpdating: updateMutation.isPending,
+    isDeleting: deleteMutation.isPending
+  };
+}
+```
+
+### Component Update Pattern
+
+Each component update will:
+1. Replace the mock `queryFn` with the hook
+2. Wire up form submission to `createMutation`
+3. Wire up Edit button to open dialog with pre-filled data
+4. Wire up Delete button to `deleteMutation`
+5. Add proper toast notifications
+
+## Files to Create
+
+| File | Purpose |
+|------|---------|
+| `supabase/migrations/xxx_work_management_tables.sql` | Create all new tables with RLS |
+| `src/hooks/useDecisions.tsx` | CRUD hook for decisions |
+| `src/hooks/useLessonsLearned.tsx` | CRUD hook for lessons |
+| `src/hooks/useMeetingNotes.tsx` | CRUD hook for meeting notes |
+| `src/hooks/useCalendarEvents.tsx` | CRUD hook for calendar events |
+| `src/hooks/useShiftSwaps.tsx` | CRUD hook for shift swaps |
+| `src/hooks/useOnCallSchedules.tsx` | CRUD hook for on-call |
+| `src/hooks/useRemotePolicies.tsx` | CRUD hook for remote policies |
+| `src/hooks/useProjectTemplates.tsx` | CRUD hook for project templates |
+
+## Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/components/work/DecisionsManagement.tsx` | Use `useDecisions` hook, wire up CRUD |
+| `src/components/work/LessonsLearnedManagement.tsx` | Use `useLessonsLearned` hook |
+| `src/components/work/MeetingNotesManagement.tsx` | Use `useMeetingNotes` hook |
+| `src/components/work/RecurringTasksManagement.tsx` | Update to use real hook |
+| `src/components/work/WorkCalendarsManagement.tsx` | Use `useCalendarEvents` hook |
+| `src/components/work/ShiftSwapManagement.tsx` | Use `useShiftSwaps` hook |
+| `src/components/work/OnCallManagement.tsx` | Use `useOnCallSchedules` hook |
+| `src/components/work/RemotePoliciesManagement.tsx` | Use `useRemotePolicies` hook |
+| `src/components/work/ProjectTemplatesManagement.tsx` | Use `useProjectTemplates` hook |
+| `src/components/work/TaskTemplatesManagement.tsx` | Use existing `useTaskTemplates` hook properly |
+| `src/integrations/supabase/types.ts` | Update with new table types |
 
 ## Implementation Order
 
-1. **Immediate fixes** (Layout, bottom spacing) - Quick wins
-2. **Time Logs enhancement** - User requested specifically
-3. **Create Task fixes** - Search + templates
-4. **Sidebar customization** - Feature flags
-5. **Updates integration** - System-wide triggers
-6. **Portfolio improvements** - Better layout
-7. **Mock data replacement** - Batch by category
-8. **Edit actions** - Across all components
+1. **Phase 1**: Run database migration (create all tables)
+2. **Phase 2**: Create all hooks (9 new hooks)
+3. **Phase 3**: Update components one by one
+4. **Phase 4**: Test each feature end-to-end
 
----
+## Estimated Changes
 
-## Estimated File Changes
+- **9 new hooks** to create
+- **10 components** to update
+- **1 database migration** with 10 tables
+- **Total files**: ~20 files to create/modify
 
-| Category | Files | Priority |
-|----------|-------|----------|
-| Layout Fixes | 2 | High |
-| Time Logs | 2 | High |
-| Create Task | 2 | High |
-| Sidebar | 1 | High |
-| Updates Integration | 3 | Medium |
-| Portfolio | 3 | Medium |
-| New Hooks | 7 | Medium |
-| Mock Data Replace | 10+ | Medium |
-| Edit Actions | 15+ | Medium |
-| Database Migrations | 2 | Medium |
-
-**Total estimated files to create/modify: 45+**
+This comprehensive fix will ensure all sidebar pages display real organization-specific data with full CRUD functionality.
