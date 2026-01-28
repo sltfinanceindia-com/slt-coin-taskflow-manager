@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,28 +9,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Scale, Plus, Calendar, User, FileText, Edit, Trash2, Search, ThumbsUp } from 'lucide-react';
-import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { useAuth } from '@/hooks/useAuth';
-
-interface Decision {
-  id: string;
-  title: string;
-  description: string;
-  context: string;
-  alternatives: string[];
-  rationale: string;
-  impact: string;
-  status: string;
-  decision_maker: string;
-  stakeholders: string[];
-  decision_date: string;
-  created_at: string;
-}
+import { useDecisions } from '@/hooks/useDecisions';
 
 export function DecisionsManagement() {
-  const { profile } = useAuth();
-  const queryClient = useQueryClient();
+  const { decisions, isLoading, createDecision, deleteDecision, isCreating } = useDecisions();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
@@ -40,49 +22,28 @@ export function DecisionsManagement() {
     context: '',
     alternatives: '',
     rationale: '',
-    impact: 'medium',
-    decision_maker: '',
+    impact: 'medium' as 'low' | 'medium' | 'high',
+    decision_maker_id: null as string | null,
     stakeholders: ''
   });
 
-  const { data: decisions, isLoading } = useQuery({
-    queryKey: ['decisions'],
-    queryFn: async () => {
-      return [
-        {
-          id: '1',
-          title: 'Adopt TypeScript for Frontend',
-          description: 'Migrate all frontend code to TypeScript',
-          context: 'Increasing codebase complexity requires better type safety',
-          alternatives: ['Continue with JavaScript', 'Use Flow instead'],
-          rationale: 'TypeScript provides better IDE support and catches errors early',
-          impact: 'high',
-          status: 'approved',
-          decision_maker: 'Tech Lead',
-          stakeholders: ['Frontend Team', 'DevOps'],
-          decision_date: format(new Date(), 'yyyy-MM-dd'),
-          created_at: new Date().toISOString()
-        },
-        {
-          id: '2',
-          title: 'Switch to Supabase for Backend',
-          description: 'Replace custom backend with Supabase BaaS',
-          context: 'Need faster development cycles and reduced maintenance',
-          alternatives: ['Build custom backend', 'Use Firebase'],
-          rationale: 'Supabase offers PostgreSQL, real-time features, and excellent DX',
-          impact: 'high',
-          status: 'implemented',
-          decision_maker: 'CTO',
-          stakeholders: ['Backend Team', 'Product'],
-          decision_date: format(new Date(Date.now() - 14 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
-          created_at: new Date().toISOString()
-        }
-      ] as Decision[];
-    }
-  });
-
-  const handleSubmit = () => {
-    toast.success('Decision recorded successfully');
+  const handleSubmit = async () => {
+    if (!formData.title) return;
+    
+    await createDecision({
+      title: formData.title,
+      description: formData.description || null,
+      context: formData.context || null,
+      alternatives: formData.alternatives ? formData.alternatives.split('\n').filter(Boolean) : null,
+      rationale: formData.rationale || null,
+      impact: formData.impact,
+      status: 'pending',
+      decision_maker_id: formData.decision_maker_id,
+      stakeholders: formData.stakeholders ? formData.stakeholders.split(',').map(s => s.trim()) : null,
+      decision_date: format(new Date(), 'yyyy-MM-dd'),
+      created_by: null,
+    });
+    
     setIsDialogOpen(false);
     setFormData({
       title: '',
@@ -91,38 +52,37 @@ export function DecisionsManagement() {
       alternatives: '',
       rationale: '',
       impact: 'medium',
-      decision_maker: '',
+      decision_maker_id: null,
       stakeholders: ''
     });
   };
 
-  const handleDelete = (id: string) => {
-    toast.success('Decision deleted');
-    queryClient.invalidateQueries({ queryKey: ['decisions'] });
+  const handleDelete = async (id: string) => {
+    await deleteDecision(id);
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string | null) => {
     const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
       pending: 'secondary',
       approved: 'default',
       implemented: 'outline',
       rejected: 'destructive'
     };
-    return <Badge variant={variants[status] || 'outline'}>{status}</Badge>;
+    return <Badge variant={variants[status || 'pending'] || 'outline'}>{status || 'pending'}</Badge>;
   };
 
-  const getImpactBadge = (impact: string) => {
+  const getImpactBadge = (impact: string | null) => {
     const colors: Record<string, string> = {
       low: 'bg-green-100 text-green-800',
       medium: 'bg-yellow-100 text-yellow-800',
       high: 'bg-red-100 text-red-800'
     };
-    return <Badge className={colors[impact] || colors.medium}>{impact} impact</Badge>;
+    return <Badge className={colors[impact || 'medium'] || colors.medium}>{impact || 'medium'} impact</Badge>;
   };
 
   const filteredDecisions = decisions?.filter(d => 
     d.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    d.description.toLowerCase().includes(searchQuery.toLowerCase())
+    (d.description?.toLowerCase() || '').includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -192,7 +152,7 @@ export function DecisionsManagement() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Impact Level</Label>
-                    <Select value={formData.impact} onValueChange={(v) => setFormData({ ...formData, impact: v })}>
+                    <Select value={formData.impact} onValueChange={(v: 'low' | 'medium' | 'high') => setFormData({ ...formData, impact: v })}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -203,14 +163,6 @@ export function DecisionsManagement() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Decision Maker</Label>
-                    <Input
-                      value={formData.decision_maker}
-                      onChange={(e) => setFormData({ ...formData, decision_maker: e.target.value })}
-                      placeholder="e.g., Tech Lead"
-                    />
-                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label>Stakeholders (comma separated)</Label>
@@ -220,7 +172,9 @@ export function DecisionsManagement() {
                     placeholder="Frontend Team, DevOps"
                   />
                 </div>
-                <Button onClick={handleSubmit} className="w-full">Record Decision</Button>
+                <Button onClick={handleSubmit} className="w-full" disabled={isCreating}>
+                  {isCreating ? 'Saving...' : 'Record Decision'}
+                </Button>
               </div>
             </ScrollArea>
           </DialogContent>
@@ -287,7 +241,7 @@ export function DecisionsManagement() {
         ) : filteredDecisions?.length === 0 ? (
           <Card>
             <CardContent className="py-8 text-center text-muted-foreground">
-              No decisions found
+              No decisions found. Record your first decision to get started.
             </CardContent>
           </Card>
         ) : (
@@ -302,14 +256,18 @@ export function DecisionsManagement() {
                       {getImpactBadge(decision.impact)}
                     </div>
                     <CardDescription className="flex items-center gap-4">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
-                        {format(new Date(decision.decision_date), 'MMM d, yyyy')}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <User className="h-4 w-4" />
-                        {decision.decision_maker}
-                      </span>
+                      {decision.decision_date && (
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          {format(new Date(decision.decision_date), 'MMM d, yyyy')}
+                        </span>
+                      )}
+                      {decision.decision_maker && (
+                        <span className="flex items-center gap-1">
+                          <User className="h-4 w-4" />
+                          {decision.decision_maker.full_name}
+                        </span>
+                      )}
                     </CardDescription>
                   </div>
                   <div className="flex gap-1">
@@ -323,15 +281,19 @@ export function DecisionsManagement() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <p className="text-sm font-medium mb-1">Description</p>
-                  <p className="text-sm text-muted-foreground">{decision.description}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium mb-1">Context</p>
-                  <p className="text-sm text-muted-foreground">{decision.context}</p>
-                </div>
-                {decision.alternatives.length > 0 && (
+                {decision.description && (
+                  <div>
+                    <p className="text-sm font-medium mb-1">Description</p>
+                    <p className="text-sm text-muted-foreground">{decision.description}</p>
+                  </div>
+                )}
+                {decision.context && (
+                  <div>
+                    <p className="text-sm font-medium mb-1">Context</p>
+                    <p className="text-sm text-muted-foreground">{decision.context}</p>
+                  </div>
+                )}
+                {decision.alternatives && decision.alternatives.length > 0 && (
                   <div>
                     <p className="text-sm font-medium mb-1">Alternatives Considered</p>
                     <ul className="list-disc list-inside text-sm text-muted-foreground">
@@ -341,18 +303,22 @@ export function DecisionsManagement() {
                     </ul>
                   </div>
                 )}
-                <div>
-                  <p className="text-sm font-medium mb-1">Rationale</p>
-                  <p className="text-sm text-muted-foreground">{decision.rationale}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium mb-1">Stakeholders</p>
-                  <div className="flex flex-wrap gap-1">
-                    {decision.stakeholders.map((s, i) => (
-                      <Badge key={i} variant="secondary" className="text-xs">{s}</Badge>
-                    ))}
+                {decision.rationale && (
+                  <div>
+                    <p className="text-sm font-medium mb-1">Rationale</p>
+                    <p className="text-sm text-muted-foreground">{decision.rationale}</p>
                   </div>
-                </div>
+                )}
+                {decision.stakeholders && decision.stakeholders.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium mb-1">Stakeholders</p>
+                    <div className="flex flex-wrap gap-1">
+                      {decision.stakeholders.map((s, i) => (
+                        <Badge key={i} variant="secondary" className="text-xs">{s}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))

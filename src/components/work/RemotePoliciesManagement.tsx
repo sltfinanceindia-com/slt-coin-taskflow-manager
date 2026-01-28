@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,26 +8,12 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Home, Plus, Settings, Users, Calendar, Shield, Edit, Trash2 } from 'lucide-react';
-import { toast } from 'sonner';
-import { useAuth } from '@/hooks/useAuth';
-
-interface RemotePolicy {
-  id: string;
-  name: string;
-  description: string;
-  max_wfh_days: number;
-  requires_approval: boolean;
-  eligibility_criteria: string;
-  equipment_allowance: number;
-  is_active: boolean;
-  created_at: string;
-}
+import { useRemotePolicies } from '@/hooks/useRemotePolicies';
 
 export function RemotePoliciesManagement() {
-  const { profile } = useAuth();
-  const queryClient = useQueryClient();
+  const { policies, isLoading, createPolicy, updatePolicy, deletePolicy, isCreating, isUpdating } = useRemotePolicies();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingPolicy, setEditingPolicy] = useState<RemotePolicy | null>(null);
+  const [editingPolicy, setEditingPolicy] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -40,39 +24,26 @@ export function RemotePoliciesManagement() {
     is_active: true
   });
 
-  const { data: policies, isLoading } = useQuery({
-    queryKey: ['remote-policies'],
-    queryFn: async () => {
-      // Simulated data
-      return [
-        {
-          id: '1',
-          name: 'Standard Remote Policy',
-          description: 'Default WFH policy for all employees',
-          max_wfh_days: 2,
-          requires_approval: true,
-          eligibility_criteria: 'All full-time employees after 3 months',
-          equipment_allowance: 500,
-          is_active: true,
-          created_at: new Date().toISOString()
-        },
-        {
-          id: '2',
-          name: 'Flexible Remote Policy',
-          description: 'Unlimited WFH for eligible roles',
-          max_wfh_days: 5,
-          requires_approval: false,
-          eligibility_criteria: 'Senior developers and managers',
-          equipment_allowance: 1000,
-          is_active: true,
-          created_at: new Date().toISOString()
-        }
-      ] as RemotePolicy[];
+  const handleSubmit = async () => {
+    if (!formData.name) return;
+    
+    if (editingPolicy) {
+      await updatePolicy({
+        id: editingPolicy,
+        ...formData,
+        description: formData.description || null,
+        eligibility_criteria: formData.eligibility_criteria || null,
+        created_by: null,
+      });
+    } else {
+      await createPolicy({
+        ...formData,
+        description: formData.description || null,
+        eligibility_criteria: formData.eligibility_criteria || null,
+        created_by: null,
+      });
     }
-  });
-
-  const handleSubmit = () => {
-    toast.success(editingPolicy ? 'Policy updated successfully' : 'Policy created successfully');
+    
     setIsDialogOpen(false);
     setEditingPolicy(null);
     setFormData({
@@ -86,23 +57,22 @@ export function RemotePoliciesManagement() {
     });
   };
 
-  const handleEdit = (policy: RemotePolicy) => {
-    setEditingPolicy(policy);
+  const handleEdit = (policy: typeof policies[0]) => {
+    setEditingPolicy(policy.id);
     setFormData({
       name: policy.name,
-      description: policy.description,
+      description: policy.description || '',
       max_wfh_days: policy.max_wfh_days,
       requires_approval: policy.requires_approval,
-      eligibility_criteria: policy.eligibility_criteria,
+      eligibility_criteria: policy.eligibility_criteria || '',
       equipment_allowance: policy.equipment_allowance,
       is_active: policy.is_active
     });
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    toast.success('Policy deleted successfully');
-    queryClient.invalidateQueries({ queryKey: ['remote-policies'] });
+  const handleDelete = async (id: string) => {
+    await deletePolicy(id);
   };
 
   return (
@@ -115,7 +85,21 @@ export function RemotePoliciesManagement() {
           </h2>
           <p className="text-muted-foreground">Configure WFH policies and guidelines</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) {
+            setEditingPolicy(null);
+            setFormData({
+              name: '',
+              description: '',
+              max_wfh_days: 2,
+              requires_approval: true,
+              eligibility_criteria: '',
+              equipment_allowance: 0,
+              is_active: true
+            });
+          }
+        }}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
@@ -151,7 +135,7 @@ export function RemotePoliciesManagement() {
                     min={0}
                     max={5}
                     value={formData.max_wfh_days}
-                    onChange={(e) => setFormData({ ...formData, max_wfh_days: parseInt(e.target.value) })}
+                    onChange={(e) => setFormData({ ...formData, max_wfh_days: parseInt(e.target.value) || 0 })}
                   />
                 </div>
                 <div className="space-y-2">
@@ -160,7 +144,7 @@ export function RemotePoliciesManagement() {
                     type="number"
                     min={0}
                     value={formData.equipment_allowance}
-                    onChange={(e) => setFormData({ ...formData, equipment_allowance: parseInt(e.target.value) })}
+                    onChange={(e) => setFormData({ ...formData, equipment_allowance: parseInt(e.target.value) || 0 })}
                   />
                 </div>
               </div>
@@ -192,8 +176,8 @@ export function RemotePoliciesManagement() {
                   onCheckedChange={(v) => setFormData({ ...formData, is_active: v })}
                 />
               </div>
-              <Button onClick={handleSubmit} className="w-full">
-                {editingPolicy ? 'Update Policy' : 'Create Policy'}
+              <Button onClick={handleSubmit} className="w-full" disabled={isCreating || isUpdating}>
+                {isCreating || isUpdating ? 'Saving...' : editingPolicy ? 'Update Policy' : 'Create Policy'}
               </Button>
             </div>
           </DialogContent>
@@ -227,12 +211,12 @@ export function RemotePoliciesManagement() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Employees</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Policies</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-green-500" />
-              <span className="text-2xl font-bold">--</span>
+              <span className="text-2xl font-bold">{policies?.length || 0}</span>
             </div>
           </CardContent>
         </Card>
@@ -246,7 +230,7 @@ export function RemotePoliciesManagement() {
         ) : policies?.length === 0 ? (
           <Card className="col-span-2">
             <CardContent className="py-8 text-center text-muted-foreground">
-              No remote policies configured
+              No remote policies configured. Create your first policy to get started.
             </CardContent>
           </Card>
         ) : (
@@ -261,7 +245,7 @@ export function RemotePoliciesManagement() {
                         {policy.is_active ? 'Active' : 'Inactive'}
                       </Badge>
                     </CardTitle>
-                    <CardDescription>{policy.description}</CardDescription>
+                    {policy.description && <CardDescription>{policy.description}</CardDescription>}
                   </div>
                   <div className="flex gap-2">
                     <Button size="icon" variant="ghost" onClick={() => handleEdit(policy)}>
@@ -283,10 +267,12 @@ export function RemotePoliciesManagement() {
                     <p className="text-muted-foreground">Equipment Allowance</p>
                     <p className="font-medium">${policy.equipment_allowance}</p>
                   </div>
-                  <div className="col-span-2">
-                    <p className="text-muted-foreground">Eligibility</p>
-                    <p className="font-medium">{policy.eligibility_criteria}</p>
-                  </div>
+                  {policy.eligibility_criteria && (
+                    <div className="col-span-2">
+                      <p className="text-muted-foreground">Eligibility</p>
+                      <p className="font-medium">{policy.eligibility_criteria}</p>
+                    </div>
+                  )}
                   <div>
                     <p className="text-muted-foreground">Approval Required</p>
                     <Badge variant={policy.requires_approval ? 'default' : 'outline'}>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,34 +10,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Phone, Plus, Calendar, User, Clock, AlertCircle } from 'lucide-react';
-import { toast } from 'sonner';
 import { format, addDays } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
-
-interface OnCallSchedule {
-  id: string;
-  user_id: string;
-  start_date: string;
-  end_date: string;
-  rotation_type: string;
-  status: string;
-  notes: string | null;
-  created_at: string;
-  profile?: {
-    full_name: string;
-    avatar_url: string | null;
-  };
-}
+import { useOnCallSchedules } from '@/hooks/useOnCallSchedules';
 
 export function OnCallManagement() {
   const { profile } = useAuth();
-  const queryClient = useQueryClient();
+  const { schedules, isLoading, createSchedule, isCreating } = useOnCallSchedules();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     user_id: '',
     start_date: format(new Date(), 'yyyy-MM-dd'),
     end_date: format(addDays(new Date(), 7), 'yyyy-MM-dd'),
-    rotation_type: 'weekly',
+    rotation_type: 'weekly' as 'daily' | 'weekly' | 'bi-weekly' | 'monthly',
     notes: ''
   });
 
@@ -55,29 +40,18 @@ export function OnCallManagement() {
     enabled: !!profile?.organization_id
   });
 
-  const { data: schedules, isLoading } = useQuery({
-    queryKey: ['oncall-schedules'],
-    queryFn: async () => {
-      // Simulated data - in production, this would come from a real table
-      return [
-        {
-          id: '1',
-          user_id: employees?.[0]?.id || '',
-          start_date: format(new Date(), 'yyyy-MM-dd'),
-          end_date: format(addDays(new Date(), 7), 'yyyy-MM-dd'),
-          rotation_type: 'weekly',
-          status: 'active',
-          notes: 'Primary on-call rotation',
-          created_at: new Date().toISOString(),
-          profile: employees?.[0]
-        }
-      ] as OnCallSchedule[];
-    },
-    enabled: !!employees
-  });
-
-  const handleSubmit = () => {
-    toast.success('On-call schedule created successfully');
+  const handleSubmit = async () => {
+    if (!formData.user_id) return;
+    
+    await createSchedule({
+      user_id: formData.user_id,
+      start_date: formData.start_date,
+      end_date: formData.end_date,
+      rotation_type: formData.rotation_type,
+      notes: formData.notes || null,
+      created_by: null,
+    });
+    
     setIsDialogOpen(false);
     setFormData({
       user_id: '',
@@ -152,7 +126,7 @@ export function OnCallManagement() {
               </div>
               <div className="space-y-2">
                 <Label>Rotation Type</Label>
-                <Select value={formData.rotation_type} onValueChange={(v) => setFormData({ ...formData, rotation_type: v })}>
+                <Select value={formData.rotation_type} onValueChange={(v: 'daily' | 'weekly' | 'bi-weekly' | 'monthly') => setFormData({ ...formData, rotation_type: v })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -172,7 +146,9 @@ export function OnCallManagement() {
                   placeholder="Additional notes..."
                 />
               </div>
-              <Button onClick={handleSubmit} className="w-full">Create Schedule</Button>
+              <Button onClick={handleSubmit} className="w-full" disabled={isCreating}>
+                {isCreating ? 'Creating...' : 'Create Schedule'}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -238,16 +214,16 @@ export function OnCallManagement() {
               ) : schedules?.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    No on-call schedules found
+                    No on-call schedules found. Create your first schedule to get started.
                   </TableCell>
                 </TableRow>
               ) : (
                 schedules?.map((schedule) => (
                   <TableRow key={schedule.id}>
-                    <TableCell className="font-medium">{schedule.profile?.full_name || 'Unknown'}</TableCell>
+                    <TableCell className="font-medium">{schedule.user?.full_name || 'Unknown'}</TableCell>
                     <TableCell>{format(new Date(schedule.start_date), 'MMM d, yyyy')}</TableCell>
                     <TableCell>{format(new Date(schedule.end_date), 'MMM d, yyyy')}</TableCell>
-                    <TableCell className="capitalize">{schedule.rotation_type}</TableCell>
+                    <TableCell className="capitalize">{schedule.rotation_type || '-'}</TableCell>
                     <TableCell>{getStatusBadge(schedule.status)}</TableCell>
                     <TableCell className="text-muted-foreground">{schedule.notes || '-'}</TableCell>
                   </TableRow>

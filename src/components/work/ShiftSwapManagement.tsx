@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,33 +8,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { RefreshCw, Plus, ArrowRightLeft, CheckCircle, XCircle, Clock } from 'lucide-react';
-import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
-
-interface ShiftSwapRequest {
-  id: string;
-  requester_id: string;
-  target_id: string;
-  original_shift: string;
-  requested_shift: string;
-  status: string;
-  reason: string;
-  created_at: string;
-  requester?: { full_name: string };
-  target?: { full_name: string };
-}
+import { useShiftSwaps } from '@/hooks/useShiftSwaps';
 
 export function ShiftSwapManagement() {
   const { profile } = useAuth();
-  const queryClient = useQueryClient();
+  const { shiftSwaps, isLoading, createShiftSwap, approveShiftSwap, rejectShiftSwap, isCreating } = useShiftSwaps();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     target_id: '',
     original_shift: '',
     requested_shift: '',
+    swap_date: format(new Date(), 'yyyy-MM-dd'),
     reason: ''
   });
 
@@ -53,42 +42,28 @@ export function ShiftSwapManagement() {
     enabled: !!profile?.organization_id
   });
 
-  const { data: swapRequests, isLoading } = useQuery({
-    queryKey: ['shift-swap-requests'],
-    queryFn: async () => {
-      // Simulated data
-      return [
-        {
-          id: '1',
-          requester_id: profile?.id || '',
-          target_id: employees?.[0]?.id || '',
-          original_shift: 'Morning (6AM-2PM)',
-          requested_shift: 'Evening (2PM-10PM)',
-          status: 'pending',
-          reason: 'Personal appointment',
-          created_at: new Date().toISOString(),
-          requester: { full_name: profile?.full_name || 'You' },
-          target: employees?.[0] || { full_name: 'Pending' }
-        }
-      ] as ShiftSwapRequest[];
-    },
-    enabled: !!employees
-  });
-
-  const handleSubmit = () => {
-    toast.success('Shift swap request submitted successfully');
+  const handleSubmit = async () => {
+    if (!formData.target_id || !formData.original_shift || !formData.requested_shift) return;
+    
+    await createShiftSwap({
+      target_id: formData.target_id,
+      requester_id: profile?.id || '',
+      original_shift: formData.original_shift,
+      requested_shift: formData.requested_shift,
+      swap_date: formData.swap_date,
+      reason: formData.reason || null,
+    });
+    
     setIsDialogOpen(false);
-    setFormData({ target_id: '', original_shift: '', requested_shift: '', reason: '' });
+    setFormData({ target_id: '', original_shift: '', requested_shift: '', swap_date: format(new Date(), 'yyyy-MM-dd'), reason: '' });
   };
 
   const handleApprove = (id: string) => {
-    toast.success('Shift swap approved');
-    queryClient.invalidateQueries({ queryKey: ['shift-swap-requests'] });
+    approveShiftSwap(id);
   };
 
   const handleReject = (id: string) => {
-    toast.info('Shift swap rejected');
-    queryClient.invalidateQueries({ queryKey: ['shift-swap-requests'] });
+    rejectShiftSwap(id);
   };
 
   const getStatusBadge = (status: string) => {
@@ -143,6 +118,14 @@ export function ShiftSwapManagement() {
                 </Select>
               </div>
               <div className="space-y-2">
+                <Label>Swap Date</Label>
+                <Input
+                  type="date"
+                  value={formData.swap_date}
+                  onChange={(e) => setFormData({ ...formData, swap_date: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
                 <Label>Your Current Shift</Label>
                 <Select value={formData.original_shift} onValueChange={(v) => setFormData({ ...formData, original_shift: v })}>
                   <SelectTrigger>
@@ -176,7 +159,9 @@ export function ShiftSwapManagement() {
                   placeholder="Explain why you need this swap..."
                 />
               </div>
-              <Button onClick={handleSubmit} className="w-full">Submit Request</Button>
+              <Button onClick={handleSubmit} className="w-full" disabled={isCreating}>
+                {isCreating ? 'Submitting...' : 'Submit Request'}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -191,7 +176,7 @@ export function ShiftSwapManagement() {
             <div className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-yellow-500" />
               <span className="text-2xl font-bold">
-                {swapRequests?.filter(r => r.status === 'pending').length || 0}
+                {shiftSwaps?.filter(r => r.status === 'pending').length || 0}
               </span>
             </div>
           </CardContent>
@@ -204,7 +189,7 @@ export function ShiftSwapManagement() {
             <div className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-green-500" />
               <span className="text-2xl font-bold">
-                {swapRequests?.filter(r => r.status === 'approved').length || 0}
+                {shiftSwaps?.filter(r => r.status === 'approved').length || 0}
               </span>
             </div>
           </CardContent>
@@ -217,7 +202,7 @@ export function ShiftSwapManagement() {
             <div className="flex items-center gap-2">
               <XCircle className="h-5 w-5 text-red-500" />
               <span className="text-2xl font-bold">
-                {swapRequests?.filter(r => r.status === 'rejected').length || 0}
+                {shiftSwaps?.filter(r => r.status === 'rejected').length || 0}
               </span>
             </div>
           </CardContent>
@@ -234,6 +219,7 @@ export function ShiftSwapManagement() {
               <TableRow>
                 <TableHead>Requester</TableHead>
                 <TableHead>Swap With</TableHead>
+                <TableHead>Date</TableHead>
                 <TableHead>Original Shift</TableHead>
                 <TableHead>Requested Shift</TableHead>
                 <TableHead>Status</TableHead>
@@ -243,19 +229,20 @@ export function ShiftSwapManagement() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8">Loading...</TableCell>
+                  <TableCell colSpan={7} className="text-center py-8">Loading...</TableCell>
                 </TableRow>
-              ) : swapRequests?.length === 0 ? (
+              ) : shiftSwaps?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     No swap requests found
                   </TableCell>
                 </TableRow>
               ) : (
-                swapRequests?.map((request) => (
+                shiftSwaps?.map((request) => (
                   <TableRow key={request.id}>
-                    <TableCell className="font-medium">{request.requester?.full_name}</TableCell>
-                    <TableCell>{request.target?.full_name}</TableCell>
+                    <TableCell className="font-medium">{request.requester?.full_name || 'Unknown'}</TableCell>
+                    <TableCell>{request.target?.full_name || 'Unknown'}</TableCell>
+                    <TableCell>{request.swap_date ? format(new Date(request.swap_date), 'MMM d, yyyy') : '-'}</TableCell>
                     <TableCell>{request.original_shift}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
