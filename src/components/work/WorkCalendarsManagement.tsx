@@ -5,71 +5,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, ChevronLeft, ChevronRight, Users, Clock, CalendarDays, Star } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths, getDay, startOfWeek, addDays } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths, startOfWeek, addDays } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
-
-interface CalendarEvent {
-  id: string;
-  title: string;
-  start: Date;
-  end: Date;
-  type: 'meeting' | 'deadline' | 'leave' | 'holiday' | 'task';
-  attendees?: string[];
-}
+import { useCalendarEvents } from '@/hooks/useCalendarEvents';
 
 export function WorkCalendarsManagement() {
   const { profile } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<'month' | 'week'>('month');
-
-  const { data: events } = useQuery({
-    queryKey: ['calendar-events', currentDate],
-    queryFn: async () => {
-      // Simulated calendar events
-      const today = new Date();
-      return [
-        {
-          id: '1',
-          title: 'Sprint Planning',
-          start: addDays(today, 1),
-          end: addDays(today, 1),
-          type: 'meeting' as const,
-          attendees: ['Team']
-        },
-        {
-          id: '2',
-          title: 'Project Deadline',
-          start: addDays(today, 5),
-          end: addDays(today, 5),
-          type: 'deadline' as const
-        },
-        {
-          id: '3',
-          title: 'Team Offsite',
-          start: addDays(today, 10),
-          end: addDays(today, 11),
-          type: 'meeting' as const,
-          attendees: ['All Hands']
-        },
-        {
-          id: '4',
-          title: 'PTO - John',
-          start: addDays(today, 3),
-          end: addDays(today, 4),
-          type: 'leave' as const
-        },
-        {
-          id: '5',
-          title: 'Code Review Due',
-          start: today,
-          end: today,
-          type: 'task' as const
-        }
-      ] as CalendarEvent[];
-    }
-  });
+  
+  const monthStart = startOfMonth(currentDate);
+  const monthEnd = endOfMonth(currentDate);
+  
+  const { events, isLoading } = useCalendarEvents(monthStart, monthEnd);
 
   const { data: teamMembers } = useQuery({
     queryKey: ['team-calendar-members'],
@@ -86,20 +35,18 @@ export function WorkCalendarsManagement() {
     enabled: !!profile?.organization_id
   });
 
-  const monthStart = startOfMonth(currentDate);
-  const monthEnd = endOfMonth(currentDate);
   const calendarStart = startOfWeek(monthStart);
   const daysInMonth = eachDayOfInterval({ start: calendarStart, end: addDays(calendarStart, 41) });
 
   const getEventsForDay = (date: Date) => {
     return events?.filter(event => {
-      const eventDate = new Date(event.start);
+      const eventDate = new Date(event.start_time);
       return eventDate.toDateString() === date.toDateString();
     }) || [];
   };
 
-  const getEventColor = (type: CalendarEvent['type']) => {
-    const colors = {
+  const getEventColor = (type: string) => {
+    const colors: Record<string, string> = {
       meeting: 'bg-blue-100 text-blue-800 border-blue-200',
       deadline: 'bg-red-100 text-red-800 border-red-200',
       leave: 'bg-green-100 text-green-800 border-green-200',
@@ -160,7 +107,7 @@ export function WorkCalendarsManagement() {
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-blue-500" />
               <span className="text-2xl font-bold">
-                {events?.filter(e => e.type === 'meeting').length || 0}
+                {events?.filter(e => e.event_type === 'meeting').length || 0}
               </span>
             </div>
           </CardContent>
@@ -173,7 +120,7 @@ export function WorkCalendarsManagement() {
             <div className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-red-500" />
               <span className="text-2xl font-bold">
-                {events?.filter(e => e.type === 'deadline').length || 0}
+                {events?.filter(e => e.event_type === 'deadline').length || 0}
               </span>
             </div>
           </CardContent>
@@ -186,7 +133,7 @@ export function WorkCalendarsManagement() {
             <div className="flex items-center gap-2">
               <Star className="h-5 w-5 text-green-500" />
               <span className="text-2xl font-bold">
-                {events?.filter(e => e.type === 'leave').length || 0}
+                {events?.filter(e => e.event_type === 'leave').length || 0}
               </span>
             </div>
           </CardContent>
@@ -212,48 +159,52 @@ export function WorkCalendarsManagement() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-7 gap-px bg-muted">
-            {weekDays.map((day) => (
-              <div key={day} className="bg-background p-2 text-center font-medium text-sm text-muted-foreground">
-                {day}
-              </div>
-            ))}
-            {daysInMonth.map((day, idx) => {
-              const dayEvents = getEventsForDay(day);
-              const isCurrentMonth = isSameMonth(day, currentDate);
-              const isTodayDate = isToday(day);
-              
-              return (
-                <div
-                  key={idx}
-                  className={`bg-background min-h-[100px] p-1 ${
-                    !isCurrentMonth ? 'opacity-40' : ''
-                  } ${isTodayDate ? 'ring-2 ring-primary ring-inset' : ''}`}
-                >
-                  <div className={`text-right text-sm p-1 ${
-                    isTodayDate ? 'bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center ml-auto' : ''
-                  }`}>
-                    {format(day, 'd')}
-                  </div>
-                  <div className="space-y-1">
-                    {dayEvents.slice(0, 2).map((event) => (
-                      <div
-                        key={event.id}
-                        className={`text-xs p-1 rounded truncate border ${getEventColor(event.type)}`}
-                      >
-                        {event.title}
-                      </div>
-                    ))}
-                    {dayEvents.length > 2 && (
-                      <div className="text-xs text-muted-foreground text-center">
-                        +{dayEvents.length - 2} more
-                      </div>
-                    )}
-                  </div>
+          {isLoading ? (
+            <div className="py-8 text-center text-muted-foreground">Loading calendar...</div>
+          ) : (
+            <div className="grid grid-cols-7 gap-px bg-muted">
+              {weekDays.map((day) => (
+                <div key={day} className="bg-background p-2 text-center font-medium text-sm text-muted-foreground">
+                  {day}
                 </div>
-              );
-            })}
-          </div>
+              ))}
+              {daysInMonth.map((day, idx) => {
+                const dayEvents = getEventsForDay(day);
+                const isCurrentMonth = isSameMonth(day, currentDate);
+                const isTodayDate = isToday(day);
+                
+                return (
+                  <div
+                    key={idx}
+                    className={`bg-background min-h-[100px] p-1 ${
+                      !isCurrentMonth ? 'opacity-40' : ''
+                    } ${isTodayDate ? 'ring-2 ring-primary ring-inset' : ''}`}
+                  >
+                    <div className={`text-right text-sm p-1 ${
+                      isTodayDate ? 'bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center ml-auto' : ''
+                    }`}>
+                      {format(day, 'd')}
+                    </div>
+                    <div className="space-y-1">
+                      {dayEvents.slice(0, 2).map((event) => (
+                        <div
+                          key={event.id}
+                          className={`text-xs p-1 rounded truncate border ${getEventColor(event.event_type)}`}
+                        >
+                          {event.title}
+                        </div>
+                      ))}
+                      {dayEvents.length > 2 && (
+                        <div className="text-xs text-muted-foreground text-center">
+                          +{dayEvents.length - 2} more
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -268,18 +219,18 @@ export function WorkCalendarsManagement() {
                 <div key={event.id} className="flex items-center justify-between p-2 border rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className={`w-3 h-3 rounded-full ${
-                      event.type === 'meeting' ? 'bg-blue-500' :
-                      event.type === 'deadline' ? 'bg-red-500' :
-                      event.type === 'leave' ? 'bg-green-500' : 'bg-yellow-500'
+                      event.event_type === 'meeting' ? 'bg-blue-500' :
+                      event.event_type === 'deadline' ? 'bg-red-500' :
+                      event.event_type === 'leave' ? 'bg-green-500' : 'bg-yellow-500'
                     }`} />
                     <div>
                       <p className="font-medium text-sm">{event.title}</p>
                       <p className="text-xs text-muted-foreground">
-                        {format(new Date(event.start), 'MMM d, yyyy')}
+                        {format(new Date(event.start_time), 'MMM d, yyyy')}
                       </p>
                     </div>
                   </div>
-                  <Badge variant="outline" className="capitalize">{event.type}</Badge>
+                  <Badge variant="outline" className="capitalize">{event.event_type}</Badge>
                 </div>
               ))}
               {(!events || events.length === 0) && (

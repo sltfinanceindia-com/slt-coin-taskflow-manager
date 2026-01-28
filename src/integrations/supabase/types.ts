@@ -2764,6 +2764,82 @@ export type Database = {
           },
         ]
       }
+      decisions: {
+        Row: {
+          alternatives: string[] | null
+          context: string | null
+          created_at: string | null
+          created_by: string | null
+          decision_date: string | null
+          decision_maker_id: string | null
+          description: string | null
+          id: string
+          impact: string | null
+          organization_id: string
+          rationale: string | null
+          stakeholders: string[] | null
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          alternatives?: string[] | null
+          context?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          decision_date?: string | null
+          decision_maker_id?: string | null
+          description?: string | null
+          id?: string
+          impact?: string | null
+          organization_id: string
+          rationale?: string | null
+          stakeholders?: string[] | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          alternatives?: string[] | null
+          context?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          decision_date?: string | null
+          decision_maker_id?: string | null
+          description?: string | null
+          id?: string
+          impact?: string | null
+          organization_id?: string
+          rationale?: string | null
+          stakeholders?: string[] | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "decisions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "decisions_decision_maker_id_fkey"
+            columns: ["decision_maker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "decisions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       departments: {
         Row: {
           color: string | null
@@ -5379,6 +5455,76 @@ export type Database = {
           },
         ]
       }
+      lessons_learned: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          impact: string | null
+          organization_id: string
+          project_id: string | null
+          project_name: string | null
+          recommendations: string[] | null
+          title: string
+          updated_at: string | null
+          what_went_well: string[] | null
+          what_went_wrong: string[] | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          impact?: string | null
+          organization_id: string
+          project_id?: string | null
+          project_name?: string | null
+          recommendations?: string[] | null
+          title: string
+          updated_at?: string | null
+          what_went_well?: string[] | null
+          what_went_wrong?: string[] | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          impact?: string | null
+          organization_id?: string
+          project_id?: string | null
+          project_name?: string | null
+          recommendations?: string[] | null
+          title?: string
+          updated_at?: string | null
+          what_went_well?: string[] | null
+          what_went_wrong?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lessons_learned_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lessons_learned_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lessons_learned_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lifecycle_instance_items: {
         Row: {
           assigned_to: string | null
@@ -6801,6 +6947,70 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      on_call_schedules: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          end_date: string
+          id: string
+          notes: string | null
+          organization_id: string
+          rotation_type: string | null
+          start_date: string
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          end_date: string
+          id?: string
+          notes?: string | null
+          organization_id: string
+          rotation_type?: string | null
+          start_date: string
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          end_date?: string
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          rotation_type?: string | null
+          start_date?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "on_call_schedules_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "on_call_schedules_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "on_call_schedules_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -9080,6 +9290,73 @@ export type Database = {
           },
         ]
       }
+      recurring_tasks: {
+        Row: {
+          assigned_to: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          frequency: string | null
+          id: string
+          is_active: boolean | null
+          last_created: string | null
+          next_occurrence: string | null
+          organization_id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          frequency?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_created?: string | null
+          next_occurrence?: string | null
+          organization_id: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          frequency?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_created?: string | null
+          next_occurrence?: string | null
+          organization_id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recurring_tasks_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_tasks_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_tasks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       referral_tracking: {
         Row: {
           created_at: string
@@ -9120,6 +9397,66 @@ export type Database = {
             columns: ["feedback_response_id"]
             isOneToOne: false
             referencedRelation: "feedback_responses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      remote_policies: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          eligibility_criteria: string | null
+          equipment_allowance: number | null
+          id: string
+          is_active: boolean | null
+          max_wfh_days: number | null
+          name: string
+          organization_id: string
+          requires_approval: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          eligibility_criteria?: string | null
+          equipment_allowance?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_wfh_days?: number | null
+          name: string
+          organization_id: string
+          requires_approval?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          eligibility_criteria?: string | null
+          equipment_allowance?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_wfh_days?: number | null
+          name?: string
+          organization_id?: string
+          requires_approval?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "remote_policies_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "remote_policies_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -10188,6 +10525,80 @@ export type Database = {
             columns: ["target_schedule_id"]
             isOneToOne: false
             referencedRelation: "shift_schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shift_swaps: {
+        Row: {
+          approved_by: string | null
+          created_at: string | null
+          id: string
+          organization_id: string
+          original_shift: string
+          reason: string | null
+          requested_shift: string
+          requester_id: string
+          status: string | null
+          swap_date: string | null
+          target_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          approved_by?: string | null
+          created_at?: string | null
+          id?: string
+          organization_id: string
+          original_shift: string
+          reason?: string | null
+          requested_shift: string
+          requester_id: string
+          status?: string | null
+          swap_date?: string | null
+          target_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          approved_by?: string | null
+          created_at?: string | null
+          id?: string
+          organization_id?: string
+          original_shift?: string
+          reason?: string | null
+          requested_shift?: string
+          requester_id?: string
+          status?: string | null
+          swap_date?: string | null
+          target_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_swaps_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_swaps_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_swaps_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_swaps_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]

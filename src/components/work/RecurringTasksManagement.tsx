@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,31 +12,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { RefreshCcw, Plus, Play, Pause, Edit, Trash2, Calendar, Clock } from 'lucide-react';
-import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
-
-interface RecurringTask {
-  id: string;
-  title: string;
-  description: string;
-  frequency: string;
-  assigned_to: string;
-  next_occurrence: string;
-  last_created: string | null;
-  is_active: boolean;
-  created_at: string;
-  assignee?: { full_name: string };
-}
+import { useRecurringTasksData } from '@/hooks/useRecurringTasksData';
 
 export function RecurringTasksManagement() {
   const { profile } = useAuth();
-  const queryClient = useQueryClient();
+  const { recurringTasks, isLoading, createRecurringTask, deleteRecurringTask, toggleRecurringTask, isCreating } = useRecurringTasksData();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    frequency: 'weekly',
+    frequency: 'weekly' as 'daily' | 'weekly' | 'bi-weekly' | 'monthly' | 'quarterly',
     assigned_to: '',
     is_active: true
   });
@@ -55,41 +42,20 @@ export function RecurringTasksManagement() {
     enabled: !!profile?.organization_id
   });
 
-  const { data: recurringTasks, isLoading } = useQuery({
-    queryKey: ['recurring-tasks'],
-    queryFn: async () => {
-      return [
-        {
-          id: '1',
-          title: 'Weekly Team Meeting',
-          description: 'Prepare and conduct weekly team sync',
-          frequency: 'weekly',
-          assigned_to: profile?.id || '',
-          next_occurrence: format(new Date(), 'yyyy-MM-dd'),
-          last_created: null,
-          is_active: true,
-          created_at: new Date().toISOString(),
-          assignee: { full_name: profile?.full_name || 'Unassigned' }
-        },
-        {
-          id: '2',
-          title: 'Monthly Report',
-          description: 'Generate and submit monthly progress report',
-          frequency: 'monthly',
-          assigned_to: profile?.id || '',
-          next_occurrence: format(new Date(), 'yyyy-MM-dd'),
-          last_created: format(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
-          is_active: true,
-          created_at: new Date().toISOString(),
-          assignee: { full_name: profile?.full_name || 'Unassigned' }
-        }
-      ] as RecurringTask[];
-    },
-    enabled: !!employees
-  });
-
-  const handleSubmit = () => {
-    toast.success('Recurring task created successfully');
+  const handleSubmit = async () => {
+    if (!formData.title) return;
+    
+    await createRecurringTask({
+      title: formData.title,
+      description: formData.description || null,
+      frequency: formData.frequency,
+      assigned_to: formData.assigned_to || null,
+      next_occurrence: format(new Date(), 'yyyy-MM-dd'),
+      last_created: null,
+      is_active: formData.is_active,
+      created_by: null,
+    });
+    
     setIsDialogOpen(false);
     setFormData({
       title: '',
@@ -101,16 +67,14 @@ export function RecurringTasksManagement() {
   };
 
   const handleToggle = (id: string, isActive: boolean) => {
-    toast.success(`Recurring task ${isActive ? 'activated' : 'paused'}`);
-    queryClient.invalidateQueries({ queryKey: ['recurring-tasks'] });
+    toggleRecurringTask({ id, is_active: isActive });
   };
 
-  const handleDelete = (id: string) => {
-    toast.success('Recurring task deleted successfully');
-    queryClient.invalidateQueries({ queryKey: ['recurring-tasks'] });
+  const handleDelete = async (id: string) => {
+    await deleteRecurringTask(id);
   };
 
-  const getFrequencyBadge = (frequency: string) => {
+  const getFrequencyBadge = (frequency: string | null) => {
     const colors: Record<string, string> = {
       daily: 'bg-red-100 text-red-800',
       weekly: 'bg-blue-100 text-blue-800',
@@ -118,10 +82,10 @@ export function RecurringTasksManagement() {
       monthly: 'bg-green-100 text-green-800',
       quarterly: 'bg-orange-100 text-orange-800'
     };
-    return <Badge className={colors[frequency] || 'bg-gray-100 text-gray-800'}>{frequency}</Badge>;
+    return <Badge className={colors[frequency || 'weekly'] || 'bg-gray-100 text-gray-800'}>{frequency || 'weekly'}</Badge>;
   };
 
-  const frequencies = ['daily', 'weekly', 'bi-weekly', 'monthly', 'quarterly'];
+  const frequencies = ['daily', 'weekly', 'bi-weekly', 'monthly', 'quarterly'] as const;
 
   return (
     <div className="space-y-6">
@@ -164,7 +128,7 @@ export function RecurringTasksManagement() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Frequency</Label>
-                  <Select value={formData.frequency} onValueChange={(v) => setFormData({ ...formData, frequency: v })}>
+                  <Select value={formData.frequency} onValueChange={(v: typeof frequencies[number]) => setFormData({ ...formData, frequency: v })}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -199,7 +163,9 @@ export function RecurringTasksManagement() {
                   onCheckedChange={(v) => setFormData({ ...formData, is_active: v })}
                 />
               </div>
-              <Button onClick={handleSubmit} className="w-full">Create Recurring Task</Button>
+              <Button onClick={handleSubmit} className="w-full" disabled={isCreating}>
+                {isCreating ? 'Creating...' : 'Create Recurring Task'}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -272,7 +238,7 @@ export function RecurringTasksManagement() {
               ) : recurringTasks?.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                    No recurring tasks found
+                    No recurring tasks found. Create your first recurring task to get started.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -281,12 +247,14 @@ export function RecurringTasksManagement() {
                     <TableCell>
                       <div>
                         <p className="font-medium">{task.title}</p>
-                        <p className="text-sm text-muted-foreground">{task.description}</p>
+                        {task.description && <p className="text-sm text-muted-foreground">{task.description}</p>}
                       </div>
                     </TableCell>
                     <TableCell>{getFrequencyBadge(task.frequency)}</TableCell>
                     <TableCell>{task.assignee?.full_name || 'Unassigned'}</TableCell>
-                    <TableCell>{format(new Date(task.next_occurrence), 'MMM d, yyyy')}</TableCell>
+                    <TableCell>
+                      {task.next_occurrence ? format(new Date(task.next_occurrence), 'MMM d, yyyy') : '-'}
+                    </TableCell>
                     <TableCell>
                       {task.last_created ? format(new Date(task.last_created), 'MMM d, yyyy') : '-'}
                     </TableCell>

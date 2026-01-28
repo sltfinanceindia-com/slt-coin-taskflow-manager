@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,26 +9,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { BookOpen, Plus, Calendar, ThumbsUp, ThumbsDown, Lightbulb, Search, Edit, Trash2 } from 'lucide-react';
-import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { useAuth } from '@/hooks/useAuth';
-
-interface LessonLearned {
-  id: string;
-  title: string;
-  project_name: string;
-  category: string;
-  what_went_well: string[];
-  what_went_wrong: string[];
-  recommendations: string[];
-  impact: string;
-  created_by: string;
-  created_at: string;
-}
+import { useLessonsLearned } from '@/hooks/useLessonsLearned';
 
 export function LessonsLearnedManagement() {
-  const { profile } = useAuth();
-  const queryClient = useQueryClient();
+  const { lessons, isLoading, createLesson, deleteLesson, isCreating } = useLessonsLearned();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
@@ -39,64 +23,24 @@ export function LessonsLearnedManagement() {
     what_went_well: '',
     what_went_wrong: '',
     recommendations: '',
-    impact: 'medium'
+    impact: 'medium' as 'low' | 'medium' | 'high'
   });
 
-  const { data: lessons, isLoading } = useQuery({
-    queryKey: ['lessons-learned'],
-    queryFn: async () => {
-      return [
-        {
-          id: '1',
-          title: 'Q4 Product Launch Retrospective',
-          project_name: 'Product Launch 2024',
-          category: 'process',
-          what_went_well: [
-            'Clear communication between teams',
-            'Automated deployment pipeline saved time',
-            'Early user testing identified critical bugs'
-          ],
-          what_went_wrong: [
-            'Scope creep in final sprint',
-            'Insufficient documentation for handoff'
-          ],
-          recommendations: [
-            'Lock scope 2 weeks before launch',
-            'Create documentation templates',
-            'Include buffer time for unexpected issues'
-          ],
-          impact: 'high',
-          created_by: profile?.full_name || 'Unknown',
-          created_at: new Date().toISOString()
-        },
-        {
-          id: '2',
-          title: 'API Migration Lessons',
-          project_name: 'API v2 Migration',
-          category: 'technical',
-          what_went_well: [
-            'Comprehensive test coverage',
-            'Gradual rollout strategy worked well'
-          ],
-          what_went_wrong: [
-            'Underestimated legacy system dependencies',
-            'Performance testing started too late'
-          ],
-          recommendations: [
-            'Map all dependencies before starting',
-            'Include performance testing in each sprint',
-            'Create rollback procedures upfront'
-          ],
-          impact: 'medium',
-          created_by: profile?.full_name || 'Unknown',
-          created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-        }
-      ] as LessonLearned[];
-    }
-  });
-
-  const handleSubmit = () => {
-    toast.success('Lesson learned recorded successfully');
+  const handleSubmit = async () => {
+    if (!formData.title) return;
+    
+    await createLesson({
+      title: formData.title,
+      project_id: null,
+      project_name: formData.project_name || null,
+      category: formData.category,
+      what_went_well: formData.what_went_well ? formData.what_went_well.split('\n').filter(Boolean) : null,
+      what_went_wrong: formData.what_went_wrong ? formData.what_went_wrong.split('\n').filter(Boolean) : null,
+      recommendations: formData.recommendations ? formData.recommendations.split('\n').filter(Boolean) : null,
+      impact: formData.impact,
+      created_by: null,
+    });
+    
     setIsDialogOpen(false);
     setFormData({
       title: '',
@@ -109,24 +53,23 @@ export function LessonsLearnedManagement() {
     });
   };
 
-  const handleDelete = (id: string) => {
-    toast.success('Lesson deleted');
-    queryClient.invalidateQueries({ queryKey: ['lessons-learned'] });
+  const handleDelete = async (id: string) => {
+    await deleteLesson(id);
   };
 
-  const getCategoryBadge = (category: string) => {
+  const getCategoryBadge = (category: string | null) => {
     const colors: Record<string, string> = {
       process: 'bg-blue-100 text-blue-800',
       technical: 'bg-purple-100 text-purple-800',
       communication: 'bg-green-100 text-green-800',
       planning: 'bg-orange-100 text-orange-800'
     };
-    return <Badge className={colors[category] || 'bg-gray-100 text-gray-800'}>{category}</Badge>;
+    return <Badge className={colors[category || 'process'] || 'bg-gray-100 text-gray-800'}>{category || 'general'}</Badge>;
   };
 
   const filteredLessons = lessons?.filter(l => 
     l.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    l.project_name.toLowerCase().includes(searchQuery.toLowerCase())
+    (l.project_name?.toLowerCase() || '').includes(searchQuery.toLowerCase())
   );
 
   const categories = ['process', 'technical', 'communication', 'planning', 'other'];
@@ -188,7 +131,7 @@ export function LessonsLearnedManagement() {
                   </div>
                   <div className="space-y-2">
                     <Label>Impact Level</Label>
-                    <Select value={formData.impact} onValueChange={(v) => setFormData({ ...formData, impact: v })}>
+                    <Select value={formData.impact} onValueChange={(v: 'low' | 'medium' | 'high') => setFormData({ ...formData, impact: v })}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -236,7 +179,9 @@ export function LessonsLearnedManagement() {
                     rows={3}
                   />
                 </div>
-                <Button onClick={handleSubmit} className="w-full">Save Lesson</Button>
+                <Button onClick={handleSubmit} className="w-full" disabled={isCreating}>
+                  {isCreating ? 'Saving...' : 'Save Lesson'}
+                </Button>
               </div>
             </ScrollArea>
           </DialogContent>
@@ -275,7 +220,7 @@ export function LessonsLearnedManagement() {
             <div className="flex items-center gap-2">
               <Lightbulb className="h-5 w-5 text-yellow-500" />
               <span className="text-2xl font-bold">
-                {lessons?.reduce((acc, l) => acc + l.recommendations.length, 0) || 0}
+                {lessons?.reduce((acc, l) => acc + (l.recommendations?.length || 0), 0) || 0}
               </span>
             </div>
           </CardContent>
@@ -303,7 +248,7 @@ export function LessonsLearnedManagement() {
         ) : filteredLessons?.length === 0 ? (
           <Card>
             <CardContent className="py-8 text-center text-muted-foreground">
-              No lessons found
+              No lessons found. Add your first lesson to get started.
             </CardContent>
           </Card>
         ) : (
@@ -317,7 +262,7 @@ export function LessonsLearnedManagement() {
                       {getCategoryBadge(lesson.category)}
                     </div>
                     <CardDescription className="flex items-center gap-4">
-                      <span>{lesson.project_name}</span>
+                      {lesson.project_name && <span>{lesson.project_name}</span>}
                       <span className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
                         {format(new Date(lesson.created_at), 'MMM d, yyyy')}
@@ -336,49 +281,55 @@ export function LessonsLearnedManagement() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {lesson.what_went_well && lesson.what_went_well.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium flex items-center gap-2">
+                        <ThumbsUp className="h-4 w-4 text-green-500" />
+                        What Went Well
+                      </p>
+                      <ul className="space-y-1">
+                        {lesson.what_went_well.map((item, i) => (
+                          <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
+                            <span className="text-green-500">✓</span>
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {lesson.what_went_wrong && lesson.what_went_wrong.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium flex items-center gap-2">
+                        <ThumbsDown className="h-4 w-4 text-red-500" />
+                        Areas for Improvement
+                      </p>
+                      <ul className="space-y-1">
+                        {lesson.what_went_wrong.map((item, i) => (
+                          <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
+                            <span className="text-red-500">✗</span>
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+                {lesson.recommendations && lesson.recommendations.length > 0 && (
                   <div className="space-y-2">
                     <p className="text-sm font-medium flex items-center gap-2">
-                      <ThumbsUp className="h-4 w-4 text-green-500" />
-                      What Went Well
+                      <Lightbulb className="h-4 w-4 text-yellow-500" />
+                      Recommendations
                     </p>
                     <ul className="space-y-1">
-                      {lesson.what_went_well.map((item, i) => (
+                      {lesson.recommendations.map((rec, i) => (
                         <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                          <span className="text-green-500">✓</span>
-                          {item}
+                          <span className="text-yellow-500">→</span>
+                          {rec}
                         </li>
                       ))}
                     </ul>
                   </div>
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium flex items-center gap-2">
-                      <ThumbsDown className="h-4 w-4 text-red-500" />
-                      Areas for Improvement
-                    </p>
-                    <ul className="space-y-1">
-                      {lesson.what_went_wrong.map((item, i) => (
-                        <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                          <span className="text-red-500">✗</span>
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm font-medium flex items-center gap-2">
-                    <Lightbulb className="h-4 w-4 text-yellow-500" />
-                    Recommendations
-                  </p>
-                  <ul className="space-y-1">
-                    {lesson.recommendations.map((rec, i) => (
-                      <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                        <span className="text-yellow-500">→</span>
-                        {rec}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                )}
               </CardContent>
             </Card>
           ))
