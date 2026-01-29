@@ -9,31 +9,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { toast } from '@/hooks/use-toast';
+import { useSprints } from '@/hooks/useSprints';
 import { format, differenceInDays, addDays } from 'date-fns';
 import { 
   Target, Plus, Play, CheckCircle, Clock, 
   BarChart3, Calendar, Trash2
 } from 'lucide-react';
 
-interface Sprint {
-  id: string;
-  name: string;
-  goal: string | null;
-  start_date: string;
-  end_date: string;
-  status: string;
-  total_story_points: number;
-  completed_story_points: number;
-  created_at: string;
-}
-
 export function SprintManagement() {
-  const { profile } = useAuth();
-  const queryClient = useQueryClient();
+  const { 
+    sprints, 
+    isLoading, 
+    createSprint, 
+    updateSprint, 
+    deleteSprint 
+  } = useSprints();
+  
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [filter, setFilter] = useState<string>('all');
   const [newSprint, setNewSprint] = useState({
@@ -43,101 +34,69 @@ export function SprintManagement() {
     end_date: format(addDays(new Date(), 14), 'yyyy-MM-dd'),
   });
 
-  // Fetch sprints from projects table
-  const { data: sprints, isLoading } = useQuery({
-    queryKey: ['sprints', profile?.organization_id, filter],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('id, name, description, start_date, target_end_date, status, budget, spent_budget, created_at')
-        .eq('organization_id', profile?.organization_id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      return (data || []).map(p => ({
-        id: p.id,
-        name: p.name,
-        goal: p.description,
-        start_date: p.start_date || new Date().toISOString(),
-        end_date: p.target_end_date || addDays(new Date(), 14).toISOString(),
-        status: p.status === 'completed' ? 'completed' : p.status === 'active' ? 'active' : 'planning',
-        total_story_points: Math.floor((p.budget || 0) / 1000),
-        completed_story_points: Math.floor((p.spent_budget || 0) / 1000),
-        created_at: p.created_at,
-      })) as Sprint[];
-    },
-    enabled: !!profile?.organization_id,
-  });
-
-  // Create sprint mutation
-  const createSprintMutation = useMutation({
-    mutationFn: async (sprint: typeof newSprint) => {
-      const { data, error } = await supabase
-        .from('projects')
-        .insert({
-          organization_id: profile?.organization_id,
-          name: sprint.name,
-          description: sprint.goal,
-          start_date: sprint.start_date,
-          target_end_date: sprint.end_date,
-          status: 'planning',
-          owner_id: profile?.id,
-          created_by: profile?.id || '',
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sprints'] });
+  // Create sprint mutation handler
+  const handleCreateSprint = async () => {
+    try {
+      await createSprint.mutateAsync({
+        name: newSprint.name,
+        goal: newSprint.goal || null,
+        start_date: newSprint.start_date,
+        end_date: newSprint.end_date,
+        status: 'planning',
+        velocity: null,
+        total_story_points: null,
+        completed_story_points: null,
+        created_by: null,
+        project_id: null,
+      });
       setIsCreateOpen(false);
-      setNewSprint({ name: '', goal: '', start_date: format(new Date(), 'yyyy-MM-dd'), end_date: format(addDays(new Date(), 14), 'yyyy-MM-dd') });
-      toast({ title: 'Sprint created successfully' });
-    },
-    onError: (error) => {
-      toast({ title: 'Error creating sprint', description: error.message, variant: 'destructive' });
-    },
-  });
+      setNewSprint({ 
+        name: '', 
+        goal: '', 
+        start_date: format(new Date(), 'yyyy-MM-dd'), 
+        end_date: format(addDays(new Date(), 14), 'yyyy-MM-dd') 
+      });
+    } catch (error) {
+      // Error handled by hook
+    }
+  };
 
-  const updateSprintMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await supabase.from('projects').update({ status }).eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sprints'] });
-      toast({ title: 'Sprint updated' });
-    },
-  });
+  const handleUpdateStatus = async (id: string, status: 'planning' | 'active' | 'completed' | 'cancelled') => {
+    try {
+      await updateSprint.mutateAsync({ id, status });
+    } catch (error) {
+      // Error handled by hook
+    }
+  };
 
-  const deleteSprintMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from('projects').delete().eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sprints'] });
-      toast({ title: 'Sprint deleted' });
-    },
-  });
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteSprint.mutateAsync(id);
+    } catch (error) {
+      // Error handled by hook
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active': return <Badge className="bg-green-100 text-green-800"><Play className="h-3 w-3 mr-1" />Active</Badge>;
       case 'completed': return <Badge className="bg-blue-100 text-blue-800"><CheckCircle className="h-3 w-3 mr-1" />Completed</Badge>;
+      case 'cancelled': return <Badge variant="destructive"><Clock className="h-3 w-3 mr-1" />Cancelled</Badge>;
       default: return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />Planning</Badge>;
     }
   };
 
-  const getSprintProgress = (sprint: Sprint) => sprint.total_story_points === 0 ? 0 : Math.round((sprint.completed_story_points / sprint.total_story_points) * 100);
+  const getSprintProgress = (sprint: typeof sprints[0]) => {
+    const total = sprint.total_story_points || 0;
+    const completed = sprint.completed_story_points || 0;
+    return total === 0 ? 0 : Math.round((completed / total) * 100);
+  };
+  
   const getDaysRemaining = (endDate: string) => differenceInDays(new Date(endDate), new Date());
   const filteredSprints = sprints?.filter(s => filter === 'all' || s.status === filter) || [];
   const activeSprints = sprints?.filter(s => s.status === 'active').length || 0;
   const completedSprints = sprints?.filter(s => s.status === 'completed').length || 0;
-  const totalPoints = sprints?.reduce((sum, s) => sum + s.total_story_points, 0) || 0;
+  const totalPoints = sprints?.reduce((sum, s) => sum + (s.total_story_points || 0), 0) || 0;
 
   return (
     <div className="space-y-6">
@@ -167,8 +126,12 @@ export function SprintManagement() {
                   <div><Label>Start Date</Label><Input type="date" value={newSprint.start_date} onChange={(e) => setNewSprint(prev => ({ ...prev, start_date: e.target.value }))} /></div>
                   <div><Label>End Date</Label><Input type="date" value={newSprint.end_date} onChange={(e) => setNewSprint(prev => ({ ...prev, end_date: e.target.value }))} /></div>
                 </div>
-                <Button className="w-full" onClick={() => createSprintMutation.mutate(newSprint)} disabled={!newSprint.name || createSprintMutation.isPending}>
-                  {createSprintMutation.isPending ? 'Creating...' : 'Create Sprint'}
+                <Button 
+                  className="w-full" 
+                  onClick={handleCreateSprint} 
+                  disabled={!newSprint.name || createSprint.isPending}
+                >
+                  {createSprint.isPending ? 'Creating...' : 'Create Sprint'}
                 </Button>
               </div>
             </DialogContent>
@@ -180,7 +143,7 @@ export function SprintManagement() {
         <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Active</CardTitle><Play className="h-4 w-4 text-green-500" /></CardHeader><CardContent><div className="text-2xl font-bold">{activeSprints}</div></CardContent></Card>
         <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Completed</CardTitle><CheckCircle className="h-4 w-4 text-blue-500" /></CardHeader><CardContent><div className="text-2xl font-bold">{completedSprints}</div></CardContent></Card>
         <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Total Points</CardTitle><BarChart3 className="h-4 w-4 text-purple-500" /></CardHeader><CardContent><div className="text-2xl font-bold">{totalPoints}</div></CardContent></Card>
-        <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Velocity</CardTitle><Target className="h-4 w-4 text-orange-500" /></CardHeader><CardContent><div className="text-2xl font-bold">{sprints?.reduce((sum, s) => sum + s.completed_story_points, 0) || 0}</div></CardContent></Card>
+        <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Velocity</CardTitle><Target className="h-4 w-4 text-orange-500" /></CardHeader><CardContent><div className="text-2xl font-bold">{sprints?.reduce((sum, s) => sum + (s.completed_story_points || 0), 0) || 0}</div></CardContent></Card>
       </div>
 
       <Card>
@@ -194,14 +157,14 @@ export function SprintManagement() {
                   <TableRow key={sprint.id}>
                     <TableCell><div className="font-medium">{sprint.name}</div>{sprint.goal && <div className="text-sm text-muted-foreground line-clamp-1">{sprint.goal}</div>}</TableCell>
                     <TableCell><div className="flex items-center gap-1 text-sm"><Calendar className="h-3 w-3" />{format(new Date(sprint.start_date), 'MMM dd')} - {format(new Date(sprint.end_date), 'MMM dd')}</div></TableCell>
-                    <TableCell><div className="space-y-1"><div className="flex justify-between text-sm"><span>{sprint.completed_story_points}/{sprint.total_story_points} pts</span><span>{getSprintProgress(sprint)}%</span></div><Progress value={getSprintProgress(sprint)} className="h-2" /></div></TableCell>
+                    <TableCell><div className="space-y-1"><div className="flex justify-between text-sm"><span>{sprint.completed_story_points || 0}/{sprint.total_story_points || 0} pts</span><span>{getSprintProgress(sprint)}%</span></div><Progress value={getSprintProgress(sprint)} className="h-2" /></div></TableCell>
                     <TableCell>{getStatusBadge(sprint.status)}</TableCell>
                     <TableCell>{sprint.status === 'active' ? <Badge variant={getDaysRemaining(sprint.end_date) <= 2 ? 'destructive' : 'outline'}>{getDaysRemaining(sprint.end_date)} days</Badge> : '-'}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        {sprint.status === 'planning' && <Button size="sm" variant="outline" onClick={() => updateSprintMutation.mutate({ id: sprint.id, status: 'active' })}><Play className="h-3 w-3 mr-1" />Start</Button>}
-                        {sprint.status === 'active' && <Button size="sm" variant="outline" onClick={() => updateSprintMutation.mutate({ id: sprint.id, status: 'completed' })}><CheckCircle className="h-3 w-3 mr-1" />Complete</Button>}
-                        <Button size="sm" variant="ghost" onClick={() => deleteSprintMutation.mutate(sprint.id)}><Trash2 className="h-3 w-3" /></Button>
+                        {sprint.status === 'planning' && <Button size="sm" variant="outline" onClick={() => handleUpdateStatus(sprint.id, 'active')}><Play className="h-3 w-3 mr-1" />Start</Button>}
+                        {sprint.status === 'active' && <Button size="sm" variant="outline" onClick={() => handleUpdateStatus(sprint.id, 'completed')}><CheckCircle className="h-3 w-3 mr-1" />Complete</Button>}
+                        <Button size="sm" variant="ghost" onClick={() => handleDelete(sprint.id)}><Trash2 className="h-3 w-3" /></Button>
                       </div>
                     </TableCell>
                   </TableRow>

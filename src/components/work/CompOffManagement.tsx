@@ -26,6 +26,27 @@ export function CompOffManagement() {
     reason: '',
   });
 
+  // Fetch the Comp-Off leave type
+  const { data: compOffLeaveType } = useQuery({
+    queryKey: ['comp-off-leave-type', profile?.organization_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('leave_types')
+        .select('id, name')
+        .eq('organization_id', profile?.organization_id)
+        .or('name.ilike.%comp-off%,name.ilike.%comp off%,name.ilike.%compensatory%')
+        .limit(1)
+        .single();
+
+      if (error) {
+        console.error('Comp-Off leave type not found:', error.message);
+        return null;
+      }
+      return data;
+    },
+    enabled: !!profile?.organization_id,
+  });
+
   // Use leave_requests table with type 'comp_off'
   const { data: compOffRequests, isLoading } = useQuery({
     queryKey: ['comp-off', profile?.organization_id, isAdmin],
@@ -33,11 +54,17 @@ export function CompOffManagement() {
       let query = supabase
         .from('leave_requests')
         .select(`
-          id, employee_id, start_date, end_date, reason, status, created_at
+          id, employee_id, start_date, end_date, reason, status, created_at, total_days
         `)
         .eq('organization_id', profile?.organization_id)
-        .ilike('reason', '%comp%off%')
         .order('created_at', { ascending: false });
+
+      // Filter by leave_type_id if available, otherwise fall back to reason text
+      if (compOffLeaveType?.id) {
+        query = query.eq('leave_type_id', compOffLeaveType.id);
+      } else {
+        query = query.ilike('reason', '%comp%off%');
+      }
 
       if (!isAdmin) {
         query = query.eq('employee_id', profile?.id);
@@ -65,14 +92,19 @@ export function CompOffManagement() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any)
+      if (!compOffLeaveType) {
+        throw new Error('Comp-Off leave type not configured. Please contact your administrator.');
+      }
+
+      const { error } = await supabase
         .from('leave_requests')
         .insert({
           employee_id: profile?.id,
           organization_id: profile?.organization_id,
-          leave_type_id: null,
+          leave_type_id: compOffLeaveType.id,
           start_date: newRequest.requested_date,
           end_date: newRequest.requested_date,
+          total_days: 1, // Required field
           reason: `Comp-Off for working on ${newRequest.worked_date}: ${newRequest.reason}`,
           status: 'pending',
         });

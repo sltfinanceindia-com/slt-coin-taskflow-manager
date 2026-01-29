@@ -148,6 +148,55 @@ export function useTaskTemplates() {
     },
   });
 
+  // Create tasks from template
+  const createTasksFromTemplate = useMutation({
+    mutationFn: async ({ templateId, projectId, assigneeId }: { 
+      templateId: string; 
+      projectId?: string;
+      assigneeId?: string;
+    }) => {
+      const template = templatesQuery.data?.find(t => t.id === templateId);
+      if (!template) throw new Error('Template not found');
+
+      const tasks = parseTemplateTasks(template);
+      if (tasks.length === 0) throw new Error('No tasks in template');
+
+      const tasksToCreate = tasks.map(task => ({
+        title: task.title,
+        description: task.description || '',
+        priority: (task.priority || 'medium') as 'low' | 'medium' | 'high' | 'urgent',
+        status: 'assigned' as const,
+        assigned_to: assigneeId || null,
+        project_id: projectId || null,
+        organization_id: profile?.organization_id,
+        created_by: profile?.id || '',
+        slt_coin_value: task.slt_coin_value || 0,
+      }));
+
+      const { data, error } = await supabase
+        .from('tasks')
+        .insert(tasksToCreate)
+        .select();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      toast({
+        title: 'Tasks Created',
+        description: `Created ${data?.length || 0} tasks from template.`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
   return {
     templates: templatesQuery.data || [],
     isLoading: templatesQuery.isLoading,
@@ -156,5 +205,8 @@ export function useTaskTemplates() {
     createTemplate,
     updateTemplate,
     deleteTemplate,
+    createTasksFromTemplate,
+    isCreating: createTemplate.isPending,
+    isDeleting: deleteTemplate.isPending,
   };
 }
