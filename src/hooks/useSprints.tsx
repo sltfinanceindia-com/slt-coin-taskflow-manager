@@ -33,7 +33,7 @@ export function useSprints(projectId?: string) {
     queryFn: async () => {
       if (!profile?.organization_id) return [];
       
-      let query = (supabase as any)
+      let query = supabase
         .from('sprints')
         .select(`
           *,
@@ -55,7 +55,7 @@ export function useSprints(projectId?: string) {
 
   const createSprint = useMutation({
     mutationFn: async (sprint: Omit<Sprint, 'id' | 'created_at' | 'updated_at' | 'project' | 'organization_id'>) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('sprints')
         .insert({
           ...sprint,
@@ -76,7 +76,7 @@ export function useSprints(projectId?: string) {
 
   const updateSprint = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Sprint> & { id: string }) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('sprints')
         .update(updates)
         .eq('id', id)
@@ -94,7 +94,7 @@ export function useSprints(projectId?: string) {
 
   const deleteSprint = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('sprints')
         .delete()
         .eq('id', id);

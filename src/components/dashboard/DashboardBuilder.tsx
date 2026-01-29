@@ -92,19 +92,38 @@ export function DashboardBuilder() {
     }
   }, [widgets, isLoading, profile?.id]);
 
-  // Save widgets mutation
+  // Save widgets mutation - handle both new and existing widgets
   const saveWidgets = useMutation({
     mutationFn: async () => {
       for (const widget of localWidgets) {
-        const { error } = await supabase
-          .from('dashboard_widgets')
-          .update({
-            position: widget.position,
-            is_visible: widget.is_visible,
-            size: widget.size,
-          })
-          .eq('id', widget.id);
-        if (error) throw error;
+        // Check if this is a default widget (not yet in DB)
+        if (widget.id.startsWith('default-')) {
+          // Insert new widget
+          const { error } = await supabase
+            .from('dashboard_widgets')
+            .insert([{
+              user_id: profile?.id,
+              widget_type: widget.widget_type,
+              title: widget.title,
+              position: widget.position,
+              size: widget.size,
+              is_visible: widget.is_visible,
+              config: {} as any,
+              organization_id: profile?.organization_id,
+            }]);
+          if (error) throw error;
+        } else {
+          // Update existing widget
+          const { error } = await supabase
+            .from('dashboard_widgets')
+            .update({
+              position: widget.position,
+              is_visible: widget.is_visible,
+              size: widget.size,
+            })
+            .eq('id', widget.id);
+          if (error) throw error;
+        }
       }
     },
     onSuccess: () => {

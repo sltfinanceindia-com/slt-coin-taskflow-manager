@@ -10749,6 +10749,79 @@ export type Database = {
           },
         ]
       }
+      sprints: {
+        Row: {
+          completed_story_points: number | null
+          created_at: string | null
+          created_by: string | null
+          end_date: string
+          goal: string | null
+          id: string
+          name: string
+          organization_id: string
+          project_id: string | null
+          start_date: string
+          status: string | null
+          total_story_points: number | null
+          updated_at: string | null
+          velocity: number | null
+        }
+        Insert: {
+          completed_story_points?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          end_date: string
+          goal?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          project_id?: string | null
+          start_date: string
+          status?: string | null
+          total_story_points?: number | null
+          updated_at?: string | null
+          velocity?: number | null
+        }
+        Update: {
+          completed_story_points?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          end_date?: string
+          goal?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          project_id?: string | null
+          start_date?: string
+          status?: string | null
+          total_story_points?: number | null
+          updated_at?: string | null
+          velocity?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sprints_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sprints_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sprints_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_history: {
         Row: {
           change_type: string
