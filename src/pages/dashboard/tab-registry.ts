@@ -369,6 +369,13 @@ export const tabRegistry: Record<string, TabConfig> = {
   requests: {
     component: lazy(() => import('@/components/requests/RequestHub').then(m => ({ default: m.RequestHub }))),
   },
+  'my-work': {
+    component: lazy(() => import('@/components/mywork/MyWorkCenter').then(m => ({ default: m.MyWorkCenter }))),
+  },
+  'service-desk': {
+    component: lazy(() => import('@/components/servicedesk/ServiceDeskHub').then(m => ({ default: m.ServiceDeskHub }))),
+    adminOnly: true,
+  },
 };
 
 /**
