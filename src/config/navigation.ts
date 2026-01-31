@@ -47,6 +47,7 @@ import {
   Tags,
   GanttChart,
   UserCircle,
+  Ticket,
   LucideIcon,
 } from 'lucide-react';
 
@@ -105,6 +106,7 @@ export const adminNavGroups: NavGroup[] = [
     icon: LayoutDashboard,
     items: [
       { title: "Overview", url: "overview", icon: LayoutDashboard },
+      { title: "My Work", url: "my-work", icon: Inbox },
       { title: "Kanban Board", url: "tasks", icon: CheckSquare },
       { title: "Projects", url: "projects", icon: FolderOpen },
       { title: "Updates", url: "updates", icon: Activity },
@@ -115,6 +117,7 @@ export const adminNavGroups: NavGroup[] = [
     icon: Briefcase,
     items: [
       { title: "Requests", url: "requests", icon: Inbox },
+      { title: "Service Desk", url: "service-desk", icon: Ticket },
       { title: "Time Logs", url: "time", icon: Clock },
       { title: "Capacity", url: "capacity", icon: Gauge },
       { title: "Shifts", url: "shifts", icon: CalendarDays },
@@ -248,6 +251,7 @@ export const internNavGroups: NavGroup[] = [
     icon: LayoutDashboard,
     items: [
       { title: "Overview", url: "overview", icon: LayoutDashboard },
+      { title: "My Work", url: "my-work", icon: Inbox },
       { title: "My Tasks", url: "tasks", icon: CheckSquare },
       { title: "Projects", url: "projects", icon: FolderOpen },
       { title: "Updates", url: "updates", icon: Activity },
