@@ -1,491 +1,208 @@
 
-# Enterprise Feature Expansion Plan
 
-## Executive Summary
+# Enterprise Feature Expansion Plan - Wave 2 UI Implementation
 
-This plan adds 10 major modules and 3 end-to-end flows to transform the application into a Workfront/Workday-class enterprise platform. The implementation builds on existing architecture including portfolios, programs, work requests, OKRs, and templates.
+## Current State Analysis
 
----
+The Wave 1 database schema and hooks have been successfully implemented:
 
-## Current Architecture Analysis
+**Existing Backend (Hooks Ready):**
+- `useMyWork.tsx` - Aggregates tasks, requests, tickets, approvals, meetings
+- `useServiceDesk.tsx` - Full ticketing CRUD with SLA calculations
+- `useEntityComments.tsx` - Generic comments for all entity types
+- `useProjectFinancials.tsx` - Cost/revenue tracking with margin analytics
+- `useCompliance.tsx` - GRC checkpoint management
+- `useResourceRoles.tsx` - Role-based allocation planning
+- `usePortfolios.tsx` / `usePrograms.tsx` - Portfolio management already exists
 
-### What Already Exists (Leverage These)
-| Feature | Status | Location |
-|---------|--------|----------|
-| Portfolio Management | Implemented | `usePortfolios.tsx`, `PortfolioManagement.tsx` |
-| Program Management | Implemented | `usePrograms.tsx` |
-| Work Requests | Implemented | `useWorkRequests.tsx`, `RequestHub.tsx` |
-| Scoring Models | Implemented | `useScoringModels.tsx`, `ScoringHub.tsx` |
-| Project Templates | Implemented | `useProjectTemplates.tsx`, `TemplateLibrary.tsx` |
-| OKR/Objectives | Implemented | `usePerformanceManagement.tsx`, `OKRManagement.tsx` |
-| Task Comments | Implemented | `useTaskComments.tsx` with @mentions |
-| Risks & Issues | Implemented | `useProjectRisks.tsx`, `useIssues.tsx` |
-| Change Requests | Implemented | `useChangeRequests.tsx`, `ChangeRequestHub.tsx` |
-| Self-Service Portal | Implemented | `EmployeeSelfServicePortal.tsx` |
-
-### Gaps to Fill
-- No unified "My Work" center aggregating all work items
-- No service desk/ticketing system for operational work
-- No project-OKR alignment tracking
-- No role-based resource planning (vs. named resources only)
-- No project-level financial forecasting
-- No playbooks (combined templates + KB)
-- No GRC compliance checkpoints
-- No activity feed on all entities
+**Missing UI Components:**
+- No `src/components/mywork/` directory
+- No `src/components/servicedesk/` directory  
+- No `src/components/grc/` directory
+- No `src/components/portfolio/` KPI components
+- No `src/components/collaboration/` activity feed components
 
 ---
 
-## Phase 1: Database Schema Expansion
+## Implementation Plan
 
-### 1.1 New Tables Required
+### Phase 1: My Work Center (Unified Workspace)
 
-```text
--- Strategic alignment: Link projects to OKRs
-portfolio_objectives
-  - id, portfolio_id, objective_id, alignment_score, notes
+Create a unified "My Work" center where users see all assigned items.
 
-project_objectives
-  - id, project_id, objective_id, contribution_weight, notes
-
--- Service Desk & Ticketing
-service_tickets
-  - id, organization_id, ticket_number, type (incident/request/change/problem)
-  - title, description, priority, status, requester_id, assignee_id
-  - sla_response_due, sla_resolution_due, first_response_at, resolved_at
-  - category, subcategory, knowledge_article_id, major_incident (bool)
-  - root_cause, resolution_notes
-
-sla_rules
-  - id, organization_id, name, ticket_type, priority
-  - response_hours, resolution_hours, is_active
-
--- "My Work" aggregation (view, not table)
-v_my_work
-  - Unified view joining: tasks, work_requests, service_tickets, approvals, meetings
-
--- Role-based Resource Planning
-resource_roles
-  - id, organization_id, name, hourly_rate, skill_requirements
-
-project_role_allocations
-  - id, project_id, role_id, allocated_hours, allocation_type (soft/hard)
-  - week_start, assigned_user_id (nullable for generic roles)
-
--- Project Financials
-project_cost_items
-  - id, project_id, type (labor/non_labor), description, amount
-  - date_incurred, category (capex/opex)
-
-project_revenue_items
-  - id, project_id, description, amount, billing_date, status (forecast/actual)
-
--- Playbooks
-playbooks
-  - id, organization_id, name, description, category
-  - template_id, kb_article_ids (array)
-
--- GRC Compliance
-compliance_checkpoints
-  - id, organization_id, name, description, regulation
-  - required_stage (design/build/test/deploy), is_mandatory
-
-project_compliance_status
-  - id, project_id, checkpoint_id, status (pending/passed/failed/waived)
-  - completed_by, completed_at, waiver_approved_by, notes
-
--- Entity Comments (generic for all entities)
-entity_comments
-  - id, entity_type (project/ticket/request/risk/etc), entity_id
-  - user_id, content, mentions, attachments, is_decision (bool)
-  - created_at
-
--- Entity Followers (follow/unfollow)
-entity_followers
-  - id, entity_type, entity_id, user_id, created_at
-```
-
-### 1.2 Extend Existing Tables
-
-```text
--- Add to projects table
-  objective_id UUID REFERENCES objectives(id)  -- Primary OKR alignment
-  capex_budget DECIMAL
-  opex_budget DECIMAL
-  billing_model TEXT (fixed_price/time_material/retainer)
-  client_id UUID
-
--- Add to work_requests table
-  effort_score INTEGER  -- 1-5 scoring
-  value_score INTEGER
-  risk_score INTEGER
-  compliance_impact BOOLEAN
-
--- Add to portfolios table
-  strategic_alignment_score DECIMAL
-  nps_score DECIMAL
-  schedule_health TEXT (on_track/at_risk/delayed)
-```
-
----
-
-## Phase 2: Module Implementation
-
-### 2.1 Enhanced Portfolio Layer (Extend Existing)
-
-**Files to Modify:**
-- `src/hooks/usePortfolios.tsx` - Add KPI calculations, OKR roll-up
-- `src/components/project/PortfolioManagement.tsx` - Add KPI dashboard
-- `src/pages/PortfolioDetailPage.tsx` - Add scenario planning
-
-**New Features:**
-- Portfolio KPIs widget: ROI, NPS, schedule health, risk score
-- Strategic objective alignment view
-- What-if scenario builder (add/remove projects, see capacity impact)
-- Auto-calculate OKR contribution from child projects
-
-**Components to Create:**
-```text
-src/components/portfolio/
-  ├── PortfolioKPIDashboard.tsx    -- ROI, NPS, health metrics
-  ├── StrategicAlignmentView.tsx   -- OKR linkage visualization
-  ├── ScenarioPlanningTool.tsx     -- What-if analysis
-  └── PortfolioRollupMetrics.tsx   -- Aggregate from programs/projects
-```
-
----
-
-### 2.2 Enhanced Work Intake (Extend Existing)
-
-**Files to Modify:**
-- `src/hooks/useWorkRequests.tsx` - Add scoring model integration
-- `src/components/requests/RequestPortal.tsx` - Add effort/value/risk scoring
-- `src/components/requests/TriageQueue.tsx` - Add auto-routing logic
-
-**New Features:**
-- Scoring model on request submission
-- Auto-route to portfolio/operations queue based on type
-- One-click convert to project (with template selection)
-- Scoring comparison view for prioritization
-
-**Components to Create:**
-```text
-src/components/requests/
-  ├── RequestScoringForm.tsx      -- Effort/value/risk inputs
-  ├── RoutingRulesEngine.tsx      -- Conditional routing logic
-  └── RequestConversionWizard.tsx -- Convert to project/task flow
-```
-
----
-
-### 2.3 "My Work" Unified Workspace (NEW)
-
-**New Hook:**
-```text
-src/hooks/useMyWork.tsx
-  - Aggregates: tasks, work_requests, service_tickets, approvals, meetings, learning
-  - Filters: Today, This Week, Overdue, Blocked
-  - Quick actions: log time, change status, comment, delegate
-```
-
-**New Components:**
+**New Files:**
 ```text
 src/components/mywork/
-  ├── MyWorkCenter.tsx            -- Main unified view
-  ├── WorkItemCard.tsx            -- Generic card for any work type
-  ├── SmartPrioritization.tsx     -- AI-suggested prioritization
-  ├── QuickActionPanel.tsx        -- Log time, status, comment
-  └── WorkItemFilters.tsx         -- Today/Week/Overdue/Blocked
+  MyWorkCenter.tsx           - Main container with filters and list
+  WorkItemCard.tsx           - Generic card for task/request/ticket/approval
+  WorkItemFilters.tsx        - Filter bar: Today/Week/Overdue/Type
+  QuickActionPanel.tsx       - Inline actions: status change, time log
 ```
 
-**Navigation:**
-- Add to `src/config/navigation.ts` under "Main" for both admin and intern
-- Register in `tab-registry.ts` as `my-work`
+**Navigation Updates:**
+- Add "My Work" to both admin and intern navigation in `navigation.ts`
+- Register `my-work` in `tab-registry.ts`
+
+**Features:**
+- Smart prioritization (overdue first, then today, then by priority)
+- Filter by type (tasks, requests, tickets, approvals, meetings)
+- Filter by period (Today, This Week, Overdue, All)
+- Quick actions: change status, log time, add comment
+- Color-coded priority and SLA indicators
 
 ---
 
-### 2.4 Advanced Resource & Role Management (Extend Existing)
+### Phase 2: Service Desk Hub
 
-**Files to Modify:**
-- `src/hooks/useWorkload.tsx` - Add role-based allocation
-- `src/components/resources/ResourceAllocation.tsx` - Role planning view
+Create a full ITSM ticketing interface.
 
-**New Features:**
-- Role catalog management
-- Plan by role before assigning people
-- Soft vs hard bookings
-- Utilization heatmaps by role/team/time
-
-**New Components:**
-```text
-src/components/resources/
-  ├── RoleCatalog.tsx             -- Manage resource roles
-  ├── RoleBasedPlanner.tsx        -- Plan allocations by role
-  ├── AllocationHeatmap.tsx       -- Visual utilization view
-  └── BookingTypeToggle.tsx       -- Soft/hard booking controls
-```
-
----
-
-### 2.5 Project Financial Management (Extend Existing)
-
-**Files to Modify:**
-- `src/hooks/useEnhancedProjects.tsx` - Add financial tracking
-- `src/components/project/ProjectDetail.tsx` - Add financials tab
-
-**New Hook:**
-```text
-src/hooks/useProjectFinancials.tsx
-  - CRUD for cost_items and revenue_items
-  - Forecast vs actuals calculations
-  - Margin analytics
-```
-
-**New Components:**
-```text
-src/components/finance/
-  ├── ProjectFinancialsTab.tsx    -- Main financial view
-  ├── CostBreakdownChart.tsx      -- Labor vs non-labor
-  ├── ForecastVsActuals.tsx       -- Variance tracking
-  ├── MarginAnalytics.tsx         -- Gross margin by project
-  └── BillingSchedule.tsx         -- Revenue forecasting
-```
-
----
-
-### 2.6 Service Desk & Ticketing (NEW)
-
-**New Hook:**
-```text
-src/hooks/useServiceDesk.tsx
-  - CRUD for service_tickets
-  - SLA timer calculations
-  - Knowledge article suggestions
-  - Major incident workflow
-```
-
-**New Components:**
+**New Files:**
 ```text
 src/components/servicedesk/
-  ├── ServiceDeskHub.tsx          -- Main ticketing interface
-  ├── TicketList.tsx              -- Filterable ticket queue
-  ├── TicketDetail.tsx            -- Full ticket view
-  ├── TicketForm.tsx              -- Create/edit ticket
-  ├── SLATracker.tsx              -- SLA countdown timers
-  ├── KnowledgeSuggester.tsx      -- Auto-suggest KB articles
-  ├── MajorIncidentPanel.tsx      -- War room, timeline, RCA
-  └── TicketMetrics.tsx           -- MTTR, FCR, volume trends
+  ServiceDeskHub.tsx         - Main container with tabs
+  TicketList.tsx             - Filterable ticket queue with SLA indicators
+  TicketDetail.tsx           - Full ticket view with timeline
+  TicketForm.tsx             - Create/edit ticket dialog
+  SLATracker.tsx             - SLA countdown timer component
+  TicketMetrics.tsx          - Summary cards: open, in-progress, breached
+  SLARulesConfig.tsx         - Admin: configure SLA rules per type/priority
 ```
 
-**Navigation:**
-- Add "Service Desk" to admin Work Management nav group
-- Register as `service-desk` in tab-registry
+**Navigation Updates:**
+- Add "Service Desk" to admin Work Management group
+- Register `service-desk` in `tab-registry.ts`
+
+**Features:**
+- Ticket queue with status/type/priority filters
+- Real-time SLA countdown timers with breach warnings
+- Ticket detail with activity timeline
+- Major incident workflow indicator
+- Quick assign and status change
+- Metrics dashboard: MTTR, FCR, SLA compliance
 
 ---
 
-### 2.7 Playbooks & Extended Templates (Extend Existing)
+### Phase 3: Collaboration Components
 
-**Files to Modify:**
-- `src/hooks/useTemplates.tsx` - Add playbook support
-- `src/components/templates/TemplateLibrary.tsx` - Add playbook section
+Create reusable collaboration widgets for all entities.
 
-**New Hook:**
-```text
-src/hooks/usePlaybooks.tsx
-  - Combine templates with KB articles
-  - Versioning and usage tracking
-```
-
-**New Components:**
-```text
-src/components/templates/
-  ├── PlaybookBuilder.tsx         -- Create playbooks
-  ├── PlaybookViewer.tsx          -- Execute playbook steps
-  └── IntakeFormBuilder.tsx       -- Dynamic request forms
-```
-
----
-
-### 2.8 Collaboration Layer (Extend Existing)
-
-**Files to Modify:**
-- `src/hooks/useTaskComments.tsx` - Already has mentions, extend to entities
-- Create generic entity comments hook
-
-**New Hook:**
-```text
-src/hooks/useEntityComments.tsx
-  - Works for any entity type (project, ticket, request, risk, etc.)
-  - @mentions with notifications
-  - Mark as decision
-  - Attachments support
-```
-
-**New Hook:**
-```text
-src/hooks/useEntityFollowers.tsx
-  - Follow/unfollow any entity
-  - Notification subscriptions
-```
-
-**New Components:**
+**New Files:**
 ```text
 src/components/collaboration/
-  ├── ActivityFeed.tsx            -- Generic activity stream
-  ├── CommentThread.tsx           -- Enhanced comment display
-  ├── DecisionLog.tsx             -- Filter for decision comments
-  ├── FollowButton.tsx            -- Follow/unfollow toggle
-  └── MentionInput.tsx            -- @mention autocomplete
+  ActivityFeed.tsx           - Generic activity stream
+  CommentThread.tsx          - Comments with replies and @mentions
+  DecisionLog.tsx            - Filter view for decision comments
+  FollowButton.tsx           - Follow/unfollow toggle
+  MentionInput.tsx           - Rich input with @mention autocomplete
 ```
+
+**Integration Points:**
+- Add ActivityFeed to project detail pages
+- Add CommentThread to ticket detail, request detail
+- Add FollowButton to project headers
+- Add DecisionLog to project controls
 
 ---
 
-### 2.9 GRC (Governance, Risk & Compliance) (Extend Existing)
+### Phase 4: Portfolio KPI Dashboard
 
-**Files to Modify:**
-- `src/hooks/useProjectRisks.tsx` - Extend with GRC fields
-- `src/components/work/RiskManagement.tsx` - Add compliance view
+Enhance existing PortfolioManagement with KPI widgets.
 
-**New Hook:**
+**New Files:**
 ```text
-src/hooks/useCompliance.tsx
-  - Manage compliance checkpoints
-  - Track project compliance status
-  - Exception/waiver workflow
+src/components/portfolio/
+  PortfolioKPIDashboard.tsx  - ROI, NPS, health metrics widgets
+  StrategicAlignmentView.tsx - OKR linkage visualization
+  ScenarioPlanningTool.tsx   - What-if project add/remove analysis
+  PortfolioRollupMetrics.tsx - Aggregate metrics from programs/projects
 ```
 
-**New Components:**
+**Existing Files to Modify:**
+- `PortfolioManagement.tsx` - Add KPI dashboard section
+- `PortfolioDetailPage.tsx` - Add scenario planning tab
+
+---
+
+### Phase 5: GRC Compliance Tracker
+
+Create compliance checkpoint management UI.
+
+**New Files:**
 ```text
 src/components/grc/
-  ├── ComplianceCheckpointManager.tsx  -- Define checkpoints
-  ├── ProjectComplianceTracker.tsx     -- Status per project
-  ├── PolicyMapping.tsx                -- Link to regulations
-  └── ExceptionWorkflow.tsx            -- Waiver approval flow
+  ComplianceHub.tsx              - Main GRC interface
+  CheckpointManager.tsx          - Define compliance checkpoints
+  ProjectComplianceTracker.tsx   - Track compliance per project
+  ComplianceStatusBadge.tsx      - Visual status indicator
+  WaiverRequestDialog.tsx        - Request waiver for mandatory items
 ```
+
+**Navigation Updates:**
+- Add to Project Controls group in navigation
+- Register `compliance` tab (update existing finance/ComplianceManagement redirect)
 
 ---
 
-### 2.10 OKR & Strategy Alignment (Extend Existing)
+### Phase 6: Role-Based Resource Planning
 
-**Files to Modify:**
-- `src/hooks/usePerformanceManagement.tsx` - Add project linkage
-- `src/components/performance/OKRManagement.tsx` - Add contribution view
+Enhance resource allocation with role planning.
 
-**New Features:**
-- Link projects to OKRs
-- Auto-roll progress from tasks → projects → OKRs
-- Contribution analytics dashboard
-
-**New Components:**
+**New Files:**
 ```text
-src/components/okr/
-  ├── OKRProjectLinkage.tsx       -- Link projects to objectives
-  ├── ContributionAnalytics.tsx   -- Which projects drive OKRs
-  └── ProgressRollup.tsx          -- Automated progress calculation
+src/components/resources/
+  RoleCatalog.tsx            - Manage resource roles with rates
+  RoleBasedPlanner.tsx       - Allocate roles to projects by week
+  AllocationHeatmap.tsx      - Visual utilization by role/team
+  BookingTypeToggle.tsx      - Soft vs hard booking switch
 ```
+
+**Existing Files to Modify:**
+- `ResourceAllocation.tsx` - Add role-based planning tab
 
 ---
 
-## Phase 3: End-to-End Flows
+### Phase 7: Project Financials Tab
 
-### 3.1 Strategy → Portfolio → Work Flow
+Create financial tracking UI for projects.
 
+**New Files:**
 ```text
-1. Define OKRs (Performance module)
-2. Create portfolios/programs linked to OKRs
-3. Department submits request (Work Intake)
-4. Auto-score with scoring model
-5. Simulate capacity/budget impact (Scenario Planning)
-6. Portfolio board approves
-7. Convert to project using template
-8. Deliver via sprint/kanban
-9. Monitor on portfolio dashboard
-10. Auto-update OKR progress
+src/components/finance/
+  ProjectFinancialsTab.tsx   - Main financial view for a project
+  CostBreakdownChart.tsx     - Pie chart: labor vs non-labor, capex vs opex
+  ForecastVsActuals.tsx      - Bar chart: budget vs spent variance
+  MarginAnalytics.tsx        - Gross margin tracking
+  CostItemForm.tsx           - Add/edit cost items
+  RevenueItemForm.tsx        - Add/edit revenue items
 ```
 
-**Implementation:**
-- Wire `RequestConversionWizard` to `applyProjectTemplate`
-- Add `project_objectives` linkage on conversion
-- Create portfolio approval workflow in `useApprovals`
+**Integration:**
+- Add "Financials" tab to project detail pages
+- Link from portfolio dashboard to drill-down
 
 ---
 
-### 3.2 Operational Request → Fulfillment Flow
+## Navigation & Tab Registry Updates
 
-```text
-1. User submits ticket via Service Desk
-2. System auto-routes based on category
-3. SLA timer starts
-4. Assignee works, logs time, adds comments
-5. If threshold exceeded, promote to project
-6. On completion, send satisfaction survey
-7. Update knowledge base if new solution
-8. Feed metrics to analytics
-```
-
-**Implementation:**
-- Service Desk hook with SLA calculations
-- Threshold-based promotion logic
-- CSAT widget integration (already exists)
-
----
-
-### 3.3 Financial Forecasting Flow
-
-```text
-1. PM defines budget and billing model on project
-2. Capacity planner sets planned hours by role/week
-3. System generates cost/revenue forecast
-4. As time logs come in, actuals update
-5. Dashboard shows variance
-6. At close, data feeds historical analytics
-```
-
-**Implementation:**
-- Extend `useTimeLogs` to calculate labor costs
-- `useProjectFinancials` for variance reports
-- Add to `AnalyticsPage` for historical trends
-
----
-
-## Phase 4: Navigation & Integration
-
-### 4.1 Update Navigation Config
-
+**navigation.ts additions:**
 ```typescript
-// src/config/navigation.ts additions
-
-// Add to Main group (both admin and intern)
+// Main group (both admin and intern)
 { title: "My Work", url: "my-work", icon: Inbox }
 
-// Add to Work Management group (admin)
-{ title: "Service Desk", url: "service-desk", icon: HeadphonesIcon }
-{ title: "Playbooks", url: "playbooks", icon: BookMarked }
+// Work Management group (admin)
+{ title: "Service Desk", url: "service-desk", icon: Headphones }
 
-// Add to Project Controls group
-{ title: "Compliance", url: "compliance", icon: ShieldCheck }
-
-// Add to Admin Tools
+// Admin Tools
 { title: "Role Catalog", url: "role-catalog", icon: Users2 }
 ```
 
-### 4.2 Update Tab Registry
-
+**tab-registry.ts additions:**
 ```typescript
-// src/pages/dashboard/tab-registry.ts additions
-
 'my-work': {
   component: lazy(() => import('@/components/mywork/MyWorkCenter')),
 },
 'service-desk': {
   component: lazy(() => import('@/components/servicedesk/ServiceDeskHub')),
-  adminOnly: true,
-},
-'playbooks': {
-  component: lazy(() => import('@/components/templates/PlaybookBuilder')),
-  adminOnly: true,
-},
-'compliance': {
-  component: lazy(() => import('@/components/grc/ProjectComplianceTracker')),
   adminOnly: true,
 },
 'role-catalog': {
@@ -496,90 +213,91 @@ src/components/okr/
 
 ---
 
-## Implementation Priority & Phases
+## File Summary
 
-### Wave 1: High-Value, Low-Complexity (Week 1-2)
-1. **My Work Center** - Aggregation view with existing data
-2. **OKR-Project Alignment** - Link existing objectives to projects
-3. **Enhanced Scoring in Work Intake** - Extend existing RequestPortal
-4. **Entity Comments/Activity Feed** - Generalize existing task comments
+### New Files to Create (28 files)
 
-### Wave 2: Core New Features (Week 3-4)
-5. **Service Desk** - New module with SLA tracking
-6. **Role-Based Resource Planning** - Extend existing capacity
-7. **Project Financials** - Cost/revenue tracking
+**My Work (4 files):**
+- `src/components/mywork/MyWorkCenter.tsx`
+- `src/components/mywork/WorkItemCard.tsx`
+- `src/components/mywork/WorkItemFilters.tsx`
+- `src/components/mywork/QuickActionPanel.tsx`
 
-### Wave 3: Advanced Features (Week 5-6)
-8. **Portfolio KPI Dashboard** - Extend PortfolioManagement
-9. **GRC Compliance** - Extend risk management
-10. **Playbooks** - Combine templates + KB
+**Service Desk (7 files):**
+- `src/components/servicedesk/ServiceDeskHub.tsx`
+- `src/components/servicedesk/TicketList.tsx`
+- `src/components/servicedesk/TicketDetail.tsx`
+- `src/components/servicedesk/TicketForm.tsx`
+- `src/components/servicedesk/SLATracker.tsx`
+- `src/components/servicedesk/TicketMetrics.tsx`
+- `src/components/servicedesk/SLARulesConfig.tsx`
 
----
+**Collaboration (5 files):**
+- `src/components/collaboration/ActivityFeed.tsx`
+- `src/components/collaboration/CommentThread.tsx`
+- `src/components/collaboration/DecisionLog.tsx`
+- `src/components/collaboration/FollowButton.tsx`
+- `src/components/collaboration/MentionInput.tsx`
 
-## Database Migration Summary
+**Portfolio (4 files):**
+- `src/components/portfolio/PortfolioKPIDashboard.tsx`
+- `src/components/portfolio/StrategicAlignmentView.tsx`
+- `src/components/portfolio/ScenarioPlanningTool.tsx`
+- `src/components/portfolio/PortfolioRollupMetrics.tsx`
 
-```sql
--- New tables (10):
-portfolio_objectives, project_objectives
-service_tickets, sla_rules
-resource_roles, project_role_allocations
-project_cost_items, project_revenue_items
-compliance_checkpoints, project_compliance_status
-playbooks
-entity_comments, entity_followers
+**GRC (5 files):**
+- `src/components/grc/ComplianceHub.tsx`
+- `src/components/grc/CheckpointManager.tsx`
+- `src/components/grc/ProjectComplianceTracker.tsx`
+- `src/components/grc/ComplianceStatusBadge.tsx`
+- `src/components/grc/WaiverRequestDialog.tsx`
 
--- Extended tables (3):
-ALTER TABLE projects ADD objective_id, capex_budget, opex_budget, billing_model
-ALTER TABLE work_requests ADD effort_score, value_score, risk_score
-ALTER TABLE portfolios ADD strategic_alignment_score, nps_score, schedule_health
-```
+**Resources (3 files):**
+- `src/components/resources/RoleCatalog.tsx`
+- `src/components/resources/RoleBasedPlanner.tsx`
+- `src/components/resources/AllocationHeatmap.tsx`
 
----
+### Files to Modify (3 files)
 
-## Files Summary
-
-### New Files to Create (~40 files)
-```text
-Hooks (8):
-  useMyWork, useServiceDesk, useProjectFinancials
-  useEntityComments, useEntityFollowers
-  useCompliance, usePlaybooks, useResourceRoles
-
-Components (32):
-  mywork/ (5)
-  servicedesk/ (8)
-  portfolio/ (4)
-  resources/ (4)
-  finance/ (5)
-  grc/ (4)
-  collaboration/ (5)
-  okr/ (3)
-  templates/ (3)
-  requests/ (3)
-```
-
-### Files to Modify (~15 files)
-```text
-Hooks: usePortfolios, useWorkRequests, useEnhancedProjects
-       usePerformanceManagement, useWorkload
-
-Components: PortfolioManagement, RequestPortal, TriageQueue
-            TemplateLibrary, RiskManagement, OKRManagement
-
-Config: navigation.ts, tab-registry.ts
-
-Types: supabase/types.ts (auto-updated by migrations)
-```
+- `src/config/navigation.ts` - Add new nav items
+- `src/pages/dashboard/tab-registry.ts` - Register new tabs
+- `src/components/project/PortfolioManagement.tsx` - Add KPI section
 
 ---
 
-## Success Metrics
+## Implementation Priority
 
-After implementation, the platform will support:
-- 100% visibility: All work (tasks, tickets, requests) in one place
-- Strategic alignment: Every project linked to organizational OKRs
-- Financial control: Real-time forecast vs actual tracking
-- Compliance assurance: Automated checkpoint enforcement
-- Collaboration: Activity feeds and decision logs on all entities
-- Operational efficiency: SLA-tracked service desk
+| Phase | Feature | Complexity | User Impact |
+|-------|---------|------------|-------------|
+| 1 | My Work Center | Medium | High - unified view for all users |
+| 2 | Service Desk | High | High - operational ticket management |
+| 3 | Collaboration | Medium | Medium - activity feeds everywhere |
+| 4 | Portfolio KPIs | Medium | Medium - executive visibility |
+| 5 | GRC Compliance | Medium | Medium - regulated industries |
+| 6 | Role Planning | Medium | Low - advanced resource management |
+| 7 | Project Financials | Medium | Medium - financial tracking |
 
+---
+
+## Technical Notes
+
+### My Work Aggregation Pattern
+The `useMyWork` hook already implements smart prioritization:
+1. Overdue items first
+2. Today items next
+3. Then by priority (critical > urgent > high > medium > low)
+4. Finally by due date
+
+### SLA Calculation
+The `useServiceDesk` hook calculates SLA status in real-time:
+- Response SLA: breached if `first_response_at` is null and past `sla_response_due`
+- Resolution SLA: breached if `resolved_at` is null and past `sla_resolution_due`
+- Time remaining displayed as "Xh Ym" or "Breached by Xh Ym"
+
+### Entity Comments Pattern
+Generic comment system works for any entity:
+```typescript
+const { comments, addComment, markAsDecision } = useEntityComments('project', projectId);
+```
+
+All hooks are organization-scoped and follow existing patterns.
