@@ -3,6 +3,7 @@ import { AppSidebar } from '@/components/AppSidebar';
 import { AppHeader } from '@/components/AppHeader';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { BottomNavigation } from '@/components/BottomNavigation';
+import { BreadcrumbNav, BreadcrumbItem } from '@/components/navigation/BreadcrumbNav';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
@@ -16,6 +17,8 @@ interface StandalonePageLayoutProps {
   useContainer?: boolean;
   /** Whether to show bottom navigation on mobile (default: true) */
   showBottomNav?: boolean;
+  /** Breadcrumb items for navigation trail */
+  breadcrumbs?: BreadcrumbItem[];
 }
 
 /**
@@ -29,6 +32,7 @@ export function StandalonePageLayout({
   contentClassName,
   useContainer = true,
   showBottomNav = true,
+  breadcrumbs,
 }: StandalonePageLayoutProps) {
   const isMobile = useIsMobile();
 
@@ -46,6 +50,9 @@ export function StandalonePageLayout({
                 "container mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-6 max-w-7xl",
                 contentClassName
               )}>
+                {breadcrumbs && breadcrumbs.length > 0 && (
+                  <BreadcrumbNav items={breadcrumbs} className="mb-4" />
+                )}
                 {children}
               </div>
             ) : (

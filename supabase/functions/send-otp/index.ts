@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
 import { Resend } from "npm:resend@2.0.0";
+import { crypto } from "https://deno.land/std@0.190.0/crypto/mod.ts";
+import { encodeHex } from "https://deno.land/std@0.190.0/encoding/hex.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,6 +19,14 @@ const supabase = createClient(
 // Generate 6-digit OTP
 function generateOTP(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// Hash OTP for secure storage using SHA-256
+async function hashOTP(otp: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(otp);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return encodeHex(new Uint8Array(hashBuffer));
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -94,24 +104,22 @@ const handler = async (req: Request): Promise<Response> => {
 
       console.log('OTP email sent:', emailResponse);
 
-      // Store OTP temporarily (we'll use a simple hash approach)
-      // In production, use Redis or a dedicated OTP table
-      const otpHash = btoa(`${email}:${otp}:${expiresAt.toISOString()}`);
+      // Hash OTP for secure storage
+      const hashedOTP = await hashOTP(otp);
       
-      // Store in a temp table or return for client-side storage
-      // For security, we'll store it server-side
+      // Store hashed OTP in database
       const { error: insertError } = await supabase
         .from('otp_codes')
         .upsert({
           email: email.toLowerCase(),
-          otp_hash: otp, // In production, hash this
+          otp_hash: hashedOTP, // Stored as SHA-256 hash
           expires_at: expiresAt.toISOString(),
           created_at: new Date().toISOString()
         }, { onConflict: 'email' });
 
       if (insertError) {
         console.error('Error storing OTP:', insertError);
-        // Continue anyway - we'll create the table if needed
+        // Continue anyway - edge function still sends email
       }
 
       return new Response(JSON.stringify({
@@ -154,8 +162,9 @@ const handler = async (req: Request): Promise<Response> => {
         });
       }
 
-      // Verify OTP
-      if (otpRecord.otp_hash !== otp) {
+      // Hash the submitted OTP and compare with stored hash
+      const hashedSubmittedOTP = await hashOTP(otp);
+      if (otpRecord.otp_hash !== hashedSubmittedOTP) {
         return new Response(JSON.stringify({
           success: false,
           error: 'Invalid OTP. Please try again.'

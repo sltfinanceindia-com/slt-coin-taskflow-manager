@@ -1,10 +1,11 @@
 /**
  * PageHeader Component
- * Reusable page header with consistent styling
+ * Reusable page header with consistent styling and optional breadcrumbs
  */
 
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { BreadcrumbNav, BreadcrumbItem } from '@/components/navigation/BreadcrumbNav';
 
 interface PageHeaderProps {
   title: string;
@@ -13,6 +14,8 @@ interface PageHeaderProps {
   badge?: ReactNode;
   className?: string;
   children?: ReactNode;
+  /** Breadcrumb items for navigation trail */
+  breadcrumbs?: BreadcrumbItem[];
 }
 
 export function PageHeader({
@@ -22,9 +25,13 @@ export function PageHeader({
   badge,
   className,
   children,
+  breadcrumbs,
 }: PageHeaderProps) {
   return (
     <div className={cn("mb-4 sm:mb-6", className)}>
+      {breadcrumbs && breadcrumbs.length > 0 && (
+        <BreadcrumbNav items={breadcrumbs} className="mb-3" />
+      )}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
