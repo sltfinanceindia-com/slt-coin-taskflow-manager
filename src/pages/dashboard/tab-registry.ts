@@ -4,12 +4,17 @@
  */
 
 import { lazy, ComponentType, LazyExoticComponent } from 'react';
+import type { AppRole } from '@/config/navigation/types';
 
 export interface TabConfig {
   component: LazyExoticComponent<ComponentType<any>>;
   adminOnly?: boolean;
   internOnly?: boolean;
   redirectTo?: string;
+  /** Explicit list of roles that can access this tab */
+  allowedRoles?: AppRole[];
+  /** Required module permission */
+  requiredPermission?: { module: string; action: 'view' | 'create' | 'edit' | 'delete' };
 }
 
 /**
@@ -94,6 +99,8 @@ export const tabRegistry: Record<string, TabConfig> = {
   payroll: {
     component: lazy(() => import('@/components/finance/PayrollManagement').then(m => ({ default: m.PayrollManagement }))),
     adminOnly: true,
+    allowedRoles: ['super_admin', 'org_admin', 'admin', 'hr_admin', 'finance_manager'],
+    requiredPermission: { module: 'payroll', action: 'view' },
   },
   expenses: {
     component: lazy(() => import('@/components/expenses/ExpenseManagement').then(m => ({ default: m.ExpenseManagement }))),
@@ -158,6 +165,8 @@ export const tabRegistry: Record<string, TabConfig> = {
   'onboarding': {
     component: lazy(() => import('@/components/hr/OnboardingManagement').then(m => ({ default: m.OnboardingManagement }))),
     adminOnly: true,
+    allowedRoles: ['super_admin', 'org_admin', 'admin', 'hr_admin'],
+    requiredPermission: { module: 'hr_management', action: 'view' },
   },
   'exit': {
     component: lazy(() => import('@/components/hr/ExitManagement').then(m => ({ default: m.ExitManagement }))),
@@ -212,6 +221,7 @@ export const tabRegistry: Record<string, TabConfig> = {
   'recruitment': {
     component: lazy(() => import('@/components/hr/RecruitmentPipeline').then(m => ({ default: m.RecruitmentPipeline }))),
     adminOnly: true,
+    allowedRoles: ['super_admin', 'org_admin', 'admin', 'hr_admin'],
   },
   'interviews': {
     component: lazy(() => import('@/components/hr/InterviewsManagement').then(m => ({ default: m.InterviewsManagement }))),
@@ -234,6 +244,7 @@ export const tabRegistry: Record<string, TabConfig> = {
   'sprints': {
     component: lazy(() => import('@/components/sprints/SprintManagement').then(m => ({ default: m.SprintManagement }))),
     adminOnly: true,
+    allowedRoles: ['super_admin', 'org_admin', 'admin', 'project_manager'],
   },
   'backlog': {
     component: lazy(() => import('@/components/backlog/BacklogManagement').then(m => ({ default: m.BacklogManagement }))),
@@ -380,13 +391,27 @@ export const tabRegistry: Record<string, TabConfig> = {
 
 /**
  * Get tab component if user has access
+ * @param tabId - The tab identifier
+ * @param isAdmin - Whether the user is an admin (legacy check)
+ * @param userRole - The user's specific role for granular access control
  */
-export function getTabComponent(tabId: string, isAdmin: boolean): TabConfig | null {
+export function getTabComponent(
+  tabId: string, 
+  isAdmin: boolean,
+  userRole?: AppRole
+): TabConfig | null {
   const config = tabRegistry[tabId];
   
   if (!config) return null;
   
-  // Check access restrictions
+  // Check role-based access (new system)
+  if (config.allowedRoles && userRole) {
+    if (!config.allowedRoles.includes(userRole)) {
+      return null;
+    }
+  }
+  
+  // Legacy access restrictions (still supported)
   if (config.adminOnly && !isAdmin) return null;
   if (config.internOnly && isAdmin) return null;
   
@@ -399,4 +424,13 @@ export function getTabComponent(tabId: string, isAdmin: boolean): TabConfig | nu
 export function getTabRedirect(tabId: string): string | null {
   const config = tabRegistry[tabId];
   return config?.redirectTo || null;
+}
+
+/**
+ * Get all tabs a user has access to
+ */
+export function getAccessibleTabs(isAdmin: boolean, userRole?: AppRole): string[] {
+  return Object.keys(tabRegistry).filter(tabId => 
+    getTabComponent(tabId, isAdmin, userRole) !== null
+  );
 }
