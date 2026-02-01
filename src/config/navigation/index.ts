@@ -111,17 +111,36 @@ export function filterNavGroupsByFeatures(
 /**
  * Standalone routes that navigate to their own pages
  */
+/**
+ * Standalone routes that navigate to their own pages
+ * These routes bypass the dashboard tab system
+ */
 export const standaloneRoutes: Record<string, string> = {
+  // Learning & Development
   'training': '/training',
   'tutorial': '/tutorial',
+  'my-goals': '/my-goals',
+  
+  // Communication & Engagement
   'kudos': '/kudos',
   'pulse-surveys': '/pulse-surveys',
-  'my-goals': '/my-goals',
+  
+  // User & Profile
   'profile': '/profile',
-  'roles': '/admin/roles-permissions',
+  
+  // Organization
   'org-chart': '/organization/chart',
+  
+  // Admin & Settings
+  'roles': '/admin/roles-permissions',
   'settings': '/admin/organization-settings',
   'super-admin': '/super-admin',
+  
+  // Calendar
+  'calendar': '/calendar',
+  
+  // Help & Support
+  'help': '/help',
 };
 
 /**
