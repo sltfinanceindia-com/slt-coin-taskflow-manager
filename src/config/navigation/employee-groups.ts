@@ -81,6 +81,7 @@ export const employeeNavGroups: NavGroup[] = [
     label: "Finance",
     icon: Receipt,
     items: [
+      { title: "My Payslips", url: "my-payslips", icon: Receipt },
       { title: "My Expenses", url: "expenses", icon: Receipt },
       { title: "Loans & Advances", url: "loans", icon: Banknote },
       { title: "Investments", url: "investments", icon: Coins },

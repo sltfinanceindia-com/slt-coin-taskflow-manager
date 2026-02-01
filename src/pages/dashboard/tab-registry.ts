@@ -435,8 +435,24 @@ export const tabRegistry: Record<string, TabConfig> = {
     adminOnly: true,
     allowedRoles: ['super_admin', 'org_admin', 'admin', 'hr_admin'],
   },
-};
 
+  // Employee Self-Service
+  'my-payslips': {
+    component: lazy(() => import('@/components/employee/MyPayslipsView').then(m => ({ default: m.MyPayslipsView }))),
+  },
+
+  // Recognition Module
+  'awards-badges': {
+    component: lazy(() => import('@/components/recognition/AwardsBadgesManagement').then(m => ({ default: m.AwardsBadgesManagement }))),
+    adminOnly: true,
+  },
+  'employee-of-month': {
+    component: lazy(() => import('@/components/recognition/EmployeeOfMonth').then(m => ({ default: m.EmployeeOfMonth }))),
+  },
+  'recognition-feed': {
+    component: lazy(() => import('@/components/recognition/RecognitionFeed').then(m => ({ default: m.RecognitionFeed }))),
+  },
+};
 /**
  * Get tab component if user has access
  * @param tabId - The tab identifier
