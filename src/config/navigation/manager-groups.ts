@@ -1,6 +1,7 @@
 /**
  * Manager & Team Lead Navigation Groups
  * Navigation for Manager and Team Lead roles
+ * Aligned with TeneXA specification
  */
 
 import { 
@@ -56,6 +57,7 @@ export const managerNavGroups: NavGroup[] = [
       { title: "Team Overview", url: "interns", icon: Users2 },
       { title: "Org Chart", url: "org-chart", icon: Users2, standalone: true },
       { title: "Team Calendar", url: "work-calendars", icon: Calendar },
+      { title: "Calendar", url: "calendar", icon: Calendar },
     ]
   },
   {
@@ -74,6 +76,7 @@ export const managerNavGroups: NavGroup[] = [
     icon: Clock,
     items: [
       { title: "Team Attendance", url: "attendance", icon: MapPin },
+      { title: "Regularization", url: "regularization", icon: Clock },
       { title: "Shifts", url: "shifts", icon: CalendarDays },
       { title: "Leave Requests", url: "leave", icon: Palmtree },
       { title: "WFH", url: "wfh", icon: Home },
@@ -151,6 +154,7 @@ export const teamLeadNavGroups: NavGroup[] = [
     items: [
       { title: "Team Members", url: "interns", icon: Users2 },
       { title: "Org Chart", url: "org-chart", icon: Users2, standalone: true },
+      { title: "Calendar", url: "calendar", icon: Calendar },
     ]
   },
   {
@@ -167,6 +171,7 @@ export const teamLeadNavGroups: NavGroup[] = [
     icon: Clock,
     items: [
       { title: "Team Attendance", url: "attendance", icon: MapPin },
+      { title: "Regularization", url: "regularization", icon: Clock },
       { title: "Leave Requests", url: "leave", icon: Palmtree },
       { title: "WFH", url: "wfh", icon: Home },
       { title: "Holidays", url: "holidays", icon: Calendar },

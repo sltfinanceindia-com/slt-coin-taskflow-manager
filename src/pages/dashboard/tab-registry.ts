@@ -387,6 +387,54 @@ export const tabRegistry: Record<string, TabConfig> = {
     component: lazy(() => import('@/components/servicedesk/ServiceDeskHub').then(m => ({ default: m.ServiceDeskHub }))),
     adminOnly: true,
   },
+
+  // Calendar & Events
+  'calendar': {
+    component: lazy(() => import('@/components/OrganizationCalendar').then(m => ({ default: m.OrganizationCalendar }))),
+  },
+
+  // Organization Management (HR Admin)
+  'departments': {
+    component: lazy(() => import('@/components/admin/DepartmentManagement').then(m => ({ default: m.DepartmentManagement }))),
+    adminOnly: true,
+    allowedRoles: ['super_admin', 'org_admin', 'admin', 'hr_admin'],
+  },
+  'teams': {
+    component: lazy(() => import('@/components/admin/TeamManagement').then(m => ({ default: m.TeamManagement }))),
+    adminOnly: true,
+    allowedRoles: ['super_admin', 'org_admin', 'admin', 'hr_admin'],
+  },
+  'locations': {
+    component: lazy(() => import('@/components/admin/LocationManagement').then(m => ({ default: m.LocationManagement }))),
+    adminOnly: true,
+    allowedRoles: ['super_admin', 'org_admin', 'admin', 'hr_admin'],
+  },
+
+  // Super Admin Tools
+  'organizations': {
+    component: lazy(() => import('@/components/super-admin/OrganizationsTab').then(m => ({ default: m.OrganizationsTab }))),
+    allowedRoles: ['super_admin'],
+  },
+  'monitoring': {
+    component: lazy(() => import('@/components/super-admin/SystemMonitoring').then(m => ({ default: m.SystemMonitoring }))),
+    allowedRoles: ['super_admin'],
+  },
+  'platform-settings': {
+    component: lazy(() => import('@/components/super-admin/PlatformSettings').then(m => ({ default: m.PlatformSettings }))),
+    allowedRoles: ['super_admin'],
+  },
+
+  // Attendance Regularization
+  'regularization': {
+    component: lazy(() => import('@/components/workforce/AttendanceRegularization').then(m => ({ default: m.AttendanceRegularization }))),
+  },
+
+  // Bulk Operations
+  'bulk-import': {
+    component: lazy(() => import('@/components/hr/BulkImportExport').then(m => ({ default: m.BulkImportExport }))),
+    adminOnly: true,
+    allowedRoles: ['super_admin', 'org_admin', 'admin', 'hr_admin'],
+  },
 };
 
 /**

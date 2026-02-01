@@ -20,14 +20,14 @@ import {
 } from 'lucide-react';
 
 const features = [
-  { name: 'HR Management', description: 'Complete employee lifecycle', icon: Users, href: '/features' },
-  { name: 'Attendance & Time', description: 'GPS-based tracking', icon: Clock, href: '/features' },
-  { name: 'Project Management', description: 'Kanban, sprints, Gantt', icon: Kanban, href: '/features' },
-  { name: 'Payroll Processing', description: 'Automated calculations', icon: Calculator, href: '/features' },
-  { name: 'Performance & OKRs', description: 'Goal tracking', icon: Target, href: '/features' },
-  { name: 'Leave Management', description: 'Request & approvals', icon: Calendar, href: '/features' },
-  { name: 'Training', description: 'Courses & assessments', icon: GraduationCap, href: '/features' },
-  { name: 'Analytics', description: 'Insights & reports', icon: BarChart3, href: '/features' },
+  { name: 'HR Management', description: 'Complete employee lifecycle', icon: Users, href: '/features#hr' },
+  { name: 'Attendance & Time', description: 'GPS-based tracking', icon: Clock, href: '/features#attendance' },
+  { name: 'Project Management', description: 'Kanban, sprints, Gantt', icon: Kanban, href: '/features#projects' },
+  { name: 'Payroll Processing', description: 'Automated calculations', icon: Calculator, href: '/features#payroll' },
+  { name: 'Performance & OKRs', description: 'Goal tracking', icon: Target, href: '/features#performance' },
+  { name: 'Leave Management', description: 'Request & approvals', icon: Calendar, href: '/features#attendance' },
+  { name: 'Training', description: 'Courses & assessments', icon: GraduationCap, href: '/features#hr' },
+  { name: 'Analytics', description: 'Insights & reports', icon: BarChart3, href: '/features#analytics' },
 ];
 
 export function PublicHeader() {

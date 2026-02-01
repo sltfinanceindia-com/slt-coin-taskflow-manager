@@ -1,6 +1,7 @@
 /**
  * HR Admin Navigation Groups
  * Navigation specifically for HR Admin role
+ * Aligned with TeneXA specification
  */
 
 import { 
@@ -31,6 +32,9 @@ import {
   Clock,
   Receipt,
   MessageSquare,
+  Building2,
+  GraduationCap,
+  Upload,
 } from 'lucide-react';
 import { NavGroup } from './types';
 
@@ -50,21 +54,42 @@ export const hrAdminNavGroups: NavGroup[] = [
     ]
   },
   {
-    label: "HR Management",
+    label: "Employees",
     icon: Users,
     items: [
-      { title: "Employees", url: "interns", icon: Users },
+      { title: "All Employees", url: "interns", icon: Users },
+      { title: "Bulk Import", url: "bulk-import", icon: Upload },
+      { title: "Employee Analytics", url: "hr-analytics", icon: BarChart3 },
+    ]
+  },
+  {
+    label: "Employee Lifecycle",
+    icon: UserCheck,
+    items: [
       { title: "Onboarding", url: "onboarding", icon: UserCheck },
+      { title: "Probation", url: "probation", icon: Clock },
+      { title: "Confirmations", url: "confirmations", icon: FileText },
       { title: "Exit Management", url: "exit", icon: Users2 },
+    ]
+  },
+  {
+    label: "Organization",
+    icon: Building2,
+    items: [
       { title: "Org Chart", url: "org-chart", icon: Users2, standalone: true },
+      { title: "Departments", url: "departments", icon: Building2 },
+      { title: "Teams", url: "teams", icon: Users2 },
+      { title: "Locations", url: "locations", icon: MapPin },
+    ]
+  },
+  {
+    label: "Documents & Compliance",
+    icon: FileText,
+    items: [
       { title: "Documents", url: "documents", icon: FileText },
       { title: "Contracts", url: "contracts", icon: FileText },
       { title: "Verification", url: "verification", icon: Shield },
-      { title: "Probation", url: "probation", icon: Clock },
-      { title: "Confirmations", url: "confirmations", icon: FileText },
       { title: "Handbook", url: "handbook", icon: BookOpen },
-      { title: "Grievances", url: "grievances", icon: MessageCircle },
-      { title: "Disciplinary", url: "disciplinary", icon: AlertTriangle },
     ]
   },
   {
@@ -72,6 +97,7 @@ export const hrAdminNavGroups: NavGroup[] = [
     icon: Clock,
     items: [
       { title: "Attendance", url: "attendance", icon: MapPin },
+      { title: "Regularization", url: "regularization", icon: Clock },
       { title: "Shifts", url: "shifts", icon: CalendarDays },
       { title: "Leave Management", url: "leave", icon: Palmtree },
       { title: "WFH", url: "wfh", icon: Home },
@@ -82,7 +108,7 @@ export const hrAdminNavGroups: NavGroup[] = [
     ]
   },
   {
-    label: "Payroll",
+    label: "Payroll & Benefits",
     icon: Wallet,
     items: [
       { title: "Payroll Processing", url: "payroll", icon: Wallet },
@@ -93,6 +119,8 @@ export const hrAdminNavGroups: NavGroup[] = [
       { title: "Expenses", url: "expenses", icon: Receipt },
       { title: "Loans", url: "loans", icon: Wallet },
       { title: "Reimbursements", url: "reimbursements", icon: Receipt },
+      { title: "F&F Settlement", url: "fnf", icon: FileBox },
+      { title: "Gratuity", url: "gratuity", icon: Coins },
     ]
   },
   {
@@ -120,10 +148,18 @@ export const hrAdminNavGroups: NavGroup[] = [
   },
   {
     label: "Training",
-    icon: BookOpen,
+    icon: GraduationCap,
     items: [
       { title: "Programs", url: "training", icon: BookOpen, standalone: true },
       { title: "Tutorial", url: "tutorial", icon: BookOpen, standalone: true },
+    ]
+  },
+  {
+    label: "Employee Relations",
+    icon: MessageCircle,
+    items: [
+      { title: "Grievances", url: "grievances", icon: MessageCircle },
+      { title: "Disciplinary", url: "disciplinary", icon: AlertTriangle },
     ]
   },
   {

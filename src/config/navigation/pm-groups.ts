@@ -1,6 +1,7 @@
 /**
  * Project Manager Navigation Groups
  * Navigation specifically for Project Manager role
+ * Aligned with TeneXA specification
  */
 
 import { 
@@ -27,6 +28,8 @@ import {
   MessageCircle,
   ClipboardCheck,
   Ticket,
+  Kanban,
+  Layers,
 } from 'lucide-react';
 import { NavGroup } from './types';
 
@@ -49,8 +52,6 @@ export const projectManagerNavGroups: NavGroup[] = [
     icon: FolderOpen,
     items: [
       { title: "All Projects", url: "projects", icon: FolderOpen },
-      { title: "Kanban Board", url: "tasks", icon: CheckSquare },
-      { title: "Gantt Chart", url: "gantt", icon: GanttChart },
       { title: "Project Templates", url: "project-templates", icon: FileBox },
     ]
   },
@@ -58,10 +59,10 @@ export const projectManagerNavGroups: NavGroup[] = [
     label: "Tasks",
     icon: CheckSquare,
     items: [
+      { title: "Kanban Board", url: "tasks", icon: Kanban },
       { title: "All Tasks", url: "tasks", icon: CheckSquare },
       { title: "Task Templates", url: "task-templates", icon: FileBox },
       { title: "Recurring Tasks", url: "recurring-tasks", icon: Clock },
-      { title: "Work Calendars", url: "work-calendars", icon: Calendar },
     ]
   },
   {
@@ -69,8 +70,17 @@ export const projectManagerNavGroups: NavGroup[] = [
     icon: Target,
     items: [
       { title: "Sprint Planning", url: "sprints", icon: Target },
-      { title: "Backlog", url: "backlog", icon: FileBox },
+      { title: "Backlog", url: "backlog", icon: Layers },
       { title: "Milestones", url: "milestones", icon: Target },
+    ]
+  },
+  {
+    label: "Timeline & Planning",
+    icon: GanttChart,
+    items: [
+      { title: "Gantt Chart", url: "gantt", icon: GanttChart },
+      { title: "Work Calendars", url: "work-calendars", icon: Calendar },
+      { title: "Calendar", url: "calendar", icon: Calendar },
     ]
   },
   {
