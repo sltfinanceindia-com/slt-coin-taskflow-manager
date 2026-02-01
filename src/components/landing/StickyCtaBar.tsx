@@ -53,7 +53,7 @@ export function StickyCtaBar() {
                   No credit card required
                 </p>
               </div>
-              <Link to="/signup">
+              <Link to="/start-trial">
                 <Button 
                   size="sm"
                   className="bg-white text-emerald-700 hover:bg-white/90 shadow-lg"

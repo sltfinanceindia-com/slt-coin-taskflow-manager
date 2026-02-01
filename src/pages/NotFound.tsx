@@ -69,8 +69,11 @@ const NotFound = () => {
             <Link to="/pricing" className="text-primary hover:underline">
               Pricing
             </Link>
-            <Link to="/auth" className="text-primary hover:underline">
-              Sign In
+            <Link to="/resources" className="text-primary hover:underline">
+              Resources
+            </Link>
+            <Link to="/contact" className="text-primary hover:underline">
+              Contact
             </Link>
           </div>
         </div>

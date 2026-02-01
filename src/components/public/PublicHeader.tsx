@@ -152,6 +152,18 @@ export function PublicHeader() {
                 Pricing
               </Button>
             </Link>
+            <Link to="/resources">
+              <Button 
+                variant="ghost" 
+                className={`text-sm ${
+                  isActive('/resources') 
+                    ? 'text-foreground bg-muted' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Resources
+              </Button>
+            </Link>
             <Link to="/about">
               <Button 
                 variant="ghost" 
@@ -188,7 +200,7 @@ export function PublicHeader() {
                   Sign In
                 </Button>
               </Link>
-              <Link to="/signup">
+              <Link to="/start-trial">
                 <Button className="bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-600/20">
                   Start Free Trial
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -255,6 +267,15 @@ export function PublicHeader() {
                           About
                         </Link>
                         <Link 
+                          to="/resources" 
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={`block p-3 rounded-lg font-medium ${
+                            isActive('/resources') ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-muted/50'
+                          }`}
+                        >
+                          Resources
+                        </Link>
+                        <Link 
                           to="/contact" 
                           onClick={() => setMobileMenuOpen(false)}
                           className={`block p-3 rounded-lg font-medium ${
@@ -273,7 +294,7 @@ export function PublicHeader() {
                           Sign In
                         </Button>
                       </Link>
-                      <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
+                      <Link to="/start-trial" onClick={() => setMobileMenuOpen(false)}>
                         <Button className="w-full justify-center bg-emerald-600 hover:bg-emerald-700">
                           Start Free Trial
                           <ArrowRight className="ml-2 h-4 w-4" />

@@ -15,26 +15,21 @@ const footerLinks = {
   product: [
     { name: 'Features', href: '/features' },
     { name: 'Pricing', href: '/pricing' },
-    { name: 'Integrations', href: '/features' },
-    { name: 'Changelog', href: '/features' },
+    { name: 'Start Trial', href: '/start-trial' },
+    { name: 'Resources', href: '/resources' },
   ],
   company: [
     { name: 'About Us', href: '/about' },
-    { name: 'Careers', href: '/contact' },
     { name: 'Contact', href: '/contact' },
-    { name: 'Press Kit', href: '/contact' },
+    { name: 'Feedback', href: '/feedback' },
   ],
   resources: [
     { name: 'Blog', href: '/resources' },
     { name: 'Help Center', href: '/contact' },
-    { name: 'API Docs', href: '/contact' },
-    { name: 'Status', href: '/contact' },
   ],
   legal: [
     { name: 'Privacy Policy', href: '/privacy' },
     { name: 'Terms of Service', href: '/terms' },
-    { name: 'Security', href: '/privacy' },
-    { name: 'GDPR', href: '/privacy' },
   ],
 };
 

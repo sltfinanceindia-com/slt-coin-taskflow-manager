@@ -72,7 +72,7 @@ export function CTASection() {
               whileHover="hover"
               whileTap="tap"
             >
-              <Link to="/signup">
+              <Link to="/start-trial">
                 <Button 
                   size="lg" 
                   className="w-full sm:w-auto h-14 px-10 text-lg bg-white text-emerald-700 hover:bg-white/90 shadow-xl shadow-black/10"
