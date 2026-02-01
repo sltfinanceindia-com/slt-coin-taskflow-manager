@@ -29,6 +29,8 @@ import Profile from "./pages/Profile";
 import Training from "./pages/Training";
 import Assessment from "./pages/Assessment";
 import NotFound from "./pages/NotFound";
+import CalendarPage from "./pages/CalendarPage";
+import HelpCenterPage from "./pages/HelpCenterPage";
 import SuperAdminDashboard from "./pages/super-admin/SuperAdminDashboard";
 import OrganizationsList from "./pages/super-admin/OrganizationsList";
 import CreateOrganization from "./pages/super-admin/CreateOrganization";
@@ -211,6 +213,8 @@ function AppContent() {
           <Route path="/pulse-surveys" element={<ProtectedRoute><PulseSurveysPage /></ProtectedRoute>} />
           <Route path="/my-goals" element={<ProtectedRoute><MyGoalsPage /></ProtectedRoute>} />
           <Route path="/tutorial" element={<ProtectedRoute><TutorialPage /></ProtectedRoute>} />
+          <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
+          <Route path="/help" element={<HelpCenterPage />} />
           
           {/* Detail Pages - Full Page Views */}
           <Route path="/tasks/:id" element={<ProtectedRoute><TaskDetailPage /></ProtectedRoute>} />

@@ -59,8 +59,8 @@ export const projectManagerNavGroups: NavGroup[] = [
     label: "Tasks",
     icon: CheckSquare,
     items: [
-      { title: "Kanban Board", url: "tasks", icon: Kanban },
-      { title: "All Tasks", url: "tasks", icon: CheckSquare },
+      { title: "Kanban Board", url: "tasks?view=kanban", icon: Kanban },
+      { title: "Task List", url: "tasks?view=list", icon: CheckSquare },
       { title: "Task Templates", url: "task-templates", icon: FileBox },
       { title: "Recurring Tasks", url: "recurring-tasks", icon: Clock },
     ]

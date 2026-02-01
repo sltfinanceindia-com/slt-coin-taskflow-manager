@@ -252,7 +252,8 @@ export const adminNavGroups: NavGroup[] = [
     icon: FolderOpen,
     items: [
       { title: "All Projects", url: "projects", icon: FolderOpen },
-      { title: "Kanban Board", url: "tasks", icon: CheckSquare },
+      { title: "Kanban Board", url: "tasks?view=kanban", icon: CheckSquare },
+      { title: "Task List", url: "tasks?view=list", icon: CheckSquare },
       { title: "Gantt Chart", url: "gantt", icon: GanttChart },
       { title: "Project Templates", url: "project-templates", icon: FileBox },
     ]
@@ -366,6 +367,9 @@ export const adminNavGroups: NavGroup[] = [
     icon: Award,
     items: [
       { title: "Coins", url: "coins", icon: Coins },
+      { title: "Awards & Badges", url: "awards-badges", icon: Award },
+      { title: "Employee of Month", url: "employee-of-month", icon: Award },
+      { title: "Recognition Feed", url: "recognition-feed", icon: HeartPulse },
       { title: "Kudos Wall", url: "kudos", icon: HeartPulse, standalone: true },
     ]
   },
