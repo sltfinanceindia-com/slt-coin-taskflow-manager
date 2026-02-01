@@ -1,78 +1,210 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BarChart3, Users, TrendingDown, TrendingUp, DollarSign, Clock } from 'lucide-react';
-import { useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend, AreaChart, Area } from 'recharts';
+import { BarChart3, Users, TrendingDown, TrendingUp, DollarSign, Clock, Loader2 } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, AreaChart, Area } from 'recharts';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { format, subMonths, differenceInYears, differenceInMonths } from 'date-fns';
 
 export function HRAnalytics() {
+  const { profile } = useAuth();
   const [period, setPeriod] = useState('year');
 
-  // Mock data
-  const headcountData = [
-    { month: 'Jan', headcount: 142, hires: 8, exits: 3 },
-    { month: 'Feb', headcount: 147, hires: 7, exits: 2 },
-    { month: 'Mar', headcount: 151, hires: 6, exits: 2 },
-    { month: 'Apr', headcount: 155, hires: 8, exits: 4 },
-    { month: 'May', headcount: 158, hires: 5, exits: 2 },
-    { month: 'Jun', headcount: 160, hires: 6, exits: 4 },
-    { month: 'Jul', headcount: 162, hires: 7, exits: 5 },
-    { month: 'Aug', headcount: 165, hires: 8, exits: 5 },
-    { month: 'Sep', headcount: 168, hires: 6, exits: 3 },
-    { month: 'Oct', headcount: 172, hires: 9, exits: 5 },
-    { month: 'Nov', headcount: 175, hires: 7, exits: 4 },
-    { month: 'Dec', headcount: 178, hires: 5, exits: 2 },
-  ];
+  // Fetch real headcount data from profiles
+  const { data: profilesData, isLoading: loadingProfiles } = useQuery({
+    queryKey: ['hr-profiles', profile?.organization_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, created_at, is_active, department_id, departments(name)')
+        .eq('organization_id', profile?.organization_id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profile?.organization_id,
+  });
 
-  const attritionByDept = [
-    { department: 'Engineering', rate: 8.5 },
-    { department: 'Sales', rate: 15.2 },
-    { department: 'Marketing', rate: 10.1 },
-    { department: 'HR', rate: 5.5 },
-    { department: 'Finance', rate: 6.2 },
-    { department: 'Operations', rate: 12.3 },
-  ];
+  // Fetch exit interviews for attrition data
+  const { data: exitData, isLoading: loadingExits } = useQuery({
+    queryKey: ['hr-exits', profile?.organization_id],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from('exit_interviews')
+        .select('*, profiles!inner(department_id, departments(name))')
+        .eq('organization_id', profile?.organization_id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profile?.organization_id,
+  });
 
-  const tenureDistribution = [
-    { name: '< 1 year', value: 35, color: '#ef4444' },
-    { name: '1-2 years', value: 45, color: '#f97316' },
-    { name: '2-5 years', value: 60, color: '#eab308' },
-    { name: '5-10 years', value: 28, color: '#22c55e' },
-    { name: '10+ years', value: 10, color: '#3b82f6' },
-  ];
+  // Fetch open job postings
+  const { data: jobPostings } = useQuery({
+    queryKey: ['hr-jobs', profile?.organization_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('job_postings')
+        .select('id, status')
+        .eq('organization_id', profile?.organization_id)
+        .eq('status', 'open');
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profile?.organization_id,
+  });
 
-  const costPerEmployee = [
-    { month: 'Jan', salary: 85000, benefits: 15000, training: 2000 },
-    { month: 'Feb', salary: 86000, benefits: 15200, training: 1800 },
-    { month: 'Mar', salary: 87000, benefits: 15400, training: 2500 },
-    { month: 'Apr', salary: 88000, benefits: 15600, training: 2200 },
-    { month: 'May', salary: 89000, benefits: 15800, training: 1900 },
-    { month: 'Jun', salary: 90000, benefits: 16000, training: 2100 },
-  ];
+  // Calculate headcount trend by month
+  const headcountData = useMemo(() => {
+    if (!profilesData) return [];
+    
+    const months = [];
+    const now = new Date();
+    
+    for (let i = 11; i >= 0; i--) {
+      const monthDate = subMonths(now, i);
+      const monthStr = format(monthDate, 'MMM');
+      
+      // Count employees who existed at end of that month
+      const headcount = profilesData.filter((p: any) => {
+        const joinDate = new Date(p.created_at);
+        return joinDate <= monthDate && p.is_active;
+      }).length;
+      
+      // Count hires in that month
+      const hires = profilesData.filter((p: any) => {
+        const joinDate = new Date(p.created_at);
+        return format(joinDate, 'yyyy-MM') === format(monthDate, 'yyyy-MM');
+      }).length;
+      
+      // Count exits in that month
+      const exits = exitData?.filter((e: any) => {
+        const exitDate = new Date(e.created_at);
+        return format(exitDate, 'yyyy-MM') === format(monthDate, 'yyyy-MM');
+      }).length || 0;
+      
+      months.push({ month: monthStr, headcount, hires, exits });
+    }
+    
+    return months;
+  }, [profilesData, exitData]);
 
-  const exitReasons = [
-    { reason: 'Better Opportunity', count: 15 },
-    { reason: 'Salary', count: 12 },
-    { reason: 'Work-Life Balance', count: 8 },
-    { reason: 'Career Growth', count: 10 },
-    { reason: 'Relocation', count: 5 },
-    { reason: 'Personal', count: 6 },
-  ];
+  // Calculate attrition by department
+  const attritionByDept = useMemo(() => {
+    if (!exitData || !profilesData) return [];
+    
+    const deptStats: Record<string, { total: number; exits: number }> = {};
+    
+    profilesData.forEach((p: any) => {
+      const deptName = p.departments?.name || 'Unassigned';
+      if (!deptStats[deptName]) deptStats[deptName] = { total: 0, exits: 0 };
+      deptStats[deptName].total++;
+    });
+    
+    exitData.forEach((e: any) => {
+      const deptName = e.profiles?.departments?.name || 'Unassigned';
+      if (deptStats[deptName]) deptStats[deptName].exits++;
+    });
+    
+    return Object.entries(deptStats)
+      .map(([department, stats]) => ({
+        department,
+        rate: stats.total > 0 ? Math.round((stats.exits / stats.total) * 100 * 10) / 10 : 0
+      }))
+      .filter(d => d.rate > 0)
+      .sort((a, b) => b.rate - a.rate)
+      .slice(0, 6);
+  }, [exitData, profilesData]);
 
-  const stats = {
-    totalEmployees: 178,
-    avgTenure: 3.2,
-    attritionRate: 9.8,
-    costPerEmployee: 102000,
-    openPositions: 12,
-    timeToHire: 28,
-  };
+  // Calculate tenure distribution
+  const tenureDistribution = useMemo(() => {
+    if (!profilesData) return [];
+    
+    const activeProfiles = profilesData.filter((p: any) => p.is_active);
+    const now = new Date();
+    
+    const buckets = {
+      '< 1 year': 0,
+      '1-2 years': 0,
+      '2-5 years': 0,
+      '5-10 years': 0,
+      '10+ years': 0,
+    };
+    
+    activeProfiles.forEach((p: any) => {
+      const joinDate = new Date(p.created_at);
+      const years = differenceInYears(now, joinDate);
+      
+      if (years < 1) buckets['< 1 year']++;
+      else if (years < 2) buckets['1-2 years']++;
+      else if (years < 5) buckets['2-5 years']++;
+      else if (years < 10) buckets['5-10 years']++;
+      else buckets['10+ years']++;
+    });
+    
+    const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6'];
+    return Object.entries(buckets).map(([name, value], i) => ({
+      name, value, color: colors[i]
+    }));
+  }, [profilesData]);
+
+  // Calculate exit reasons
+  const exitReasons = useMemo(() => {
+    if (!exitData) return [];
+    
+    const reasons: Record<string, number> = {};
+    exitData.forEach((e: any) => {
+      const reason = e.reason_for_leaving || 'Other';
+      reasons[reason] = (reasons[reason] || 0) + 1;
+    });
+    
+    return Object.entries(reasons)
+      .map(([reason, count]) => ({ reason, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6);
+  }, [exitData]);
+
+  // Calculate stats
+  const stats = useMemo(() => {
+    const totalEmployees = profilesData?.filter((p: any) => p.is_active).length || 0;
+    const totalExits = exitData?.length || 0;
+    const attritionRate = totalEmployees > 0 ? Math.round((totalExits / totalEmployees) * 100 * 10) / 10 : 0;
+    
+    // Calculate average tenure
+    const activeProfiles = profilesData?.filter((p: any) => p.is_active) || [];
+    const now = new Date();
+    const avgTenureMonths = activeProfiles.length > 0
+      ? activeProfiles.reduce((sum: number, p: any) => {
+          const joinDate = new Date(p.created_at);
+          return sum + differenceInMonths(now, joinDate);
+        }, 0) / activeProfiles.length
+      : 0;
+    
+    return {
+      totalEmployees,
+      avgTenure: Math.round(avgTenureMonths / 12 * 10) / 10,
+      attritionRate,
+      openPositions: jobPostings?.length || 0,
+    };
+  }, [profilesData, exitData, jobPostings]);
+
+  const isLoading = loadingProfiles || loadingExits;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">HR Analytics</h2>
-          <p className="text-muted-foreground">Attrition, headcount, and cost analytics dashboard</p>
+          <p className="text-muted-foreground">Attrition, headcount, and workforce analytics</p>
         </div>
         <Select value={period} onValueChange={setPeriod}>
           <SelectTrigger className="w-40">
@@ -87,7 +219,7 @@ export function HRAnalytics() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-6">
+      <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -125,32 +257,10 @@ export function HRAnalytics() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Cost/Employee</p>
-                <p className="text-2xl font-bold">${(stats.costPerEmployee / 1000).toFixed(0)}K</p>
-              </div>
-              <DollarSign className="h-8 w-8 text-purple-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
                 <p className="text-sm text-muted-foreground">Open Positions</p>
                 <p className="text-2xl font-bold">{stats.openPositions}</p>
               </div>
               <TrendingUp className="h-8 w-8 text-orange-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Time to Hire</p>
-                <p className="text-2xl font-bold">{stats.timeToHire} days</p>
-              </div>
-              <BarChart3 className="h-8 w-8 text-cyan-600" />
             </div>
           </CardContent>
         </Card>
@@ -202,15 +312,21 @@ export function HRAnalytics() {
             <CardTitle>Attrition by Department</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={attritionByDept} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" domain={[0, 20]} />
-                <YAxis dataKey="department" type="category" width={100} />
-                <Tooltip formatter={(value) => `${value}%`} />
-                <Bar dataKey="rate" fill="#ef4444" />
-              </BarChart>
-            </ResponsiveContainer>
+            {attritionByDept.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={attritionByDept} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" domain={[0, 'auto']} />
+                  <YAxis dataKey="department" type="category" width={100} />
+                  <Tooltip formatter={(value) => `${value}%`} />
+                  <Bar dataKey="rate" fill="#ef4444" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                No attrition data available
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -242,28 +358,8 @@ export function HRAnalytics() {
         </Card>
       </div>
 
-      {/* Charts Row 3 */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Employee Cost Breakdown</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={costPerEmployee}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
-                <Legend />
-                <Area type="monotone" dataKey="salary" stackId="1" stroke="#3b82f6" fill="#3b82f680" name="Salary" />
-                <Area type="monotone" dataKey="benefits" stackId="1" stroke="#22c55e" fill="#22c55e80" name="Benefits" />
-                <Area type="monotone" dataKey="training" stackId="1" stroke="#f97316" fill="#f9731680" name="Training" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
+      {/* Exit Reasons */}
+      {exitReasons.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Exit Reasons</CardTitle>
@@ -280,7 +376,7 @@ export function HRAnalytics() {
             </ResponsiveContainer>
           </CardContent>
         </Card>
-      </div>
+      )}
     </div>
   );
 }
