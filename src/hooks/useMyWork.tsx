@@ -59,7 +59,17 @@ export function useMyWork(filters: MyWorkFilters = {}) {
 
       if (tasks) {
         tasks.forEach((task: any) => {
-          const dueDate = task.end_date ? new Date(task.end_date) : null;
+          let dueDate: Date | null = null;
+          try {
+            dueDate = task.end_date ? new Date(task.end_date) : null;
+            // Validate date is valid
+            if (dueDate && isNaN(dueDate.getTime())) {
+              dueDate = null;
+            }
+          } catch {
+            dueDate = null;
+          }
+          
           workItems.push({
             id: task.id,
             type: 'task',

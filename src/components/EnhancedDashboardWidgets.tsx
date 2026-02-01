@@ -26,18 +26,57 @@ import { useCoinTransactions } from '@/hooks/useCoinTransactions';
 import { useOrganization } from '@/hooks/useOrganization';
 import { SimpleLineChart } from '@/components/SimpleChart';
 import { useCommunication } from '@/hooks/useCommunication';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { format, subDays, startOfDay } from 'date-fns';
 
 export function EnhancedDashboardWidgets() {
   const { profile } = useAuth();
   const { stats } = useProfile();
   const { tasks } = useTasks();
-  const { getWeeklyHours } = useTimeLogs();
+  const { getWeeklyHours, timeLogs } = useTimeLogs();
   const { getTotalEarned, getPendingCoins } = useCoinTransactions();
   const { isAdmin } = useUserRole();
   const { channels, teamMembers, status: commStatus } = useCommunication();
   const { organization } = useOrganization();
   
   const coinName = organization?.coin_name || 'Coins';
+
+  // Fetch real daily hours from time_logs for the past 7 days
+  const { data: dailyHoursData } = useQuery({
+    queryKey: ['daily-hours-chart', profile?.id],
+    queryFn: async () => {
+      if (!profile?.id) return [];
+
+      const days = [];
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      
+      for (let i = 6; i >= 0; i--) {
+        const date = subDays(new Date(), i);
+        const dateStr = format(date, 'yyyy-MM-dd');
+        
+        // Filter time logs for this specific day
+        const dayLogs = timeLogs.filter(log => log.date_logged === dateStr);
+        const totalHours = dayLogs.reduce((sum, log) => sum + (log.hours_worked || 0), 0);
+        
+        // Count tasks updated on this day
+        const dayTasks = tasks.filter(task => {
+          const taskDate = format(new Date(task.updated_at), 'yyyy-MM-dd');
+          return taskDate === dateStr;
+        });
+        
+        days.push({
+          day: dayNames[date.getDay()],
+          hours: Math.round(totalHours * 10) / 10,
+          tasks: dayTasks.length,
+        });
+      }
+      
+      return days;
+    },
+    enabled: !!profile?.id,
+    staleTime: 60000, // Cache for 1 minute
+  });
 
   // Calculate unread messages
   const unreadCount = channels.reduce((acc, channel) => acc + (channel.unread_count || 0), 0);
@@ -64,33 +103,8 @@ export function EnhancedDashboardWidgets() {
   const totalEarned = getTotalEarned();
   const pendingCoins = getPendingCoins();
 
-  // Generate realistic weekly data based on actual data
-  const generateWeeklyData = () => {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const now = new Date();
-    
-    return days.map((day, index) => {
-      const date = new Date(now);
-      date.setDate(date.getDate() - (6 - index)); // Last 7 days
-      
-      // Calculate actual hours and tasks for this day
-      const dayTasks = myTasks.filter(task => {
-        const taskDate = new Date(task.updated_at);
-        return taskDate.toDateString() === date.toDateString();
-      });
-      
-      // Get actual hours from time logs for this day
-      const dayHours = getWeeklyHours() > 0 ? Math.random() * 8 + 2 : 0; // Realistic hours if there are logged hours
-      
-      return { 
-        day, 
-        hours: Math.round(dayHours * 10) / 10, 
-        tasks: dayTasks.length 
-      };
-    });
-  };
-
-  const weeklyData = generateWeeklyData();
+  // Use real data or fallback to empty structure
+  const weeklyData = dailyHoursData || [];
 
   const taskStatusData = [
     { name: 'Completed', value: stats?.completedTasks || 0, color: 'hsl(var(--success))' },
@@ -301,7 +315,6 @@ export function EnhancedDashboardWidgets() {
                 variant="outline" 
                 className="w-full gap-2"
                 onClick={() => {
-                  // Navigate to communication tab - this will be handled by parent
                   const event = new CustomEvent('navigate-to-tab', { detail: 'communication' });
                   window.dispatchEvent(event);
                 }}
@@ -330,12 +343,18 @@ export function EnhancedDashboardWidgets() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-3 sm:p-6 pt-0">
-            <SimpleLineChart 
-              data={weeklyData}
-              dataKey="hours"
-              xAxisKey="day"
-              height={250}
-            />
+            {weeklyData.length > 0 ? (
+              <SimpleLineChart 
+                data={weeklyData}
+                dataKey="hours"
+                xAxisKey="day"
+                height={250}
+              />
+            ) : (
+              <div className="h-[250px] flex items-center justify-center text-muted-foreground">
+                <p className="text-sm">No time logs this week</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
