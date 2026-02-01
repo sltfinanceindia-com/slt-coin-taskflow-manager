@@ -146,42 +146,44 @@ export function FeaturesGrid() {
                   isLarge ? 'sm:col-span-2 lg:col-span-2' : ''
                 } ${isMedium ? 'lg:col-span-1' : ''}`}
               >
-                <motion.div
-                  className={`group relative h-full p-6 rounded-2xl bg-background border border-border/50 overflow-hidden transition-all duration-300 hover:border-emerald-500/50 hover:shadow-xl hover:shadow-emerald-500/5 ${
-                    isLarge ? 'min-h-[280px]' : 'min-h-[200px]'
-                  }`}
-                  variants={cardHover}
-                  initial="rest"
-                  whileHover="hover"
+                <Link 
+                  to="/features"
+                  className="block h-full"
                 >
-                  {/* Gradient background on hover */}
-                  <div className={`absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-300 bg-gradient-to-br ${feature.color}`} />
-                  
-                  {/* Icon */}
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                    <feature.icon className="h-6 w-6 text-white" />
-                  </div>
-                  
-                  {/* Content */}
-                  <h3 className="text-lg font-semibold text-foreground mb-2 flex items-center gap-2">
-                    {feature.title}
-                    <ArrowUpRight className="h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-emerald-600" />
-                  </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {feature.description}
-                  </p>
-                  
-                  {/* Large card extra content */}
-                  {isLarge && (
-                    <Link 
-                      to="/features"
-                      className="inline-flex items-center gap-2 mt-4 text-sm font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
-                    >
-                      Learn more
-                      <ArrowUpRight className="h-4 w-4" />
-                    </Link>
-                  )}
-                </motion.div>
+                  <motion.div
+                    className={`group relative h-full p-6 rounded-2xl bg-background border border-border/50 overflow-hidden transition-all duration-300 hover:border-emerald-500/50 hover:shadow-xl hover:shadow-emerald-500/5 cursor-pointer ${
+                      isLarge ? 'min-h-[280px]' : 'min-h-[200px]'
+                    }`}
+                    variants={cardHover}
+                    initial="rest"
+                    whileHover="hover"
+                  >
+                    {/* Gradient background on hover */}
+                    <div className={`absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-300 bg-gradient-to-br ${feature.color}`} />
+                    
+                    {/* Icon */}
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                      <feature.icon className="h-6 w-6 text-white" />
+                    </div>
+                    
+                    {/* Content */}
+                    <h3 className="text-lg font-semibold text-foreground mb-2 flex items-center gap-2">
+                      {feature.title}
+                      <ArrowUpRight className="h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-emerald-600" />
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {feature.description}
+                    </p>
+                    
+                    {/* Large card extra content */}
+                    {isLarge && (
+                      <span className="inline-flex items-center gap-2 mt-4 text-sm font-medium text-emerald-600 group-hover:text-emerald-700 transition-colors">
+                        Learn more
+                        <ArrowUpRight className="h-4 w-4" />
+                      </span>
+                    )}
+                  </motion.div>
+                </Link>
               </motion.div>
             );
           })}
