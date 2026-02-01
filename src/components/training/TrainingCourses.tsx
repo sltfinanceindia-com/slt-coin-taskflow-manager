@@ -1,13 +1,12 @@
-
-import { useState } from 'react';
 import { useTrainingSections } from '@/hooks/useTrainingSections';
 import { useAssessments } from '@/hooks/useAssessments';
+import { useTrainingProgress } from '@/hooks/useTrainingProgress';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Play, FileText, BookOpen, Award, Clock, CheckCircle } from 'lucide-react';
+import { Play, FileText, BookOpen, Award, Clock, CheckCircle, Circle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { TrainingSection } from '@/types/training';
 
@@ -20,6 +19,7 @@ export function TrainingCourses({ sections: propSections, isLoading: propIsLoadi
   const navigate = useNavigate();
   const { data: hookSections = [], isLoading: hookIsLoading } = useTrainingSections();
   const { assessments } = useAssessments();
+  const { calculateSectionProgress: calcProgress, isVideoCompleted } = useTrainingProgress();
   
   // Use props if provided, otherwise use hook data
   const sections = propSections || hookSections;
@@ -39,10 +39,14 @@ export function TrainingCourses({ sections: propSections, isLoading: propIsLoadi
     navigate(`/assessment/${assessmentId}`);
   };
 
-  const calculateSectionProgress = (section: any) => {
-    // This would calculate based on user progress data
-    // For now, returning a mock value
-    return Math.floor(Math.random() * 100);
+  // Calculate real progress based on training_video_progress data
+  const calculateSectionProgress = (section: TrainingSection) => {
+    const sectionVideos = section.training_videos || [];
+    if (sectionVideos.length === 0) return 0;
+    
+    const videoIds = sectionVideos.map((v: any) => v.id);
+    const progress = calcProgress(section.id, videoIds);
+    return progress.progressPercent;
   };
 
   return (
@@ -172,7 +176,11 @@ export function TrainingCourses({ sections: propSections, isLoading: propIsLoadi
                                   <Badge variant="outline" className="text-xs">Video</Badge>
                                 </div>
                               </div>
-                              <CheckCircle className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+                              {isVideoCompleted(video.id) ? (
+                                <CheckCircle className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+                              ) : (
+                                <Circle className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                              )}
                             </button>
                           ))}
                           
