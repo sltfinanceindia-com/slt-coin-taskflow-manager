@@ -17,6 +17,10 @@ import {
   ClipboardCheck,
   ChevronDown,
   Zap,
+  MapPin,
+  Calendar,
+  Users2,
+  MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -59,7 +63,14 @@ export function QuickActionsDropdown({ className }: QuickActionsDropdownProps) {
 
   // Define all quick actions
   const allActions: QuickAction[] = [
-    // Actions available to all
+    // Actions available to all employees
+    {
+      id: 'check-in',
+      label: 'Check In/Out',
+      icon: MapPin,
+      shortcut: '⌘I',
+      action: () => navigate('/dashboard?tab=attendance&action=clock'),
+    },
     {
       id: 'new-task',
       label: 'New Task',
@@ -82,18 +93,38 @@ export function QuickActionsDropdown({ className }: QuickActionsDropdownProps) {
     },
     {
       id: 'new-expense',
-      label: 'New Expense',
+      label: 'Submit Expense',
       icon: Receipt,
       action: () => navigate('/dashboard?tab=expenses&action=new'),
     },
+    {
+      id: 'schedule-meeting',
+      label: 'Schedule Meeting',
+      icon: Calendar,
+      action: () => navigate('/dashboard?tab=meetings&action=new'),
+    },
 
     // Manager+ actions
+    {
+      id: 'view-team',
+      label: 'View Team',
+      icon: Users2,
+      action: () => navigate('/dashboard?tab=interns&filter=my-team'),
+      roles: ['admin', 'org_admin', 'super_admin', 'hr_admin', 'manager', 'team_lead'],
+    },
     {
       id: 'approve-leaves',
       label: 'Approve Leaves',
       icon: ClipboardCheck,
       action: () => navigate('/dashboard?tab=leave&filter=pending'),
       roles: ['admin', 'org_admin', 'super_admin', 'hr_admin', 'manager', 'team_lead'],
+    },
+    {
+      id: 'approve-expenses',
+      label: 'Approve Expenses',
+      icon: Receipt,
+      action: () => navigate('/dashboard?tab=expenses&filter=pending'),
+      roles: ['admin', 'org_admin', 'super_admin', 'finance_manager', 'manager'],
     },
 
     // HR Admin actions
@@ -126,6 +157,14 @@ export function QuickActionsDropdown({ className }: QuickActionsDropdownProps) {
       icon: Target,
       action: () => navigate('/dashboard?tab=sprints&action=new'),
       roles: ['admin', 'org_admin', 'super_admin', 'project_manager'],
+    },
+
+    // Communication
+    {
+      id: 'send-message',
+      label: 'Send Message',
+      icon: MessageSquare,
+      action: () => navigate('/dashboard?tab=communication'),
     },
   ];
 

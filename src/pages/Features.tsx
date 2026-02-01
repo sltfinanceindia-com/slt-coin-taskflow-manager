@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -195,7 +195,16 @@ const additionalFeatures = [
 
 export default function Features() {
   const [activeTab, setActiveTab] = useState('hr');
+  const location = useLocation();
   const activeFeature = featureTabs.find(tab => tab.id === activeTab) || featureTabs[0];
+
+  // Parse URL hash to auto-select tab
+  useEffect(() => {
+    const hash = location.hash.replace('#', '');
+    if (hash && featureTabs.some(tab => tab.id === hash)) {
+      setActiveTab(hash);
+    }
+  }, [location.hash]);
 
   return (
     <>

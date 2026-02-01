@@ -1,6 +1,7 @@
 /**
  * Employee & Intern Navigation Groups
  * Navigation for Employee and Intern roles (self-service focused)
+ * Aligned with TeneXA specification
  */
 
 import { 
@@ -27,6 +28,8 @@ import {
   UserCircle,
   Coins,
   Banknote,
+  FileText,
+  GraduationCap,
 } from 'lucide-react';
 import { NavGroup } from './types';
 
@@ -44,20 +47,33 @@ export const employeeNavGroups: NavGroup[] = [
       { title: "My Tasks", url: "tasks", icon: CheckSquare },
       { title: "Projects", url: "projects", icon: FolderOpen },
       { title: "Updates", url: "updates", icon: Activity },
-      { title: "Self-Service", url: "self-service", icon: UserCircle },
     ]
   },
   {
-    label: "Work Management",
+    label: "Self-Service",
+    icon: UserCircle,
+    items: [
+      { title: "Self-Service Portal", url: "self-service", icon: UserCircle },
+      { title: "My Documents", url: "documents", icon: FileText },
+    ]
+  },
+  {
+    label: "Time & Attendance",
     icon: Clock,
     items: [
-      { title: "Requests", url: "requests", icon: Inbox },
+      { title: "Attendance", url: "attendance", icon: MapPin },
+      { title: "Regularization", url: "regularization", icon: Clock },
+      { title: "My Shifts", url: "shifts", icon: CalendarDays },
       { title: "Time Logs", url: "time", icon: Clock },
       { title: "Timesheets", url: "timesheets", icon: ClipboardCheck },
-      { title: "My Shifts", url: "shifts", icon: CalendarDays },
-      { title: "Attendance", url: "attendance", icon: MapPin },
-      { title: "Leave", url: "leave", icon: Palmtree },
-      { title: "WFH", url: "wfh", icon: Home },
+    ]
+  },
+  {
+    label: "Leave",
+    icon: Palmtree,
+    items: [
+      { title: "Apply Leave", url: "leave", icon: Palmtree },
+      { title: "WFH Requests", url: "wfh", icon: Home },
       { title: "Holidays", url: "holidays", icon: Calendar },
     ]
   },
@@ -80,17 +96,31 @@ export const employeeNavGroups: NavGroup[] = [
     ]
   },
   {
+    label: "Calendar",
+    icon: Calendar,
+    items: [
+      { title: "My Calendar", url: "calendar", icon: Calendar },
+      { title: "Requests", url: "requests", icon: Inbox },
+    ]
+  },
+  {
+    label: "Learning & Growth",
+    icon: GraduationCap,
+    items: [
+      { title: "Training", url: "training", icon: BookOpen, standalone: true },
+      { title: "Tutorial", url: "tutorial", icon: BookOpen, standalone: true },
+      { title: "My Goals", url: "my-goals", icon: Target, standalone: true },
+    ]
+  },
+  {
     label: "Resources",
     icon: BookOpen,
     items: [
-      { title: "Tutorial", url: "tutorial", icon: BookOpen, standalone: true },
       { title: "Approvals", url: "approvals", icon: GitBranch },
-      { title: "Training", url: "training", icon: BookOpen, standalone: true },
       { title: "Handbook", url: "handbook", icon: BookOpen },
       { title: "Communication", url: "communication", icon: MessageSquare },
       { title: "Kudos Wall", url: "kudos", icon: HeartPulse, standalone: true },
       { title: "Pulse Surveys", url: "pulse-surveys", icon: MessageCircle, standalone: true },
-      { title: "My Goals", url: "my-goals", icon: Target, standalone: true },
       { title: "My Coins", url: "my-coins", icon: Coins },
       { title: "Analytics", url: "analytics", icon: BarChart3 },
     ]
@@ -111,20 +141,32 @@ export const internNavGroups: NavGroup[] = [
       { title: "My Tasks", url: "tasks", icon: CheckSquare },
       { title: "Projects", url: "projects", icon: FolderOpen },
       { title: "Updates", url: "updates", icon: Activity },
-      { title: "Self-Service", url: "self-service", icon: UserCircle },
     ]
   },
   {
-    label: "Work Management",
+    label: "Self-Service",
+    icon: UserCircle,
+    items: [
+      { title: "Self-Service Portal", url: "self-service", icon: UserCircle },
+    ]
+  },
+  {
+    label: "Time & Attendance",
     icon: Clock,
     items: [
-      { title: "Requests", url: "requests", icon: Inbox },
+      { title: "Attendance", url: "attendance", icon: MapPin },
+      { title: "Regularization", url: "regularization", icon: Clock },
+      { title: "My Shifts", url: "shifts", icon: CalendarDays },
       { title: "Time Logs", url: "time", icon: Clock },
       { title: "Timesheets", url: "timesheets", icon: ClipboardCheck },
-      { title: "My Shifts", url: "shifts", icon: CalendarDays },
-      { title: "Attendance", url: "attendance", icon: MapPin },
-      { title: "Leave", url: "leave", icon: Palmtree },
-      { title: "WFH", url: "wfh", icon: Home },
+    ]
+  },
+  {
+    label: "Leave",
+    icon: Palmtree,
+    items: [
+      { title: "Apply Leave", url: "leave", icon: Palmtree },
+      { title: "WFH Requests", url: "wfh", icon: Home },
       { title: "Holidays", url: "holidays", icon: Calendar },
     ]
   },
@@ -137,16 +179,22 @@ export const internNavGroups: NavGroup[] = [
     ]
   },
   {
+    label: "Learning",
+    icon: GraduationCap,
+    items: [
+      { title: "Training", url: "training", icon: BookOpen, standalone: true },
+      { title: "Tutorial", url: "tutorial", icon: BookOpen, standalone: true },
+      { title: "My Goals", url: "my-goals", icon: Target, standalone: true },
+    ]
+  },
+  {
     label: "Resources",
     icon: BookOpen,
     items: [
-      { title: "Tutorial", url: "tutorial", icon: BookOpen, standalone: true },
       { title: "Approvals", url: "approvals", icon: GitBranch },
-      { title: "Training", url: "training", icon: BookOpen, standalone: true },
       { title: "Communication", url: "communication", icon: MessageSquare },
       { title: "Kudos Wall", url: "kudos", icon: HeartPulse, standalone: true },
       { title: "Pulse Surveys", url: "pulse-surveys", icon: MessageCircle, standalone: true },
-      { title: "My Goals", url: "my-goals", icon: Target, standalone: true },
       { title: "My Coins", url: "my-coins", icon: Coins },
       { title: "Analytics", url: "analytics", icon: BarChart3 },
       { title: "Feedback", url: "feedback", icon: MessageCircle },

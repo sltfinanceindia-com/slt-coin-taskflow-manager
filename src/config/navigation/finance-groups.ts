@@ -1,6 +1,7 @@
 /**
  * Finance Manager Navigation Groups
  * Navigation specifically for Finance Manager role
+ * Aligned with TeneXA specification
  */
 
 import { 
@@ -24,6 +25,8 @@ import {
   ClipboardCheck,
   MessageSquare,
   MessageCircle,
+  CreditCard,
+  Calculator,
 } from 'lucide-react';
 import { NavGroup } from './types';
 
@@ -55,12 +58,12 @@ export const financeManagerNavGroups: NavGroup[] = [
     ]
   },
   {
-    label: "Expenses",
+    label: "Expenses & Reimbursements",
     icon: Receipt,
     items: [
       { title: "Expense Approvals", url: "expenses", icon: Receipt },
       { title: "Expense Categories", url: "expense-categories", icon: Receipt },
-      { title: "Reimbursements", url: "reimbursements", icon: Receipt },
+      { title: "Reimbursements", url: "reimbursements", icon: CreditCard },
     ]
   },
   {
@@ -74,14 +77,14 @@ export const financeManagerNavGroups: NavGroup[] = [
     label: "Tax & Compliance",
     icon: Shield,
     items: [
-      { title: "Tax Management", url: "tax-management", icon: Receipt },
+      { title: "Tax Management", url: "tax-management", icon: Calculator },
       { title: "Form 16", url: "form16", icon: FileText },
       { title: "Investments", url: "investments", icon: Coins },
       { title: "Compliance", url: "compliance", icon: Shield },
     ]
   },
   {
-    label: "Budgets",
+    label: "Budgets & Cost Centers",
     icon: PieChart,
     items: [
       { title: "Budget Planning", url: "budget-planning", icon: Wallet },
@@ -97,11 +100,11 @@ export const financeManagerNavGroups: NavGroup[] = [
     ]
   },
   {
-    label: "Reports",
+    label: "Reports & Analytics",
     icon: BarChart3,
     items: [
       { title: "Approvals", url: "approvals", icon: GitBranch },
-      { title: "Reports", url: "reports", icon: PieChart },
+      { title: "Financial Reports", url: "reports", icon: PieChart },
       { title: "Analytics", url: "analytics", icon: BarChart3 },
     ]
   },
