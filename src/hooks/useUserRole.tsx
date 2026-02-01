@@ -69,6 +69,9 @@ export function useUserRole(): UserRoleData {
           isSuperAdmin: false,
           isOrgAdmin: false,
           isAdmin: false,
+          isHRAdmin: false,
+          isProjectManager: false,
+          isFinanceManager: false,
           isManager: false,
           isTeamLead: false,
           isEmployee: false,
@@ -108,6 +111,10 @@ export function useUserRole(): UserRoleData {
         const isTeamLead = isManager || highestRole === 'team_lead' || allRoles.includes('team_lead');
         const isEmployee = highestRole === 'employee' || allRoles.includes('employee');
 
+        const isHRAdmin = isAdmin || highestRole === 'hr_admin' || allRoles.includes('hr_admin');
+        const isProjectManager = isAdmin || highestRole === 'project_manager' || allRoles.includes('project_manager');
+        const isFinanceManager = isAdmin || highestRole === 'finance_manager' || allRoles.includes('finance_manager');
+
         setRoleData({
           role: highestRole,
           allRoles,
@@ -115,6 +122,9 @@ export function useUserRole(): UserRoleData {
           isSuperAdmin,
           isOrgAdmin,
           isAdmin,
+          isHRAdmin,
+          isProjectManager,
+          isFinanceManager,
           isManager,
           isTeamLead,
           isEmployee,
@@ -129,6 +139,10 @@ export function useUserRole(): UserRoleData {
         const isManager = isAdmin || fallbackRole === 'manager';
         const isTeamLead = isManager || fallbackRole === 'team_lead';
         
+        const isHRAdmin = isAdmin || fallbackRole === 'hr_admin';
+        const isProjectManager = isAdmin || fallbackRole === 'project_manager';
+        const isFinanceManager = isAdmin || fallbackRole === 'finance_manager';
+        
         setRoleData({
           role: fallbackRole,
           allRoles: [fallbackRole],
@@ -136,6 +150,9 @@ export function useUserRole(): UserRoleData {
           isSuperAdmin,
           isOrgAdmin,
           isAdmin,
+          isHRAdmin,
+          isProjectManager,
+          isFinanceManager,
           isManager,
           isTeamLead,
           isEmployee: fallbackRole === 'employee',
