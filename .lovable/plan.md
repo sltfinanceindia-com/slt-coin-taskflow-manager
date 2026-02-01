@@ -1,483 +1,521 @@
 
-# Complete TeneXA System Audit & Fix Plan
 
-## Executive Summary
+# Professional Public-Facing Pages Redesign for TeneXA
 
-After an exhaustive audit of the TeneXA Enterprise HR/BPO Management System, I've analyzed:
-- **176 database migrations** defining comprehensive schema
-- **133 custom hooks** connecting to Supabase
-- **100+ components** across 70+ feature modules
-- **75+ registered navigation tabs**
-- **25 database security warnings** (4 function search_path, 21 RLS policies)
+## Overview
 
-The application is approximately **85-90% complete** with a well-architected foundation. The issues found fall into specific categories with clear remediation paths.
+This plan redesigns all public-facing pages for TeneXA with modern 2026 SaaS design trends, leveraging Framer Motion for smooth animations, bold typography, interactive elements, and conversion-focused layouts.
 
 ---
 
-## Audit Findings Summary
+## Current State Analysis
 
-### Category 1: Remaining Mock/Random Data (12 files, CRITICAL)
+**Existing Public Pages:**
+- Landing (/) - Basic hero, features grid, pricing preview
+- Features (/features) - Simple alternating feature cards
+- Pricing (/pricing) - 4-column card layout with DB-driven plans
+- Contact (/contact) - Split-screen form + contact info
+- Signup (/signup) - Multi-step form
 
-| File | Issue | Lines | Severity |
-|------|-------|-------|----------|
-| `EnhancedOverview.tsx` | `Math.random() * 8 + 1` for daily hours | 95 | HIGH |
-| `KanbanAnalytics.tsx` | `Math.random() * 5 + 1` for cycle time | 93 | MEDIUM |
-| `AdvancedTimeTracking.tsx` | Random app activity, keystrokes, clicks | 63-67 | HIGH |
-| `SecurityDashboard.tsx` | Mock login attempts data | 88-91 | MEDIUM |
-| `HRAnalytics.tsx` | All hardcoded mock charts (headcount, attrition) | 11-68 | HIGH |
-| `OnboardingManagement.tsx` | In-memory state instead of DB | 108 | HIGH |
-| `ExpenseCategoryManager.tsx` | Mock expense totals | 84 | MEDIUM |
-| `SalaryStructureManagement.tsx` | Mock salary templates comment | 57 | LOW |
-| `AutoTranslation.tsx` | Mock translation results | 92-100 | MEDIUM |
-
-### Category 2: TypeScript Type Safety Issues (12 files)
-
-Files using `(supabase as any)` due to missing table definitions in generated types:
-
-1. `DependencyManagement.tsx` - `task_dependencies` table
-2. `RiskManagement.tsx` - `project_risks` table  
-3. `MilestoneManagement.tsx` - `milestones` table
-4. `IssueTracker.tsx` - `issues` table
-5. `TaxManagement.tsx` - `tax_declarations` table
-6. `OvertimeManagement.tsx` - `overtime_requests` table
-7. `ExitManagement.tsx` - `exit_interviews` table
-8. `BonusManagement.tsx` - `bonus_payments` table
-9. `AdminDashboard.tsx` - Line 36
-10. `useProjectRisks.tsx` - Multiple occurrences
-11. `useIssues.tsx` - Multiple occurrences  
-12. `useMilestones.tsx` - Multiple occurrences
-
-**Root Cause:** Supabase types file is 14,399 lines but missing newer table definitions added in recent migrations.
-
-### Category 3: Database Security Issues (25 warnings)
-
-**4 Functions without search_path set:**
-- Vulnerable to search_path injection attacks
-- Functions detected by linter need `SET search_path = public`
-
-**21 RLS Policies with `USING (true)` or `WITH CHECK (true)`:**
-- Overly permissive for INSERT/UPDATE/DELETE operations
-- Need organization-scoped restrictions
-
-### Category 4: Component-Specific Issues
-
-| Component | Issue | Fix Required |
-|-----------|-------|--------------|
-| `OrgChartViewer.tsx` | Works correctly - fetches from `useOrgChart` hook | No fix needed |
-| `DashboardBuilder.tsx` | Default widget IDs (`default-1`, etc.) handled correctly | Enhancement only |
-| `CalendarHub.tsx` | Fetches real calendar_events but no cross-module sync | Add event aggregation |
-| `useOrgChart` | Missing `phone` field in profiles select | Add to query |
-
-### Category 5: Feature Completeness
-
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Organization Chart | WORKING | Uses real DB data via `useOrgChart`, hierarchical view renders correctly |
-| Dashboard Builder | WORKING | Drag-drop works, preferences save to `dashboard_widgets` table |
-| Kanban Board | WORKING | Fetches real tasks, status updates work |
-| Time Tracking | PARTIAL | Time logs work, but AdvancedTimeTracking uses simulated activity |
-| Calendar | WORKING | Fetches from `calendar_events` table, CRUD operations work |
-| Payroll | WORKING | Uses `usePayroll` hook with real `payroll_runs`/`payroll_records` |
-| Service Desk | WORKING | Tickets with SLA tracking, analytics tab implemented |
-| HR Analytics | NOT WORKING | Completely hardcoded mock data |
-| Onboarding | NOT WORKING | Uses in-memory state, not persisted to DB |
+**Technology Stack:**
+- React + TypeScript + Tailwind CSS
+- Framer Motion already installed (v12.23.26)
+- Existing animation keyframes in tailwind.config.ts
+- PublicHeader and PublicFooter components
+- SEOHead component for meta tags
 
 ---
 
-## Implementation Plan
+## Implementation Architecture
 
-### Phase 1: Critical Data Fixes (8 files)
+### New File Structure
 
-#### 1.1 Fix EnhancedOverview.tsx Weekly Data
+```
+src/
+├── components/
+│   └── landing/
+│       ├── HeroSection.tsx         # Animated hero with gradient background
+│       ├── ProblemSolutionSection.tsx  # Split-screen pain points/solutions
+│       ├── FeaturesGrid.tsx        # Bento grid with animated cards
+│       ├── HowItWorksSection.tsx   # Vertical timeline with scroll animations
+│       ├── TestimonialsSection.tsx # Auto-scrolling marquee carousel
+│       ├── StatsSection.tsx        # Count-up animations
+│       ├── IntegrationsSection.tsx # Floating logos with parallax
+│       ├── CTASection.tsx          # Final conversion section
+│       ├── AnimatedBackground.tsx  # Reusable gradient mesh animation
+│       ├── TrustBadges.tsx         # Client logos marquee
+│       ├── StickyCtaBar.tsx        # Floating bottom CTA
+│       └── FeatureCard.tsx         # Reusable animated card
+│   └── public/
+│       ├── PublicHeader.tsx        # Enhanced with mega menu
+│       ├── PublicFooter.tsx        # Enhanced 5-column layout
+│       └── CookieBanner.tsx        # GDPR compliance
+├── pages/
+│   ├── Landing.tsx                 # Complete redesign
+│   ├── Features.tsx                # Tabbed interface redesign
+│   ├── Pricing.tsx                 # Enhanced with comparison table
+│   ├── Contact.tsx                 # Add map integration
+│   ├── About.tsx                   # NEW - About Us page
+│   ├── StartTrial.tsx              # NEW - Dedicated trial signup
+│   └── Resources.tsx               # NEW - Blog/Resources page
+├── lib/
+│   └── animations.ts               # Framer Motion animation variants
+└── hooks/
+    └── useScrollAnimation.ts       # Intersection Observer hook
+```
 
-Replace random hours with real time_logs aggregation:
+---
+
+## Phase 1: Animation Foundation & Utilities
+
+### 1.1 Create Animation Library (`src/lib/animations.ts`)
 
 ```typescript
-// Current (line 95)
-const dayHours = weeklyHours > 0 ? Math.random() * 8 + 1 : 0;
+// Reusable Framer Motion variants
+export const fadeInUp = {
+  initial: { opacity: 0, y: 60 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-100px" },
+  transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+};
 
-// Fix: Query actual hours from time_logs per day
-const { data: dailyHours } = useQuery({
-  queryKey: ['daily-hours', profile?.id],
-  queryFn: async () => {
-    const startOfWeek = new Date();
-    startOfWeek.setDate(startOfWeek.getDate() - 6);
-    
-    const { data } = await supabase
-      .from('time_logs')
-      .select('date_logged, hours_worked')
-      .eq('user_id', profile?.id)
-      .gte('date_logged', startOfWeek.toISOString().split('T')[0]);
-    
-    // Group by day and sum hours
-    return aggregateByDay(data);
+export const staggerContainer = {
+  initial: {},
+  whileInView: {
+    transition: { staggerChildren: 0.1, delayChildren: 0.1 }
   }
-});
-```
+};
 
-#### 1.2 Fix KanbanAnalytics.tsx Cycle Time
-
-Calculate actual cycle time from task timestamps:
-
-```typescript
-// Current (line 93)
-cycleTime: dayTasks.length > 0 ? Math.random() * 5 + 1 : 0
-
-// Fix: Calculate from created_at to verified date
-const avgCycleTime = dayTasks.reduce((sum, task) => {
-  const start = new Date(task.created_at);
-  const end = new Date(task.updated_at);
-  return sum + (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
-}, 0) / (dayTasks.length || 1);
-```
-
-#### 1.3 Fix HRAnalytics.tsx - Replace All Mock Data
-
-Create new database queries:
-
-```typescript
-// Query 1: Headcount trend from profiles table
-const { data: headcountData } = useQuery({
-  queryKey: ['hr-headcount', period],
-  queryFn: async () => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('created_at, employment_status')
-      .eq('organization_id', profile?.organization_id);
-    
-    // Aggregate by month for headcount trend
-    return aggregateHeadcount(data);
+export const cardHover = {
+  rest: { scale: 1, boxShadow: "0 4px 6px rgba(0,0,0,0.1)" },
+  hover: { 
+    scale: 1.03, 
+    boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
+    transition: { duration: 0.3, ease: "easeOut" }
   }
-});
+};
 
-// Query 2: Attrition by department
-const { data: attritionData } = useQuery({
-  queryKey: ['hr-attrition'],
-  queryFn: async () => {
-    const { data } = await supabase
-      .from('exit_interviews')
-      .select('*, profiles!inner(department_id, departments(name))')
-      .eq('organization_id', profile?.organization_id);
-    
-    return calculateAttritionByDept(data);
-  }
-});
+export const buttonMagnetic = {
+  hover: { scale: 1.05 },
+  tap: { scale: 0.95 }
+};
 
-// Query 3: Tenure distribution  
-const { data: tenureData } = useQuery({
-  queryKey: ['hr-tenure'],
-  queryFn: async () => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('joining_date')
-      .eq('organization_id', profile?.organization_id)
-      .eq('is_active', true);
-    
-    return calculateTenureDistribution(data);
-  }
-});
+export const slideInLeft = {
+  initial: { opacity: 0, x: -100 },
+  whileInView: { opacity: 1, x: 0 },
+  viewport: { once: true },
+  transition: { duration: 0.6 }
+};
+
+export const slideInRight = {
+  initial: { opacity: 0, x: 100 },
+  whileInView: { opacity: 1, x: 0 },
+  viewport: { once: true },
+  transition: { duration: 0.6 }
+};
 ```
 
-#### 1.4 Fix OnboardingManagement.tsx
-
-Create `onboarding_records` table and hook:
-
-```sql
--- Migration: Create onboarding_records table
-CREATE TABLE onboarding_records (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  organization_id uuid REFERENCES organizations(id),
-  employee_id uuid REFERENCES profiles(id),
-  buddy_id uuid REFERENCES profiles(id),
-  start_date date NOT NULL,
-  status text DEFAULT 'in_progress',
-  notes text,
-  created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now()
-);
-
-CREATE TABLE onboarding_tasks (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  onboarding_id uuid REFERENCES onboarding_records(id) ON DELETE CASCADE,
-  title text NOT NULL,
-  description text,
-  category text,
-  is_completed boolean DEFAULT false,
-  completed_at timestamptz,
-  due_days integer
-);
-```
-
-Then create `useOnboarding.tsx` hook and replace in-memory state.
-
-#### 1.5 Fix AdvancedTimeTracking.tsx
-
-Replace simulated activity with real session logs:
+### 1.2 Create Scroll Animation Hook (`src/hooks/useScrollAnimation.ts`)
 
 ```typescript
-// Use existing useSessionLogs hook
-const { sessionLogs, getUserSessionStats } = useSessionLogs();
-
-// Query actual activity from activity_logs table
-const { data: activityData } = useQuery({
-  queryKey: ['user-activity', profile?.id],
-  queryFn: async () => {
-    const { data } = await supabase
-      .from('activity_logs')
-      .select('*')
-      .eq('user_id', profile?.id)
-      .gte('timestamp', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-      .order('timestamp', { ascending: false });
-    
-    return data;
-  }
-});
-```
-
-#### 1.6 Fix SecurityDashboard.tsx Login Attempts
-
-Query auth logs from Supabase or create login_attempts table:
-
-```typescript
-// Query auth_logs from analytics (if available) or create tracking
-const { data: loginAttempts } = useQuery({
-  queryKey: ['login-attempts'],
-  queryFn: async () => {
-    const { data } = await supabase
-      .from('active_sessions')
-      .select('*')
-      .eq('organization_id', profile?.organization_id)
-      .order('login_at', { ascending: false })
-      .limit(50);
-    
-    return data;
-  }
-});
-```
-
-### Phase 2: Type Safety Fixes (12 files)
-
-#### 2.1 Regenerate Supabase Types
-
-Run Supabase CLI to regenerate types that include all tables:
-
-```bash
-npx supabase gen types typescript --project-id orybzmkhccrqmjuvioln > src/integrations/supabase/types.ts
-```
-
-#### 2.2 Update Components to Remove Type Casting
-
-After types are regenerated, update each file:
-
-```typescript
-// Before
-const { data } = await (supabase as any).from('task_dependencies')...
-
-// After
-const { data } = await supabase.from('task_dependencies')...
-```
-
-Files to update:
-1. `src/components/work/DependencyManagement.tsx`
-2. `src/components/work/RiskManagement.tsx`
-3. `src/components/work/MilestoneManagement.tsx`
-4. `src/hooks/useIssues.tsx`
-5. `src/hooks/useProjectRisks.tsx`
-6. `src/hooks/useMilestones.tsx`
-7. `src/components/finance/TaxManagement.tsx`
-8. `src/components/work/OvertimeManagement.tsx`
-9. `src/components/hr/ExitManagement.tsx`
-10. `src/components/finance/BonusManagement.tsx`
-11. `src/components/AdminDashboard.tsx`
-
-### Phase 3: Database Security Fixes
-
-#### 3.1 Create Migration for Function Security
-
-```sql
--- Migration: Fix function search_path
-ALTER FUNCTION public.get_leaderboard SET search_path = public;
-ALTER FUNCTION public.get_team_members SET search_path = public;
--- Add remaining functions identified by linter
-```
-
-#### 3.2 Tighten RLS Policies
-
-Review and update overly permissive policies:
-
-```sql
--- Example: Replace USING (true) with organization-scoped check
-DROP POLICY IF EXISTS "permissive_policy" ON table_name;
-CREATE POLICY "org_scoped_policy" ON table_name
-FOR ALL USING (
-  organization_id IN (
-    SELECT organization_id FROM profiles WHERE id = auth.uid()
-  )
-);
-```
-
-### Phase 4: Component Enhancements
-
-#### 4.1 Add Phone Field to OrgChart Query
-
-Update `useOrgChart` in `useReportingStructure.tsx`:
-
-```typescript
-// Current (line 214-216)
-.select('id, full_name, email, avatar_url, department_id, is_active, reporting_manager_id, departments(name)')
-
-// Fix: Add phone field
-.select('id, full_name, email, phone, avatar_url, department_id, is_active, reporting_manager_id, job_title, departments(name)')
-```
-
-#### 4.2 Enhance Calendar Event Aggregation
-
-Create a sync function that aggregates events from multiple sources:
-
-```typescript
-// New hook: useCalendarSync.tsx
-export function useCalendarSync() {
-  const { profile } = useAuth();
+// Custom hook for triggering animations on scroll
+export function useScrollAnimation(threshold = 0.1) {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
   
-  const syncEvents = async () => {
-    // Sync shifts → calendar_events
-    // Sync approved leaves → calendar_events
-    // Sync tasks with due dates → calendar_events
-    // Sync meetings → calendar_events
-    // Sync training enrollments → calendar_events
-    // Sync holidays → calendar_events
-  };
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [threshold]);
   
-  return { syncEvents };
+  return { ref, isVisible };
 }
 ```
 
-### Phase 5: Real-time Subscriptions Enhancement
+### 1.3 Update Tailwind Config
 
-Add missing real-time subscriptions:
+Add new animations and gradients:
+- Animated gradient mesh background
+- Marquee scroll animation
+- Glow pulse effects
+- Parallax keyframes
 
-```typescript
-// In useNotificationsDB.tsx - already implemented
-// In useAttendance.tsx - add for manager dashboard
-// In useTasks.tsx - add for Kanban board updates
+---
 
-useEffect(() => {
-  const channel = supabase
-    .channel('task-changes')
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'tasks',
-      filter: `organization_id=eq.${profile?.organization_id}`
-    }, (payload) => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-    })
-    .subscribe();
-    
-  return () => { supabase.removeChannel(channel); };
-}, [profile?.organization_id]);
+## Phase 2: Landing Page Complete Redesign
+
+### 2.1 AnimatedBackground Component
+
+Features:
+- CSS animated gradient mesh (indigo → purple → pink)
+- Floating orb decorations with blur
+- Optimized with `will-change` for performance
+- Reduced motion support via `prefers-reduced-motion`
+
+### 2.2 HeroSection Component
+
+Elements:
+- Full-viewport hero with animated gradient
+- **Headline**: "Transform Your Workforce Management with TeneXA"
+  - Word-by-word stagger animation
+  - Gradient text on key words
+- **Subheadline**: Fade-in with delay
+- **CTAs**: 
+  - Primary: "Start Free Trial" with pulse glow
+  - Secondary: "Watch Demo" with play icon and hover morph
+- **Product mockup**: Floating animation with parallax on scroll
+- **Trust badges**: Logo marquee carousel
+
+### 2.3 ProblemSolutionSection Component
+
+Layout: Dark background split-screen
+
+| Pain Points (Left) | Solutions (Right) |
+|-------------------|-------------------|
+| Disconnected HR systems | Unified platform |
+| Manual attendance | GPS-based tracking |
+| Spreadsheet chaos | Project management |
+| Delayed payroll | Automated processing |
+| No visibility | AI forecasting |
+
+Interaction: Hover on problem highlights matching solution
+
+### 2.4 FeaturesGrid Component
+
+Bento grid layout with 12 feature cards:
+
+| Large Card | Medium Card | Medium Card |
+|------------|-------------|-------------|
+| HR Mgmt (animated preview) | Attendance | Projects |
+| **Analytics** (chart animation) | Payroll | Leave |
+| Small: OKRs | Small: Recruitment | Small: Training |
+
+Each card features:
+- Animated icon (Lottie or SVG)
+- Glassmorphic background
+- Hover: lift + glow + scale
+- "Learn more" arrow that slides
+
+### 2.5 HowItWorksSection Component
+
+Vertical timeline with 3 steps:
+1. **Setup** - Animated wizard mockup
+2. **Customize** - Drag-drop configuration demo
+3. **Launch** - Success dashboard with confetti
+
+Center line: Animated progress fill on scroll
+Step content: Alternates left/right
+
+### 2.6 TestimonialsSection Component
+
+Auto-scrolling marquee carousel:
+- Testimonial cards with company logos
+- 5-star rating animations
+- Pause on hover
+- Gradient fade on edges
+- Duplicate items for seamless loop
+
+### 2.7 StatsSection Component
+
+4 metrics with count-up animations:
+- 500+ Companies (animated counter)
+- 50,000+ Employees
+- 99.9% Uptime
+- 24/7 Support
+
+Animation: Triggered when section enters viewport
+
+### 2.8 IntegrationsSection Component
+
+Floating logo grid:
+- Razorpay, Slack, Teams, Google, Zoom, Tally logos
+- 3D floating effect with parallax
+- Connecting lines animation
+- Hover: Logo scales with glow
+
+### 2.9 CTASection Component
+
+Full-width gradient with mesh animation:
+- "Ready to Transform?" headline
+- Primary + Secondary CTAs
+- Trust badges below
+- Magnetic button hover effect
+
+---
+
+## Phase 3: PublicHeader Enhancement
+
+### 3.1 Desktop Navigation
+
+Features:
+- Transparent header → solid on scroll (backdrop-blur)
+- Shrink animation on scroll (height: 72px → 64px)
+- Mega menu dropdowns for Features and Resources
+
+```
+[Logo] ─── [Features ▾] [Pricing] [Resources ▾] [About] ─── [Login] [Start Free Trial]
+```
+
+### 3.2 Features Mega Menu
+
+4-column layout showing all modules:
+- HR Management (icon + description)
+- Attendance & Time
+- Projects & Tasks
+- Payroll & Finance
+- Performance & OKRs
+- And more...
+
+### 3.3 Mobile Navigation
+
+- Hamburger → full-screen overlay
+- Staggered item animations
+- Accordion for nested menus
+- Prominent CTA at bottom
+
+---
+
+## Phase 4: PublicFooter Enhancement
+
+### 4.1 5-Column Layout
+
+```
+[Logo + Tagline]   [Product]     [Company]    [Resources]   [Legal]
+Social icons       Features      About Us     Blog          Privacy
+Made in India      Pricing       Careers      Help Center   Terms
+                   Integrations  Contact      API Docs      Security
+                   Updates       Press Kit    Status        GDPR
+```
+
+### 4.2 Bottom Bar
+
+```
+© 2026 TeneXA. All rights reserved.  |  Made with ❤️ in भारत 🇮🇳
 ```
 
 ---
 
-## Files to Modify Summary
+## Phase 5: Features Page Redesign
 
-### Critical Priority (10 files)
+### 5.1 Tabbed Interface
 
-| File | Change |
-|------|--------|
-| `src/components/EnhancedOverview.tsx` | Replace Math.random with real time_logs query |
-| `src/components/KanbanAnalytics.tsx` | Calculate actual cycle time from task dates |
-| `src/components/hr/HRAnalytics.tsx` | Replace all mock data with DB queries |
-| `src/components/hr/OnboardingManagement.tsx` | Connect to new onboarding_records table |
-| `src/components/AdvancedTimeTracking.tsx` | Use real activity_logs data |
-| `src/components/SecurityDashboard.tsx` | Query real session/auth data |
-| `src/components/expenses/ExpenseCategoryManager.tsx` | Query real expense totals |
-| `src/hooks/useReportingStructure.tsx` | Add phone field to org chart query |
-| `src/integrations/supabase/types.ts` | Regenerate with all table definitions |
+Replace alternating cards with interactive tabs:
 
-### Medium Priority (12 files)
+| Tab | Content |
+|-----|---------|
+| HR Management | Screenshots + feature checklist |
+| Attendance | Mobile app demo video |
+| Projects | Interactive kanban preview |
+| Payroll | Dashboard animation |
+| Performance | OKR tracking demo |
+| Analytics | Interactive chart |
 
-All files using `(supabase as any)` type casting - remove after type regeneration.
+### 5.2 Comparison Table
 
-### New Files to Create (3 files)
+TeneXA vs competitors:
+- Sticky header columns
+- Row highlight on hover
+- Checkmarks animated on scroll
+- TeneXA column highlighted
+
+---
+
+## Phase 6: Pricing Page Enhancement
+
+### 6.1 Plan Cards
+
+4 plans with enhanced styling:
+- **Starter**: Basic card
+- **Professional**: Elevated with glow border, "Most Popular" badge
+- **Enterprise**: Premium gradient border
+- **Custom**: Contact sales
+
+### 6.2 Monthly/Annual Toggle
+
+- Smooth price transition animation
+- "Save 20%" badge animation
+- Toggle switch with spring physics
+
+### 6.3 Feature Comparison Table
+
+Expandable categories:
+- HR Management (5 features)
+- Attendance (4 features)
+- Projects (6 features)
+- And more...
+
+---
+
+## Phase 7: New Pages
+
+### 7.1 About Page (`/about`)
+
+Sections:
+- Hero with mission statement
+- Our Story timeline
+- Values grid (4 cards)
+- Team section with hover cards
+- Stats reused from landing
+- CTA section
+
+### 7.2 Start Trial Page (`/start-trial`)
+
+Multi-step wizard:
+1. Your Info (name, email, phone)
+2. Company Details (size, industry)
+3. Preferences (modules, start date)
+
+Features:
+- Progress bar animation
+- Step transition animations
+- Inline validation
+- Success confetti on completion
+
+### 7.3 Resources/Blog Page (`/resources`)
+
+Layout:
+- Search with autocomplete
+- Category filter pills
+- Grid/list toggle
+- Featured post hero
+- Blog card grid with hover effects
+- Pagination
+
+---
+
+## Phase 8: Additional Components
+
+### 8.1 StickyCtaBar Component
+
+- Appears after 50% scroll
+- Slide-up animation
+- Gradient background
+- "Start Free Trial" CTA
+- Close button
+
+### 8.2 CookieBanner Component
+
+- GDPR-compliant consent
+- Slide-up from bottom
+- Accept/Customize buttons
+- Stores preference in localStorage
+
+---
+
+## Technical Implementation Details
+
+### Design Tokens
+
+```css
+/* Colors */
+--color-primary: #4f46e5 (Indigo-600)
+--color-secondary: #9333ea (Purple-600)
+--color-accent: #ec4899 (Pink-500)
+
+/* Gradients */
+--gradient-hero: linear-gradient(-45deg, #4f46e5, #9333ea, #ec4899)
+--gradient-mesh: Animated mesh using CSS houdini or SVG
+
+/* Typography */
+--font-heading: Inter (700, -0.02em tracking)
+--font-body: Inter (400)
+```
+
+### Performance Optimizations
+
+1. **Images**: Lazy loading, WebP format, responsive sizes
+2. **Animations**: CSS transforms only, `will-change` hints
+3. **Code splitting**: Dynamic imports for heavy components
+4. **Fonts**: Self-hosted, font-display: swap
+
+### Accessibility
+
+- Semantic HTML throughout
+- ARIA labels on interactive elements
+- Focus-visible outlines
+- Skip links maintained
+- Reduced motion media query support:
+```css
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+---
+
+## Implementation Order
+
+| Priority | Task | Files |
+|----------|------|-------|
+| 1 | Animation utilities | animations.ts, useScrollAnimation.ts |
+| 2 | Landing page sections | All landing/ components |
+| 3 | Landing page assembly | Landing.tsx |
+| 4 | Header/Footer updates | PublicHeader.tsx, PublicFooter.tsx |
+| 5 | Features page redesign | Features.tsx |
+| 6 | Pricing enhancements | Pricing.tsx |
+| 7 | About page | About.tsx |
+| 8 | Trial signup page | StartTrial.tsx |
+| 9 | Resources page | Resources.tsx |
+| 10 | Sticky CTA + Cookie banner | StickyCtaBar.tsx, CookieBanner.tsx |
+| 11 | Tailwind config updates | tailwind.config.ts |
+| 12 | App routing | App.tsx |
+
+---
+
+## Files to Create/Modify
+
+### New Files (18)
 
 | File | Purpose |
 |------|---------|
-| `supabase/migrations/XXXXXX_onboarding_tables.sql` | Create onboarding_records and onboarding_tasks tables |
-| `supabase/migrations/XXXXXX_security_fixes.sql` | Fix function search_path and RLS policies |
-| `src/hooks/useOnboarding.tsx` | CRUD operations for onboarding records |
+| `src/lib/animations.ts` | Framer Motion animation presets |
+| `src/hooks/useScrollAnimation.ts` | Intersection Observer hook |
+| `src/components/landing/HeroSection.tsx` | Animated hero |
+| `src/components/landing/ProblemSolutionSection.tsx` | Split-screen |
+| `src/components/landing/FeaturesGrid.tsx` | Bento grid |
+| `src/components/landing/HowItWorksSection.tsx` | Timeline |
+| `src/components/landing/TestimonialsSection.tsx` | Carousel |
+| `src/components/landing/StatsSection.tsx` | Count-up stats |
+| `src/components/landing/IntegrationsSection.tsx` | Logo grid |
+| `src/components/landing/CTASection.tsx` | Final CTA |
+| `src/components/landing/AnimatedBackground.tsx` | Gradient mesh |
+| `src/components/landing/TrustBadges.tsx` | Logo marquee |
+| `src/components/landing/StickyCtaBar.tsx` | Floating CTA |
+| `src/components/public/CookieBanner.tsx` | GDPR consent |
+| `src/pages/About.tsx` | About Us page |
+| `src/pages/StartTrial.tsx` | Dedicated trial page |
+| `src/pages/Resources.tsx` | Blog/resources page |
+
+### Modified Files (7)
+
+| File | Changes |
+|------|---------|
+| `src/pages/Landing.tsx` | Complete redesign with new sections |
+| `src/pages/Features.tsx` | Tabbed interface + comparison |
+| `src/pages/Pricing.tsx` | Enhanced cards + comparison table |
+| `src/pages/Contact.tsx` | Add map integration |
+| `src/components/public/PublicHeader.tsx` | Mega menus + scroll effects |
+| `src/components/public/PublicFooter.tsx` | 5-column layout |
+| `src/App.tsx` | Add new routes |
+| `tailwind.config.ts` | New animations + utilities |
 
 ---
 
-## Verification Checklist
+## Expected Outcomes
 
-After implementation, verify:
+1. **Conversion-focused design** with prominent CTAs throughout
+2. **Modern 2026 aesthetics** with gradients, glassmorphism, animations
+3. **Improved engagement** via interactive elements and micro-interactions
+4. **Better storytelling** through problem-solution and timeline sections
+5. **Enhanced credibility** with testimonials, stats, and trust badges
+6. **Mobile-first responsiveness** across all breakpoints
+7. **Accessibility compliance** (WCAG 2.1 AA)
+8. **Performance optimized** (target: LCP < 2.5s, FID < 100ms)
 
-- [ ] EnhancedOverview shows real daily hours from time_logs
-- [ ] KanbanAnalytics shows calculated cycle times (not random)
-- [ ] HRAnalytics displays real headcount, attrition, tenure data
-- [ ] OnboardingManagement saves records to database
-- [ ] AdvancedTimeTracking uses real activity_logs
-- [ ] SecurityDashboard shows real login/session data
-- [ ] No `(supabase as any)` type casts remaining
-- [ ] Supabase linter shows 0 warnings
-- [ ] All navigation tabs load correctly
-- [ ] No console errors during normal usage
-- [ ] Organization chart displays real hierarchy
-- [ ] Dashboard customization saves and loads preferences
-- [ ] Calendar shows events from multiple sources
-
----
-
-## Technical Implementation Notes
-
-### Database Query Patterns
-
-All queries follow organization-scoped pattern:
-```typescript
-.eq('organization_id', profile?.organization_id)
-```
-
-### Profile Joins
-
-Use foreign key syntax for profile joins:
-```typescript
-.select(`*, author:profiles!fk_name(id, full_name, avatar_url)`)
-```
-
-### Error Handling
-
-All mutations should include proper error toasts:
-```typescript
-onError: (error) => {
-  toast({
-    title: "Error",
-    description: error.message,
-    variant: "destructive"
-  });
-}
-```
-
-### Loading States
-
-All data fetching components should show loading indicators:
-```typescript
-if (isLoading) {
-  return <Skeleton className="h-[200px] w-full" />;
-}
-```
-
----
-
-## Summary
-
-The TeneXA application has a robust architecture with comprehensive database schema and well-structured hooks. The main work required is:
-
-1. **Replace 12 instances of mock/random data** with real database queries
-2. **Regenerate Supabase types** to remove 12 type casts
-3. **Fix 25 database security warnings** via migration
-4. **Create onboarding persistence** tables and hook
-5. **Add missing query fields** (phone in org chart)
-
-The organization chart, dashboard builder, and most core features are already working correctly with real database connections. The fixes are refinements rather than fundamental architectural changes.
