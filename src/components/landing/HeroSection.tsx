@@ -78,7 +78,7 @@ export function HeroSection() {
               whileHover="hover"
               whileTap="tap"
             >
-              <Link to="/signup">
+              <Link to="/start-trial">
                 <Button 
                   size="lg" 
                   className="w-full sm:w-auto h-14 px-8 text-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all duration-300"

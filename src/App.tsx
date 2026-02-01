@@ -114,7 +114,7 @@ function AppContent() {
   // Only show splash for authenticated users navigating to protected routes
   // Public pages load instantly without splash
   const isPublicRoute = typeof window !== 'undefined' && 
-    ['/', '/auth', '/signup', '/pricing', '/features', '/terms', '/privacy', '/contact', '/feedback'].includes(window.location.pathname);
+    ['/', '/auth', '/signup', '/pricing', '/features', '/terms', '/privacy', '/contact', '/about', '/resources', '/start-trial', '/feedback'].includes(window.location.pathname);
 
   const shouldShowSplash = showSplash && 
     (!minTimeElapsed || loading) && 
