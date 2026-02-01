@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import confetti from 'canvas-confetti';
+import { supabase } from '@/integrations/supabase/client';
 
 const steps = [
   { id: 1, title: 'Your Info', icon: User },
@@ -134,10 +135,27 @@ export default function StartTrial() {
     setIsSubmitting(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Save trial signup to database
+      const { error } = await supabase
+        .from('trial_signups')
+        .insert({
+          full_name: formData.fullName.trim(),
+          email: formData.email.trim().toLowerCase(),
+          phone: formData.phone.trim(),
+          company_name: formData.companyName.trim(),
+          company_size: formData.companySize,
+          industry: formData.industry,
+          selected_modules: formData.selectedModules,
+          source: 'website',
+          status: 'pending'
+        });
+
+      if (error) {
+        console.error('Trial signup error:', error);
+        throw new Error('Failed to submit trial signup');
+      }
       
-      // Trigger confetti
+      // Trigger confetti on success
       confetti({
         particleCount: 100,
         spread: 70,
@@ -146,11 +164,12 @@ export default function StartTrial() {
 
       toast.success('Welcome to TeneXA! Your trial has been activated.');
       
-      // Redirect to signup or dashboard
+      // Redirect to signup with email pre-filled
       setTimeout(() => {
-        navigate('/signup');
+        navigate(`/signup?email=${encodeURIComponent(formData.email)}`);
       }, 2000);
     } catch (error) {
+      console.error('Trial submission error:', error);
       toast.error('Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);

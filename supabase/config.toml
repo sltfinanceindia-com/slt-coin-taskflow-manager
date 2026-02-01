@@ -52,7 +52,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.ai-task-assistant]
-verify_jwt = false
+verify_jwt = true
 
 [edge_runtime]
 policy = "per_worker"

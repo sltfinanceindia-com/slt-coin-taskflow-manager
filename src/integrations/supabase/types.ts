@@ -13245,6 +13245,65 @@ export type Database = {
           },
         ]
       }
+      trial_signups: {
+        Row: {
+          company_name: string
+          company_size: string
+          converted_to_org_id: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          industry: string
+          notes: string | null
+          phone: string
+          selected_modules: string[]
+          source: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_name: string
+          company_size: string
+          converted_to_org_id?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          industry: string
+          notes?: string | null
+          phone: string
+          selected_modules?: string[]
+          source?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string
+          company_size?: string
+          converted_to_org_id?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          industry?: string
+          notes?: string | null
+          phone?: string
+          selected_modules?: string[]
+          source?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trial_signups_converted_to_org_id_fkey"
+            columns: ["converted_to_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       typing_indicators: {
         Row: {
           channel_id: string
