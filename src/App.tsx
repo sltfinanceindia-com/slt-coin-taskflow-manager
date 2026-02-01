@@ -51,6 +51,8 @@ import TutorialPage from "./pages/Tutorial";
 import TaskDetailPage from "./pages/TaskDetailPage";
 import PortfolioDetailPage from "./pages/PortfolioDetailPage";
 import ProgramDetailPage from "./pages/ProgramDetailPage";
+import Resources from "./pages/Resources";
+import StartTrial from "./pages/StartTrial";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -144,6 +146,8 @@ function AppContent() {
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/about" element={<About />} />
+          <Route path="/resources" element={<Resources />} />
+          <Route path="/start-trial" element={<StartTrial />} />
           
           {/* Super Admin Routes */}
           <Route path="/super-admin" element={<ProtectedRoute><SuperAdminDashboard /></ProtectedRoute>} />
