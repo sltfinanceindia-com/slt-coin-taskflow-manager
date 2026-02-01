@@ -87,10 +87,19 @@ export function KanbanAnalytics({ tasks }: KanbanAnalyticsProps) {
         return taskDate.toDateString() === date.toDateString() && task.status === 'verified';
       });
       
+      // Calculate actual cycle time from created_at to updated_at
+      const avgCycleTime = dayTasks.length > 0
+        ? dayTasks.reduce((sum, task) => {
+            const created = new Date(task.created_at);
+            const updated = new Date(task.updated_at);
+            return sum + (updated.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);
+          }, 0) / dayTasks.length
+        : 0;
+      
       return { 
         day, 
         completed: dayTasks.length,
-        cycleTime: dayTasks.length > 0 ? Math.random() * 5 + 1 : 0
+        cycleTime: Math.round(avgCycleTime * 10) / 10
       };
     });
   }, [tasks]);

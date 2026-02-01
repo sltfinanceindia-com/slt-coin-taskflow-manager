@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useAuth } from '@/hooks/useAuth';
 
 interface AuditLog {
   id: string;
@@ -44,6 +45,7 @@ interface SecurityMetric {
 
 export function SecurityDashboard() {
   const { isAdmin } = useUserRole();
+  const { profile } = useAuth();
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Only show to admins
@@ -79,17 +81,30 @@ export function SecurityDashboard() {
     },
   });
 
-  // Fetch recent login attempts from analytics
+  // Fetch recent login attempts from active_sessions table
   const { data: loginAttempts } = useQuery({
-    queryKey: ['login-attempts', refreshKey],
+    queryKey: ['login-attempts', refreshKey, profile?.organization_id],
     queryFn: async () => {
-      // This would typically fetch from Supabase analytics
-      // For now, we'll return mock data
-      return [
-        { timestamp: new Date().toISOString(), status: 'success', email: 'user@example.com', ip: '192.168.1.1' },
-        { timestamp: new Date(Date.now() - 3600000).toISOString(), status: 'failed', email: 'user@example.com', ip: '192.168.1.1' },
-      ];
+      if (!profile?.organization_id) return [];
+      
+      const { data, error } = await supabase
+        .from('active_sessions')
+        .select('id, login_at, is_active, ip_address, device_info, profile_id, profiles!active_sessions_profile_id_fkey(full_name, email)')
+        .eq('organization_id', profile.organization_id)
+        .order('login_at', { ascending: false })
+        .limit(50);
+      
+      if (error) throw error;
+      
+      return (data || []).map(session => ({
+        timestamp: session.login_at,
+        status: session.is_active ? 'success' : 'ended',
+        email: (session.profiles as any)?.email || 'Unknown',
+        ip: session.ip_address || 'Unknown',
+        name: (session.profiles as any)?.full_name || 'Unknown',
+      }));
     },
+    enabled: !!profile?.organization_id,
   });
 
   // Calculate security metrics
@@ -282,7 +297,7 @@ export function SecurityDashboard() {
                         <span className="text-sm font-medium">{attempt.email}</span>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        IP Address: {attempt.ip}
+                        IP Address: {String(attempt.ip || 'Unknown')}
                       </p>
                     </div>
                     <div className="text-sm text-muted-foreground">

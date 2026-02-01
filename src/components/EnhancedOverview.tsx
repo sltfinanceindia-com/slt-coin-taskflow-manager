@@ -78,7 +78,27 @@ export function EnhancedOverview() {
     },
   });
 
-  // Generate weekly activity data
+  // Query daily hours from time_logs
+  const { data: dailyTimeData } = useQuery({
+    queryKey: ['daily-hours', profile?.id],
+    queryFn: async () => {
+      if (!profile?.id) return [];
+      const startOfWeek = new Date();
+      startOfWeek.setDate(startOfWeek.getDate() - 6);
+      
+      const { data, error } = await supabase
+        .from('time_logs')
+        .select('date_logged, hours_worked')
+        .eq('user_id', profile.id)
+        .gte('date_logged', startOfWeek.toISOString().split('T')[0]);
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profile?.id,
+  });
+
+  // Generate weekly activity data from real time_logs
   const generateWeeklyData = () => {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const now = new Date();
@@ -86,13 +106,17 @@ export function EnhancedOverview() {
     return days.map((day, index) => {
       const date = new Date(now);
       date.setDate(date.getDate() - (6 - index));
+      const dateStr = date.toISOString().split('T')[0];
       
       const dayTasks = myTasks.filter(task => {
         const taskDate = new Date(task.updated_at);
         return taskDate.toDateString() === date.toDateString();
       });
       
-      const dayHours = weeklyHours > 0 ? Math.random() * 8 + 1 : 0;
+      // Calculate actual hours from time_logs for this day
+      const dayHours = dailyTimeData
+        ?.filter(log => log.date_logged === dateStr)
+        .reduce((sum, log) => sum + Number(log.hours_worked || 0), 0) || 0;
       
       return { 
         day, 

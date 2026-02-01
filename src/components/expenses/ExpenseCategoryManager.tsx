@@ -81,12 +81,26 @@ export function ExpenseCategoryManager() {
     enabled: !!profile?.organization_id,
   });
 
-  // Fetch expense totals per category (mock for now)
+  // Fetch expense totals per category from expense_claims
   const { data: expenseTotals } = useQuery({
     queryKey: ['expense-totals', profile?.organization_id],
     queryFn: async () => {
-      // In a real app, this would aggregate from expense_claims table
-      return {};
+      const { data, error } = await supabase
+        .from('expense_claims')
+        .select('expense_type, amount, status')
+        .eq('organization_id', profile?.organization_id)
+        .in('status', ['approved', 'pending']);
+      
+      if (error) throw error;
+      
+      // Aggregate by expense_type (using it as category)
+      const totals: Record<string, number> = {};
+      (data || []).forEach((claim: any) => {
+        const category = claim.expense_type || 'other';
+        totals[category] = (totals[category] || 0) + Number(claim.amount || 0);
+      });
+      
+      return totals;
     },
     enabled: !!profile?.organization_id,
   });
@@ -354,7 +368,7 @@ export function ExpenseCategoryManager() {
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {categories?.map((category) => {
           const IconComp = getIcon(category.icon);
-          const spent = 0; // Would come from expense_claims aggregation
+          const spent = expenseTotals?.[category.name] || 0; // Match by category name
           const budget = Number(category.budget_amount) || 0;
           const utilization = budget > 0 ? (spent / budget) * 100 : 0;
           
