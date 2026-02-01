@@ -8,190 +8,58 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { toast } from '@/hooks/use-toast';
+import { useJobApplications, APPLICATION_STAGES, type ApplicationStage, type CreateApplicationInput } from '@/hooks/useJobApplications';
 import { format } from 'date-fns';
 import { 
-  Plus, Users, UserCheck, Mail, Phone, Briefcase, 
-  Calendar, ArrowRight, CheckCircle, XCircle, Clock,
-  FileText, Download
+  Plus, Mail, Download, Loader2
 } from 'lucide-react';
 
-interface Candidate {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  position: string;
-  department: string;
-  stage: 'applied' | 'screening' | 'interview' | 'technical' | 'hr' | 'offer' | 'hired' | 'rejected';
-  source: string;
-  experience_years: number;
-  current_salary: number;
-  expected_salary: number;
-  resume_url?: string;
-  notes: string;
-  interview_date?: string;
-  created_at: string;
-}
-
-const STAGES = [
-  { key: 'applied', label: 'Applied', color: 'bg-gray-100 text-gray-800' },
-  { key: 'screening', label: 'Screening', color: 'bg-blue-100 text-blue-800' },
-  { key: 'interview', label: 'Interview', color: 'bg-purple-100 text-purple-800' },
-  { key: 'technical', label: 'Technical', color: 'bg-indigo-100 text-indigo-800' },
-  { key: 'hr', label: 'HR Round', color: 'bg-yellow-100 text-yellow-800' },
-  { key: 'offer', label: 'Offer', color: 'bg-orange-100 text-orange-800' },
-  { key: 'hired', label: 'Hired', color: 'bg-green-100 text-green-800' },
-  { key: 'rejected', label: 'Rejected', color: 'bg-red-100 text-red-800' },
-];
-
 export function RecruitmentPipeline() {
-  const { profile } = useAuth();
-  const queryClient = useQueryClient();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
-  const [filter, setFilter] = useState<string>('all');
+  const [filter, setFilter] = useState<ApplicationStage | 'all'>('all');
 
-  const [newCandidate, setNewCandidate] = useState({
-    name: '',
+  const { 
+    applications, 
+    isLoading, 
+    stageStats, 
+    createApplication, 
+    updateStage 
+  } = useJobApplications(filter);
+
+  const [newCandidate, setNewCandidate] = useState<CreateApplicationInput>({
+    candidate_name: '',
     email: '',
     phone: '',
     position: '',
     department: '',
     source: 'linkedin',
-    experience_years: '',
-    current_salary: '',
-    expected_salary: '',
+    experience_years: 0,
+    current_salary: 0,
+    expected_salary: 0,
     notes: '',
   });
 
-  // Fetch candidates from tasks table (using task as candidate placeholder)
-  const { data: candidates, isLoading } = useQuery({
-    queryKey: ['recruitment-candidates', profile?.organization_id, filter],
-    queryFn: async () => {
-      let query = supabase
-        .from('tasks')
-        .select('*')
-        .eq('organization_id', profile?.organization_id)
-        .like('description', '%[CANDIDATE]%')
-        .order('created_at', { ascending: false });
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      return data?.map(t => {
-        const meta = t.submission_notes ? JSON.parse(t.submission_notes) : {};
-        return {
-          id: t.id,
-          name: t.title,
-          email: meta.email || '',
-          phone: meta.phone || '',
-          position: meta.position || '',
-          department: meta.department || '',
-          stage: t.status === 'assigned' ? 'applied' : 
-                 t.status === 'in_progress' ? 'interview' : 
-                 t.status === 'completed' ? 'hired' : 
-                 t.status === 'rejected' ? 'rejected' : 'applied',
-          source: meta.source || 'direct',
-          experience_years: meta.experience_years || 0,
-          current_salary: meta.current_salary || 0,
-          expected_salary: meta.expected_salary || 0,
-          notes: t.admin_feedback || '',
-          interview_date: t.end_date,
-          created_at: t.created_at,
-        } as Candidate;
-      }) || [];
-    },
-    enabled: !!profile?.organization_id,
-  });
-
-  const createCandidateMutation = useMutation({
-    mutationFn: async (candidate: typeof newCandidate) => {
-      const meta = {
-        email: candidate.email,
-        phone: candidate.phone,
-        position: candidate.position,
-        department: candidate.department,
-        source: candidate.source,
-        experience_years: parseFloat(candidate.experience_years) || 0,
-        current_salary: parseFloat(candidate.current_salary) || 0,
-        expected_salary: parseFloat(candidate.expected_salary) || 0,
-      };
-
-      const { data, error } = await supabase
-        .from('tasks')
-        .insert({
-          organization_id: profile?.organization_id,
-          title: candidate.name,
-          description: `[CANDIDATE] ${candidate.position} - ${candidate.department}`,
-          submission_notes: JSON.stringify(meta),
-          admin_feedback: candidate.notes,
-          status: 'assigned',
-          priority: 'medium',
-          created_by: profile?.id || '',
-          assigned_to: profile?.id || '',
-          slt_coin_value: 0,
-          start_date: new Date().toISOString(),
-          end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recruitment-candidates'] });
-      setIsCreateOpen(false);
-      setNewCandidate({
-        name: '', email: '', phone: '', position: '', department: '',
-        source: 'linkedin', experience_years: '', current_salary: '', expected_salary: '', notes: '',
-      });
-      toast({ title: 'Candidate added successfully' });
-    },
-    onError: (error) => {
-      toast({ title: 'Error adding candidate', description: error.message, variant: 'destructive' });
-    },
-  });
-
-  const updateStageMutation = useMutation({
-    mutationFn: async ({ id, stage }: { id: string; stage: string }) => {
-      const statusMap: Record<string, 'assigned' | 'in_progress' | 'completed' | 'rejected' | 'verified'> = {
-        'applied': 'assigned',
-        'screening': 'assigned',
-        'interview': 'in_progress',
-        'technical': 'in_progress',
-        'hr': 'in_progress',
-        'offer': 'in_progress',
-        'hired': 'completed',
-        'rejected': 'rejected',
-      };
-
-      const { error } = await supabase
-        .from('tasks')
-        .update({ status: statusMap[stage] || 'assigned' })
-        .eq('id', id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recruitment-candidates'] });
-      toast({ title: 'Stage updated successfully' });
-    },
-  });
-
-  const getStageBadge = (stage: string) => {
-    const stageInfo = STAGES.find(s => s.key === stage);
-    return <Badge className={stageInfo?.color || 'bg-gray-100'}>{stageInfo?.label || stage}</Badge>;
+  const handleCreateCandidate = async () => {
+    await createApplication.mutateAsync(newCandidate);
+    setIsCreateOpen(false);
+    setNewCandidate({
+      candidate_name: '', 
+      email: '', 
+      phone: '', 
+      position: '', 
+      department: '',
+      source: 'linkedin', 
+      experience_years: 0, 
+      current_salary: 0, 
+      expected_salary: 0, 
+      notes: '',
+    });
   };
 
-  const stageStats = STAGES.map(stage => ({
-    ...stage,
-    count: candidates?.filter(c => c.stage === stage.key).length || 0,
-  }));
+  const getStageBadge = (stage: ApplicationStage) => {
+    const stageInfo = APPLICATION_STAGES.find(s => s.key === stage);
+    return <Badge className={stageInfo?.color || 'bg-gray-100'}>{stageInfo?.label || stage}</Badge>;
+  };
 
   return (
     <div className="space-y-6">
@@ -221,8 +89,8 @@ export function RecruitmentPipeline() {
                 <div className="col-span-2">
                   <Label>Full Name</Label>
                   <Input
-                    value={newCandidate.name}
-                    onChange={(e) => setNewCandidate(prev => ({ ...prev, name: e.target.value }))}
+                    value={newCandidate.candidate_name}
+                    onChange={(e) => setNewCandidate(prev => ({ ...prev, candidate_name: e.target.value }))}
                     placeholder="Candidate name"
                   />
                 </div>
@@ -238,7 +106,7 @@ export function RecruitmentPipeline() {
                 <div>
                   <Label>Phone</Label>
                   <Input
-                    value={newCandidate.phone}
+                    value={newCandidate.phone || ''}
                     onChange={(e) => setNewCandidate(prev => ({ ...prev, phone: e.target.value }))}
                     placeholder="+91 9876543210"
                   />
@@ -254,7 +122,7 @@ export function RecruitmentPipeline() {
                 <div>
                   <Label>Department</Label>
                   <Select
-                    value={newCandidate.department}
+                    value={newCandidate.department || ''}
                     onValueChange={(v) => setNewCandidate(prev => ({ ...prev, department: v }))}
                   >
                     <SelectTrigger>
@@ -274,7 +142,7 @@ export function RecruitmentPipeline() {
                 <div>
                   <Label>Source</Label>
                   <Select
-                    value={newCandidate.source}
+                    value={newCandidate.source || 'linkedin'}
                     onValueChange={(v) => setNewCandidate(prev => ({ ...prev, source: v }))}
                   >
                     <SelectTrigger>
@@ -293,30 +161,30 @@ export function RecruitmentPipeline() {
                   <Label>Experience (Years)</Label>
                   <Input
                     type="number"
-                    value={newCandidate.experience_years}
-                    onChange={(e) => setNewCandidate(prev => ({ ...prev, experience_years: e.target.value }))}
+                    value={newCandidate.experience_years || ''}
+                    onChange={(e) => setNewCandidate(prev => ({ ...prev, experience_years: parseFloat(e.target.value) || 0 }))}
                   />
                 </div>
                 <div>
                   <Label>Current Salary (₹ LPA)</Label>
                   <Input
                     type="number"
-                    value={newCandidate.current_salary}
-                    onChange={(e) => setNewCandidate(prev => ({ ...prev, current_salary: e.target.value }))}
+                    value={newCandidate.current_salary || ''}
+                    onChange={(e) => setNewCandidate(prev => ({ ...prev, current_salary: parseFloat(e.target.value) || 0 }))}
                   />
                 </div>
                 <div>
                   <Label>Expected Salary (₹ LPA)</Label>
                   <Input
                     type="number"
-                    value={newCandidate.expected_salary}
-                    onChange={(e) => setNewCandidate(prev => ({ ...prev, expected_salary: e.target.value }))}
+                    value={newCandidate.expected_salary || ''}
+                    onChange={(e) => setNewCandidate(prev => ({ ...prev, expected_salary: parseFloat(e.target.value) || 0 }))}
                   />
                 </div>
                 <div className="col-span-2">
                   <Label>Notes</Label>
                   <Textarea
-                    value={newCandidate.notes}
+                    value={newCandidate.notes || ''}
                     onChange={(e) => setNewCandidate(prev => ({ ...prev, notes: e.target.value }))}
                     placeholder="Additional notes about the candidate"
                     rows={3}
@@ -325,10 +193,17 @@ export function RecruitmentPipeline() {
                 <div className="col-span-2">
                   <Button
                     className="w-full"
-                    onClick={() => createCandidateMutation.mutate(newCandidate)}
-                    disabled={createCandidateMutation.isPending || !newCandidate.name || !newCandidate.position}
+                    onClick={handleCreateCandidate}
+                    disabled={createApplication.isPending || !newCandidate.candidate_name || !newCandidate.position}
                   >
-                    {createCandidateMutation.isPending ? 'Adding...' : 'Add Candidate'}
+                    {createApplication.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Adding...
+                      </>
+                    ) : (
+                      'Add Candidate'
+                    )}
                   </Button>
                 </div>
               </div>
@@ -340,7 +215,11 @@ export function RecruitmentPipeline() {
       {/* Pipeline Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
         {stageStats.map((stage) => (
-          <Card key={stage.key} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setFilter(stage.key)}>
+          <Card 
+            key={stage.key} 
+            className={`cursor-pointer hover:shadow-md transition-shadow ${filter === stage.key ? 'ring-2 ring-primary' : ''}`} 
+            onClick={() => setFilter(stage.key)}
+          >
             <CardContent className="p-3 text-center">
               <div className="text-2xl font-bold">{stage.count}</div>
               <Badge className={`${stage.color} text-xs`}>{stage.label}</Badge>
@@ -352,9 +231,9 @@ export function RecruitmentPipeline() {
       {/* Filter */}
       <div className="flex gap-2 flex-wrap">
         <Button variant={filter === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setFilter('all')}>
-          All ({candidates?.length || 0})
+          All ({applications.length})
         </Button>
-        {STAGES.slice(0, 6).map((stage) => (
+        {APPLICATION_STAGES.slice(0, 6).map((stage) => (
           <Button
             key={stage.key}
             variant={filter === stage.key ? 'default' : 'outline'}
@@ -371,15 +250,15 @@ export function RecruitmentPipeline() {
         <CardHeader>
           <CardTitle>Candidates</CardTitle>
           <CardDescription>
-            {filter === 'all' ? 'All candidates' : `Candidates in ${STAGES.find(s => s.key === filter)?.label} stage`}
+            {filter === 'all' ? 'All candidates' : `Candidates in ${APPLICATION_STAGES.find(s => s.key === filter)?.label} stage`}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-          ) : candidates && candidates.length > 0 ? (
+          ) : applications.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -394,11 +273,11 @@ export function RecruitmentPipeline() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {candidates.map((candidate) => (
+                {applications.map((candidate) => (
                   <TableRow key={candidate.id}>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{candidate.name}</div>
+                        <div className="font-medium">{candidate.candidate_name}</div>
                         <div className="text-sm text-muted-foreground flex items-center gap-2">
                           <Mail className="h-3 w-3" />{candidate.email}
                         </div>
@@ -420,13 +299,13 @@ export function RecruitmentPipeline() {
                     <TableCell className="text-right">
                       <Select
                         value={candidate.stage}
-                        onValueChange={(v) => updateStageMutation.mutate({ id: candidate.id, stage: v })}
+                        onValueChange={(v) => updateStage.mutate({ id: candidate.id, stage: v as ApplicationStage })}
                       >
                         <SelectTrigger className="w-[120px]">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {STAGES.map((stage) => (
+                          {APPLICATION_STAGES.map((stage) => (
                             <SelectItem key={stage.key} value={stage.key}>
                               {stage.label}
                             </SelectItem>
@@ -440,9 +319,9 @@ export function RecruitmentPipeline() {
             </Table>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
-              <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <Plus className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>No candidates found</p>
-              <p className="text-sm">Add your first candidate to start tracking</p>
+              <p className="text-sm">Add candidates to start tracking</p>
             </div>
           )}
         </CardContent>

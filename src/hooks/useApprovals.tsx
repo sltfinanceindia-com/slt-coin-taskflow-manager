@@ -65,6 +65,7 @@ export const useApprovals = () => {
         .from('approval_workflows')
         .select('*')
         .eq('is_active', true)
+        .eq('organization_id', profile?.organization_id)
         .order('name');
       
       if (error) throw error;

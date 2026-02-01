@@ -5165,6 +5165,107 @@ export type Database = {
           },
         ]
       }
+      job_applications: {
+        Row: {
+          candidate_name: string
+          created_at: string
+          created_by: string | null
+          current_salary: number | null
+          department: string | null
+          email: string
+          expected_salary: number | null
+          experience_years: number | null
+          hired_profile_id: string | null
+          id: string
+          interview_date: string | null
+          job_posting_id: string | null
+          notes: string | null
+          organization_id: string
+          phone: string | null
+          position: string
+          rejection_reason: string | null
+          resume_url: string | null
+          source: string | null
+          stage: string
+          updated_at: string
+        }
+        Insert: {
+          candidate_name: string
+          created_at?: string
+          created_by?: string | null
+          current_salary?: number | null
+          department?: string | null
+          email: string
+          expected_salary?: number | null
+          experience_years?: number | null
+          hired_profile_id?: string | null
+          id?: string
+          interview_date?: string | null
+          job_posting_id?: string | null
+          notes?: string | null
+          organization_id: string
+          phone?: string | null
+          position: string
+          rejection_reason?: string | null
+          resume_url?: string | null
+          source?: string | null
+          stage?: string
+          updated_at?: string
+        }
+        Update: {
+          candidate_name?: string
+          created_at?: string
+          created_by?: string | null
+          current_salary?: number | null
+          department?: string | null
+          email?: string
+          expected_salary?: number | null
+          experience_years?: number | null
+          hired_profile_id?: string | null
+          id?: string
+          interview_date?: string | null
+          job_posting_id?: string | null
+          notes?: string | null
+          organization_id?: string
+          phone?: string | null
+          position?: string
+          rejection_reason?: string | null
+          resume_url?: string | null
+          source?: string | null
+          stage?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_applications_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_applications_hired_profile_id_fkey"
+            columns: ["hired_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_applications_job_posting_id_fkey"
+            columns: ["job_posting_id"]
+            isOneToOne: false
+            referencedRelation: "job_postings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_applications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_postings: {
         Row: {
           applications_count: number | null
@@ -7291,6 +7392,135 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      onboarding_records: {
+        Row: {
+          buddy_id: string | null
+          created_at: string
+          created_by: string | null
+          employee_id: string
+          id: string
+          notes: string | null
+          organization_id: string | null
+          start_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          buddy_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id: string
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          buddy_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_records_buddy_id_fkey"
+            columns: ["buddy_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onboarding_records_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onboarding_records_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onboarding_records_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      onboarding_tasks: {
+        Row: {
+          category: string
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          id: string
+          is_completed: boolean
+          name: string
+          onboarding_id: string
+          organization_id: string | null
+          task_order: number
+        }
+        Insert: {
+          category?: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          name: string
+          onboarding_id: string
+          organization_id?: string | null
+          task_order?: number
+        }
+        Update: {
+          category?: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          name?: string
+          onboarding_id?: string
+          organization_id?: string | null
+          task_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_tasks_completed_by_fkey"
+            columns: ["completed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onboarding_tasks_onboarding_id_fkey"
+            columns: ["onboarding_id"]
+            isOneToOne: false
+            referencedRelation: "onboarding_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onboarding_tasks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]

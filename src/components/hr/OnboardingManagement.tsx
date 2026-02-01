@@ -7,57 +7,29 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { toast } from '@/hooks/use-toast';
-import { format, differenceInDays } from 'date-fns';
+import { useOnboarding, type OnboardingRecord } from '@/hooks/useOnboarding';
+import { format } from 'date-fns';
 import { 
   UserPlus, Plus, CheckCircle, Clock, AlertCircle, 
-  FileText, Laptop, Mail, Users, Calendar
+  Users, Calendar, Loader2
 } from 'lucide-react';
-
-interface OnboardingTask {
-  id: string;
-  name: string;
-  category: string;
-  is_completed: boolean;
-}
-
-interface OnboardingRecord {
-  id: string;
-  employee_id: string;
-  start_date: string;
-  status: string;
-  tasks: OnboardingTask[];
-  buddy_id: string | null;
-  notes: string | null;
-  employee?: { full_name: string; email: string; avatar_url: string | null; department: string | null };
-  buddy?: { full_name: string } | null;
-}
-
-const DEFAULT_ONBOARDING_TASKS: OnboardingTask[] = [
-  { id: '1', name: 'Complete employment documents', category: 'Documentation', is_completed: false },
-  { id: '2', name: 'ID card generation', category: 'Documentation', is_completed: false },
-  { id: '3', name: 'Setup email account', category: 'IT Setup', is_completed: false },
-  { id: '4', name: 'Laptop/workstation setup', category: 'IT Setup', is_completed: false },
-  { id: '5', name: 'Access card/biometric enrollment', category: 'Access', is_completed: false },
-  { id: '6', name: 'System access provisioning', category: 'Access', is_completed: false },
-  { id: '7', name: 'Introduction to team', category: 'Orientation', is_completed: false },
-  { id: '8', name: 'Company policies walkthrough', category: 'Orientation', is_completed: false },
-  { id: '9', name: 'Buddy assignment meeting', category: 'Orientation', is_completed: false },
-  { id: '10', name: 'First week training schedule', category: 'Training', is_completed: false },
-];
 
 export function OnboardingManagement() {
   const { profile } = useAuth();
-  const queryClient = useQueryClient();
+  const { 
+    onboardingRecords, 
+    isLoading, 
+    createOnboarding, 
+    toggleTask 
+  } = useOnboarding();
+  
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [selectedOnboarding, setSelectedOnboarding] = useState<OnboardingRecord | null>(null);
   const [filter, setFilter] = useState<string>('all');
   const [newOnboarding, setNewOnboarding] = useState({
     employee_id: '',
@@ -104,34 +76,16 @@ export function OnboardingManagement() {
     enabled: !!profile?.organization_id,
   });
 
-  // Mock onboarding records (would be stored in a dedicated table in production)
-  const [onboardingRecords, setOnboardingRecords] = useState<OnboardingRecord[]>([]);
-
-  // Create onboarding record
-  const handleCreateOnboarding = () => {
-    const employee = newEmployees?.find(e => e.id === newOnboarding.employee_id);
-    const buddy = allEmployees?.find(e => e.id === newOnboarding.buddy_id);
+  const handleCreateOnboarding = async () => {
+    if (!newOnboarding.employee_id) return;
     
-    if (!employee) return;
-
-    const newRecord: OnboardingRecord = {
-      id: Date.now().toString(),
+    await createOnboarding.mutateAsync({
       employee_id: newOnboarding.employee_id,
       start_date: newOnboarding.start_date,
-      status: 'in_progress',
-      tasks: [...DEFAULT_ONBOARDING_TASKS],
-      buddy_id: newOnboarding.buddy_id || null,
-      notes: newOnboarding.notes || null,
-      employee: {
-        full_name: employee.full_name,
-        email: employee.email,
-        avatar_url: employee.avatar_url,
-        department: employee.department,
-      },
-      buddy: buddy ? { full_name: buddy.full_name } : null,
-    };
-
-    setOnboardingRecords(prev => [...prev, newRecord]);
+      buddy_id: newOnboarding.buddy_id || undefined,
+      notes: newOnboarding.notes || undefined,
+    });
+    
     setIsCreateOpen(false);
     setNewOnboarding({
       employee_id: '',
@@ -139,25 +93,14 @@ export function OnboardingManagement() {
       buddy_id: '',
       notes: '',
     });
-    toast({ title: 'Onboarding initiated successfully' });
   };
 
-  // Update task completion
-  const handleTaskToggle = (recordId: string, taskId: string) => {
-    setOnboardingRecords(prev => prev.map(record => {
-      if (record.id === recordId) {
-        const updatedTasks = record.tasks.map(task => 
-          task.id === taskId ? { ...task, is_completed: !task.is_completed } : task
-        );
-        const completedCount = updatedTasks.filter(t => t.is_completed).length;
-        const status = completedCount === updatedTasks.length ? 'completed' : 'in_progress';
-        return { ...record, tasks: updatedTasks, status };
-      }
-      return record;
-    }));
+  const handleTaskToggle = async (taskId: string, currentValue: boolean) => {
+    await toggleTask.mutateAsync({ taskId, isCompleted: !currentValue });
   };
 
-  const getProgressPercentage = (tasks: OnboardingTask[]) => {
+  const getProgressPercentage = (record: OnboardingRecord) => {
+    const tasks = record.tasks || [];
     if (tasks.length === 0) return 0;
     return Math.round((tasks.filter(t => t.is_completed).length / tasks.length) * 100);
   };
@@ -165,11 +108,13 @@ export function OnboardingManagement() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
-        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30"><CheckCircle className="h-3 w-3 mr-1" />Completed</Badge>;
+        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200"><CheckCircle className="h-3 w-3 mr-1" />Completed</Badge>;
       case 'in_progress':
-        return <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30"><Clock className="h-3 w-3 mr-1" />In Progress</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200"><Clock className="h-3 w-3 mr-1" />In Progress</Badge>;
       case 'pending':
         return <Badge variant="secondary"><AlertCircle className="h-3 w-3 mr-1" />Pending</Badge>;
+      case 'cancelled':
+        return <Badge variant="destructive">Cancelled</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -185,6 +130,14 @@ export function OnboardingManagement() {
   const inProgress = onboardingRecords.filter(r => r.status === 'in_progress').length;
   const completed = onboardingRecords.filter(r => r.status === 'completed').length;
   const newJoinees = newEmployees?.length || 0;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -273,9 +226,16 @@ export function OnboardingManagement() {
                 <Button 
                   className="w-full" 
                   onClick={handleCreateOnboarding}
-                  disabled={!newOnboarding.employee_id}
+                  disabled={!newOnboarding.employee_id || createOnboarding.isPending}
                 >
-                  Start Onboarding
+                  {createOnboarding.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    'Start Onboarding'
+                  )}
                 </Button>
               </div>
             </DialogContent>
@@ -343,10 +303,10 @@ export function OnboardingManagement() {
                       <div className="flex items-center gap-3">
                         <Avatar>
                           <AvatarImage src={record.employee?.avatar_url || undefined} />
-                          <AvatarFallback>{record.employee?.full_name.charAt(0)}</AvatarFallback>
+                          <AvatarFallback>{record.employee?.full_name?.charAt(0) || '?'}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <CardTitle className="text-base">{record.employee?.full_name}</CardTitle>
+                          <CardTitle className="text-base">{record.employee?.full_name || 'Unknown'}</CardTitle>
                           <CardDescription>{record.employee?.email}</CardDescription>
                         </div>
                       </div>
@@ -364,9 +324,9 @@ export function OnboardingManagement() {
                       <div>
                         <div className="flex justify-between text-sm mb-1">
                           <span>Progress</span>
-                          <span>{getProgressPercentage(record.tasks)}%</span>
+                          <span>{getProgressPercentage(record)}%</span>
                         </div>
-                        <Progress value={getProgressPercentage(record.tasks)} />
+                        <Progress value={getProgressPercentage(record)} />
                       </div>
                       
                       {record.buddy && (
@@ -377,14 +337,15 @@ export function OnboardingManagement() {
                       )}
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {record.tasks.map(task => (
+                        {record.tasks?.map(task => (
                           <div 
                             key={task.id} 
                             className="flex items-center gap-2 p-2 rounded border bg-muted/30"
                           >
                             <Checkbox 
                               checked={task.is_completed}
-                              onCheckedChange={() => handleTaskToggle(record.id, task.id)}
+                              onCheckedChange={() => handleTaskToggle(task.id, task.is_completed)}
+                              disabled={toggleTask.isPending}
                             />
                             <div className="flex-1">
                               <span className={task.is_completed ? 'line-through text-muted-foreground' : ''}>
