@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useOrganization } from '@/hooks/useOrganization';
+import { usePagination } from '@/hooks/usePagination';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +20,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from '@/hooks/use-toast';
 import { InternDetailView } from '@/components/InternDetailView';
 import { SkeletonCard } from '@/components/ui/skeleton';
+import { PaginationControls } from '@/components/common/PaginationControls';
 import { internFormSchema, type InternFormData } from '@/utils/validation-schemas';
 
 interface Profile {
@@ -113,6 +115,23 @@ export function InternManagement() {
     },
     enabled: !!profile?.organization_id,
   });
+
+  // Pagination for team members
+  const {
+    paginatedData: paginatedInterns,
+    currentPage,
+    pageSize,
+    totalItems,
+    totalPages,
+    startIndex,
+    endIndex,
+    pageNumbers,
+    canNextPage,
+    canPrevPage,
+    pageSizeOptions,
+    setPage,
+    setPageSize,
+  } = usePagination(interns, { initialPageSize: 12 });
 
   // Add new intern mutation - uses edge function to avoid auto-login
   const addInternMutation = useMutation({
@@ -395,8 +414,8 @@ export function InternManagement() {
           Array.from({ length: 6 }).map((_, i) => (
             <SkeletonCard key={i} />
           ))
-        ) : interns.length > 0 ? (
-          interns.map((intern) => (
+        ) : paginatedInterns.length > 0 ? (
+          paginatedInterns.map((intern) => (
             <Card key={intern.id} className={`${!intern.is_active ? 'opacity-70 border-destructive/50' : ''}`}>
               <CardHeader className="p-4 sm:p-6">
                 <div className="flex items-start justify-between gap-2">
@@ -509,6 +528,24 @@ export function InternManagement() {
           </div>
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {!isLoading && interns.length > 0 && (
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startIndex={startIndex}
+          endIndex={endIndex}
+          pageSize={pageSize}
+          pageSizeOptions={pageSizeOptions}
+          pageNumbers={pageNumbers}
+          canNextPage={canNextPage}
+          canPrevPage={canPrevPage}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+        />
+      )}
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
