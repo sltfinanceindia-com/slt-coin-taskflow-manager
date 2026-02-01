@@ -178,12 +178,32 @@ export function TeamCommunication() {
 
       if (error) throw error;
       
-      // Add mock unread counts and last messages for demo
-      const channelsWithMeta = (data || []).map(channel => ({
-        ...channel,
-        unread_count: Math.floor(Math.random() * 5),
-        last_message: 'Latest message preview...',
-        last_message_time: new Date().toISOString()
+      // Fetch real unread counts and last messages for each channel
+      const channelsWithMeta = await Promise.all((data || []).map(async (channel) => {
+        // Get unread message count (messages not from current user that aren't read)
+        const { count: unreadCount } = await supabase
+          .from('messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('channel_id', channel.id)
+          .eq('is_read', false)
+          .neq('sender_id', profile?.id);
+        
+        // Get the last message for the channel
+        const { data: lastMessages } = await supabase
+          .from('messages')
+          .select('content, created_at')
+          .eq('channel_id', channel.id)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        
+        const lastMessage = lastMessages?.[0];
+        
+        return {
+          ...channel,
+          unread_count: unreadCount || 0,
+          last_message: lastMessage?.content?.substring(0, 50) + (lastMessage?.content?.length > 50 ? '...' : '') || '',
+          last_message_time: lastMessage?.created_at || channel.created_at
+        };
       }));
 
       setChannels(channelsWithMeta);
@@ -212,11 +232,26 @@ export function TeamCommunication() {
 
       if (error) throw error;
       
-      // Add mock status for demo
-      const membersWithStatus = (data || []).map(member => ({
-        ...member,
-        status: ['online', 'away', 'busy', 'offline'][Math.floor(Math.random() * 4)] as any
-      }));
+      // Fetch real user presence status from user_presence table
+      const { data: presenceData } = await supabase
+        .from('user_presence')
+        .select('user_id, is_online, activity_status');
+      
+      const presenceMap = new Map(presenceData?.map(p => [p.user_id, p]) || []);
+      
+      const membersWithStatus = (data || []).map(member => {
+        const presence = presenceMap.get(member.id);
+        let status: 'online' | 'away' | 'busy' | 'offline' = 'offline';
+        
+        if (presence?.is_online) {
+          status = (presence.activity_status as 'online' | 'away' | 'busy') || 'online';
+        }
+        
+        return {
+          ...member,
+          status
+        };
+      });
 
       setTeamMembers(membersWithStatus);
       setLoading(false);

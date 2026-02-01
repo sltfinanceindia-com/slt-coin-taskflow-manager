@@ -11,6 +11,7 @@ import { TicketList } from './TicketList';
 import { TicketMetrics } from './TicketMetrics';
 import { TicketForm } from './TicketForm';
 import { SLARulesConfig } from './SLARulesConfig';
+import { TicketAnalytics } from './TicketAnalytics';
 import { 
   Plus, 
   Ticket, 
@@ -80,10 +81,7 @@ export function ServiceDeskHub() {
         </TabsContent>
 
         <TabsContent value="analytics" className="mt-4">
-          <div className="text-center py-12 text-muted-foreground">
-            <BarChart3 className="mx-auto h-12 w-12 opacity-50" />
-            <p className="mt-4">Analytics dashboard coming soon</p>
-          </div>
+          <TicketAnalytics metrics={metrics} tickets={tickets} />
         </TabsContent>
 
         <TabsContent value="sla-rules" className="mt-4">

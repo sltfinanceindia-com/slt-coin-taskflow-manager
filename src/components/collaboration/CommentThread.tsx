@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -183,6 +183,7 @@ function CommentItem({ comment, onMarkAsDecision, allowDecisions }: CommentItemP
       comment.is_decision && "bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800"
     )}>
       <Avatar className="h-8 w-8 flex-shrink-0">
+        <AvatarImage src={comment.user?.avatar_url} alt={comment.user?.full_name} />
         <AvatarFallback className="text-xs">
           {comment.user?.full_name?.charAt(0) || 'U'}
         </AvatarFallback>

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, CheckSquare, Trophy, BookOpen, Calendar as CalendarIcon, Coins, Settings, Building2, MessageCircle } from 'lucide-react';
+import { Users, CheckSquare, Trophy, BookOpen, Calendar as CalendarIcon, Coins, Settings, Building2, MessageCircle, Activity } from 'lucide-react';
 import { TaskManager } from '@/components/TaskManager';
 import { InternManager } from '@/components/InternManager';
 import { ProfileSettings } from '@/components/ProfileSettings';
@@ -17,6 +17,15 @@ import Calendar from '@/components/Calendar';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/hooks/useOrganization';
 import { useAuth } from '@/hooks/useAuth';
+import { formatDistanceToNow } from 'date-fns';
+
+interface ActivityLog {
+  id: string;
+  activity_type: string;
+  timestamp: string;
+  user_id: string;
+  metadata?: Record<string, unknown>;
+}
 
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -28,12 +37,13 @@ export function AdminDashboard() {
     coinsDistributed: 0,
     trainingModules: 0
   });
+  const [recentActivity, setRecentActivity] = useState<ActivityLog[]>([]);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
         // All queries are now automatically filtered by organization via RLS
-        const profilesResult = await (supabase as any)
+        const profilesResult = await supabase
           .from('profiles')
           .select('id')
           .eq('is_active', true);
@@ -55,12 +65,21 @@ export function AdminDashboard() {
           .select('id')
           .eq('is_published', true);
 
+        // Fetch real activity logs
+        const { data: activityData } = await supabase
+          .from('activity_logs')
+          .select('id, activity_type, timestamp, user_id, metadata')
+          .order('timestamp', { ascending: false })
+          .limit(5);
+
         setStats({
           totalInterns: internCount || 0,
           activeTasks: tasks?.length || 0,
           coinsDistributed: coins?.reduce((sum, coin) => sum + (coin.coins_earned || 0), 0) || 0,
           trainingModules: videos?.length || 0
         });
+
+        setRecentActivity((activityData as ActivityLog[]) || []);
       } catch (error) {
         console.error('Error fetching dashboard stats:', error);
       }
@@ -68,6 +87,24 @@ export function AdminDashboard() {
 
     fetchStats();
   }, []);
+
+  // Helper function to format activity types for display
+  const formatActivityType = (activityType: string): string => {
+    const typeMap: Record<string, string> = {
+      'login': 'User logged in',
+      'logout': 'User logged out',
+      'task_created': 'New task created',
+      'task_completed': 'Task completed',
+      'task_assigned': 'Task assigned',
+      'clock_in': 'Clock in recorded',
+      'clock_out': 'Clock out recorded',
+      'coin_earned': 'Coins earned',
+      'training_completed': 'Training completed',
+      'profile_updated': 'Profile updated',
+      'message_sent': 'Message sent',
+    };
+    return typeMap[activityType] || activityType.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -221,12 +258,20 @@ export function AdminDashboard() {
                 </div>
                 
                 <div className="border rounded-lg p-4">
-                  <h4 className="font-medium mb-2">Recent Activity</h4>
+                  <h4 className="font-medium mb-2 flex items-center gap-2">
+                    <Activity className="h-4 w-4" />
+                    Recent Activity
+                  </h4>
                   <div className="space-y-2 text-sm text-muted-foreground">
-                    <p>• {new Date().toLocaleTimeString()}: System health check completed</p>
-                    <p>• {new Date(Date.now() - 300000).toLocaleTimeString()}: Database backup started</p>
-                    <p>• {new Date(Date.now() - 600000).toLocaleTimeString()}: User authentication verified</p>
-                    <p>• {new Date(Date.now() - 900000).toLocaleTimeString()}: Email notifications sent</p>
+                    {recentActivity.length > 0 ? (
+                      recentActivity.map((activity) => (
+                        <p key={activity.id}>
+                          • {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}: {formatActivityType(activity.activity_type)}
+                        </p>
+                      ))
+                    ) : (
+                      <p className="text-muted-foreground italic">No recent activity recorded</p>
+                    )}
                   </div>
                 </div>
               </div>
