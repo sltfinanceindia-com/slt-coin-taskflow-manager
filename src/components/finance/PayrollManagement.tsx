@@ -5,30 +5,18 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { toast } from '@/hooks/use-toast';
+import { usePayroll } from '@/hooks/usePayroll';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { 
   Wallet, Play, CheckCircle, Clock, Download, 
   FileText, Users, IndianRupee, Calculator, TrendingUp
 } from 'lucide-react';
-
-interface PayrollRun {
-  id: string;
-  month: string;
-  year: number;
-  status: 'draft' | 'processing' | 'completed' | 'paid';
-  total_gross: number;
-  total_deductions: number;
-  total_net: number;
-  employee_count: number;
-  processed_at?: string;
-  paid_at?: string;
-}
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -37,7 +25,15 @@ const MONTHS = [
 
 export function PayrollManagement() {
   const { profile } = useAuth();
-  const queryClient = useQueryClient();
+  const { 
+    payrollRuns, 
+    payrollRecords, 
+    isLoading, 
+    createPayrollRun, 
+    updatePayrollRunStatus,
+    isCreating 
+  } = usePayroll();
+  
   const [activeTab, setActiveTab] = useState('runs');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   
@@ -47,48 +43,13 @@ export function PayrollManagement() {
     year: currentDate.getFullYear().toString(),
   });
 
-  // Fetch payroll runs from timesheets table (repurposed for payroll tracking)
-  const { data: payrollRuns, isLoading } = useQuery({
-    queryKey: ['payroll-runs', profile?.organization_id],
-    queryFn: async (): Promise<PayrollRun[]> => {
-      if (!profile?.organization_id) return [];
-      
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const client = supabase as any;
-      const { data, error } = await client
-        .from('timesheets')
-        .select('id, period_start, period_end, status, total_hours, overtime_hours, created_at')
-        .eq('organization_id', profile.organization_id)
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (error) throw error;
-
-      return (data || []).map((t: any) => {
-        const startDate = new Date(t.period_start || t.start_date || new Date());
-        return {
-          id: t.id,
-          month: MONTHS[startDate.getMonth()],
-          year: startDate.getFullYear(),
-          status: t.status === 'approved' ? 'completed' : t.status === 'submitted' ? 'processing' : 'draft',
-          total_gross: (t.total_hours || 0) * 500, // Mock calculation
-          total_deductions: (t.total_hours || 0) * 50,
-          total_net: (t.total_hours || 0) * 450,
-          employee_count: Math.floor(Math.random() * 20) + 5,
-          processed_at: t.status === 'approved' ? t.created_at : undefined,
-        } as PayrollRun;
-      });
-    },
-    enabled: !!profile?.organization_id,
-  });
-
-  // Fetch employees for payslips
-  const { data: employees } = useQuery({
-    queryKey: ['payroll-employees', profile?.organization_id],
+  // Fetch employees with their salary data from payroll_records
+  const { data: employeesWithSalary } = useQuery({
+    queryKey: ['payroll-employees-salary', profile?.organization_id],
     queryFn: async () => {
       if (!profile?.organization_id) return [];
       
-      const { data, error } = await supabase
+      const { data: employees, error } = await supabase
         .from('profiles')
         .select('id, full_name, email, department')
         .eq('organization_id', profile.organization_id)
@@ -96,72 +57,50 @@ export function PayrollManagement() {
         .order('full_name');
 
       if (error) throw error;
-      return data || [];
+
+      // Get latest payroll record for each employee
+      const employeeSalaries = await Promise.all(
+        (employees || []).map(async (emp) => {
+          const { data: latestRecord } = await supabase
+            .from('payroll_records')
+            .select('basic_salary, allowances, deductions, net_salary, gross_salary')
+            .eq('employee_id', emp.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+          return {
+            ...emp,
+            basic_salary: latestRecord?.basic_salary || 0,
+            allowances: latestRecord?.allowances || {},
+            deductions: latestRecord?.deductions || {},
+            net_salary: latestRecord?.net_salary || 0,
+            gross_salary: latestRecord?.gross_salary || 0,
+          };
+        })
+      );
+
+      return employeeSalaries;
     },
     enabled: !!profile?.organization_id,
   });
 
-  const createPayrollMutation = useMutation({
-    mutationFn: async (run: typeof newRun) => {
-      const monthIndex = MONTHS.indexOf(run.month);
-      const startDate = new Date(parseInt(run.year), monthIndex, 1);
-      const endDate = new Date(parseInt(run.year), monthIndex + 1, 0);
-
-      // Using any to bypass strict type checking for flexible schema usage
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const insertData: any = {
-        employee_id: profile?.id || '',
-        period_start: format(startDate, 'yyyy-MM-dd'),
-        period_end: format(endDate, 'yyyy-MM-dd'),
-        status: 'draft',
-        total_hours: 0,
-      };
-      
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const client = supabase as any;
-      const { error } = await client.from('timesheets').insert(insertData);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['payroll-runs'] });
-      setIsCreateOpen(false);
-      setNewRun({ month: MONTHS[currentDate.getMonth()], year: currentDate.getFullYear().toString() });
-      toast({ title: 'Payroll run created successfully' });
-    },
-    onError: (error) => {
-      toast({ title: 'Error creating payroll run', description: error.message, variant: 'destructive' });
-    },
-  });
-
-  const processPayrollMutation = useMutation({
-    mutationFn: async (runId: string) => {
-      const { error } = await supabase
-        .from('timesheets')
-        .update({ status: 'submitted' })
-        .eq('id', runId);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['payroll-runs'] });
-      toast({ title: 'Payroll processing started' });
-    },
-  });
-
-  const approvePayrollMutation = useMutation({
-    mutationFn: async (runId: string) => {
-      const { error } = await supabase
-        .from('timesheets')
-        .update({ status: 'approved' })
-        .eq('id', runId);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['payroll-runs'] });
-      toast({ title: 'Payroll approved and marked as paid' });
-    },
-  });
+  const handleCreatePayrollRun = () => {
+    const monthIndex = MONTHS.indexOf(newRun.month);
+    const startDate = new Date(parseInt(newRun.year), monthIndex, 1);
+    const endDate = new Date(parseInt(newRun.year), monthIndex + 1, 0);
+    
+    createPayrollRun.mutate({
+      run_name: `${newRun.month} ${newRun.year} Payroll`,
+      period_start: format(startDate, 'yyyy-MM-dd'),
+      period_end: format(endDate, 'yyyy-MM-dd'),
+    }, {
+      onSuccess: () => {
+        setIsCreateOpen(false);
+        setNewRun({ month: MONTHS[currentDate.getMonth()], year: currentDate.getFullYear().toString() });
+      }
+    });
+  };
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { variant: 'default' | 'secondary' | 'outline' | 'destructive'; label: string }> = {
@@ -174,8 +113,34 @@ export function PayrollManagement() {
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
-  const totalPayroll = payrollRuns?.reduce((sum, run) => sum + run.total_net, 0) || 0;
-  const completedRuns = payrollRuns?.filter(r => r.status === 'completed' || r.status === 'paid').length || 0;
+  // Calculate real totals from payroll records
+  const totalPayroll = payrollRecords.reduce((sum, record) => sum + (record.net_salary || 0), 0);
+  const completedRuns = payrollRuns.filter(r => r.status === 'completed' || r.status === 'paid').length;
+  const pendingRuns = payrollRuns.filter(r => r.status === 'draft' || r.status === 'processing').length;
+
+  // Calculate allowances sum from object - using 'any' to handle Json type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const calculateAllowances = (allowances: any): number => {
+    if (!allowances || typeof allowances !== 'object' || Array.isArray(allowances)) return 0;
+    let total = 0;
+    for (const key in allowances) {
+      const numVal = Number(allowances[key]);
+      if (!isNaN(numVal)) total += numVal;
+    }
+    return total;
+  };
+
+  // Calculate deductions sum from object - using 'any' to handle Json type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const calculateDeductions = (deductions: any): number => {
+    if (!deductions || typeof deductions !== 'object' || Array.isArray(deductions)) return 0;
+    let total = 0;
+    for (const key in deductions) {
+      const numVal = Number(deductions[key]);
+      if (!isNaN(numVal)) total += numVal;
+    }
+    return total;
+  };
 
   return (
     <div className="space-y-6">
@@ -233,10 +198,10 @@ export function PayrollManagement() {
               </div>
               <Button
                 className="w-full"
-                onClick={() => createPayrollMutation.mutate(newRun)}
-                disabled={createPayrollMutation.isPending}
+                onClick={handleCreatePayrollRun}
+                disabled={isCreating}
               >
-                {createPayrollMutation.isPending ? 'Creating...' : 'Create Payroll Run'}
+                {isCreating ? 'Creating...' : 'Create Payroll Run'}
               </Button>
             </div>
           </DialogContent>
@@ -251,7 +216,7 @@ export function PayrollManagement() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{employees?.length || 0}</div>
+            <div className="text-2xl font-bold">{employeesWithSalary?.length || 0}</div>
             <p className="text-xs text-muted-foreground">Active employees</p>
           </CardContent>
         </Card>
@@ -261,7 +226,7 @@ export function PayrollManagement() {
             <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{payrollRuns?.length || 0}</div>
+            <div className="text-2xl font-bold">{payrollRuns.length}</div>
             <p className="text-xs text-muted-foreground">{completedRuns} completed</p>
           </CardContent>
         </Card>
@@ -281,9 +246,7 @@ export function PayrollManagement() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {payrollRuns?.filter(r => r.status === 'draft' || r.status === 'processing').length || 0}
-            </div>
+            <div className="text-2xl font-bold">{pendingRuns}</div>
             <p className="text-xs text-muted-foreground">Runs to process</p>
           </CardContent>
         </Card>
@@ -307,35 +270,37 @@ export function PayrollManagement() {
                 <div className="flex items-center justify-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
-              ) : payrollRuns && payrollRuns.length > 0 ? (
+              ) : payrollRuns.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Period</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Employees</TableHead>
-                      <TableHead className="text-right">Gross</TableHead>
-                      <TableHead className="text-right">Deductions</TableHead>
-                      <TableHead className="text-right">Net Payable</TableHead>
+                      <TableHead className="text-right">Total Amount</TableHead>
+                      <TableHead className="text-right">Processed</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {payrollRuns.map((run) => (
                       <TableRow key={run.id}>
-                        <TableCell className="font-medium">{run.month} {run.year}</TableCell>
+                        <TableCell className="font-medium">{run.run_name}</TableCell>
                         <TableCell>{getStatusBadge(run.status)}</TableCell>
-                        <TableCell className="text-right">{run.employee_count}</TableCell>
-                        <TableCell className="text-right">₹{run.total_gross.toLocaleString()}</TableCell>
-                        <TableCell className="text-right text-destructive">-₹{run.total_deductions.toLocaleString()}</TableCell>
-                        <TableCell className="text-right font-medium text-green-600">₹{run.total_net.toLocaleString()}</TableCell>
+                        <TableCell className="text-right">{run.total_employees || 0}</TableCell>
+                        <TableCell className="text-right font-medium">
+                          ₹{(run.total_amount || 0).toLocaleString()}
+                        </TableCell>
+                        <TableCell className="text-right text-muted-foreground">
+                          {run.processed_at ? format(new Date(run.processed_at), 'dd MMM yyyy') : '-'}
+                        </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             {run.status === 'draft' && (
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => processPayrollMutation.mutate(run.id)}
+                                onClick={() => updatePayrollRunStatus.mutate({ id: run.id, status: 'processing' })}
                               >
                                 <Play className="h-4 w-4 mr-1" />
                                 Process
@@ -345,10 +310,10 @@ export function PayrollManagement() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => approvePayrollMutation.mutate(run.id)}
+                                onClick={() => updatePayrollRunStatus.mutate({ id: run.id, status: 'completed' })}
                               >
                                 <CheckCircle className="h-4 w-4 mr-1" />
-                                Approve
+                                Complete
                               </Button>
                             )}
                             {(run.status === 'completed' || run.status === 'paid') && (
@@ -378,10 +343,10 @@ export function PayrollManagement() {
           <Card>
             <CardHeader>
               <CardTitle>Employee Salary Overview</CardTitle>
-              <CardDescription>View individual employee compensation details</CardDescription>
+              <CardDescription>View individual employee compensation details from payroll records</CardDescription>
             </CardHeader>
             <CardContent>
-              {employees && employees.length > 0 ? (
+              {employeesWithSalary && employeesWithSalary.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -395,19 +360,26 @@ export function PayrollManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {employees.map((emp) => {
-                      const basic = 50000 + Math.floor(Math.random() * 50000);
-                      const allowances = basic * 0.4;
-                      const deductions = basic * 0.12;
-                      const net = basic + allowances - deductions;
+                    {employeesWithSalary.map((emp) => {
+                      const allowancesTotal = calculateAllowances(emp.allowances);
+                      const deductionsTotal = calculateDeductions(emp.deductions);
+                      
                       return (
                         <TableRow key={emp.id}>
                           <TableCell className="font-medium">{emp.full_name}</TableCell>
                           <TableCell>{emp.department || 'General'}</TableCell>
-                          <TableCell className="text-right">₹{basic.toLocaleString()}</TableCell>
-                          <TableCell className="text-right text-green-600">+₹{allowances.toLocaleString()}</TableCell>
-                          <TableCell className="text-right text-destructive">-₹{deductions.toLocaleString()}</TableCell>
-                          <TableCell className="text-right font-medium">₹{net.toLocaleString()}</TableCell>
+                          <TableCell className="text-right">
+                            {emp.basic_salary > 0 ? `₹${emp.basic_salary.toLocaleString()}` : '-'}
+                          </TableCell>
+                          <TableCell className="text-right text-green-600">
+                            {allowancesTotal > 0 ? `+₹${allowancesTotal.toLocaleString()}` : '-'}
+                          </TableCell>
+                          <TableCell className="text-right text-destructive">
+                            {deductionsTotal > 0 ? `-₹${deductionsTotal.toLocaleString()}` : '-'}
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            {emp.net_salary > 0 ? `₹${emp.net_salary.toLocaleString()}` : '-'}
+                          </TableCell>
                           <TableCell className="text-right">
                             <Button variant="ghost" size="sm">
                               <FileText className="h-4 w-4" />
@@ -421,7 +393,8 @@ export function PayrollManagement() {
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No employees found</p>
+                  <p>No employee salary records found</p>
+                  <p className="text-sm">Create payroll records to see salary data here</p>
                 </div>
               )}
             </CardContent>
