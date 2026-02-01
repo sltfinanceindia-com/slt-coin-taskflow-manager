@@ -53,6 +53,8 @@ import TutorialPage from "./pages/Tutorial";
 import TaskDetailPage from "./pages/TaskDetailPage";
 import PortfolioDetailPage from "./pages/PortfolioDetailPage";
 import ProgramDetailPage from "./pages/ProgramDetailPage";
+import EmployeeDetailPage from "./pages/EmployeeDetailPage";
+import ProjectDetailPage from "./pages/ProjectDetailPage";
 import Resources from "./pages/Resources";
 import StartTrial from "./pages/StartTrial";
 
@@ -220,6 +222,8 @@ function AppContent() {
           <Route path="/tasks/:id" element={<ProtectedRoute><TaskDetailPage /></ProtectedRoute>} />
           <Route path="/portfolios/:id" element={<ProtectedRoute><PortfolioDetailPage /></ProtectedRoute>} />
           <Route path="/programs/:id" element={<ProtectedRoute><ProgramDetailPage /></ProtectedRoute>} />
+          <Route path="/employees/:id" element={<ProtectedRoute><EmployeeDetailPage /></ProtectedRoute>} />
+          <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetailPage /></ProtectedRoute>} />
           
           {/* 404 */}
           <Route path="*" element={<NotFound />} />
