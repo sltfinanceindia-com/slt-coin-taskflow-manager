@@ -189,10 +189,82 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  /* ============================================
+   * RESPONSIVE TYPOGRAPHY SYSTEM
+   * Mobile-first with fluid clamp() scaling
+   * ============================================ */
+  
+  html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
     background: hsl(var(--background));
     color: hsl(var(--foreground));
     min-height: 100vh;
+    /* Mobile: 14px, Tablet: 15px, Desktop: 16px */
+    font-size: clamp(0.875rem, 0.8rem + 0.25vw, 1rem);
+    line-height: 1.5;
+  }
+
+  /* Fluid Heading Typography with clamp() */
+  h1, .h1 {
+    /* Mobile: 24px → Desktop: 36px */
+    font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2.25rem);
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+
+  h2, .h2 {
+    /* Mobile: 20px → Desktop: 28px */
+    font-size: clamp(1.25rem, 1rem + 0.9vw, 1.75rem);
+    line-height: 1.25;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  h3, .h3 {
+    /* Mobile: 17px → Desktop: 22px */
+    font-size: clamp(1.0625rem, 0.95rem + 0.5vw, 1.375rem);
+    line-height: 1.3;
+    font-weight: 600;
+  }
+
+  h4, .h4 {
+    /* Mobile: 15px → Desktop: 18px */
+    font-size: clamp(0.9375rem, 0.875rem + 0.25vw, 1.125rem);
+    line-height: 1.35;
+    font-weight: 600;
+  }
+
+  h5, .h5 {
+    /* Mobile: 14px → Desktop: 16px */
+    font-size: clamp(0.875rem, 0.825rem + 0.2vw, 1rem);
+    line-height: 1.4;
+    font-weight: 600;
+  }
+
+  h6, .h6 {
+    /* Mobile: 13px → Desktop: 14px */
+    font-size: clamp(0.8125rem, 0.78rem + 0.15vw, 0.875rem);
+    line-height: 1.4;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Small text / meta */
+  small, .text-meta {
+    font-size: clamp(0.75rem, 0.7rem + 0.2vw, 0.8125rem);
+    line-height: 1.4;
+  }
+
+  /* Paragraph text - slightly larger for readability */
+  p {
+    font-size: inherit;
+    line-height: 1.6;
   }
 
   /* Enhanced Animation utilities with colorful effects */
@@ -917,6 +989,103 @@ All colors MUST be HSL.
 
     .mobile-spacing {
       @apply gap-2;
+    }
+  }
+}
+
+/* ============================================
+ * TYPOGRAPHY UTILITY LAYER
+ * Responsive text utilities for consistent sizing
+ * ============================================ */
+@layer utilities {
+  /* Page titles - fluid scaling */
+  .text-page-title {
+    font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2.25rem);
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+
+  /* Section headings */
+  .text-section-title {
+    font-size: clamp(1.25rem, 1rem + 0.9vw, 1.75rem);
+    line-height: 1.25;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  /* Card/component titles */
+  .text-card-title {
+    font-size: clamp(1.0625rem, 0.95rem + 0.5vw, 1.375rem);
+    line-height: 1.3;
+    font-weight: 600;
+  }
+
+  /* Body text - responsive */
+  .text-body {
+    font-size: clamp(0.875rem, 0.8rem + 0.25vw, 1rem);
+    line-height: 1.6;
+  }
+
+  /* Small/meta text */
+  .text-small {
+    font-size: clamp(0.75rem, 0.7rem + 0.2vw, 0.8125rem);
+    line-height: 1.4;
+  }
+
+  /* Sidebar navigation text */
+  .text-nav {
+    font-size: clamp(0.8125rem, 0.78rem + 0.15vw, 0.9375rem);
+    line-height: 1.4;
+  }
+
+  /* Button labels */
+  .text-button {
+    font-size: clamp(0.8125rem, 0.78rem + 0.15vw, 0.9375rem);
+    line-height: 1.25;
+    font-weight: 500;
+  }
+
+  /* Table typography */
+  .text-table-header {
+    font-size: clamp(0.75rem, 0.7rem + 0.15vw, 0.875rem);
+    line-height: 1.4;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .text-table-cell {
+    font-size: clamp(0.8125rem, 0.75rem + 0.2vw, 0.9375rem);
+    line-height: 1.4;
+  }
+
+  /* Mobile-specific overrides */
+  @media (max-width: 640px) {
+    .text-mobile-compact {
+      font-size: 0.8125rem !important;
+      line-height: 1.4 !important;
+    }
+
+    .text-mobile-xs {
+      font-size: 0.75rem !important;
+      line-height: 1.3 !important;
+    }
+  }
+
+  /* Tablet and up - slightly larger */
+  @media (min-width: 768px) {
+    .md\:text-body-lg {
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+  }
+
+  /* Desktop - full size */
+  @media (min-width: 1024px) {
+    .lg\:text-body-xl {
+      font-size: 1.0625rem;
+      line-height: 1.6;
     }
   }
 }
