@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
-export type AppRole = 'super_admin' | 'org_admin' | 'admin' | 'manager' | 'team_lead' | 'employee' | 'intern';
+export type AppRole = 'super_admin' | 'org_admin' | 'admin' | 'hr_admin' | 'project_manager' | 'finance_manager' | 'manager' | 'team_lead' | 'employee' | 'intern';
 
 interface UserRoleData {
   role: AppRole;
@@ -11,6 +11,9 @@ interface UserRoleData {
   isSuperAdmin: boolean;
   isOrgAdmin: boolean;
   isAdmin: boolean; // True for super_admin, org_admin, or admin
+  isHRAdmin: boolean;
+  isProjectManager: boolean;
+  isFinanceManager: boolean;
   isManager: boolean;
   isTeamLead: boolean;
   isEmployee: boolean;
@@ -19,13 +22,16 @@ interface UserRoleData {
 
 // Role priority order (higher = more privilege)
 const ROLE_PRIORITY: Record<AppRole, number> = {
-  'super_admin': 7,
-  'org_admin': 6,
-  'admin': 6, // Same as org_admin - they have same privileges
-  'manager': 5,
-  'team_lead': 4,
-  'employee': 3,
-  'intern': 2,
+  'super_admin': 10,
+  'org_admin': 9,
+  'admin': 9,
+  'hr_admin': 8,
+  'project_manager': 8,
+  'finance_manager': 8,
+  'manager': 7,
+  'team_lead': 6,
+  'employee': 5,
+  'intern': 4,
 };
 
 function getHighestPriorityRole(roles: AppRole[]): AppRole {
@@ -44,6 +50,9 @@ export function useUserRole(): UserRoleData {
     isSuperAdmin: false,
     isOrgAdmin: false,
     isAdmin: false,
+    isHRAdmin: false,
+    isProjectManager: false,
+    isFinanceManager: false,
     isManager: false,
     isTeamLead: false,
     isEmployee: false,
