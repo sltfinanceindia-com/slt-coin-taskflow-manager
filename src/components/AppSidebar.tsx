@@ -474,14 +474,14 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
                   {({ isActive: navIsActive }) => (
                     <SidebarMenuButton 
                       className={cn(
-                        "h-9 w-full px-3 py-2 rounded-lg gap-3 transition-colors",
+                        "h-9 w-full px-3 py-2 rounded-lg gap-3 transition-colors text-nav",
                         navIsActive 
                           ? "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-400 font-medium"
                           : "hover:bg-purple-50 dark:hover:bg-purple-900/30 text-purple-600 dark:text-purple-400"
                       )}
                     >
                       <Crown className="h-4 w-4 shrink-0" />
-                      {!collapsed && <span className="text-sm truncate">Super Admin Panel</span>}
+                      {!collapsed && <span className="truncate">Super Admin Panel</span>}
                     </SidebarMenuButton>
                   )}
                 </NavLink>
@@ -555,7 +555,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
                   <CollapsibleTrigger asChild>
                     <button
                       className={cn(
-                        "flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                        "flex items-center justify-between w-full px-3 py-2 rounded-lg text-nav font-medium transition-colors",
                         "hover:bg-muted text-sidebar-foreground",
                         groupIsActive && "text-primary"
                       )}
@@ -577,7 +577,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
                           <SidebarMenuButton 
                             asChild
                             className={cn(
-                              "h-8 w-full px-3 py-1.5 rounded-md gap-2 hover:bg-muted transition-colors text-sm",
+                              "h-8 w-full px-3 py-1.5 rounded-md gap-2 hover:bg-muted transition-colors text-nav",
                               isActive(item.url) && "bg-primary/10 text-primary font-medium"
                             )}
                           >
@@ -608,22 +608,22 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
                   {({ isActive: navIsActive }) => (
                     <SidebarMenuButton 
                       className={cn(
-                        "h-9 w-full px-3 py-2 rounded-lg gap-2 hover:bg-muted transition-colors",
+                        "h-9 w-full px-3 py-2 rounded-lg gap-2 hover:bg-muted transition-colors text-nav",
                         navIsActive && "bg-primary/10 text-primary font-medium"
                       )}
                     >
                       <Building2 className="h-4 w-4 shrink-0" />
-                      <span className="text-sm truncate">Organization</span>
+                      <span className="truncate">Organization</span>
                     </SidebarMenuButton>
                   )}
                 </NavLink>
               </SidebarMenuItem>
             )}
             <SidebarMenuItem>
-              <SidebarMenuButton asChild className="h-9 px-3 py-2 rounded-lg gap-2 hover:bg-muted transition-colors">
+              <SidebarMenuButton asChild className="h-9 px-3 py-2 rounded-lg gap-2 hover:bg-muted transition-colors text-nav">
                 <NavLink to="/profile" className="flex items-center gap-2">
                   <Settings className="h-4 w-4 shrink-0" />
-                  {!collapsed && <span className="text-sm truncate">Settings</span>}
+                  {!collapsed && <span className="truncate">Settings</span>}
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
