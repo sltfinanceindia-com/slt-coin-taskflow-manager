@@ -1,43 +1,183 @@
 import { Link } from 'react-router-dom';
 import { BottomNavigation } from '@/components/BottomNavigation';
+import { 
+  Building2, 
+  Mail, 
+  Phone, 
+  MapPin,
+  Twitter,
+  Linkedin,
+  Youtube,
+  Github
+} from 'lucide-react';
+
+const footerLinks = {
+  product: [
+    { name: 'Features', href: '/features' },
+    { name: 'Pricing', href: '/pricing' },
+    { name: 'Integrations', href: '/features' },
+    { name: 'Changelog', href: '/features' },
+  ],
+  company: [
+    { name: 'About Us', href: '/about' },
+    { name: 'Careers', href: '/contact' },
+    { name: 'Contact', href: '/contact' },
+    { name: 'Press Kit', href: '/contact' },
+  ],
+  resources: [
+    { name: 'Blog', href: '/resources' },
+    { name: 'Help Center', href: '/contact' },
+    { name: 'API Docs', href: '/contact' },
+    { name: 'Status', href: '/contact' },
+  ],
+  legal: [
+    { name: 'Privacy Policy', href: '/privacy' },
+    { name: 'Terms of Service', href: '/terms' },
+    { name: 'Security', href: '/privacy' },
+    { name: 'GDPR', href: '/privacy' },
+  ],
+};
+
+const socialLinks = [
+  { name: 'Twitter', icon: Twitter, href: 'https://twitter.com' },
+  { name: 'LinkedIn', icon: Linkedin, href: 'https://linkedin.com' },
+  { name: 'YouTube', icon: Youtube, href: 'https://youtube.com' },
+  { name: 'GitHub', icon: Github, href: 'https://github.com' },
+];
 
 export function PublicFooter() {
   return (
     <>
-      <footer className="bg-slate-900 dark:bg-slate-950 text-slate-100 py-10 sm:py-14" role="contentinfo">
+      <footer className="bg-slate-900 dark:bg-slate-950 text-slate-100 py-16 lg:py-20" role="contentinfo">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center gap-6 text-center md:text-left md:flex-row md:justify-between">
-            <div className="flex flex-col items-center md:items-start gap-3">
-              <div className="flex items-center gap-2 sm:gap-3">
+          {/* Main footer content */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 lg:gap-12 mb-12">
+            {/* Brand column */}
+            <div className="col-span-2 md:col-span-3 lg:col-span-2">
+              <Link to="/" className="flex items-center gap-3 mb-6">
                 <img 
                   src="/slt-hub-icon.png" 
-                  alt="Tenexa"
-                  className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg object-contain"
+                  alt="TeneXA"
+                  className="h-10 w-10 rounded-lg object-contain"
                 />
-                <span className="text-sm sm:text-lg font-bold">
-                  <span className="font-black">Tenexa</span>
-                </span>
+                <span className="text-xl font-bold text-white">TeneXA</span>
+              </Link>
+              <p className="text-slate-400 mb-6 max-w-sm leading-relaxed">
+                The complete enterprise platform for HR management, project tracking, 
+                and team collaboration. Built for modern organizations.
+              </p>
+              
+              {/* Contact info */}
+              <div className="space-y-3 mb-6">
+                <a href="mailto:hello@tenexa.com" className="flex items-center gap-3 text-sm text-slate-400 hover:text-white transition-colors">
+                  <Mail className="h-4 w-4" />
+                  hello@tenexa.com
+                </a>
+                <a href="tel:+919876543210" className="flex items-center gap-3 text-sm text-slate-400 hover:text-white transition-colors">
+                  <Phone className="h-4 w-4" />
+                  +91 98765 43210
+                </a>
+                <div className="flex items-start gap-3 text-sm text-slate-400">
+                  <MapPin className="h-4 w-4 mt-0.5" />
+                  <span>Mumbai, India</span>
+                </div>
               </div>
-              <span className="text-emerald-400 font-medium flex items-center gap-2 text-xs sm:text-sm">
-                <span>Made with ❤️ in</span>
-                <span className="font-bold">భారత్ 🇮🇳</span>
-              </span>
+
+              {/* Social links */}
+              <div className="flex items-center gap-4">
+                {socialLinks.map((social) => (
+                  <a
+                    key={social.name}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-emerald-600 hover:text-white transition-all duration-300"
+                    aria-label={social.name}
+                  >
+                    <social.icon className="h-5 w-5" />
+                  </a>
+                ))}
+              </div>
             </div>
-            
-            <nav className="flex flex-wrap justify-center md:justify-end gap-6 text-sm text-slate-400">
-              <Link to="/" className="hover:text-slate-300 transition-colors">Home</Link>
-              <Link to="/features" className="hover:text-slate-300 transition-colors">Features</Link>
-              <Link to="/pricing" className="hover:text-slate-300 transition-colors">Pricing</Link>
-              <Link to="/contact" className="hover:text-slate-300 transition-colors">Contact</Link>
-            </nav>
-            
-            <div className="flex flex-col items-center md:items-end gap-2">
-              <div className="text-slate-400 text-xs sm:text-sm">
-                © 2025 Tenexa. All rights reserved.
-              </div>
-              <div className="flex gap-4 text-xs text-slate-500">
-                <Link to="/privacy" className="hover:text-slate-300 transition-colors">Privacy</Link>
-                <Link to="/terms" className="hover:text-slate-300 transition-colors">Terms</Link>
+
+            {/* Product links */}
+            <div>
+              <h3 className="font-semibold text-white mb-4">Product</h3>
+              <ul className="space-y-3">
+                {footerLinks.product.map((link) => (
+                  <li key={link.name}>
+                    <Link 
+                      to={link.href} 
+                      className="text-sm text-slate-400 hover:text-white transition-colors"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Company links */}
+            <div>
+              <h3 className="font-semibold text-white mb-4">Company</h3>
+              <ul className="space-y-3">
+                {footerLinks.company.map((link) => (
+                  <li key={link.name}>
+                    <Link 
+                      to={link.href} 
+                      className="text-sm text-slate-400 hover:text-white transition-colors"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Resources links */}
+            <div>
+              <h3 className="font-semibold text-white mb-4">Resources</h3>
+              <ul className="space-y-3">
+                {footerLinks.resources.map((link) => (
+                  <li key={link.name}>
+                    <Link 
+                      to={link.href} 
+                      className="text-sm text-slate-400 hover:text-white transition-colors"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Legal links */}
+            <div>
+              <h3 className="font-semibold text-white mb-4">Legal</h3>
+              <ul className="space-y-3">
+                {footerLinks.legal.map((link) => (
+                  <li key={link.name}>
+                    <Link 
+                      to={link.href} 
+                      className="text-sm text-slate-400 hover:text-white transition-colors"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div className="pt-8 border-t border-slate-800">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <p className="text-sm text-slate-500">
+                © {new Date().getFullYear()} TeneXA. All rights reserved.
+              </p>
+              <div className="flex items-center gap-2 text-sm text-emerald-500">
+                <span>Made with ❤️ in</span>
+                <span className="font-semibold">भारत 🇮🇳</span>
               </div>
             </div>
           </div>
