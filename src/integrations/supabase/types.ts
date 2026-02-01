@@ -14222,6 +14222,9 @@ export type Database = {
         | "org_admin"
         | "manager"
         | "team_lead"
+        | "hr_admin"
+        | "project_manager"
+        | "finance_manager"
       card_type_enum: "high_value" | "medium_value" | "better_luck"
       organization_status:
         | "active"
@@ -14374,6 +14377,9 @@ export const Constants = {
         "org_admin",
         "manager",
         "team_lead",
+        "hr_admin",
+        "project_manager",
+        "finance_manager",
       ],
       card_type_enum: ["high_value", "medium_value", "better_luck"],
       organization_status: [
