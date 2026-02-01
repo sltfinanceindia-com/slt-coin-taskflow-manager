@@ -62,8 +62,9 @@ export function isAdminNavigation(role: AppRole): boolean {
  */
 export function filterNavGroupsByFeatures(
   groups: NavGroup[],
-  enabledFeatures: Record<string, boolean>
+  enabledFeatures: Partial<Record<string, boolean>> | null | undefined
 ): NavGroup[] {
+  const features = enabledFeatures || {};
   // Feature to navigation item mapping
   const featureNavMapping: Record<string, string[]> = {
     training: ['training', 'tutorial'],
@@ -97,7 +98,7 @@ export function filterNavGroupsByFeatures(
       for (const [feature, urls] of Object.entries(featureNavMapping)) {
         if (urls.includes(item.url)) {
           // Default to true if feature not explicitly set
-          return enabledFeatures[feature] !== false;
+          return (features as Record<string, boolean>)[feature] !== false;
         }
       }
 
