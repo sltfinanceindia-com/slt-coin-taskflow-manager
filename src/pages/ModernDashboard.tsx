@@ -23,6 +23,9 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { DashboardBuilder } from '@/components/dashboard/DashboardBuilder';
+import { BreadcrumbNav, BreadcrumbItem } from '@/components/navigation/BreadcrumbNav';
+import { getNavGroupsForRole } from '@/config/navigation/index';
+import type { AppRole, NavItem } from '@/config/navigation/types';
 
 import { Coins, Clock, CheckCircle, Plus, Crown, ArrowRight, Shield, Building2 } from 'lucide-react';
 
@@ -222,12 +225,34 @@ export default function ModernDashboard() {
       case 'super_admin': return 'Super Admin';
       case 'org_admin': return 'Admin'; // Same as admin
       case 'admin': return 'Admin';
+      case 'hr_admin': return 'HR Admin';
+      case 'project_manager': return 'Project Manager';
+      case 'finance_manager': return 'Finance Manager';
       case 'manager': return 'Manager';
       case 'team_lead': return 'Team Lead';
       case 'employee': return 'Employee';
       case 'intern': return 'Intern';
       default: return 'User';
     }
+  };
+
+  // Generate breadcrumb items based on active tab
+  const getBreadcrumbItems = (tab: string, userRole: AppRole): BreadcrumbItem[] => {
+    const navGroups = getNavGroupsForRole(userRole);
+    
+    // Find the group and item for this tab
+    for (const group of navGroups) {
+      const item = group.items.find((i: NavItem) => i.url === tab || i.url.split('?')[0] === tab);
+      if (item) {
+        return [
+          { label: group.label },
+          { label: item.title }
+        ];
+      }
+    }
+    
+    // Fallback - just show the tab name
+    return [{ label: tab.charAt(0).toUpperCase() + tab.slice(1).replace(/-/g, ' ') }];
   };
 
   return (
@@ -261,7 +286,13 @@ export default function ModernDashboard() {
               </Suspense>
             ) : (
               <div className="w-full max-w-none px-2 sm:px-4 lg:px-6 xl:px-8 py-2 sm:py-4 lg:py-6">
-                {/* Super Admin Banner removed - use header toggle instead */}
+                {/* Breadcrumb Navigation */}
+                {activeTab !== 'overview' && !(activeTab === 'communication' && isMobile) && (
+                  <BreadcrumbNav 
+                    items={getBreadcrumbItems(activeTab, role as AppRole)} 
+                    className="mb-3 sm:mb-4"
+                  />
+                )}
 
                 {/* Header - hide on communication tab on mobile */}
                 {!(activeTab === 'communication' && isMobile) && (

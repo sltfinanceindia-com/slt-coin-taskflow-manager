@@ -58,6 +58,17 @@ import ProjectDetailPage from "./pages/ProjectDetailPage";
 import Resources from "./pages/Resources";
 import StartTrial from "./pages/StartTrial";
 
+// Module Landing Pages
+import EmployeesPage from "./pages/modules/EmployeesPage";
+import ProjectsPage from "./pages/modules/ProjectsPage";
+import AttendancePage from "./pages/modules/AttendancePage";
+import LeavesPage from "./pages/modules/LeavesPage";
+import PayrollPage from "./pages/modules/PayrollPage";
+import PerformancePage from "./pages/modules/PerformancePage";
+import ApprovalsPage from "./pages/modules/ApprovalsPage";
+import ReportsPage from "./pages/modules/ReportsPage";
+import TasksPage from "./pages/modules/TasksPage";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -217,6 +228,17 @@ function AppContent() {
           <Route path="/tutorial" element={<ProtectedRoute><TutorialPage /></ProtectedRoute>} />
           <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
           <Route path="/help" element={<HelpCenterPage />} />
+          
+          {/* Module Landing Pages - Standalone Routes */}
+          <Route path="/employees" element={<ProtectedRoute><EmployeesPage /></ProtectedRoute>} />
+          <Route path="/projects" element={<ProtectedRoute><ProjectsPage /></ProtectedRoute>} />
+          <Route path="/tasks" element={<ProtectedRoute><TasksPage /></ProtectedRoute>} />
+          <Route path="/attendance" element={<ProtectedRoute><AttendancePage /></ProtectedRoute>} />
+          <Route path="/leaves" element={<ProtectedRoute><LeavesPage /></ProtectedRoute>} />
+          <Route path="/payroll" element={<ProtectedRoute><PayrollPage /></ProtectedRoute>} />
+          <Route path="/performance" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />
+          <Route path="/approvals" element={<ProtectedRoute><ApprovalsPage /></ProtectedRoute>} />
+          <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
           
           {/* Detail Pages - Full Page Views */}
           <Route path="/tasks/:id" element={<ProtectedRoute><TaskDetailPage /></ProtectedRoute>} />
