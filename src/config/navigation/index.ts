@@ -110,12 +110,20 @@ export function filterNavGroupsByFeatures(
 
 /**
  * Standalone routes that navigate to their own pages
- */
-/**
- * Standalone routes that navigate to their own pages
  * These routes bypass the dashboard tab system
  */
 export const standaloneRoutes: Record<string, string> = {
+  // Module Landing Pages
+  'employees': '/employees',
+  'projects': '/projects',
+  'tasks-page': '/tasks',
+  'attendance-page': '/attendance',
+  'leaves': '/leaves',
+  'payroll-page': '/payroll',
+  'performance': '/performance',
+  'approvals-page': '/approvals',
+  'reports-page': '/reports',
+  
   // Learning & Development
   'training': '/training',
   'tutorial': '/tutorial',
