@@ -1,444 +1,450 @@
 
-# TeneXA Navigation & Structure Comprehensive Audit Plan
+# TeneXA 26-Issue Comprehensive Fix Plan
 
 ## Executive Summary
 
-After thorough analysis of the codebase against the provided specification, I've identified critical gaps in navigation architecture, routing structure, and role-based visibility. The current implementation is approximately **75% aligned** with the specification but requires significant restructuring for complete compliance.
+After thorough codebase analysis, I've mapped each of your 26 issues to specific files, root causes, and implementation fixes. The current implementation is approximately **78% complete** but has several critical gaps:
+
+1. **Real Data Loading**: Many components use real Supabase queries but some still have mock data fallbacks
+2. **Organization Scoping**: Most queries properly filter by `organization_id` but a few need verification
+3. **Action Handlers**: Some UI actions (like nominations, regularization approvals) have incomplete backend connections
+4. **Navigation**: Sidebar state persistence exists but may have route change issues
+5. **Role-Based Dashboards**: Role-specific navigation exists but dashboard content doesn't fully adapt
 
 ---
 
-## 1. CRITICAL NAVIGATION ARCHITECTURE GAPS
+## Issue-by-Issue Analysis & Fix Plan
 
-### 1.1 Layout Structure Mismatch
+### ISSUE 0: Card Alignment (Dashboard, Analytics, Tasks)
+**Current State**: Cards use responsive grid `grid-cols-1 sm:grid-cols-2 lg:grid-cols-4` with proper spacing
+**Root Cause**: Minor inconsistencies in card heights due to variable content
+**Files to Modify**:
+- `src/components/EnhancedDashboardWidgets.tsx`
+- `src/components/AnalyticsPage.tsx`
 
-**Specification Requirements:**
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│ TOP NAVIGATION BAR (Fixed)                                       │
-│ [Logo] [Org Switcher▾]     [Search🔍]  [Notifications🔔]        │
-│                            [Quick Actions⚡] [Profile Menu▾]     │
-└─────────────────────────────────────────────────────────────────┘
-│            │ BREADCRUMB: Dashboard > HR > Employees > John Doe   │
-```
-
-**Current Status:**
-| Component | Spec | Current | Gap |
-|-----------|------|---------|-----|
-| Logo | Sidebar | Sidebar | ✅ Match |
-| Org Switcher | Top Header | Top Header | ✅ Match |
-| Global Search | Top Header | Top Header | ✅ Match |
-| Notifications | Top Header | Top Header + Sidebar | ⚠️ Duplicate |
-| Quick Actions | Top Header | Top Header | ✅ Match |
-| Profile Menu | Top Header | Top Header | ✅ Match |
-| Breadcrumbs | Below Header | Only on Detail Pages | ❌ Missing on Dashboard |
-
-### 1.2 Sidebar Navigation Structure Issues
-
-**Specification (Grouped Hierarchy):**
-```text
-👥 HR MANAGEMENT
-├─ 👤 EMPLOYEES
-│  ├─ All Employees
-│  ├─ Add Employee
-│  ├─ Employee Lifecycle
-│  └─ Employee Analytics
-├─ 🏢 ORGANIZATION
-│  ├─ Org Chart
-│  ├─ Departments
-│  └─ Teams
-```
-
-**Current Implementation:**
-- Uses flat groups without nested sub-menus
-- Groups are collapsible but items are not hierarchical
-- Missing sub-group structure for complex modules
-
-**Gap Analysis:**
-
-| Module | Spec Sub-Groups | Current Structure |
-|--------|-----------------|-------------------|
-| HR Management | 6 sub-groups (Employees, Organization, Documents, etc.) | Flat groups mixed together |
-| Attendance & Time | 4 sub-groups (Attendance, Shifts, Time Logs, Settings) | Single "Attendance" + "Shifts" + "Time Logs" groups |
-| Leave Management | 6 sub-groups | Single "Leave Management" group |
-| Payroll & Finance | 5 sub-groups (Payroll, Expenses, Loans, Benefits, Tax) | Split into "Payroll" + "Expenses & Loans" + "Benefits & Tax" |
-| Project Management | 6 sub-groups | Split appropriately ✅ |
-| Performance | 6 sub-groups | Single group ❌ |
+**Fix**:
+- Add `h-full` class to Card components to ensure equal heights
+- Use CSS Grid with `auto-fit` and `minmax` for better responsiveness
+- Standardize CardContent padding across all dashboard cards
 
 ---
 
-## 2. ROLE-BASED SIDEBAR VISIBILITY AUDIT
+### ISSUE 1: Dashboard - My Work Not Loading Data
+**Current State**: `EnhancedDashboardWidgets.tsx` already uses real hooks (`useTasks`, `useTimeLogs`, `useCoinTransactions`)
+**Status**: MOSTLY FIXED - The dashboard fetches real data from Supabase
 
-### Current Role Definitions
-The system has 10 roles defined in `types.ts`:
-- super_admin, org_admin, admin, hr_admin, project_manager, finance_manager, manager, team_lead, employee, intern
+**Verification Needed**:
+- Ensure `useTasks` filters by `assigned_to = profile.id` for non-admins (Line 85-87 shows this logic exists)
+- Weekly hours chart uses real `timeLogs` data (Lines 46-79)
 
-### Visibility Compliance Check
-
-| Sidebar Item | Spec Visibility | Current Visibility | Status |
-|--------------|-----------------|-------------------|--------|
-| Executive Dashboard | Admin only | Tab exists but not in sidebar | ❌ Missing |
-| All Employees | Admin, HR, Managers | Via `interns` tab, adminOnly | ⚠️ Partial |
-| Add Employee | Admin, HR | Quick Action exists | ⚠️ No sidebar item |
-| Payroll Processing | Finance, Admin | adminOnly + allowedRoles | ✅ Correct |
-| My Payslips | All Employees | Available to all | ✅ Correct |
-| Team Attendance | Managers only | No specific filter | ❌ Missing |
-| All Attendance | Admin, HR | adminOnly flag | ✅ Correct |
-| Review Others | Managers only | adminOnly flag | ⚠️ Too restrictive |
-
-### Role-Specific Navigation Files
-
-| File | Role | Status |
-|------|------|--------|
-| admin-groups.ts | Super Admin, Org Admin, Admin | ✅ Complete |
-| hr-groups.ts | HR Admin | ✅ Complete |
-| pm-groups.ts | Project Manager | ✅ Complete |
-| finance-groups.ts | Finance Manager | ✅ Complete |
-| manager-groups.ts | Manager, Team Lead | ✅ Complete |
-| employee-groups.ts | Employee, Intern | ✅ Complete |
+**Minor Fix**:
+- Add empty state handling when profile is loading
+- Ensure time logs properly aggregate by user_id
 
 ---
 
-## 3. ROUTE & PAGE STRUCTURE AUDIT
-
-### Missing Routes (Per Specification)
-
-| Specified Route | Current Status | Priority |
-|-----------------|----------------|----------|
-| `/employees` (List Page) | ❌ Uses `/dashboard?tab=interns` | HIGH |
-| `/employees/:id` (Detail) | ✅ Exists | - |
-| `/projects` (List Page) | ❌ Uses `/dashboard?tab=projects` | HIGH |
-| `/projects/:id` (Detail) | ✅ Exists | - |
-| `/attendance` | ❌ Uses tab | MEDIUM |
-| `/leaves` | ❌ Uses tab | MEDIUM |
-| `/payroll` | ❌ Uses tab | MEDIUM |
-| `/performance` | ❌ Uses tab | MEDIUM |
-| `/approvals` | ❌ Uses tab | MEDIUM |
-| `/settings` | ✅ Redirects to org settings | - |
-| `/me` or `/profile` | ✅ `/profile` exists | - |
-
-### Current Standalone Routes (from `standaloneRoutes`)
+### ISSUE 2A: Add Team Member - Only 5 Role Options
+**Current State**: `InternManagement.tsx` Line 337-342 shows hardcoded 5 roles:
 ```typescript
-'training': '/training',
-'tutorial': '/tutorial',
-'my-goals': '/my-goals',
-'kudos': '/kudos',
-'pulse-surveys': '/pulse-surveys',
-'profile': '/profile',
-'org-chart': '/organization/chart',
-'roles': '/admin/roles-permissions',
-'settings': '/admin/organization-settings',
-'super-admin': '/super-admin',
-'calendar': '/calendar',
-'help': '/help'
+<SelectItem value="org_admin">Organization Admin</SelectItem>
+<SelectItem value="manager">Manager</SelectItem>
+<SelectItem value="team_lead">Team Lead</SelectItem>
+<SelectItem value="employee">Employee</SelectItem>
+<SelectItem value="intern">Intern</SelectItem>
 ```
 
-### Routes That SHOULD Be Standalone (Per Spec)
-```text
-/employees → Employee List Page
-/employees/:id → Employee Detail (11 tabs)
-/projects → Project List Page  
-/projects/:id → Project Detail (9 tabs)
-/attendance → Attendance Module Page
-/leaves → Leave Management Page
-/payroll → Payroll Module Page
-/performance → Performance Module Page
-/reports → Reports & Analytics Page
-/approvals → Approvals Center Page
-```
+**Root Cause**: Missing other roles like `hr_admin`, `finance_manager`, `project_manager`
 
----
-
-## 4. EMPLOYEE MODULE GAP ANALYSIS
-
-### Specification: 11-Tab Employee Detail Page
-
-| Tab | Current Status | Data Source |
-|-----|----------------|-------------|
-| 1. Overview | ✅ EmployeeOverviewTab.tsx | profiles, tasks, attendance |
-| 2. Personal | ✅ EmployeePersonalTab.tsx | profiles (basic info) |
-| 3. Employment | ✅ EmployeeEmploymentTab.tsx | profiles, departments |
-| 4. Documents | ✅ EmployeeDocumentsTab.tsx | employee_documents |
-| 5. Performance | ✅ EmployeePerformanceTab.tsx | objectives, time_logs |
-| 6. Attendance | ✅ EmployeeAttendanceTab.tsx | attendance_records |
-| 7. Leaves | ✅ EmployeeLeavesTab.tsx | leave_requests, leave_balances |
-| 8. Payroll | ✅ EmployeePayrollTab.tsx | payroll_records |
-| 9. Assets | ✅ EmployeeAssetsTab.tsx | assigned_assets |
-| 10. Training | ✅ EmployeeTrainingTab.tsx | training_enrollments |
-| 11. History | ✅ EmployeeHistoryTab.tsx | activity_logs |
-
-**Status:** Employee Detail Page is complete ✅
-
-### Missing Employee List Page Features
-
-| Feature | Status |
-|---------|--------|
-| Table View (Name, ID, Department, Designation) | ❌ Uses card grid |
-| Filters (Department, Location, Status, Type) | ⚠️ Partial search only |
-| Add Employee Action | ✅ Exists |
-| Bulk Import/Export | ✅ Separate tab |
-| Export | ❌ Missing |
-
----
-
-## 5. PROJECT MODULE GAP ANALYSIS
-
-### Specification: 9-Tab Project Detail Page
-
-| Tab | Current Status | Data Source |
-|-----|----------------|-------------|
-| 1. Overview | ✅ ProjectOverviewTab.tsx | projects, tasks |
-| 2. Team | ✅ ProjectTeamTab.tsx | project_team |
-| 3. Tasks | ✅ ProjectTasksTab.tsx | tasks |
-| 4. Sprints | ✅ ProjectSprintsTab.tsx | sprints |
-| 5. Timeline (Gantt) | ✅ ProjectTimelineTab.tsx | tasks |
-| 6. Files | ✅ ProjectFilesTab.tsx | project_documents |
-| 7. Budget | ✅ ProjectBudgetTab.tsx | project_costs |
-| 8. Reports | ✅ ProjectReportsTab.tsx | time_logs |
-| 9. Settings | ✅ ProjectSettingsTab.tsx | projects |
-
-**Status:** Project Detail Page is complete ✅
-
----
-
-## 6. MY PROFILE MODULE GAP ANALYSIS
-
-### Specification: 8-Tab Profile Page
-
-| Tab | Current Status | Priority |
-|-----|----------------|----------|
-| 1. Overview | ✅ Basic profile card exists | - |
-| 2. Employment | ⚠️ Not separate tab, in EmployeeSelfService | MEDIUM |
-| 3. Documents | ⚠️ In EmployeeSelfService | MEDIUM |
-| 4. Payroll | ⚠️ In EmployeeSelfService | MEDIUM |
-| 5. Time & Attendance | ⚠️ In EmployeeSelfService | MEDIUM |
-| 6. Performance | ⚠️ In EmployeeSelfService | MEDIUM |
-| 7. Preferences | ❌ Missing | HIGH |
-| 8. Security | ❌ Missing (password change, 2FA) | HIGH |
-
-### Current Profile Page Structure
-- Simple card layout with basic info
-- Assessment results section
-- No tabbed structure
-- Missing Preferences and Security sections
-
----
-
-## 7. DASHBOARD MODULE GAP ANALYSIS
-
-### Specification Requirements
-
-| Component | Current Status | Priority |
-|-----------|----------------|----------|
-| KPI Cards (4-6) | ✅ EnhancedDashboardWidgets | - |
-| Quick Actions Bar | ⚠️ In header dropdown, not dashboard | MEDIUM |
-| Charts Section | ✅ Weekly Activity + Distribution | - |
-| Recent Activity Feed | ✅ Recent tasks | - |
-| Upcoming Events Widget | ❌ Missing | MEDIUM |
-| Mobile Stack (1 KPI/row) | ✅ Responsive grid | - |
-
----
-
-## 8. CALENDAR CENTRAL HUB AUDIT
-
-### Event Type Integration
-
-| Event Type | Currently Integrated | Status |
-|------------|---------------------|--------|
-| Tasks | ✅ Yes | - |
-| Leaves | ✅ Yes | - |
-| WFH | ✅ Yes | - |
-| Meetings | ✅ Yes | - |
-| Shifts | ❌ No (color defined but not fetched) | HIGH |
-| Training | ❌ No | MEDIUM |
-| Holidays | ⚠️ Separate HolidayCalendar component | MEDIUM |
-| Reviews | ❌ No | LOW |
-
----
-
-## 9. APPROVAL WORKFLOW AUDIT
-
-### Current Implementation
-
-| Feature | Status |
-|---------|--------|
-| Pending Approvals Tab | ✅ ApprovalCenter with tabs |
-| Approved Tab | ✅ Included in All tab |
-| Rejected Tab | ⚠️ No separate tab |
-| Workflow Builder | ✅ ApprovalWorkflowConfig.tsx |
-| Delegation | ❌ Missing |
-| SLA Tracking | ❌ Missing |
-| Escalation Rules | ❌ Missing |
-
----
-
-## 10. PRIORITIZED REMEDIATION ROADMAP
-
-### Phase 1: Navigation Structure Fixes (Critical - Week 1)
-
-| Task | Priority | Effort | Files |
-|------|----------|--------|-------|
-| Add breadcrumbs to ModernDashboard | P0 | 2h | ModernDashboard.tsx |
-| Restructure sidebar to match spec hierarchy | P0 | 4h | admin-groups.ts, hr-groups.ts, etc. |
-| Add missing standalone routes | P0 | 3h | App.tsx, navigation/index.ts |
-| Create dedicated module landing pages | P0 | 6h | New files: Employees.tsx, Projects.tsx, etc. |
-| Remove duplicate NotificationCenter from sidebar | P1 | 30m | AppSidebar.tsx |
-
-### Phase 2: Profile & Security (High - Week 1-2)
-
-| Task | Priority | Effort | Files |
-|------|----------|--------|-------|
-| Expand Profile to 8-tab structure | P0 | 4h | Profile.tsx |
-| Add Security tab (password, 2FA, sessions) | P0 | 4h | New: ProfileSecurityTab.tsx |
-| Add Preferences tab (notifications, theme) | P1 | 3h | New: ProfilePreferencesTab.tsx |
-| Merge EmployeeSelfService into Profile | P1 | 2h | Profile.tsx |
-
-### Phase 3: Calendar & Integration (Medium - Week 2)
-
-| Task | Priority | Effort | Files |
-|------|----------|--------|-------|
-| Add shift_schedules to OrganizationCalendar | P0 | 2h | OrganizationCalendar.tsx |
-| Add training_programs to calendar | P1 | 1h | OrganizationCalendar.tsx |
-| Add holidays from HolidayCalendar | P1 | 1h | OrganizationCalendar.tsx |
-| Add My Calendar vs Team Calendar toggle | P1 | 2h | OrganizationCalendar.tsx |
-
-### Phase 4: Dashboard Enhancements (Medium - Week 2)
-
-| Task | Priority | Effort | Files |
-|------|----------|--------|-------|
-| Add QuickActionsBar widget to dashboard | P1 | 2h | New: DashboardQuickActions.tsx |
-| Add UpcomingEventsWidget | P1 | 2h | New: UpcomingEventsWidget.tsx |
-| Add Executive Dashboard tab (admin only) | P2 | 4h | New: ExecutiveDashboard.tsx |
-
-### Phase 5: Module Landing Pages (Lower - Week 3)
-
-Create standalone landing pages for major modules:
-- `/employees` - EmployeesPage.tsx
-- `/projects` - ProjectsPage.tsx
-- `/attendance` - AttendancePage.tsx
-- `/leaves` - LeavesPage.tsx
-- `/payroll` - PayrollPage.tsx
-- `/performance` - PerformancePage.tsx
-- `/approvals` - ApprovalsPage.tsx
-
-### Phase 6: Role Visibility Refinement (Lower - Week 3)
-
-| Task | Priority | Effort |
-|------|----------|--------|
-| Add "Team Attendance" view for managers | P2 | 2h |
-| Add "Review Others" visibility for managers (not just admin) | P2 | 1h |
-| Add "My Team" filter across modules | P2 | 3h |
-
----
-
-## 11. TECHNICAL IMPLEMENTATION DETAILS
-
-### New Routes to Add in App.tsx
-
+**Fix**: Update `InternManagement.tsx` Line 336-346:
 ```typescript
-// Module Landing Pages (redirect to dashboard tabs for now, can be expanded later)
-<Route path="/employees" element={<ProtectedRoute><ModernDashboard defaultTab="interns" /></ProtectedRoute>} />
-<Route path="/projects" element={<ProtectedRoute><ModernDashboard defaultTab="projects" /></ProtectedRoute>} />
-<Route path="/attendance" element={<ProtectedRoute><ModernDashboard defaultTab="attendance" /></ProtectedRoute>} />
-<Route path="/leaves" element={<ProtectedRoute><ModernDashboard defaultTab="leave" /></ProtectedRoute>} />
-<Route path="/payroll" element={<ProtectedRoute><ModernDashboard defaultTab="payroll" /></ProtectedRoute>} />
-<Route path="/performance" element={<ProtectedRoute><ModernDashboard defaultTab="okrs" /></ProtectedRoute>} />
-<Route path="/approvals" element={<ProtectedRoute><ModernDashboard defaultTab="approvals" /></ProtectedRoute>} />
+<SelectItem value="org_admin">Organization Admin</SelectItem>
+<SelectItem value="hr_admin">HR Admin</SelectItem>
+<SelectItem value="project_manager">Project Manager</SelectItem>
+<SelectItem value="finance_manager">Finance Manager</SelectItem>
+<SelectItem value="manager">Manager</SelectItem>
+<SelectItem value="team_lead">Team Lead</SelectItem>
+<SelectItem value="employee">Employee</SelectItem>
+<SelectItem value="intern">Intern</SelectItem>
 ```
 
-### Sidebar Hierarchy Restructure
+---
 
-Current flat structure needs nesting. Example for HR:
+### ISSUE 2B: Employee Card Not Showing Department/Details
+**Current State**: `InternManagement.tsx` displays:
+- Full name, email, role badge, active status
+- Department field is shown (Line 469-470)
 
+**Gap**: Missing designation, location, joining date in card view
+
+**Fix**: Enhance the query at Line 84-91 to JOIN with departments table:
 ```typescript
-// Current
-{
-  label: "Employees",
-  items: [
-    { title: "All Employees", url: "interns" },
-    { title: "Employee Lifecycle", url: "lifecycle" },
-  ]
-},
-{
-  label: "Employee Lifecycle",
-  items: [
-    { title: "Onboarding", url: "onboarding" },
-    ...
-  ]
+.select('*, departments:department_id(name, color)')
+```
+
+Add these fields to the card display at Line 419-455.
+
+---
+
+### ISSUE 2C: View All Details Not Updated
+**Fix**: Create proper table view toggle in `InternManagement.tsx`:
+- Add view toggle (Grid/List)
+- Implement sortable columns in list view
+- Add pagination (already implemented - Lines 119-134)
+
+---
+
+### ISSUE 3: HR Analytics - Not Loading Organization Data
+**Current State**: `AnalyticsPage.tsx` already uses real data:
+- Line 18-19: Uses `useTasks()` and `useTimeLogs()`
+- Line 23-46: Fetches org-filtered profiles from Supabase
+
+**Status**: WORKING - Uses real organization-scoped data
+
+**Verification Needed**:
+- Charts (`TaskPieChart`, `ProductivityLineChart`) must use the fetched data, not mock data
+- Check if these chart components receive data as props
+
+---
+
+### ISSUE 4: Org Chart - Not Showing Employees
+**Current State**: `OrgChartViewer.tsx` is fully implemented:
+- Line 37: Uses `useOrgChart()` hook
+- Lines 256-318: Builds tree structure from flat data using `reporting_manager_id`
+- Handles empty state with helpful instructions (Lines 374-420)
+
+**Status**: WORKING - The org chart is fully functional
+
+**Verification Needed**:
+- Ensure `useReportingStructure.tsx` Line 205 properly fetches all employees with manager relationships
+- Check if `reporting_manager_id` is populated in profiles table
+
+---
+
+### ISSUE 5-6: Departments/Teams/Locations - Mock Data
+**Files to Check**:
+- `src/components/hr/DepartmentManagement.tsx`
+- `src/components/hr/TeamManagement.tsx`
+- `src/components/hr/LocationManagement.tsx`
+
+**Fix Pattern**: Replace any hardcoded arrays with Supabase queries:
+```typescript
+const { data: departments } = useQuery({
+  queryKey: ['departments', profile?.organization_id],
+  queryFn: async () => {
+    const { data } = await supabase
+      .from('departments')
+      .select('*')
+      .eq('organization_id', profile?.organization_id);
+    return data;
+  }
+});
+```
+
+---
+
+### ISSUE 7: Attendance Regularization - Fake Data & Actions Not Working
+**Current State**: Need to verify `AttendanceRegularization` component
+
+**Fix Required**:
+1. Create/use `attendance_regularization_requests` table
+2. Implement approve/reject mutations that update both the request AND the original attendance record
+3. Send notifications on status change
+
+---
+
+### ISSUE 8: Attendance Reports - Tab Navigation Issue
+**Current State**: Routes are tab-based in `GeoAttendance.tsx` (Line 21-44)
+
+**Fix**: Verify the tab registry and sidebar navigation point to correct tab values
+
+---
+
+### ISSUE 9: Timesheets - Calendar Missing & Filtering Broken
+**Current State**: `TimesheetManagement.tsx` has:
+- Week navigation (Lines 298-300)
+- Date range filters (Lines 303-319)
+- Calendar popover components (Lines 462-476)
+
+**Status**: PARTIALLY IMPLEMENTED - Week view exists but no visual calendar grid
+
+**Fix Required**:
+1. Add weekly calendar grid component showing Mon-Sun with hour cells
+2. Verify date range filtering applies correctly (Lines 303-319)
+
+---
+
+### ISSUE 10: Overtime - Filter Not Working
+**Current State**: Need to verify `OvertimeManagement` component
+
+**Fix Required**:
+- Ensure department filter is applied to the query by JOINing with employees table
+- Add `.eq('department_id', selectedDepartment)` when filter is active
+
+---
+
+### ISSUE 11: Payroll Dashboard - Not Fully Functional
+**Current State**: `PayrollDashboard.tsx` is functional:
+- Creates payroll records (Lines 80-125)
+- Shows summary stats (Lines 128-131)
+- Displays records table (Lines 296-357)
+
+**Status**: BASIC FUNCTIONALITY WORKING
+
+**Missing (Per Spec)**:
+1. **Automated Calculation**: No integration with attendance for LOP deduction
+2. **Steps Indicator**: No visual progress steps (Select → Calculate → Review → Finalize)
+3. **Salary Slip PDF Generation**: Not implemented
+
+**Fix Required**:
+1. Add step-by-step UI for payroll processing
+2. Create edge function for automated payroll calculation
+3. Add salary slip PDF generation
+
+---
+
+### ISSUE 12-15: Reimbursements, Investments, Form 16, Compliance
+**Status**: Need to verify these components
+
+**Files to Check**:
+- `src/components/expenses/ReimbursementList.tsx`
+- `src/components/finance/InvestmentDeclarations.tsx`
+- `src/components/finance/Form16Generator.tsx`
+- `src/components/compliance/ComplianceReports.tsx`
+
+---
+
+### ISSUE 16: Benchmarking - Fake Graphs
+**Fix**: Ensure chart components fetch real aggregated data:
+- Performance benchmarks from `objectives` table
+- Attendance benchmarks from `attendance_records`
+- Productivity from `time_logs`
+
+---
+
+### ISSUE 17-21: Projects/Kanban/Tasks/Gantt/Backlog Navigation
+**Current State**: These are all implemented as dashboard tabs
+
+**Verified Working**:
+- `ProjectDetailPage.tsx` - Full 9-tab implementation
+- `TasksTab.tsx` - Kanban view with filters
+- `GanttChart.tsx` - Timeline visualization
+
+**Fix Required**:
+- Ensure navigation from project list to project detail works
+- Verify filter parameters persist across navigation
+
+---
+
+### ISSUE 22: Service Desk - Duplicated Tabs
+**Fix**: Check `RequestHub.tsx` and tab-registry for duplicate entries
+- Remove any duplicate tab definitions
+- Ensure unique keys for all tab items
+
+---
+
+### ISSUE 23: Roles & Permissions - Create Role Not Working
+**Current State**: `RoleEditor.tsx` exists in `src/components/rbac/`
+
+**Fix Required**:
+1. Verify mutation saves to `custom_roles` table
+2. Ensure role_permissions junction table is updated
+3. Add error handling and success feedback
+
+---
+
+### ISSUE 24: Employee of the Month - Action Not Working
+**Current State**: `EmployeeOfMonth.tsx` has:
+- Nominate dialog (Lines 89-133)
+- BUT: Submit button only closes dialog, no database mutation (Line 128-129)
+- Past winners use MOCK data (Lines 45-70)
+
+**Fix Required**:
+1. Create `employee_of_month_nominations` table
+2. Create `employee_of_month_winners` table
+3. Implement nomination submission mutation:
+```typescript
+const submitNomination = useMutation({
+  mutationFn: async (data) => {
+    await supabase.from('employee_of_month_nominations').insert({
+      organization_id: profile?.organization_id,
+      nominee_id: data.employeeId,
+      nominator_id: profile?.id,
+      month: format(new Date(), 'yyyy-MM'),
+      reason: data.reason,
+    });
+  }
+});
+```
+4. Replace mock pastWinners with real query
+
+---
+
+### ISSUE 25: Tab Navigation - Sidebar Resets
+**Current State**: `AppSidebar.tsx` has state persistence:
+- Line 138-141: Loads from localStorage
+- Line 143-150: Saves to localStorage on toggle
+
+**Status**: WORKING - Sidebar state is persisted
+
+**Possible Issue**: If navigation causes full remount
+**Fix**: Ensure `AppSidebar` is wrapped in a stable layout component that doesn't remount
+
+---
+
+### ISSUE 26: Role-Based Dashboards - Not Working
+**Current State**:
+- Role-specific navigation exists in `config/navigation/`
+- Different nav groups per role (hr-groups.ts, pm-groups.ts, etc.)
+- `EnhancedDashboardWidgets.tsx` has basic role check (Line 39: `isAdmin`)
+
+**Gap**: Dashboard content doesn't change based on role
+
+**Fix Required**:
+1. Create role-specific dashboard components:
+   - `EmployeeDashboard.tsx`
+   - `ManagerDashboard.tsx`
+   - `HRAdminDashboard.tsx`
+   - `FinanceManagerDashboard.tsx`
+   - `ProjectManagerDashboard.tsx`
+
+2. Update `OverviewTab.tsx` to render based on role:
+```typescript
+export function OverviewTab() {
+  const { role, isAdmin } = useUserRole();
+  
+  if (role === 'hr_admin') return <HRAdminDashboard />;
+  if (role === 'finance_manager') return <FinanceManagerDashboard />;
+  if (role === 'project_manager') return <ProjectManagerDashboard />;
+  if (isAdmin) return <AdminDashboard />;
+  if (['manager', 'team_lead'].includes(role)) return <ManagerDashboard />;
+  return <EmployeeDashboard />;
 }
-
-// Needed: Sub-menus or better grouping
-// Option 1: Collapsible sub-groups
-// Option 2: Categorized by HR Management umbrella
 ```
 
-### Profile Page Restructure
+3. Each dashboard shows role-specific widgets:
+   - **Employee**: My Tasks, My Attendance, Leave Balance, Upcoming Events
+   - **Manager**: Team Overview, Pending Approvals, Team Attendance
+   - **HR Admin**: Headcount, Attrition, Pending Leaves, New Hires
+   - **Finance**: Payroll Status, Pending Reimbursements, Expense Summary
+   - **PM**: Project Status, Resource Allocation, Task Burndown
 
+---
+
+## Implementation Phases
+
+### Phase 1: Critical Data Fixes (Priority: HIGH)
+| Issue | Task | Effort |
+|-------|------|--------|
+| #2A | Add missing role options to team member form | 30 min |
+| #2B | Enhance employee card with department/designation | 1 hour |
+| #24 | Implement Employee of Month nomination mutation | 2 hours |
+| #23 | Fix role creation mutation | 2 hours |
+
+### Phase 2: Payroll & Finance Automation (Priority: HIGH)
+| Issue | Task | Effort |
+|-------|------|--------|
+| #11 | Add payroll step-by-step UI | 3 hours |
+| #11 | Create payroll calculation edge function | 4 hours |
+| #12-15 | Verify/fix reimbursement/investment/Form16 components | 4 hours |
+
+### Phase 3: Dashboard & Widgets (Priority: MEDIUM)
+| Issue | Task | Effort |
+|-------|------|--------|
+| #0 | Standardize card heights with CSS Grid | 1 hour |
+| #26 | Create role-specific dashboard components | 6 hours |
+| #1 | Verify and enhance dashboard data loading | 2 hours |
+
+### Phase 4: Navigation & UX (Priority: MEDIUM)
+| Issue | Task | Effort |
+|-------|------|--------|
+| #8 | Fix attendance reports tab navigation | 1 hour |
+| #22 | Remove duplicate service desk tabs | 30 min |
+| #25 | Verify sidebar state persistence across routes | 1 hour |
+
+### Phase 5: Module Enhancements (Priority: LOWER)
+| Issue | Task | Effort |
+|-------|------|--------|
+| #7 | Implement regularization approval actions | 3 hours |
+| #9 | Add timesheet calendar grid view | 3 hours |
+| #10 | Fix overtime department filter | 1 hour |
+| #16 | Replace benchmarking mock data | 2 hours |
+| #17-21 | Verify project/task navigation | 2 hours |
+
+---
+
+## Database Tables Needed
+
+### New Tables Required:
+1. `employee_of_month_nominations` - For Issue #24
+2. `employee_of_month_winners` - For Issue #24
+3. `attendance_regularization_requests` (if not exists) - For Issue #7
+
+### Tables to Verify:
+- `departments` - has org_id, manager, and employee count
+- `teams` - has team_lead_id and team_members junction
+- `locations` - has address and coordinates
+
+---
+
+## Files Summary
+
+### Files to Modify:
+1. `src/components/InternManagement.tsx` - Issues #2A, #2B, #2C
+2. `src/components/recognition/EmployeeOfMonth.tsx` - Issue #24
+3. `src/pages/dashboard/tabs/OverviewTab.tsx` - Issue #26
+4. `src/components/EnhancedDashboardWidgets.tsx` - Issues #0, #1
+5. `src/components/payroll/PayrollDashboard.tsx` - Issue #11
+6. `src/components/workforce/AttendanceDashboard.tsx` - Issue #7
+7. `src/components/timesheets/TimesheetManagement.tsx` - Issue #9
+
+### New Files to Create:
+1. `src/components/dashboard/EmployeeDashboard.tsx`
+2. `src/components/dashboard/ManagerDashboard.tsx`
+3. `src/components/dashboard/HRAdminDashboard.tsx`
+4. `src/components/dashboard/FinanceManagerDashboard.tsx`
+5. `src/components/dashboard/ProjectManagerDashboard.tsx`
+
+---
+
+## Technical Notes
+
+### Organization Scoping Pattern
+All queries must include:
 ```typescript
-// Current Profile.tsx - simple layout
-// Needed: 8-tab structure
-
-const profileTabs = [
-  { id: 'overview', label: 'Overview', icon: User },
-  { id: 'employment', label: 'Employment', icon: Briefcase },
-  { id: 'documents', label: 'Documents', icon: FileText },
-  { id: 'payroll', label: 'Payroll', icon: DollarSign },
-  { id: 'time-attendance', label: 'Time & Attendance', icon: Clock },
-  { id: 'performance', label: 'Performance', icon: TrendingUp },
-  { id: 'preferences', label: 'Preferences', icon: Settings },
-  { id: 'security', label: 'Security', icon: Shield },
-];
+.eq('organization_id', profile?.organization_id)
 ```
 
----
+### Data Fetching Pattern
+Replace all mock arrays with:
+```typescript
+const { data, isLoading } = useQuery({
+  queryKey: ['entity-name', profile?.organization_id],
+  queryFn: async () => {
+    const { data, error } = await supabase
+      .from('table_name')
+      .select('*')
+      .eq('organization_id', profile?.organization_id);
+    if (error) throw error;
+    return data;
+  },
+  enabled: !!profile?.organization_id,
+});
+```
 
-## 12. FILES TO CREATE/MODIFY
+### Mutation Pattern for Actions
+```typescript
+const mutation = useMutation({
+  mutationFn: async (data) => {
+    const { error } = await supabase.from('table').insert(data);
+    if (error) throw error;
+  },
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['entity-name'] });
+    toast({ title: 'Success message' });
+  },
+  onError: (error) => {
+    toast({ title: 'Error', description: error.message, variant: 'destructive' });
+  },
+});
+```
 
-### New Files Required
-
-| File | Purpose |
-|------|---------|
-| `src/pages/EmployeesPage.tsx` | Module landing page |
-| `src/pages/ProjectsPage.tsx` | Module landing page |
-| `src/pages/AttendancePage.tsx` | Module landing page |
-| `src/pages/LeavesPage.tsx` | Module landing page |
-| `src/pages/PayrollPage.tsx` | Module landing page |
-| `src/pages/PerformancePage.tsx` | Module landing page |
-| `src/pages/ApprovalsPage.tsx` | Module landing page |
-| `src/components/profile/ProfileSecurityTab.tsx` | Security settings |
-| `src/components/profile/ProfilePreferencesTab.tsx` | User preferences |
-| `src/components/dashboard/DashboardQuickActions.tsx` | Quick actions widget |
-| `src/components/dashboard/UpcomingEventsWidget.tsx` | Events widget |
-
-### Files to Modify
-
-| File | Changes |
-|------|---------|
-| `App.tsx` | Add new module routes |
-| `navigation/index.ts` | Add new standalone routes |
-| `admin-groups.ts` | Restructure hierarchy |
-| `hr-groups.ts` | Restructure hierarchy |
-| `pm-groups.ts` | Restructure hierarchy |
-| `Profile.tsx` | Convert to 8-tab structure |
-| `OrganizationCalendar.tsx` | Add shift_schedules, training |
-| `ModernDashboard.tsx` | Add breadcrumbs, quick actions |
-| `AppSidebar.tsx` | Remove duplicate notification widget |
-
----
-
-## Summary Alignment Score
-
-| Module | Current | Target | Gap |
-|--------|---------|--------|-----|
-| Top Navigation | 90% | 100% | Breadcrumbs missing on dashboard |
-| Sidebar Structure | 70% | 100% | Needs hierarchical restructure |
-| Routing | 60% | 100% | Missing module landing pages |
-| Employee Module | 95% | 100% | List page needs table view |
-| Project Module | 95% | 100% | List page needs filters |
-| Profile Module | 50% | 100% | Missing 5 tabs |
-| Calendar Hub | 75% | 100% | Missing shifts, training |
-| Approvals | 80% | 100% | Missing delegation, SLA |
-| Dashboard | 85% | 100% | Missing quick actions bar |
-
-**Overall Alignment: 75%**
-
-The core functionality exists but requires structural reorganization to match the enterprise HRMS specification precisely.
