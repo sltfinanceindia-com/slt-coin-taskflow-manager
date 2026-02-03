@@ -248,6 +248,12 @@ export function InternManagement() {
         return <Badge variant="secondary" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300"><Crown className="h-3 w-3 mr-1" />Org Admin</Badge>;
       case 'admin':
         return <Badge variant="secondary" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300"><Crown className="h-3 w-3 mr-1" />Admin</Badge>;
+      case 'hr_admin':
+        return <Badge variant="secondary" className="bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300"><Crown className="h-3 w-3 mr-1" />HR Admin</Badge>;
+      case 'project_manager':
+        return <Badge variant="secondary" className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300"><Crown className="h-3 w-3 mr-1" />Project Manager</Badge>;
+      case 'finance_manager':
+        return <Badge variant="secondary" className="bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300"><Crown className="h-3 w-3 mr-1" />Finance Manager</Badge>;
       case 'manager':
         return <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"><Crown className="h-3 w-3 mr-1" />Manager</Badge>;
       case 'team_lead':
@@ -335,6 +341,9 @@ export function InternManagement() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="org_admin">Organization Admin</SelectItem>
+                        <SelectItem value="hr_admin">HR Admin</SelectItem>
+                        <SelectItem value="project_manager">Project Manager</SelectItem>
+                        <SelectItem value="finance_manager">Finance Manager</SelectItem>
                         <SelectItem value="manager">Manager</SelectItem>
                         <SelectItem value="team_lead">Team Lead</SelectItem>
                         <SelectItem value="employee">Employee</SelectItem>
