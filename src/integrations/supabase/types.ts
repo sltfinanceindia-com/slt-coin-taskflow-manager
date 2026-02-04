@@ -1169,6 +1169,95 @@ export type Database = {
           },
         ]
       }
+      attendance_regularization_requests: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          attendance_record_id: string | null
+          created_at: string
+          employee_id: string
+          id: string
+          organization_id: string | null
+          original_clock_in: string | null
+          original_clock_out: string | null
+          reason: string
+          rejection_reason: string | null
+          request_date: string
+          request_type: string
+          requested_clock_in: string
+          requested_clock_out: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          attendance_record_id?: string | null
+          created_at?: string
+          employee_id: string
+          id?: string
+          organization_id?: string | null
+          original_clock_in?: string | null
+          original_clock_out?: string | null
+          reason: string
+          rejection_reason?: string | null
+          request_date: string
+          request_type?: string
+          requested_clock_in: string
+          requested_clock_out: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          attendance_record_id?: string | null
+          created_at?: string
+          employee_id?: string
+          id?: string
+          organization_id?: string | null
+          original_clock_in?: string | null
+          original_clock_out?: string | null
+          reason?: string
+          rejection_reason?: string | null
+          request_date?: string
+          request_type?: string
+          requested_clock_in?: string
+          requested_clock_out?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_regularization_requests_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_regularization_requests_attendance_record_id_fkey"
+            columns: ["attendance_record_id"]
+            isOneToOne: false
+            referencedRelation: "attendance_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_regularization_requests_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_regularization_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       attendance_settings: {
         Row: {
           created_at: string
@@ -3631,6 +3720,110 @@ export type Database = {
           {
             foreignKeyName: "employee_documents_verified_by_fkey"
             columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_of_month_nominations: {
+        Row: {
+          created_at: string
+          id: string
+          month: string
+          nominator_id: string
+          nominee_id: string
+          organization_id: string | null
+          reason: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          month: string
+          nominator_id: string
+          nominee_id: string
+          organization_id?: string | null
+          reason: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          month?: string
+          nominator_id?: string
+          nominee_id?: string
+          organization_id?: string | null
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_of_month_nominations_nominator_id_fkey"
+            columns: ["nominator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_of_month_nominations_nominee_id_fkey"
+            columns: ["nominee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_of_month_nominations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_of_month_winners: {
+        Row: {
+          announced_by: string | null
+          created_at: string
+          id: string
+          month: string
+          organization_id: string | null
+          reason: string | null
+          winner_id: string
+        }
+        Insert: {
+          announced_by?: string | null
+          created_at?: string
+          id?: string
+          month: string
+          organization_id?: string | null
+          reason?: string | null
+          winner_id: string
+        }
+        Update: {
+          announced_by?: string | null
+          created_at?: string
+          id?: string
+          month?: string
+          organization_id?: string | null
+          reason?: string | null
+          winner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_of_month_winners_announced_by_fkey"
+            columns: ["announced_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_of_month_winners_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_of_month_winners_winner_id_fkey"
+            columns: ["winner_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

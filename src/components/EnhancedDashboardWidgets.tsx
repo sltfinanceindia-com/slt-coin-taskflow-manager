@@ -189,9 +189,9 @@ export function EnhancedDashboardWidgets() {
       {/* Main Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
         {mainStats.map((stat, index) => (
-          <Card key={index} className="hover-scale card-gradient">
-            <CardContent className="p-3 sm:p-4 lg:p-6">
-              <div className="flex items-center justify-between">
+          <Card key={index} className="hover-scale card-gradient h-full">
+            <CardContent className="p-3 sm:p-4 lg:p-6 h-full">
+              <div className="flex items-center justify-between h-full">
                 <div className="space-y-1 sm:space-y-2 min-w-0 flex-1">
                   <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{stat.title}</p>
                   <div className="flex items-center gap-1 sm:gap-2">

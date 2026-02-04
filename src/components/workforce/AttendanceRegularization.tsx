@@ -1,6 +1,6 @@
 /**
  * Attendance Regularization Component
- * Handle attendance correction requests
+ * Handle attendance correction requests with real database integration
  */
 
 import { useState } from 'react';
@@ -33,82 +33,151 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Plus, Clock, CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
+import { format, parseISO } from 'date-fns';
 
-interface RegularizationRequest {
-  id: string;
-  employeeId: string;
-  employeeName: string;
-  date: string;
-  type: 'missed_punch' | 'wrong_time' | 'forgot_checkout';
-  originalIn: string | null;
-  originalOut: string | null;
-  requestedIn: string;
-  requestedOut: string;
-  reason: string;
-  status: 'pending' | 'approved' | 'rejected';
-  approverName: string | null;
-  approvedAt: string | null;
-  createdAt: string;
-}
-
-const mockRequests: RegularizationRequest[] = [
-  {
-    id: '1',
-    employeeId: '1',
-    employeeName: 'John Smith',
-    date: '2025-01-28',
-    type: 'missed_punch',
-    originalIn: null,
-    originalOut: null,
-    requestedIn: '09:00',
-    requestedOut: '18:00',
-    reason: 'Biometric device was not working',
-    status: 'pending',
-    approverName: null,
-    approvedAt: null,
-    createdAt: '2025-01-29',
-  },
-  {
-    id: '2',
-    employeeId: '2',
-    employeeName: 'Jane Doe',
-    date: '2025-01-27',
-    type: 'forgot_checkout',
-    originalIn: '09:15',
-    originalOut: null,
-    requestedIn: '09:15',
-    requestedOut: '18:30',
-    reason: 'Forgot to check out while leaving',
-    status: 'approved',
-    approverName: 'Mike Johnson',
-    approvedAt: '2025-01-28',
-    createdAt: '2025-01-28',
-  },
-];
+type RequestType = 'missed_punch' | 'wrong_time' | 'forgot_checkout';
+type RequestStatus = 'pending' | 'approved' | 'rejected';
 
 export function AttendanceRegularization() {
-  const [requests, setRequests] = useState<RegularizationRequest[]>(mockRequests);
+  const { profile } = useAuth();
+  const { isAdmin, isManager } = useUserRole();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('pending');
-  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     date: '',
-    type: 'missed_punch' as RegularizationRequest['type'],
+    type: 'missed_punch' as RequestType,
     requestedIn: '',
     requestedOut: '',
     reason: '',
   });
 
-  const filteredRequests = requests.filter((req) => {
+  // Fetch regularization requests
+  const { data: requests, isLoading } = useQuery({
+    queryKey: ['regularization-requests', profile?.organization_id, isAdmin],
+    queryFn: async () => {
+      let query = supabase
+        .from('attendance_regularization_requests')
+        .select(`
+          *,
+          employee:profiles!attendance_regularization_requests_employee_id_fkey(id, full_name, email),
+          approver:profiles!attendance_regularization_requests_approved_by_fkey(id, full_name)
+        `)
+        .eq('organization_id', profile?.organization_id)
+        .order('created_at', { ascending: false });
+
+      // Non-admins only see their own requests
+      if (!isAdmin && !isManager) {
+        query = query.eq('employee_id', profile?.id);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profile?.organization_id,
+  });
+
+  // Create request mutation
+  const createMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('attendance_regularization_requests')
+        .insert({
+          organization_id: profile?.organization_id,
+          employee_id: profile?.id,
+          request_date: formData.date,
+          request_type: formData.type,
+          requested_clock_in: `${formData.date}T${formData.requestedIn}:00`,
+          requested_clock_out: `${formData.date}T${formData.requestedOut}:00`,
+          reason: formData.reason,
+          status: 'pending',
+        });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['regularization-requests'] });
+      setIsDialogOpen(false);
+      setFormData({
+        date: '',
+        type: 'missed_punch',
+        requestedIn: '',
+        requestedOut: '',
+        reason: '',
+      });
+      toast({
+        title: 'Request Submitted',
+        description: 'Your regularization request has been submitted for approval.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Approve mutation
+  const approveMutation = useMutation({
+    mutationFn: async (requestId: string) => {
+      const { error } = await supabase
+        .from('attendance_regularization_requests')
+        .update({
+          status: 'approved',
+          approved_by: profile?.id,
+          approved_at: new Date().toISOString(),
+        })
+        .eq('id', requestId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['regularization-requests'] });
+      toast({
+        title: 'Request Approved',
+        description: 'The regularization request has been approved.',
+      });
+    },
+  });
+
+  // Reject mutation
+  const rejectMutation = useMutation({
+    mutationFn: async (requestId: string) => {
+      const { error } = await supabase
+        .from('attendance_regularization_requests')
+        .update({
+          status: 'rejected',
+          approved_by: profile?.id,
+          approved_at: new Date().toISOString(),
+        })
+        .eq('id', requestId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['regularization-requests'] });
+      toast({
+        title: 'Request Rejected',
+        description: 'The regularization request has been rejected.',
+      });
+    },
+  });
+
+  const filteredRequests = requests?.filter((req) => {
     if (activeTab === 'pending') return req.status === 'pending';
     if (activeTab === 'approved') return req.status === 'approved';
     if (activeTab === 'rejected') return req.status === 'rejected';
     return true;
-  });
+  }) || [];
 
   const handleSubmit = () => {
     if (!formData.date || !formData.requestedIn || !formData.requestedOut || !formData.reason) {
@@ -119,79 +188,10 @@ export function AttendanceRegularization() {
       });
       return;
     }
-
-    const newRequest: RegularizationRequest = {
-      id: Date.now().toString(),
-      employeeId: '1',
-      employeeName: 'Current User', // Would come from auth
-      date: formData.date,
-      type: formData.type,
-      originalIn: null,
-      originalOut: null,
-      requestedIn: formData.requestedIn,
-      requestedOut: formData.requestedOut,
-      reason: formData.reason,
-      status: 'pending',
-      approverName: null,
-      approvedAt: null,
-      createdAt: new Date().toISOString().split('T')[0],
-    };
-
-    setRequests([newRequest, ...requests]);
-    setIsDialogOpen(false);
-    setFormData({
-      date: '',
-      type: 'missed_punch',
-      requestedIn: '',
-      requestedOut: '',
-      reason: '',
-    });
-
-    toast({
-      title: 'Request Submitted',
-      description: 'Your regularization request has been submitted for approval.',
-    });
+    createMutation.mutate();
   };
 
-  const handleApprove = (id: string) => {
-    setRequests(
-      requests.map((req) =>
-        req.id === id
-          ? {
-              ...req,
-              status: 'approved' as const,
-              approverName: 'Current User',
-              approvedAt: new Date().toISOString().split('T')[0],
-            }
-          : req
-      )
-    );
-    toast({
-      title: 'Request Approved',
-      description: 'The regularization request has been approved.',
-    });
-  };
-
-  const handleReject = (id: string) => {
-    setRequests(
-      requests.map((req) =>
-        req.id === id
-          ? {
-              ...req,
-              status: 'rejected' as const,
-              approverName: 'Current User',
-              approvedAt: new Date().toISOString().split('T')[0],
-            }
-          : req
-      )
-    );
-    toast({
-      title: 'Request Rejected',
-      description: 'The regularization request has been rejected.',
-    });
-  };
-
-  const getStatusBadge = (status: RegularizationRequest['status']) => {
+  const getStatusBadge = (status: RequestStatus) => {
     switch (status) {
       case 'pending':
         return (
@@ -217,7 +217,7 @@ export function AttendanceRegularization() {
     }
   };
 
-  const getTypeLabel = (type: RegularizationRequest['type']) => {
+  const getTypeLabel = (type: RequestType) => {
     switch (type) {
       case 'missed_punch':
         return 'Missed Punch';
@@ -227,6 +227,10 @@ export function AttendanceRegularization() {
         return 'Forgot Checkout';
     }
   };
+
+  const pendingCount = requests?.filter(r => r.status === 'pending').length || 0;
+  const approvedCount = requests?.filter(r => r.status === 'approved').length || 0;
+  const rejectedCount = requests?.filter(r => r.status === 'rejected').length || 0;
 
   return (
     <div className="space-y-6">
@@ -252,9 +256,7 @@ export function AttendanceRegularization() {
                 <Clock className="h-6 w-6 text-yellow-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">
-                  {requests.filter((r) => r.status === 'pending').length}
-                </p>
+                <p className="text-2xl font-bold">{pendingCount}</p>
                 <p className="text-sm text-muted-foreground">Pending</p>
               </div>
             </div>
@@ -267,9 +269,7 @@ export function AttendanceRegularization() {
                 <CheckCircle className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">
-                  {requests.filter((r) => r.status === 'approved').length}
-                </p>
+                <p className="text-2xl font-bold">{approvedCount}</p>
                 <p className="text-sm text-muted-foreground">Approved</p>
               </div>
             </div>
@@ -282,9 +282,7 @@ export function AttendanceRegularization() {
                 <XCircle className="h-6 w-6 text-red-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">
-                  {requests.filter((r) => r.status === 'rejected').length}
-                </p>
+                <p className="text-2xl font-bold">{rejectedCount}</p>
                 <p className="text-sm text-muted-foreground">Rejected</p>
               </div>
             </div>
@@ -297,7 +295,7 @@ export function AttendanceRegularization() {
                 <Clock className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{requests.length}</p>
+                <p className="text-2xl font-bold">{requests?.length || 0}</p>
                 <p className="text-sm text-muted-foreground">Total</p>
               </div>
             </div>
@@ -318,61 +316,78 @@ export function AttendanceRegularization() {
           </Tabs>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Employee</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Requested Time</TableHead>
-                <TableHead>Reason</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredRequests.map((request) => (
-                <TableRow key={request.id}>
-                  <TableCell className="font-medium">
-                    {request.employeeName}
-                  </TableCell>
-                  <TableCell>
-                    {new Date(request.date).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{getTypeLabel(request.type)}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    {request.requestedIn} - {request.requestedOut}
-                  </TableCell>
-                  <TableCell className="max-w-[200px] truncate">
-                    {request.reason}
-                  </TableCell>
-                  <TableCell>{getStatusBadge(request.status)}</TableCell>
-                  <TableCell className="text-right">
-                    {request.status === 'pending' && (
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleApprove(request.id)}
-                        >
-                          Approve
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleReject(request.id)}
-                        >
-                          Reject
-                        </Button>
-                      </div>
-                    )}
-                  </TableCell>
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : filteredRequests.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No requests found</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Employee</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Requested Time</TableHead>
+                  <TableHead>Reason</TableHead>
+                  <TableHead>Status</TableHead>
+                  {(isAdmin || isManager) && (
+                    <TableHead className="text-right">Actions</TableHead>
+                  )}
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredRequests.map((request) => (
+                  <TableRow key={request.id}>
+                    <TableCell className="font-medium">
+                      {(request.employee as any)?.full_name || 'Unknown'}
+                    </TableCell>
+                    <TableCell>
+                      {format(parseISO(request.request_date), 'MMM dd, yyyy')}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{getTypeLabel(request.request_type as RequestType)}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      {format(parseISO(request.requested_clock_in), 'HH:mm')} - {format(parseISO(request.requested_clock_out), 'HH:mm')}
+                    </TableCell>
+                    <TableCell className="max-w-[200px] truncate">
+                      {request.reason}
+                    </TableCell>
+                    <TableCell>{getStatusBadge(request.status as RequestStatus)}</TableCell>
+                    {(isAdmin || isManager) && (
+                      <TableCell className="text-right">
+                        {request.status === 'pending' && (
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => approveMutation.mutate(request.id)}
+                              disabled={approveMutation.isPending}
+                            >
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => rejectMutation.mutate(request.id)}
+                              disabled={rejectMutation.isPending}
+                            >
+                              Reject
+                            </Button>
+                          </div>
+                        )}
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 
@@ -401,7 +416,7 @@ export function AttendanceRegularization() {
               <Label htmlFor="type">Request Type</Label>
               <Select
                 value={formData.type}
-                onValueChange={(value: RegularizationRequest['type']) =>
+                onValueChange={(value: RequestType) =>
                   setFormData({ ...formData, type: value })
                 }
               >
@@ -455,7 +470,16 @@ export function AttendanceRegularization() {
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSubmit}>Submit Request</Button>
+            <Button onClick={handleSubmit} disabled={createMutation.isPending}>
+              {createMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                'Submit Request'
+              )}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

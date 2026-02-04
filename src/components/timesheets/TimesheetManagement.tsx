@@ -18,6 +18,7 @@ import { toast } from '@/hooks/use-toast';
 import { format, startOfWeek, endOfWeek, addDays, parseISO, isWithinInterval, startOfMonth, subMonths } from 'date-fns';
 import { TimesheetSummaryCards } from './TimesheetSummaryCards';
 import { EnhancedTimesheetEntry } from './EnhancedTimesheetEntry';
+import { WeeklyCalendarGrid } from './WeeklyCalendarGrid';
 import { exportToCSV } from '@/lib/export';
 import { 
   Clock, 
@@ -557,12 +558,30 @@ export function TimesheetManagement() {
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="entries" className="w-full">
+      <Tabs defaultValue="calendar" className="w-full">
         <TabsList className="w-full sm:w-auto">
+          <TabsTrigger value="calendar" className="flex-1 sm:flex-none">Calendar</TabsTrigger>
           <TabsTrigger value="entries" className="flex-1 sm:flex-none">Entries</TabsTrigger>
           <TabsTrigger value="summary" className="flex-1 sm:flex-none">Summary</TabsTrigger>
           <TabsTrigger value="timer" className="flex-1 sm:flex-none">Timer</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="calendar" className="mt-6 space-y-6">
+          <WeeklyCalendarGrid
+            weekStart={currentWeekStart}
+            entries={filteredEntries}
+            onAddEntry={(date) => {
+              if (currentWeekTimesheet) {
+                setSelectedTimesheetId(currentWeekTimesheet.id);
+              } else {
+                createTimesheetMutation.mutate();
+              }
+              setIsEntryOpen(true);
+            }}
+            targetHoursPerDay={8}
+          />
+          <TimesheetSummaryCards summary={summary} />
+        </TabsContent>
 
         <TabsContent value="entries" className="mt-6 space-y-6">
           <TimesheetSummaryCards summary={summary} />

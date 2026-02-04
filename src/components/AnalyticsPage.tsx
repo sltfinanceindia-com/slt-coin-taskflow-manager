@@ -116,41 +116,49 @@ export function AnalyticsPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <KPIGaugeCard
-          title="Task Completion"
-          value={completedTasks}
-          target={totalTasks || 1}
-          unit="tasks"
-          trend={completionRate > 50 ? 'up' : 'down'}
-          trendValue={`${completionRate.toFixed(0)}%`}
-          icon={<CheckCircle className="h-4 w-4" />}
-          color="green"
-        />
-        <KPIGaugeCard
-          title="Total Coins Awarded"
-          value={totalCoinsAwarded}
-          target={10000}
-          unit="coins"
-          trend="up"
-          icon={<Coins className="h-4 w-4" />}
-          color="yellow"
-        />
-        <KPIGaugeCard
-          title="Hours Logged"
-          value={Math.round(totalHours)}
-          target={500}
-          unit="hours"
-          icon={<Timer className="h-4 w-4" />}
-          color="blue"
-        />
-        <KPIGaugeCard
-          title="Team Members"
-          value={profiles?.length || 0}
-          target={50}
-          unit="active"
-          icon={<Users className="h-4 w-4" />}
-          color="purple"
-        />
+        <div className="h-full">
+          <KPIGaugeCard
+            title="Task Completion"
+            value={completedTasks}
+            target={totalTasks || 1}
+            unit="tasks"
+            trend={completionRate > 50 ? 'up' : 'down'}
+            trendValue={`${completionRate.toFixed(0)}%`}
+            icon={<CheckCircle className="h-4 w-4" />}
+            color="green"
+          />
+        </div>
+        <div className="h-full">
+          <KPIGaugeCard
+            title="Total Coins Awarded"
+            value={totalCoinsAwarded}
+            target={10000}
+            unit="coins"
+            trend="up"
+            icon={<Coins className="h-4 w-4" />}
+            color="yellow"
+          />
+        </div>
+        <div className="h-full">
+          <KPIGaugeCard
+            title="Hours Logged"
+            value={Math.round(totalHours)}
+            target={500}
+            unit="hours"
+            icon={<Timer className="h-4 w-4" />}
+            color="blue"
+          />
+        </div>
+        <div className="h-full">
+          <KPIGaugeCard
+            title="Team Members"
+            value={profiles?.length || 0}
+            target={50}
+            unit="active"
+            icon={<Users className="h-4 w-4" />}
+            color="purple"
+          />
+        </div>
       </div>
 
       <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
