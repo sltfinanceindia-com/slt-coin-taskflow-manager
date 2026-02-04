@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RequestPortal } from './RequestPortal';
 import { TriageQueue } from './TriageQueue';
@@ -6,11 +6,17 @@ import { SLADashboard } from './SLADashboard';
 import { RoutingRulesConfig } from './RoutingRulesConfig';
 import { RequestTypeManager } from './RequestTypeManager';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useTabPersistence } from '@/hooks/useTabPersistence';
 import { FileText, Inbox, BarChart3, Settings2, FolderPlus } from 'lucide-react';
 
 export function RequestHub() {
   const { isAdmin } = useUserRole();
-  const [activeTab, setActiveTab] = useState(isAdmin ? 'triage' : 'submit');
+  
+  const { activeTab, setActiveTab } = useTabPersistence({
+    defaultTab: isAdmin ? 'triage' : 'submit',
+    paramName: 'requestTab',
+    storageKey: 'request-hub-tab'
+  });
 
   const handleNavigateToTypes = () => {
     setActiveTab('types');

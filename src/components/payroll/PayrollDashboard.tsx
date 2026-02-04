@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -12,24 +11,34 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
+import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import { PayrollApprovalActions } from './PayrollApprovalActions';
+import { PayrollStepsIndicator, PayrollStep } from './PayrollStepsIndicator';
 import { 
   DollarSign, 
   Users, 
   CreditCard, 
-  TrendingUp, 
   Plus, 
   Download, 
   CheckCircle,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Calculator,
+  FileCheck,
+  Banknote,
+  CalendarDays
 } from 'lucide-react';
 
 export function PayrollDashboard() {
   const { profile } = useAuth();
   const queryClient = useQueryClient();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [currentStep, setCurrentStep] = useState<PayrollStep>('select');
+  const [completedSteps, setCompletedSteps] = useState<PayrollStep[]>([]);
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const now = new Date();
+    return format(subMonths(now, 1), 'yyyy-MM');
+  });
   const [newRecord, setNewRecord] = useState({
     employee_id: '',
     pay_period_start: '',
@@ -39,6 +48,22 @@ export function PayrollDashboard() {
     tax_deduction: '0',
     pf_deduction: '0',
   });
+
+  // Helper to advance to next step
+  const advanceStep = (step: PayrollStep) => {
+    setCompletedSteps(prev => [...new Set([...prev, step])]);
+    const steps: PayrollStep[] = ['select', 'calculate', 'review', 'finalize', 'pay'];
+    const currentIndex = steps.indexOf(step);
+    if (currentIndex < steps.length - 1) {
+      setCurrentStep(steps[currentIndex + 1]);
+    }
+  };
+
+  // Reset workflow
+  const resetWorkflow = () => {
+    setCurrentStep('select');
+    setCompletedSteps([]);
+  };
 
   // Fetch payroll records
   const { data: payrollRecords, isLoading } = useQuery({
@@ -144,6 +169,72 @@ export function PayrollDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Payroll Step Progress Indicator */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <CalendarDays className="h-5 w-5" />
+            Payroll Processing Workflow
+          </CardTitle>
+          <CardDescription>
+            Follow the steps to process payroll for {format(new Date(selectedMonth + '-01'), 'MMMM yyyy')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <PayrollStepsIndicator currentStep={currentStep} completedSteps={completedSteps} />
+          
+          {/* Step Actions */}
+          <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t">
+            {currentStep === 'select' && (
+              <>
+                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select month" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 12 }, (_, i) => {
+                      const date = subMonths(new Date(), i);
+                      return (
+                        <SelectItem key={i} value={format(date, 'yyyy-MM')}>
+                          {format(date, 'MMMM yyyy')}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+                <Button onClick={() => advanceStep('select')}>
+                  <Calculator className="h-4 w-4 mr-2" />
+                  Start Calculation
+                </Button>
+              </>
+            )}
+            {currentStep === 'calculate' && (
+              <Button onClick={() => advanceStep('calculate')}>
+                <FileCheck className="h-4 w-4 mr-2" />
+                Review Payroll
+              </Button>
+            )}
+            {currentStep === 'review' && (
+              <Button onClick={() => advanceStep('review')}>
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Finalize Payroll
+              </Button>
+            )}
+            {currentStep === 'finalize' && (
+              <Button onClick={() => advanceStep('finalize')}>
+                <Banknote className="h-4 w-4 mr-2" />
+                Process Payments
+              </Button>
+            )}
+            {currentStep === 'pay' && (
+              <Button variant="outline" onClick={resetWorkflow}>
+                Start New Payroll Cycle
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Payroll Management</h1>
