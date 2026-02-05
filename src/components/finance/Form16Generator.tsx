@@ -6,70 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FileText, Download, Search, Mail, Users, CheckCircle, Clock } from "lucide-react";
+import { FileText, Download, Search, Mail, Users, CheckCircle, Clock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-
-interface Form16Record {
-  id: string;
-  employee_name: string;
-  employee_id: string;
-  pan: string;
-  financial_year: string;
-  gross_salary: number;
-  total_deductions: number;
-  taxable_income: number;
-  tax_paid: number;
-  status: string;
-  generated_date?: string;
-  sent_date?: string;
-}
+import { useForm16, Form16Record } from "@/hooks/useForm16";
 
 export function Form16Generator() {
+  const { records, isLoading, generateForm16, sendForm16 } = useForm16();
   const [selectedYear, setSelectedYear] = useState("2023-24");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRecords, setSelectedRecords] = useState<string[]>([]);
-
-  const records: Form16Record[] = [
-    {
-      id: "1",
-      employee_name: "John Doe",
-      employee_id: "EMP001",
-      pan: "ABCDE1234F",
-      financial_year: "2023-24",
-      gross_salary: 1200000,
-      total_deductions: 250000,
-      taxable_income: 950000,
-      tax_paid: 95000,
-      status: "generated",
-      generated_date: "2024-06-01"
-    },
-    {
-      id: "2",
-      employee_name: "Jane Smith",
-      employee_id: "EMP002",
-      pan: "FGHIJ5678K",
-      financial_year: "2023-24",
-      gross_salary: 1500000,
-      total_deductions: 300000,
-      taxable_income: 1200000,
-      tax_paid: 145000,
-      status: "sent",
-      generated_date: "2024-06-01",
-      sent_date: "2024-06-05"
-    },
-    {
-      id: "3",
-      employee_name: "Mike Johnson",
-      employee_id: "EMP003",
-      pan: "LMNOP9012Q",
-      financial_year: "2023-24",
-      gross_salary: 800000,
-      total_deductions: 200000,
-      taxable_income: 600000,
-      tax_paid: 35000,
-      status: "pending"
-    }
-  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -80,9 +25,11 @@ export function Form16Generator() {
     }
   };
 
+  const filteredByYear = records.filter(r => r.financial_year === selectedYear);
+
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedRecords(records.map(r => r.id));
+      setSelectedRecords(filteredByYear.map(r => r.id));
     } else {
       setSelectedRecords([]);
     }
@@ -96,26 +43,51 @@ export function Form16Generator() {
     }
   };
 
-  const handleBulkGenerate = () => {
-    toast.success(`Generating Form 16 for ${selectedRecords.length} employees`);
+  const handleBulkGenerate = async () => {
+    const employeeIds = records
+      .filter(r => selectedRecords.includes(r.id))
+      .map(r => r.employee_id);
+    
+    try {
+      await generateForm16.mutateAsync(employeeIds);
+      setSelectedRecords([]);
+    } catch (error) {
+      console.error('Generate Form 16 error:', error);
+    }
   };
 
-  const handleBulkSend = () => {
-    toast.success(`Sending Form 16 to ${selectedRecords.length} employees`);
+  const handleBulkSend = async () => {
+    const employeeIds = records
+      .filter(r => selectedRecords.includes(r.id))
+      .map(r => r.employee_id);
+    
+    try {
+      await sendForm16.mutateAsync(employeeIds);
+      setSelectedRecords([]);
+    } catch (error) {
+      console.error('Send Form 16 error:', error);
+    }
   };
 
-  const filteredRecords = records.filter(r =>
-    r.employee_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.employee_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.pan.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredRecords = filteredByYear.filter(r =>
+    (r.employee?.full_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (r.employee?.email || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const stats = {
-    total: records.length,
-    generated: records.filter(r => r.status === "generated" || r.status === "sent").length,
-    sent: records.filter(r => r.status === "sent").length,
-    pending: records.filter(r => r.status === "pending").length
+    total: filteredByYear.length,
+    generated: filteredByYear.filter(r => r.status === "generated" || r.status === "sent").length,
+    sent: filteredByYear.filter(r => r.status === "sent").length,
+    pending: filteredByYear.filter(r => r.status === "pending").length
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 p-6">
@@ -195,11 +167,20 @@ export function Form16Generator() {
         </div>
         {selectedRecords.length > 0 && (
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleBulkGenerate}>
+            <Button 
+              variant="outline" 
+              onClick={handleBulkGenerate}
+              disabled={generateForm16.isPending}
+            >
+              {generateForm16.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               <FileText className="mr-2 h-4 w-4" />
               Generate ({selectedRecords.length})
             </Button>
-            <Button onClick={handleBulkSend}>
+            <Button 
+              onClick={handleBulkSend}
+              disabled={sendForm16.isPending}
+            >
+              {sendForm16.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               <Mail className="mr-2 h-4 w-4" />
               Send ({selectedRecords.length})
             </Button>
@@ -213,17 +194,23 @@ export function Form16Generator() {
           <CardTitle>Employee Tax Records - {selectedYear}</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
+          {filteredRecords.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No Form 16 records found for {selectedYear}</p>
+              <p className="text-sm">Records will appear here after payroll processing</p>
+            </div>
+          ) : (
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-12">
                   <Checkbox
-                    checked={selectedRecords.length === records.length}
+                    checked={selectedRecords.length === filteredRecords.length && filteredRecords.length > 0}
                     onCheckedChange={handleSelectAll}
                   />
                 </TableHead>
                 <TableHead>Employee</TableHead>
-                <TableHead>PAN</TableHead>
                 <TableHead>Gross Salary</TableHead>
                 <TableHead>Deductions</TableHead>
                 <TableHead>Taxable Income</TableHead>
@@ -243,15 +230,14 @@ export function Form16Generator() {
                   </TableCell>
                   <TableCell>
                     <div>
-                      <p className="font-medium">{record.employee_name}</p>
-                      <p className="text-xs text-muted-foreground">{record.employee_id}</p>
+                      <p className="font-medium">{record.employee?.full_name || 'Unknown'}</p>
+                      <p className="text-xs text-muted-foreground">{record.employee?.email}</p>
                     </div>
                   </TableCell>
-                  <TableCell className="font-mono">{record.pan}</TableCell>
-                  <TableCell>₹{record.gross_salary.toLocaleString()}</TableCell>
-                  <TableCell>₹{record.total_deductions.toLocaleString()}</TableCell>
-                  <TableCell>₹{record.taxable_income.toLocaleString()}</TableCell>
-                  <TableCell>₹{record.tax_paid.toLocaleString()}</TableCell>
+                  <TableCell>₹{(record.gross_salary || 0).toLocaleString()}</TableCell>
+                  <TableCell>₹{(record.total_deductions || 0).toLocaleString()}</TableCell>
+                  <TableCell>₹{(record.taxable_income || 0).toLocaleString()}</TableCell>
+                  <TableCell>₹{(record.tax_paid || 0).toLocaleString()}</TableCell>
                   <TableCell>
                     <Badge className={getStatusColor(record.status)}>{record.status}</Badge>
                   </TableCell>
@@ -276,7 +262,8 @@ export function Form16Generator() {
                 </TableRow>
               ))}
             </TableBody>
-          </Table>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,7 +24,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   Select,
@@ -34,85 +33,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Pencil, Trash2, Building2, Users } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-
-interface Department {
-  id: string;
-  name: string;
-  code: string;
-  description: string;
-  headId: string | null;
-  headName: string | null;
-  parentId: string | null;
-  parentName: string | null;
-  employeeCount: number;
-  status: 'active' | 'inactive';
-  createdAt: string;
-}
-
-// Mock data - replace with actual API calls
-const mockDepartments: Department[] = [
-  {
-    id: '1',
-    name: 'Engineering',
-    code: 'ENG',
-    description: 'Software development and engineering',
-    headId: '1',
-    headName: 'John Smith',
-    parentId: null,
-    parentName: null,
-    employeeCount: 45,
-    status: 'active',
-    createdAt: '2024-01-15',
-  },
-  {
-    id: '2',
-    name: 'Human Resources',
-    code: 'HR',
-    description: 'People operations and HR management',
-    headId: '2',
-    headName: 'Jane Doe',
-    parentId: null,
-    parentName: null,
-    employeeCount: 12,
-    status: 'active',
-    createdAt: '2024-01-15',
-  },
-  {
-    id: '3',
-    name: 'Frontend Team',
-    code: 'FE',
-    description: 'Frontend development',
-    headId: '3',
-    headName: 'Mike Johnson',
-    parentId: '1',
-    parentName: 'Engineering',
-    employeeCount: 15,
-    status: 'active',
-    createdAt: '2024-02-01',
-  },
-  {
-    id: '4',
-    name: 'Backend Team',
-    code: 'BE',
-    description: 'Backend development and APIs',
-    headId: '4',
-    headName: 'Sarah Wilson',
-    parentId: '1',
-    parentName: 'Engineering',
-    employeeCount: 20,
-    status: 'active',
-    createdAt: '2024-02-01',
-  },
-];
+import { Plus, Pencil, Trash2, Building2, Users, Loader2 } from 'lucide-react';
+import { useDepartments, Department } from '@/hooks/useDepartments';
 
 export function DepartmentManagement() {
-  const [departments, setDepartments] = useState<Department[]>(mockDepartments);
+  const { departments, isLoading, createDepartment, updateDepartment, deleteDepartment } = useDepartments();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -125,7 +53,7 @@ export function DepartmentManagement() {
   const filteredDepartments = departments.filter(
     (dept) =>
       dept.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      dept.code.toLowerCase().includes(searchQuery.toLowerCase())
+      (dept.code || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleOpenDialog = (department?: Department) => {
@@ -133,10 +61,10 @@ export function DepartmentManagement() {
       setEditingDepartment(department);
       setFormData({
         name: department.name,
-        code: department.code,
-        description: department.description,
-        parentId: department.parentId || '',
-        status: department.status,
+        code: department.code || '',
+        description: department.description || '',
+        parentId: department.parent_id || '',
+        status: (department.status as 'active' | 'inactive') || 'active',
       });
     } else {
       setEditingDepartment(null);
@@ -151,58 +79,53 @@ export function DepartmentManagement() {
     setIsDialogOpen(true);
   };
 
-  const handleSave = () => {
-    if (!formData.name || !formData.code) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please fill in all required fields.',
-        variant: 'destructive',
-      });
-      return;
-    }
+  const handleSave = async () => {
+    if (!formData.name || !formData.code) return;
 
-    if (editingDepartment) {
-      setDepartments(
-        departments.map((dept) =>
-          dept.id === editingDepartment.id
-            ? { ...dept, ...formData }
-            : dept
-        )
-      );
-      toast({
-        title: 'Department Updated',
-        description: `${formData.name} has been updated successfully.`,
-      });
-    } else {
-      const newDepartment: Department = {
-        id: Date.now().toString(),
-        ...formData,
-        headId: null,
-        headName: null,
-        parentName: formData.parentId
-          ? departments.find((d) => d.id === formData.parentId)?.name || null
-          : null,
-        employeeCount: 0,
-        createdAt: new Date().toISOString().split('T')[0],
-      };
-      setDepartments([...departments, newDepartment]);
-      toast({
-        title: 'Department Created',
-        description: `${formData.name} has been created successfully.`,
-      });
+    try {
+      if (editingDepartment) {
+        await updateDepartment.mutateAsync({
+          id: editingDepartment.id,
+          name: formData.name,
+          code: formData.code,
+          description: formData.description,
+          parent_id: formData.parentId || null,
+          status: formData.status,
+        });
+      } else {
+        await createDepartment.mutateAsync({
+          name: formData.name,
+          code: formData.code,
+          description: formData.description,
+          parent_id: formData.parentId || null,
+          status: formData.status,
+        });
+      }
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error('Save department error:', error);
     }
-
-    setIsDialogOpen(false);
   };
 
-  const handleDelete = (id: string) => {
-    const dept = departments.find((d) => d.id === id);
-    setDepartments(departments.filter((d) => d.id !== id));
-    toast({
-      title: 'Department Deleted',
-      description: `${dept?.name} has been deleted.`,
-    });
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteDepartment.mutateAsync(id);
+    } catch (error) {
+      console.error('Delete department error:', error);
+    }
   };
+
+  const totalEmployees = departments.reduce((sum, d) => sum + (d.employee_count || 0), 0);
+  const parentDepts = departments.filter((d) => !d.parent_id).length;
+  const subDepts = departments.filter((d) => d.parent_id).length;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -229,7 +152,7 @@ export function DepartmentManagement() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{departments.length}</p>
-                <p className="text-sm text-muted-foreground">Total Departments</p>
+        <p className="text-sm text-muted-foreground">Total Departments</p>
               </div>
             </div>
           </CardContent>
@@ -241,9 +164,7 @@ export function DepartmentManagement() {
                 <Users className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">
-                  {departments.reduce((sum, d) => sum + d.employeeCount, 0)}
-                </p>
+                <p className="text-2xl font-bold">{totalEmployees}</p>
                 <p className="text-sm text-muted-foreground">Total Employees</p>
               </div>
             </div>
@@ -256,9 +177,7 @@ export function DepartmentManagement() {
                 <Building2 className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">
-                  {departments.filter((d) => !d.parentId).length}
-                </p>
+                <p className="text-2xl font-bold">{parentDepts}</p>
                 <p className="text-sm text-muted-foreground">Parent Departments</p>
               </div>
             </div>
@@ -271,9 +190,7 @@ export function DepartmentManagement() {
                 <Building2 className="h-6 w-6 text-purple-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">
-                  {departments.filter((d) => d.parentId).length}
-                </p>
+                <p className="text-2xl font-bold">{subDepts}</p>
                 <p className="text-sm text-muted-foreground">Sub-Departments</p>
               </div>
             </div>
@@ -295,7 +212,14 @@ export function DepartmentManagement() {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
+          {filteredDepartments.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No departments found</p>
+              <p className="text-sm">Create your first department to get started</p>
+            </div>
+          ) : (
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Department</TableHead>
@@ -313,15 +237,15 @@ export function DepartmentManagement() {
                   <TableCell className="font-medium">{dept.name}</TableCell>
                   <TableCell>
                     <Badge variant="outline">{dept.code}</Badge>
-                  </TableCell>
-                  <TableCell>{dept.parentName || '-'}</TableCell>
-                  <TableCell>{dept.headName || 'Not assigned'}</TableCell>
-                  <TableCell>{dept.employeeCount}</TableCell>
+                    </TableCell>
+                    <TableCell>{dept.parent?.name || '-'}</TableCell>
+                    <TableCell>{dept.head?.full_name || 'Not assigned'}</TableCell>
+                    <TableCell>{dept.employee_count || 0}</TableCell>
                   <TableCell>
                     <Badge
                       variant={dept.status === 'active' ? 'default' : 'secondary'}
                     >
-                      {dept.status}
+                      {dept.status || 'active'}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -345,7 +269,8 @@ export function DepartmentManagement() {
                 </TableRow>
               ))}
             </TableBody>
-          </Table>
+            </Table>
+          )}
         </CardContent>
       </Card>
 
@@ -410,7 +335,7 @@ export function DepartmentManagement() {
                 <SelectContent>
                   <SelectItem value="">None (Top Level)</SelectItem>
                   {departments
-                    .filter((d) => d.id !== editingDepartment?.id && !d.parentId)
+                    .filter((d) => d.id !== editingDepartment?.id && !d.parent_id)
                     .map((dept) => (
                       <SelectItem key={dept.id} value={dept.id}>
                         {dept.name}
@@ -441,7 +366,13 @@ export function DepartmentManagement() {
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>
+            <Button 
+              onClick={handleSave}
+              disabled={createDepartment.isPending || updateDepartment.isPending}
+            >
+              {(createDepartment.isPending || updateDepartment.isPending) && (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              )}
               {editingDepartment ? 'Update' : 'Create'}
             </Button>
           </DialogFooter>

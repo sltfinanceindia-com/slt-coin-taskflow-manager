@@ -33,71 +33,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Pencil, Trash2, MapPin, Building, Globe } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-
-interface Location {
-  id: string;
-  name: string;
-  code: string;
-  type: 'headquarters' | 'branch' | 'remote';
-  address: string;
-  city: string;
-  country: string;
-  timezone: string;
-  employeeCount: number;
-  status: 'active' | 'inactive';
-  createdAt: string;
-}
-
-const mockLocations: Location[] = [
-  {
-    id: '1',
-    name: 'Headquarters',
-    code: 'HQ',
-    type: 'headquarters',
-    address: '123 Main Street',
-    city: 'Mumbai',
-    country: 'India',
-    timezone: 'Asia/Kolkata',
-    employeeCount: 150,
-    status: 'active',
-    createdAt: '2024-01-01',
-  },
-  {
-    id: '2',
-    name: 'Bangalore Office',
-    code: 'BLR',
-    type: 'branch',
-    address: '456 Tech Park',
-    city: 'Bangalore',
-    country: 'India',
-    timezone: 'Asia/Kolkata',
-    employeeCount: 75,
-    status: 'active',
-    createdAt: '2024-02-15',
-  },
-  {
-    id: '3',
-    name: 'Remote - US',
-    code: 'RMT-US',
-    type: 'remote',
-    address: 'Remote',
-    city: 'Various',
-    country: 'United States',
-    timezone: 'America/New_York',
-    employeeCount: 25,
-    status: 'active',
-    createdAt: '2024-03-01',
-  },
-];
+import { Plus, Pencil, Trash2, MapPin, Building, Globe, Loader2 } from 'lucide-react';
+import { useLocations, Location } from '@/hooks/useLocations';
 
 export function LocationManagement() {
-  const [locations, setLocations] = useState<Location[]>(mockLocations);
+  const { locations, isLoading, createLocation, updateLocation, deleteLocation } = useLocations();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -113,7 +56,7 @@ export function LocationManagement() {
   const filteredLocations = locations.filter(
     (loc) =>
       loc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      loc.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (loc.city || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       loc.code.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -123,12 +66,12 @@ export function LocationManagement() {
       setFormData({
         name: location.name,
         code: location.code,
-        type: location.type,
-        address: location.address,
-        city: location.city,
-        country: location.country,
-        timezone: location.timezone,
-        status: location.status,
+        type: location.location_type || 'branch',
+        address: location.address || '',
+        city: location.city || '',
+        country: location.country || '',
+        timezone: location.timezone || '',
+        status: (location.status as 'active' | 'inactive') || 'active',
       });
     } else {
       setEditingLocation(null);
@@ -146,53 +89,51 @@ export function LocationManagement() {
     setIsDialogOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.name || !formData.code || !formData.city) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please fill in all required fields.',
-        variant: 'destructive',
-      });
       return;
     }
 
-    if (editingLocation) {
-      setLocations(
-        locations.map((loc) =>
-          loc.id === editingLocation.id ? { ...loc, ...formData } : loc
-        )
-      );
-      toast({
-        title: 'Location Updated',
-        description: `${formData.name} has been updated successfully.`,
-      });
-    } else {
-      const newLocation: Location = {
-        id: Date.now().toString(),
-        ...formData,
-        employeeCount: 0,
-        createdAt: new Date().toISOString().split('T')[0],
-      };
-      setLocations([...locations, newLocation]);
-      toast({
-        title: 'Location Created',
-        description: `${formData.name} has been created successfully.`,
-      });
+    try {
+      if (editingLocation) {
+        await updateLocation.mutateAsync({
+          id: editingLocation.id,
+          name: formData.name,
+          code: formData.code,
+          location_type: formData.type,
+          address: formData.address,
+          city: formData.city,
+          country: formData.country,
+          timezone: formData.timezone,
+          status: formData.status,
+        });
+      } else {
+        await createLocation.mutateAsync({
+          name: formData.name,
+          code: formData.code,
+          location_type: formData.type,
+          address: formData.address,
+          city: formData.city,
+          country: formData.country,
+          timezone: formData.timezone,
+          status: formData.status,
+        });
+      }
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error('Save location error:', error);
     }
-
-    setIsDialogOpen(false);
   };
 
-  const handleDelete = (id: string) => {
-    const loc = locations.find((l) => l.id === id);
-    setLocations(locations.filter((l) => l.id !== id));
-    toast({
-      title: 'Location Deleted',
-      description: `${loc?.name} has been deleted.`,
-    });
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteLocation.mutateAsync(id);
+    } catch (error) {
+      console.error('Delete location error:', error);
+    }
   };
 
-  const getTypeColor = (type: Location['type']) => {
+  const getTypeColor = (type: string) => {
     switch (type) {
       case 'headquarters':
         return 'bg-purple-500/10 text-purple-600';
@@ -204,6 +145,18 @@ export function LocationManagement() {
         return '';
     }
   };
+
+  const hqCount = locations.filter((l) => l.location_type === 'headquarters').length;
+  const branchCount = locations.filter((l) => l.location_type === 'branch').length;
+  const remoteCount = locations.filter((l) => l.location_type === 'remote').length;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -242,9 +195,7 @@ export function LocationManagement() {
                 <Building className="h-6 w-6 text-purple-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">
-                  {locations.filter((l) => l.type === 'headquarters').length}
-                </p>
+                <p className="text-2xl font-bold">{hqCount}</p>
                 <p className="text-sm text-muted-foreground">Headquarters</p>
               </div>
             </div>
@@ -257,9 +208,7 @@ export function LocationManagement() {
                 <Building className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">
-                  {locations.filter((l) => l.type === 'branch').length}
-                </p>
+                <p className="text-2xl font-bold">{branchCount}</p>
                 <p className="text-sm text-muted-foreground">Branches</p>
               </div>
             </div>
@@ -272,9 +221,7 @@ export function LocationManagement() {
                 <Globe className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">
-                  {locations.filter((l) => l.type === 'remote').length}
-                </p>
+                <p className="text-2xl font-bold">{remoteCount}</p>
                 <p className="text-sm text-muted-foreground">Remote Hubs</p>
               </div>
             </div>
@@ -296,61 +243,69 @@ export function LocationManagement() {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Location</TableHead>
-                <TableHead>Code</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>City</TableHead>
-                <TableHead>Country</TableHead>
-                <TableHead>Employees</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredLocations.map((loc) => (
-                <TableRow key={loc.id}>
-                  <TableCell className="font-medium">{loc.name}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{loc.code}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getTypeColor(loc.type)}>{loc.type}</Badge>
-                  </TableCell>
-                  <TableCell>{loc.city}</TableCell>
-                  <TableCell>{loc.country}</TableCell>
-                  <TableCell>{loc.employeeCount}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={loc.status === 'active' ? 'default' : 'secondary'}
-                    >
-                      {loc.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleOpenDialog(loc)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(loc.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
-                  </TableCell>
+          {filteredLocations.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <MapPin className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No locations found</p>
+              <p className="text-sm">Add your first location to get started</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Location</TableHead>
+                  <TableHead>Code</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>City</TableHead>
+                  <TableHead>Country</TableHead>
+                  <TableHead>Employees</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredLocations.map((loc) => (
+                  <TableRow key={loc.id}>
+                    <TableCell className="font-medium">{loc.name}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{loc.code}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getTypeColor(loc.location_type)}>{loc.location_type}</Badge>
+                    </TableCell>
+                    <TableCell>{loc.city || '-'}</TableCell>
+                    <TableCell>{loc.country || '-'}</TableCell>
+                    <TableCell>{loc.employee_count || 0}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={loc.status === 'active' ? 'default' : 'secondary'}
+                      >
+                        {loc.status || 'active'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleOpenDialog(loc)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(loc.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 
@@ -489,7 +444,13 @@ export function LocationManagement() {
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>
+            <Button 
+              onClick={handleSave}
+              disabled={createLocation.isPending || updateLocation.isPending}
+            >
+              {(createLocation.isPending || updateLocation.isPending) && (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              )}
               {editingLocation ? 'Update' : 'Create'}
             </Button>
           </DialogFooter>
