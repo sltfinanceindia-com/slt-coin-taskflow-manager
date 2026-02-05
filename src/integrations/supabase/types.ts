@@ -3032,6 +3032,7 @@ export type Database = {
       }
       departments: {
         Row: {
+          code: string | null
           color: string | null
           created_at: string | null
           description: string | null
@@ -3039,9 +3040,12 @@ export type Database = {
           id: string
           name: string
           organization_id: string | null
+          parent_id: string | null
+          status: string | null
           updated_at: string | null
         }
         Insert: {
+          code?: string | null
           color?: string | null
           created_at?: string | null
           description?: string | null
@@ -3049,9 +3053,12 @@ export type Database = {
           id?: string
           name: string
           organization_id?: string | null
+          parent_id?: string | null
+          status?: string | null
           updated_at?: string | null
         }
         Update: {
+          code?: string | null
           color?: string | null
           created_at?: string | null
           description?: string | null
@@ -3059,6 +3066,8 @@ export type Database = {
           id?: string
           name?: string
           organization_id?: string | null
+          parent_id?: string | null
+          status?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -3074,6 +3083,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "departments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
             referencedColumns: ["id"]
           },
         ]
@@ -4787,6 +4803,72 @@ export type Database = {
           },
         ]
       }
+      form16_records: {
+        Row: {
+          created_at: string | null
+          document_url: string | null
+          employee_id: string
+          financial_year: string
+          generated_date: string | null
+          gross_salary: number | null
+          id: string
+          organization_id: string | null
+          sent_date: string | null
+          status: string | null
+          tax_paid: number | null
+          taxable_income: number | null
+          total_deductions: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          document_url?: string | null
+          employee_id: string
+          financial_year: string
+          generated_date?: string | null
+          gross_salary?: number | null
+          id?: string
+          organization_id?: string | null
+          sent_date?: string | null
+          status?: string | null
+          tax_paid?: number | null
+          taxable_income?: number | null
+          total_deductions?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          document_url?: string | null
+          employee_id?: string
+          financial_year?: string
+          generated_date?: string | null
+          gross_salary?: number | null
+          id?: string
+          organization_id?: string | null
+          sent_date?: string | null
+          status?: string | null
+          tax_paid?: number | null
+          taxable_income?: number | null
+          total_deductions?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form16_records_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form16_records_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gratuity_records: {
         Row: {
           created_at: string | null
@@ -5205,6 +5287,85 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investment_declarations: {
+        Row: {
+          category: string
+          created_at: string | null
+          declared_amount: number | null
+          employee_id: string
+          financial_year: string
+          id: string
+          max_limit: number | null
+          organization_id: string | null
+          proof_submitted: boolean | null
+          proof_url: string | null
+          section: string
+          status: string | null
+          updated_at: string | null
+          verified_amount: number | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          declared_amount?: number | null
+          employee_id: string
+          financial_year: string
+          id?: string
+          max_limit?: number | null
+          organization_id?: string | null
+          proof_submitted?: boolean | null
+          proof_url?: string | null
+          section: string
+          status?: string | null
+          updated_at?: string | null
+          verified_amount?: number | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          declared_amount?: number | null
+          employee_id?: string
+          financial_year?: string
+          id?: string
+          max_limit?: number | null
+          organization_id?: string | null
+          proof_submitted?: boolean | null
+          proof_url?: string | null
+          section?: string
+          status?: string | null
+          updated_at?: string | null
+          verified_amount?: number | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_declarations_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investment_declarations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investment_declarations_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -6468,6 +6629,59 @@ export type Database = {
           },
           {
             foreignKeyName: "loan_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      locations: {
+        Row: {
+          address: string | null
+          city: string | null
+          code: string
+          country: string | null
+          created_at: string | null
+          id: string
+          location_type: string | null
+          name: string
+          organization_id: string | null
+          status: string | null
+          timezone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          code: string
+          country?: string | null
+          created_at?: string | null
+          id?: string
+          location_type?: string | null
+          name: string
+          organization_id?: string | null
+          status?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          code?: string
+          country?: string | null
+          created_at?: string | null
+          id?: string
+          location_type?: string | null
+          name?: string
+          organization_id?: string | null
+          status?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "locations_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -13034,6 +13248,64 @@ export type Database = {
             columns: ["project_owner_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teams: {
+        Row: {
+          created_at: string | null
+          department_id: string | null
+          description: string | null
+          id: string
+          lead_id: string | null
+          name: string
+          organization_id: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          department_id?: string | null
+          description?: string | null
+          id?: string
+          lead_id?: string | null
+          name: string
+          organization_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          department_id?: string | null
+          description?: string | null
+          id?: string
+          lead_id?: string | null
+          name?: string
+          organization_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teams_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teams_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teams_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]

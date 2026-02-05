@@ -33,67 +33,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Pencil, Trash2, Users2, Target } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-
-interface Team {
-  id: string;
-  name: string;
-  description: string;
-  departmentId: string;
-  departmentName: string;
-  leadId: string | null;
-  leadName: string | null;
-  memberCount: number;
-  status: 'active' | 'inactive';
-  createdAt: string;
-}
-
-const mockTeams: Team[] = [
-  {
-    id: '1',
-    name: 'Platform Team',
-    description: 'Core platform development',
-    departmentId: '1',
-    departmentName: 'Engineering',
-    leadId: '1',
-    leadName: 'John Smith',
-    memberCount: 8,
-    status: 'active',
-    createdAt: '2024-01-15',
-  },
-  {
-    id: '2',
-    name: 'Mobile Team',
-    description: 'iOS and Android development',
-    departmentId: '1',
-    departmentName: 'Engineering',
-    leadId: '2',
-    leadName: 'Jane Doe',
-    memberCount: 6,
-    status: 'active',
-    createdAt: '2024-01-20',
-  },
-  {
-    id: '3',
-    name: 'Talent Acquisition',
-    description: 'Recruitment and hiring',
-    departmentId: '2',
-    departmentName: 'Human Resources',
-    leadId: '3',
-    leadName: 'Mike Johnson',
-    memberCount: 4,
-    status: 'active',
-    createdAt: '2024-02-01',
-  },
-];
+import { Plus, Pencil, Trash2, Users2, Target, Loader2 } from 'lucide-react';
+import { useTeams, Team } from '@/hooks/useTeams';
+import { useDepartments } from '@/hooks/useDepartments';
 
 export function TeamManagement() {
-  const [teams, setTeams] = useState<Team[]>(mockTeams);
+  const { teams, isLoading, createTeam, updateTeam, deleteTeam } = useTeams();
+  const { departments } = useDepartments();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -105,7 +54,7 @@ export function TeamManagement() {
   const filteredTeams = teams.filter(
     (team) =>
       team.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      team.departmentName.toLowerCase().includes(searchQuery.toLowerCase())
+      (team.department?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleOpenDialog = (team?: Team) => {
@@ -113,9 +62,9 @@ export function TeamManagement() {
       setEditingTeam(team);
       setFormData({
         name: team.name,
-        description: team.description,
-        departmentId: team.departmentId,
-        status: team.status,
+        description: team.description || '',
+        departmentId: team.department_id || '',
+        status: (team.status as 'active' | 'inactive') || 'active',
       });
     } else {
       setEditingTeam(null);
@@ -129,54 +78,52 @@ export function TeamManagement() {
     setIsDialogOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.name) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please fill in all required fields.',
-        variant: 'destructive',
-      });
       return;
     }
 
-    if (editingTeam) {
-      setTeams(
-        teams.map((team) =>
-          team.id === editingTeam.id ? { ...team, ...formData } : team
-        )
-      );
-      toast({
-        title: 'Team Updated',
-        description: `${formData.name} has been updated successfully.`,
-      });
-    } else {
-      const newTeam: Team = {
-        id: Date.now().toString(),
-        ...formData,
-        departmentName: 'Engineering', // This would come from lookup
-        leadId: null,
-        leadName: null,
-        memberCount: 0,
-        createdAt: new Date().toISOString().split('T')[0],
-      };
-      setTeams([...teams, newTeam]);
-      toast({
-        title: 'Team Created',
-        description: `${formData.name} has been created successfully.`,
-      });
+    try {
+      if (editingTeam) {
+        await updateTeam.mutateAsync({
+          id: editingTeam.id,
+          name: formData.name,
+          description: formData.description,
+          department_id: formData.departmentId || null,
+          status: formData.status,
+        });
+      } else {
+        await createTeam.mutateAsync({
+          name: formData.name,
+          description: formData.description,
+          department_id: formData.departmentId || null,
+          status: formData.status,
+        });
+      }
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error('Save team error:', error);
     }
-
-    setIsDialogOpen(false);
   };
 
-  const handleDelete = (id: string) => {
-    const team = teams.find((t) => t.id === id);
-    setTeams(teams.filter((t) => t.id !== id));
-    toast({
-      title: 'Team Deleted',
-      description: `${team?.name} has been deleted.`,
-    });
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteTeam.mutateAsync(id);
+    } catch (error) {
+      console.error('Delete team error:', error);
+    }
   };
+
+  const totalMembers = teams.reduce((sum, t) => sum + (t.member_count || 0), 0);
+  const activeTeams = teams.filter((t) => t.status === 'active').length;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -215,9 +162,7 @@ export function TeamManagement() {
                 <Users2 className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">
-                  {teams.reduce((sum, t) => sum + t.memberCount, 0)}
-                </p>
+                <p className="text-2xl font-bold">{totalMembers}</p>
                 <p className="text-sm text-muted-foreground">Team Members</p>
               </div>
             </div>
@@ -230,9 +175,7 @@ export function TeamManagement() {
                 <Target className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">
-                  {teams.filter((t) => t.status === 'active').length}
-                </p>
+                <p className="text-2xl font-bold">{activeTeams}</p>
                 <p className="text-sm text-muted-foreground">Active Teams</p>
               </div>
             </div>
@@ -254,62 +197,70 @@ export function TeamManagement() {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Team Name</TableHead>
-                <TableHead>Department</TableHead>
-                <TableHead>Team Lead</TableHead>
-                <TableHead>Members</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredTeams.map((team) => (
-                <TableRow key={team.id}>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{team.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {team.description}
-                      </p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{team.departmentName}</Badge>
-                  </TableCell>
-                  <TableCell>{team.leadName || 'Not assigned'}</TableCell>
-                  <TableCell>{team.memberCount}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={team.status === 'active' ? 'default' : 'secondary'}
-                    >
-                      {team.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleOpenDialog(team)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(team.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
-                  </TableCell>
+          {filteredTeams.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Users2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No teams found</p>
+              <p className="text-sm">Create your first team to get started</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Team Name</TableHead>
+                  <TableHead>Department</TableHead>
+                  <TableHead>Team Lead</TableHead>
+                  <TableHead>Members</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredTeams.map((team) => (
+                  <TableRow key={team.id}>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{team.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {team.description}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{team.department?.name || '-'}</Badge>
+                    </TableCell>
+                    <TableCell>{team.lead?.full_name || 'Not assigned'}</TableCell>
+                    <TableCell>{team.member_count || 0}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={team.status === 'active' ? 'default' : 'secondary'}
+                      >
+                        {team.status || 'active'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleOpenDialog(team)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(team.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 
@@ -359,10 +310,11 @@ export function TeamManagement() {
                   <SelectValue placeholder="Select department" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">Engineering</SelectItem>
-                  <SelectItem value="2">Human Resources</SelectItem>
-                  <SelectItem value="3">Finance</SelectItem>
-                  <SelectItem value="4">Marketing</SelectItem>
+                  {departments.map((dept) => (
+                    <SelectItem key={dept.id} value={dept.id}>
+                      {dept.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -388,7 +340,13 @@ export function TeamManagement() {
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>
+            <Button 
+              onClick={handleSave}
+              disabled={createTeam.isPending || updateTeam.isPending}
+            >
+              {(createTeam.isPending || updateTeam.isPending) && (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              )}
               {editingTeam ? 'Update' : 'Create'}
             </Button>
           </DialogFooter>
