@@ -1,450 +1,427 @@
 
-# TeneXA 26-Issue Comprehensive Fix Plan
+# TeneXA Application Issues - Comprehensive Fix Plan
 
 ## Executive Summary
 
-After thorough codebase analysis, I've mapped each of your 26 issues to specific files, root causes, and implementation fixes. The current implementation is approximately **78% complete** but has several critical gaps:
+After thorough analysis of the codebase, I've identified 26 issues that fall into 5 major categories:
 
-1. **Real Data Loading**: Many components use real Supabase queries but some still have mock data fallbacks
-2. **Organization Scoping**: Most queries properly filter by `organization_id` but a few need verification
-3. **Action Handlers**: Some UI actions (like nominations, regularization approvals) have incomplete backend connections
-4. **Navigation**: Sidebar state persistence exists but may have route change issues
-5. **Role-Based Dashboards**: Role-specific navigation exists but dashboard content doesn't fully adapt
+1. **Mock Data Issues** (Issues 5-7, 12-16): Several components use hardcoded mock data instead of real Supabase queries
+2. **Dashboard Data Loading** (Issues 1, 3): Components not properly fetching or displaying organization-scoped data  
+3. **Navigation/Routing Issues** (Issues 8, 17-21, 22, 25): Tab navigation and sidebar state problems
+4. **Action/Mutation Issues** (Issues 7, 23, 24): Buttons and forms not executing database operations
+5. **Role-Based Features** (Issues 2A, 26): Missing role options and role-based dashboard content
 
 ---
 
-## Issue-by-Issue Analysis & Fix Plan
+## Phase 1: Mock Data Replacement (Critical Priority)
 
-### ISSUE 0: Card Alignment (Dashboard, Analytics, Tasks)
-**Current State**: Cards use responsive grid `grid-cols-1 sm:grid-cols-2 lg:grid-cols-4` with proper spacing
-**Root Cause**: Minor inconsistencies in card heights due to variable content
-**Files to Modify**:
+### Issue 5: Department Management - Mock Data
+
+**File**: `src/components/admin/DepartmentManagement.tsx`
+
+**Current Problem (Lines 54-108)**: Uses `mockDepartments` array instead of Supabase query
+
+**Fix**:
+- Replace `useState(mockDepartments)` with `useQuery` hook
+- Query the `departments` table with organization filter
+- Join with `profiles` for head count
+- Implement real mutations for create/update/delete
+
+```text
+Changes Required:
+1. Add useQuery for fetching departments from database
+2. Add useMutation for create, update, delete operations
+3. Remove mockDepartments array
+4. Add organization_id filter to all queries
+5. Calculate employee_count via join or subquery
+```
+
+---
+
+### Issue 6: Team Management - Mock Data
+
+**File**: `src/components/admin/TeamManagement.tsx`
+
+**Current Problem (Lines 52-89)**: Uses `mockTeams` array
+
+**Fix**:
+- Replace with real `teams` table query
+- Join with `departments` for department name
+- Join with `profiles` for team lead info
+- Use `team_members` junction table for member count
+
+---
+
+### Issue 7: Location Management - Mock Data
+
+**File**: `src/components/admin/LocationManagement.tsx`
+
+**Current Problem (Lines 53-93)**: Uses `mockLocations` array
+
+**Fix**:
+- Replace with real `locations` table query (if exists, or create table)
+- Add organization_id filtering
+- Implement real CRUD operations
+
+---
+
+### Issue 16: Benchmarking - Fake Graphs
+
+**Current Problem**: Charts showing static mock data instead of aggregated real metrics
+
+**Fix**:
+- Fetch real data from `objectives` table for performance benchmarks
+- Aggregate `attendance_records` for attendance metrics
+- Calculate productivity from `time_logs`
+- All queries must filter by `organization_id`
+
+---
+
+## Phase 2: Dashboard & Analytics Data Loading
+
+### Issue 1: Dashboard - My Work Not Loading
+
+**Files**: 
+- `src/components/EnhancedDashboardWidgets.tsx`
+- `src/components/dashboard/EmployeeDashboard.tsx`
+
+**Current State**: Components already use real hooks (`useTasks`, `useTimeLogs`) but may have filter issues
+
+**Verification Needed**:
+1. Ensure tasks filter by `assigned_to = profile.id` for non-admins
+2. Verify `organization_id` filtering in all queries
+3. Add proper loading states when profile is undefined
+4. Check that chart data aggregation uses real time_logs
+
+---
+
+### Issue 3: HR Analytics - Not Loading Organization Data
+
+**File**: `src/components/hr/HRAnalytics.tsx`
+
+**Current State**: This file ALREADY uses real Supabase queries (Lines 16-56) and calculates:
+- Headcount from `profiles` table
+- Attrition from `exit_interviews` table
+- Open positions from `job_postings`
+
+**Potential Issue**: Tables may not have data, or `exit_interviews` table may not exist
+
+**Fix**:
+1. Verify `exit_interviews` table exists in database
+2. Verify `job_postings` table exists
+3. Handle empty data gracefully (show "No data" instead of empty charts)
+4. Add proper error boundaries
+
+---
+
+### Issue 4: Org Chart - Not Showing Employees
+
+**File**: `src/components/rbac/OrgChartViewer.tsx`
+
+**Current State**: Uses `useOrgChart()` hook which queries `profiles` with `reporting_manager_id`
+
+**Root Cause**: Employees likely don't have `reporting_manager_id` populated
+
+**Fix**:
+1. Verify `reporting_manager_id` column exists in `profiles` table
+2. Ensure employee profiles have manager assignments
+3. Add empty state with helpful instructions for setting up hierarchy
+4. The component already has good empty state handling (Lines 374-420)
+
+---
+
+## Phase 3: Action/Mutation Fixes
+
+### Issue 7 (Part B): Attendance Regularization Actions
+
+**File**: `src/components/workforce/AttendanceRegularization.tsx`
+
+**Current State**: Component already has real mutations (Lines 91-172):
+- `createMutation` for submitting requests
+- `approveMutation` for approving
+- `rejectMutation` for rejecting
+
+**Potential Issue**: The `attendance_regularization_requests` table was recently created but may need verification
+
+**Verification**:
+1. Confirm table exists with correct schema
+2. Verify RLS policies allow insert/update
+3. Test approve/reject buttons
+
+---
+
+### Issue 23: Roles & Permissions - Create Role Not Working
+
+**Files**: 
+- `src/pages/settings/RolesPermissions.tsx`
+- `src/hooks/useCustomRoles.tsx`
+- `src/components/rbac/RoleEditor.tsx`
+
+**Current State**: The role creation flow is implemented:
+- `RoleEditor` has form and calls `onSave` with data
+- `handleCreateRole` calls `createRole` mutation (Lines 139-148)
+- `useCustomRoles` has `createRoleMutation` that inserts into `custom_roles` table
+
+**Root Cause**: Either:
+1. The mutation isn't being triggered properly
+2. RLS policies blocking insert
+3. Form validation failing silently
+
+**Fix**:
+1. Add proper error handling and toast messages to `createRoleMutation`
+2. Debug the mutation flow in `RoleEditor.handleSubmit`
+3. Verify `custom_roles` table RLS policies
+4. Add loading state feedback
+
+---
+
+### Issue 24: Employee of the Month - Action Not Working
+
+**File**: `src/components/recognition/EmployeeOfMonth.tsx`
+
+**Current State**: Component already has:
+- `submitNominationMutation` (Lines 159-195) that inserts into `kudos` table
+- Proper form validation (Lines 197-218)
+- Real queries for nominations and past winners
+
+**Verification**: 
+1. Test the nomination flow end-to-end
+2. Verify `kudos` table has `badge_type` column
+3. Check RLS policies for insert
+
+---
+
+## Phase 4: Navigation & Routing Fixes
+
+### Issue 8: Attendance Reports - Tab Navigation
+
+**Root Cause**: Tab value mismatch between sidebar navigation and tab registry
+
+**Fix**:
+1. Verify `GeoAttendance.tsx` tab values match those in navigation config
+2. Ensure standalone routes are properly configured
+3. Check that tab switching events are being dispatched correctly
+
+---
+
+### Issues 17-21: Projects/Kanban/Tasks/Gantt/Backlog Navigation
+
+**Root Cause**: Routes not properly connecting between project list and project detail pages
+
+**Fix**:
+1. Verify `/projects/:id` route is correctly defined in `App.tsx`
+2. Ensure project list cards/rows have proper `onClick` handlers navigating to detail page
+3. Check that Kanban, Gantt, Backlog tabs within project detail work correctly
+4. Verify query parameters persist across navigation
+
+---
+
+### Issue 22: Service Desk - Duplicated Tabs
+
+**File**: `src/components/requests/RequestHub.tsx`
+
+**Current State**: Looking at the file, tabs are properly defined without duplicates
+
+**Verification**:
+1. Check if there's a duplicate "Requests" entry in navigation config
+2. Look for multiple tab definitions in tab-registry
+3. Remove any duplicate entries in navigation groups
+
+---
+
+### Issue 25: Sidebar Resets on Tab Navigation
+
+**File**: `src/components/AppSidebar.tsx`
+
+**Current State**: Sidebar already has state persistence (Lines 138-150):
+- Loads from localStorage on mount
+- Saves to localStorage on toggle
+
+**Potential Issue**: Route changes may cause component remount, losing state
+
+**Fix**:
+1. Ensure `AppSidebar` is in a stable layout component that doesn't remount
+2. Move state initialization to useEffect to handle hydration
+3. Add debouncing to localStorage saves
+
+---
+
+## Phase 5: Role-Based Features
+
+### Issue 2A: Add Team Member - Only 5 Roles
+
+**File**: `src/components/InternManagement.tsx`
+
+**Current State**: Already fixed! Lines 343-350 now include all 8 roles:
+- org_admin, hr_admin, project_manager, finance_manager
+- manager, team_lead, employee, intern
+
+**Status**: ALREADY FIXED - No action needed
+
+---
+
+### Issue 2B: Employee Card Not Showing Department
+
+**File**: `src/components/InternManagement.tsx`
+
+**Current State**: Query at Lines 84-91 doesn't join with departments table
+
+**Fix**:
+1. Update query to include department join:
+```text
+.select('*, departments:department_id(id, name, color)')
+```
+2. Update card display to show department badge
+3. Add designation, location, joining date fields
+
+---
+
+### Issue 26: Role-Based Dashboards Not Working
+
+**File**: `src/pages/dashboard/tabs/OverviewTab.tsx`
+
+**Current State**: Already has role-based rendering (Lines 17-28):
+- Returns `HRAdminDashboard` for HR admins
+- Returns `FinanceManagerDashboard` for finance managers
+- Returns `ProjectManagerDashboard` for project managers
+- Returns `ManagerDashboard` for managers/team leads
+- Returns `EnhancedDashboardWidgets` for admins
+- Returns `EmployeeDashboard` for employees
+
+**Potential Issue**: Role detection may not be working correctly
+
+**Fix**:
+1. Verify `useUserRole` hook correctly fetches and determines role
+2. Check that `user_roles` table has correct data for users
+3. Add debug logging to role detection
+4. Ensure role-specific dashboard components have proper data fetching
+
+---
+
+## Phase 6: Additional Issues
+
+### Issue 0: Card Alignment
+
+**Files**: 
 - `src/components/EnhancedDashboardWidgets.tsx`
 - `src/components/AnalyticsPage.tsx`
 
+**Current State**: Both files already use `h-full` on cards (verified in recent changes)
+
+**Additional Fix**:
+- Ensure parent grid uses `grid-auto-rows: 1fr` or equivalent
+- Standardize CardContent padding across all cards
+- Add `min-h-[200px]` to prevent collapse on empty state
+
+---
+
+### Issues 9-10: Timesheets & Overtime Filters
+
+**Files**:
+- `src/components/timesheets/TimesheetManagement.tsx`
+- Overtime component (needs identification)
+
+**Issue 9 Fix**:
+1. Verify `WeeklyCalendarGrid` component is rendering properly
+2. Check date filter logic in `filteredEntries` useMemo
+3. Ensure week navigation buttons work correctly
+
+**Issue 10 Fix**:
+1. Add department filter to overtime query
+2. Join with `profiles` to get `department_id`
+3. Apply filter when `selectedDepartment !== 'all'`
+
+---
+
+### Issue 11: Payroll Dashboard - Not Fully Functional
+
+**File**: `src/components/payroll/PayrollDashboard.tsx`
+
+**Current State**: Has basic functionality with step indicator
+
+**Missing Features**:
+1. Automated calculation based on attendance (LOP deduction)
+2. Salary slip PDF generation
+3. Bank file generation
+
 **Fix**:
-- Add `h-full` class to Card components to ensure equal heights
-- Use CSS Grid with `auto-fit` and `minmax` for better responsiveness
-- Standardize CardContent padding across all dashboard cards
+1. Create edge function `calculate-payroll` that:
+   - Fetches salary structures
+   - Gets attendance records for the period
+   - Calculates deductions (PF, tax, LOP)
+   - Creates payroll_records
+2. Add PDF generation using jspdf library
+3. Add CSV export for bank transfer file
 
 ---
 
-### ISSUE 1: Dashboard - My Work Not Loading Data
-**Current State**: `EnhancedDashboardWidgets.tsx` already uses real hooks (`useTasks`, `useTimeLogs`, `useCoinTransactions`)
-**Status**: MOSTLY FIXED - The dashboard fetches real data from Supabase
+### Issues 12-15: Finance Module - Mock Data
 
-**Verification Needed**:
-- Ensure `useTasks` filters by `assigned_to = profile.id` for non-admins (Line 85-87 shows this logic exists)
-- Weekly hours chart uses real `timeLogs` data (Lines 46-79)
+**Components to Fix**:
+- Reimbursements
+- Investments/Tax Declarations
+- Form 16
+- Compliance Reports
 
-**Minor Fix**:
-- Add empty state handling when profile is loading
-- Ensure time logs properly aggregate by user_id
-
----
-
-### ISSUE 2A: Add Team Member - Only 5 Role Options
-**Current State**: `InternManagement.tsx` Line 337-342 shows hardcoded 5 roles:
-```typescript
-<SelectItem value="org_admin">Organization Admin</SelectItem>
-<SelectItem value="manager">Manager</SelectItem>
-<SelectItem value="team_lead">Team Lead</SelectItem>
-<SelectItem value="employee">Employee</SelectItem>
-<SelectItem value="intern">Intern</SelectItem>
-```
-
-**Root Cause**: Missing other roles like `hr_admin`, `finance_manager`, `project_manager`
-
-**Fix**: Update `InternManagement.tsx` Line 336-346:
-```typescript
-<SelectItem value="org_admin">Organization Admin</SelectItem>
-<SelectItem value="hr_admin">HR Admin</SelectItem>
-<SelectItem value="project_manager">Project Manager</SelectItem>
-<SelectItem value="finance_manager">Finance Manager</SelectItem>
-<SelectItem value="manager">Manager</SelectItem>
-<SelectItem value="team_lead">Team Lead</SelectItem>
-<SelectItem value="employee">Employee</SelectItem>
-<SelectItem value="intern">Intern</SelectItem>
-```
+**Fix Pattern**: Replace mock data with Supabase queries:
+1. Query respective tables with organization filter
+2. Implement CRUD mutations
+3. Add approval workflow integration
 
 ---
 
-### ISSUE 2B: Employee Card Not Showing Department/Details
-**Current State**: `InternManagement.tsx` displays:
-- Full name, email, role badge, active status
-- Department field is shown (Line 469-470)
+## Implementation Priority Order
 
-**Gap**: Missing designation, location, joining date in card view
+### Week 1 (Critical)
+1. Fix DepartmentManagement, TeamManagement, LocationManagement (mock data)
+2. Verify attendance regularization works
+3. Debug role creation flow
+4. Verify Employee of Month nomination
 
-**Fix**: Enhance the query at Line 84-91 to JOIN with departments table:
-```typescript
-.select('*, departments:department_id(name, color)')
-```
+### Week 2 (High)
+5. Enhance employee cards with department info
+6. Debug HR Analytics data loading
+7. Verify Org Chart hierarchy
+8. Fix timesheet filtering
 
-Add these fields to the card display at Line 419-455.
+### Week 3 (Medium)
+9. Fix project navigation flows
+10. Remove duplicate service desk tabs
+11. Stabilize sidebar state
+12. Verify role-based dashboards
 
----
-
-### ISSUE 2C: View All Details Not Updated
-**Fix**: Create proper table view toggle in `InternManagement.tsx`:
-- Add view toggle (Grid/List)
-- Implement sortable columns in list view
-- Add pagination (already implemented - Lines 119-134)
-
----
-
-### ISSUE 3: HR Analytics - Not Loading Organization Data
-**Current State**: `AnalyticsPage.tsx` already uses real data:
-- Line 18-19: Uses `useTasks()` and `useTimeLogs()`
-- Line 23-46: Fetches org-filtered profiles from Supabase
-
-**Status**: WORKING - Uses real organization-scoped data
-
-**Verification Needed**:
-- Charts (`TaskPieChart`, `ProductivityLineChart`) must use the fetched data, not mock data
-- Check if these chart components receive data as props
+### Week 4 (Lower)
+13. Enhance payroll automation
+14. Fix finance module components
+15. Add benchmarking real data
+16. Card alignment polish
 
 ---
 
-### ISSUE 4: Org Chart - Not Showing Employees
-**Current State**: `OrgChartViewer.tsx` is fully implemented:
-- Line 37: Uses `useOrgChart()` hook
-- Lines 256-318: Builds tree structure from flat data using `reporting_manager_id`
-- Handles empty state with helpful instructions (Lines 374-420)
+## Database Tables to Verify/Create
 
-**Status**: WORKING - The org chart is fully functional
+### Tables That May Need Verification:
+1. `exit_interviews` - Used by HR Analytics
+2. `job_postings` - Used by HR Analytics
+3. `attendance_regularization_requests` - Recently created
+4. `locations` - May not exist
 
-**Verification Needed**:
-- Ensure `useReportingStructure.tsx` Line 205 properly fetches all employees with manager relationships
-- Check if `reporting_manager_id` is populated in profiles table
-
----
-
-### ISSUE 5-6: Departments/Teams/Locations - Mock Data
-**Files to Check**:
-- `src/components/hr/DepartmentManagement.tsx`
-- `src/components/hr/TeamManagement.tsx`
-- `src/components/hr/LocationManagement.tsx`
-
-**Fix Pattern**: Replace any hardcoded arrays with Supabase queries:
-```typescript
-const { data: departments } = useQuery({
-  queryKey: ['departments', profile?.organization_id],
-  queryFn: async () => {
-    const { data } = await supabase
-      .from('departments')
-      .select('*')
-      .eq('organization_id', profile?.organization_id);
-    return data;
-  }
-});
-```
+### Columns to Verify:
+1. `profiles.reporting_manager_id` - Required for Org Chart
+2. `profiles.department_id` - Required for employee cards
+3. `kudos.badge_type` - Used for Employee of Month
 
 ---
 
-### ISSUE 7: Attendance Regularization - Fake Data & Actions Not Working
-**Current State**: Need to verify `AttendanceRegularization` component
-
-**Fix Required**:
-1. Create/use `attendance_regularization_requests` table
-2. Implement approve/reject mutations that update both the request AND the original attendance record
-3. Send notifications on status change
-
----
-
-### ISSUE 8: Attendance Reports - Tab Navigation Issue
-**Current State**: Routes are tab-based in `GeoAttendance.tsx` (Line 21-44)
-
-**Fix**: Verify the tab registry and sidebar navigation point to correct tab values
-
----
-
-### ISSUE 9: Timesheets - Calendar Missing & Filtering Broken
-**Current State**: `TimesheetManagement.tsx` has:
-- Week navigation (Lines 298-300)
-- Date range filters (Lines 303-319)
-- Calendar popover components (Lines 462-476)
-
-**Status**: PARTIALLY IMPLEMENTED - Week view exists but no visual calendar grid
-
-**Fix Required**:
-1. Add weekly calendar grid component showing Mon-Sun with hour cells
-2. Verify date range filtering applies correctly (Lines 303-319)
-
----
-
-### ISSUE 10: Overtime - Filter Not Working
-**Current State**: Need to verify `OvertimeManagement` component
-
-**Fix Required**:
-- Ensure department filter is applied to the query by JOINing with employees table
-- Add `.eq('department_id', selectedDepartment)` when filter is active
-
----
-
-### ISSUE 11: Payroll Dashboard - Not Fully Functional
-**Current State**: `PayrollDashboard.tsx` is functional:
-- Creates payroll records (Lines 80-125)
-- Shows summary stats (Lines 128-131)
-- Displays records table (Lines 296-357)
-
-**Status**: BASIC FUNCTIONALITY WORKING
-
-**Missing (Per Spec)**:
-1. **Automated Calculation**: No integration with attendance for LOP deduction
-2. **Steps Indicator**: No visual progress steps (Select → Calculate → Review → Finalize)
-3. **Salary Slip PDF Generation**: Not implemented
-
-**Fix Required**:
-1. Add step-by-step UI for payroll processing
-2. Create edge function for automated payroll calculation
-3. Add salary slip PDF generation
-
----
-
-### ISSUE 12-15: Reimbursements, Investments, Form 16, Compliance
-**Status**: Need to verify these components
-
-**Files to Check**:
-- `src/components/expenses/ReimbursementList.tsx`
-- `src/components/finance/InvestmentDeclarations.tsx`
-- `src/components/finance/Form16Generator.tsx`
-- `src/components/compliance/ComplianceReports.tsx`
-
----
-
-### ISSUE 16: Benchmarking - Fake Graphs
-**Fix**: Ensure chart components fetch real aggregated data:
-- Performance benchmarks from `objectives` table
-- Attendance benchmarks from `attendance_records`
-- Productivity from `time_logs`
-
----
-
-### ISSUE 17-21: Projects/Kanban/Tasks/Gantt/Backlog Navigation
-**Current State**: These are all implemented as dashboard tabs
-
-**Verified Working**:
-- `ProjectDetailPage.tsx` - Full 9-tab implementation
-- `TasksTab.tsx` - Kanban view with filters
-- `GanttChart.tsx` - Timeline visualization
-
-**Fix Required**:
-- Ensure navigation from project list to project detail works
-- Verify filter parameters persist across navigation
-
----
-
-### ISSUE 22: Service Desk - Duplicated Tabs
-**Fix**: Check `RequestHub.tsx` and tab-registry for duplicate entries
-- Remove any duplicate tab definitions
-- Ensure unique keys for all tab items
-
----
-
-### ISSUE 23: Roles & Permissions - Create Role Not Working
-**Current State**: `RoleEditor.tsx` exists in `src/components/rbac/`
-
-**Fix Required**:
-1. Verify mutation saves to `custom_roles` table
-2. Ensure role_permissions junction table is updated
-3. Add error handling and success feedback
-
----
-
-### ISSUE 24: Employee of the Month - Action Not Working
-**Current State**: `EmployeeOfMonth.tsx` has:
-- Nominate dialog (Lines 89-133)
-- BUT: Submit button only closes dialog, no database mutation (Line 128-129)
-- Past winners use MOCK data (Lines 45-70)
-
-**Fix Required**:
-1. Create `employee_of_month_nominations` table
-2. Create `employee_of_month_winners` table
-3. Implement nomination submission mutation:
-```typescript
-const submitNomination = useMutation({
-  mutationFn: async (data) => {
-    await supabase.from('employee_of_month_nominations').insert({
-      organization_id: profile?.organization_id,
-      nominee_id: data.employeeId,
-      nominator_id: profile?.id,
-      month: format(new Date(), 'yyyy-MM'),
-      reason: data.reason,
-    });
-  }
-});
-```
-4. Replace mock pastWinners with real query
-
----
-
-### ISSUE 25: Tab Navigation - Sidebar Resets
-**Current State**: `AppSidebar.tsx` has state persistence:
-- Line 138-141: Loads from localStorage
-- Line 143-150: Saves to localStorage on toggle
-
-**Status**: WORKING - Sidebar state is persisted
-
-**Possible Issue**: If navigation causes full remount
-**Fix**: Ensure `AppSidebar` is wrapped in a stable layout component that doesn't remount
-
----
-
-### ISSUE 26: Role-Based Dashboards - Not Working
-**Current State**:
-- Role-specific navigation exists in `config/navigation/`
-- Different nav groups per role (hr-groups.ts, pm-groups.ts, etc.)
-- `EnhancedDashboardWidgets.tsx` has basic role check (Line 39: `isAdmin`)
-
-**Gap**: Dashboard content doesn't change based on role
-
-**Fix Required**:
-1. Create role-specific dashboard components:
-   - `EmployeeDashboard.tsx`
-   - `ManagerDashboard.tsx`
-   - `HRAdminDashboard.tsx`
-   - `FinanceManagerDashboard.tsx`
-   - `ProjectManagerDashboard.tsx`
-
-2. Update `OverviewTab.tsx` to render based on role:
-```typescript
-export function OverviewTab() {
-  const { role, isAdmin } = useUserRole();
-  
-  if (role === 'hr_admin') return <HRAdminDashboard />;
-  if (role === 'finance_manager') return <FinanceManagerDashboard />;
-  if (role === 'project_manager') return <ProjectManagerDashboard />;
-  if (isAdmin) return <AdminDashboard />;
-  if (['manager', 'team_lead'].includes(role)) return <ManagerDashboard />;
-  return <EmployeeDashboard />;
-}
-```
-
-3. Each dashboard shows role-specific widgets:
-   - **Employee**: My Tasks, My Attendance, Leave Balance, Upcoming Events
-   - **Manager**: Team Overview, Pending Approvals, Team Attendance
-   - **HR Admin**: Headcount, Attrition, Pending Leaves, New Hires
-   - **Finance**: Payroll Status, Pending Reimbursements, Expense Summary
-   - **PM**: Project Status, Resource Allocation, Task Burndown
-
----
-
-## Implementation Phases
-
-### Phase 1: Critical Data Fixes (Priority: HIGH)
-| Issue | Task | Effort |
-|-------|------|--------|
-| #2A | Add missing role options to team member form | 30 min |
-| #2B | Enhance employee card with department/designation | 1 hour |
-| #24 | Implement Employee of Month nomination mutation | 2 hours |
-| #23 | Fix role creation mutation | 2 hours |
-
-### Phase 2: Payroll & Finance Automation (Priority: HIGH)
-| Issue | Task | Effort |
-|-------|------|--------|
-| #11 | Add payroll step-by-step UI | 3 hours |
-| #11 | Create payroll calculation edge function | 4 hours |
-| #12-15 | Verify/fix reimbursement/investment/Form16 components | 4 hours |
-
-### Phase 3: Dashboard & Widgets (Priority: MEDIUM)
-| Issue | Task | Effort |
-|-------|------|--------|
-| #0 | Standardize card heights with CSS Grid | 1 hour |
-| #26 | Create role-specific dashboard components | 6 hours |
-| #1 | Verify and enhance dashboard data loading | 2 hours |
-
-### Phase 4: Navigation & UX (Priority: MEDIUM)
-| Issue | Task | Effort |
-|-------|------|--------|
-| #8 | Fix attendance reports tab navigation | 1 hour |
-| #22 | Remove duplicate service desk tabs | 30 min |
-| #25 | Verify sidebar state persistence across routes | 1 hour |
-
-### Phase 5: Module Enhancements (Priority: LOWER)
-| Issue | Task | Effort |
-|-------|------|--------|
-| #7 | Implement regularization approval actions | 3 hours |
-| #9 | Add timesheet calendar grid view | 3 hours |
-| #10 | Fix overtime department filter | 1 hour |
-| #16 | Replace benchmarking mock data | 2 hours |
-| #17-21 | Verify project/task navigation | 2 hours |
-
----
-
-## Database Tables Needed
-
-### New Tables Required:
-1. `employee_of_month_nominations` - For Issue #24
-2. `employee_of_month_winners` - For Issue #24
-3. `attendance_regularization_requests` (if not exists) - For Issue #7
-
-### Tables to Verify:
-- `departments` - has org_id, manager, and employee count
-- `teams` - has team_lead_id and team_members junction
-- `locations` - has address and coordinates
-
----
-
-## Files Summary
-
-### Files to Modify:
-1. `src/components/InternManagement.tsx` - Issues #2A, #2B, #2C
-2. `src/components/recognition/EmployeeOfMonth.tsx` - Issue #24
-3. `src/pages/dashboard/tabs/OverviewTab.tsx` - Issue #26
-4. `src/components/EnhancedDashboardWidgets.tsx` - Issues #0, #1
-5. `src/components/payroll/PayrollDashboard.tsx` - Issue #11
-6. `src/components/workforce/AttendanceDashboard.tsx` - Issue #7
-7. `src/components/timesheets/TimesheetManagement.tsx` - Issue #9
-
-### New Files to Create:
-1. `src/components/dashboard/EmployeeDashboard.tsx`
-2. `src/components/dashboard/ManagerDashboard.tsx`
-3. `src/components/dashboard/HRAdminDashboard.tsx`
-4. `src/components/dashboard/FinanceManagerDashboard.tsx`
-5. `src/components/dashboard/ProjectManagerDashboard.tsx`
-
----
-
-## Technical Notes
-
-### Organization Scoping Pattern
-All queries must include:
-```typescript
-.eq('organization_id', profile?.organization_id)
-```
-
-### Data Fetching Pattern
-Replace all mock arrays with:
-```typescript
-const { data, isLoading } = useQuery({
-  queryKey: ['entity-name', profile?.organization_id],
-  queryFn: async () => {
-    const { data, error } = await supabase
-      .from('table_name')
-      .select('*')
-      .eq('organization_id', profile?.organization_id);
-    if (error) throw error;
-    return data;
-  },
-  enabled: !!profile?.organization_id,
-});
-```
-
-### Mutation Pattern for Actions
-```typescript
-const mutation = useMutation({
-  mutationFn: async (data) => {
-    const { error } = await supabase.from('table').insert(data);
-    if (error) throw error;
-  },
-  onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: ['entity-name'] });
-    toast({ title: 'Success message' });
-  },
-  onError: (error) => {
-    toast({ title: 'Error', description: error.message, variant: 'destructive' });
-  },
-});
-```
-
+## Files to Modify Summary
+
+| File | Issue | Priority |
+|------|-------|----------|
+| `src/components/admin/DepartmentManagement.tsx` | Mock data | High |
+| `src/components/admin/TeamManagement.tsx` | Mock data | High |
+| `src/components/admin/LocationManagement.tsx` | Mock data | High |
+| `src/components/InternManagement.tsx` | Employee card details | Medium |
+| `src/components/timesheets/TimesheetManagement.tsx` | Filtering | Medium |
+| `src/components/payroll/PayrollDashboard.tsx` | Automation | Medium |
+| `src/hooks/useCustomRoles.tsx` | Role creation | High |
+| Navigation config files | Routing issues | Medium |
