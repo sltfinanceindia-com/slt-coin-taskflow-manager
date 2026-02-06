@@ -8,66 +8,65 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Receipt, Search, Upload, DollarSign, Clock, CheckCircle } from "lucide-react";
-import { toast } from "sonner";
+import { Plus, Receipt, Search, Upload, DollarSign, Clock, CheckCircle, Loader2, FileX } from "lucide-react";
 import { format } from "date-fns";
-
-interface Reimbursement {
-  id: string;
-  employee_name: string;
-  category: string;
-  amount: number;
-  submitted_date: string;
-  status: string;
-  description: string;
-  receipt_url?: string;
-}
+import { useReimbursements } from "@/hooks/useReimbursements";
+import { useUserRole } from "@/hooks/useUserRole";
 
 export function ReimbursementsManagement() {
+  const { 
+    reimbursements, 
+    isLoading, 
+    stats, 
+    createReimbursement, 
+    approveReimbursement, 
+    rejectReimbursement,
+    isCreating,
+    isApproving 
+  } = useReimbursements();
+  const { isAdmin, isFinanceManager } = useUserRole();
+  
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [formData, setFormData] = useState({
     category: "",
     amount: "",
     description: "",
-    receipt: null as File | null
   });
 
-  const reimbursements: Reimbursement[] = [
-    {
-      id: "1",
-      employee_name: "John Doe",
-      category: "medical",
-      amount: 5000,
-      submitted_date: "2024-01-15",
-      status: "approved",
-      description: "Doctor consultation and medicines"
-    },
-    {
-      id: "2",
-      employee_name: "Jane Smith",
-      category: "travel",
-      amount: 12000,
-      submitted_date: "2024-01-18",
-      status: "pending",
-      description: "Client visit travel expenses"
-    },
-    {
-      id: "3",
-      employee_name: "Mike Johnson",
-      category: "fuel",
-      amount: 3500,
-      submitted_date: "2024-01-20",
-      status: "processing",
-      description: "Monthly fuel allowance"
-    }
-  ];
+  const canApprove = isAdmin || isFinanceManager;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Reimbursement request submitted successfully");
-    setIsDialogOpen(false);
-    setFormData({ category: "", amount: "", description: "", receipt: null });
+    if (!formData.category || !formData.amount) return;
+    
+    try {
+      await createReimbursement({
+        category: formData.category,
+        amount: parseFloat(formData.amount),
+        description: formData.description || undefined,
+      });
+      setIsDialogOpen(false);
+      setFormData({ category: "", amount: "", description: "" });
+    } catch (error) {
+      console.error('Failed to create reimbursement:', error);
+    }
+  };
+
+  const handleApprove = async (id: string) => {
+    try {
+      await approveReimbursement(id);
+    } catch (error) {
+      console.error('Failed to approve:', error);
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    try {
+      await rejectReimbursement({ id, reason: 'Rejected by admin' });
+    } catch (error) {
+      console.error('Failed to reject:', error);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -76,6 +75,7 @@ export function ReimbursementsManagement() {
       case "pending": return "bg-yellow-500";
       case "processing": return "bg-blue-500";
       case "rejected": return "bg-red-500";
+      case "paid": return "bg-emerald-600";
       default: return "bg-gray-500";
     }
   };
@@ -93,9 +93,17 @@ export function ReimbursementsManagement() {
   };
 
   const filteredReimbursements = reimbursements.filter(r =>
-    r.employee_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (r.employee?.full_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     r.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 p-6">
@@ -149,22 +157,10 @@ export function ReimbursementsManagement() {
                   placeholder="Describe the expense..."
                 />
               </div>
-              <div className="space-y-2">
-                <Label>Upload Receipt</Label>
-                <div className="border-2 border-dashed rounded-lg p-4 text-center">
-                  <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Click or drag to upload receipt
-                  </p>
-                  <Input
-                    type="file"
-                    className="hidden"
-                    accept="image/*,.pdf"
-                    onChange={(e) => setFormData({...formData, receipt: e.target.files?.[0] || null})}
-                  />
-                </div>
-              </div>
-              <Button type="submit" className="w-full">Submit Claim</Button>
+              <Button type="submit" className="w-full" disabled={isCreating}>
+                {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Submit Claim
+              </Button>
             </form>
           </DialogContent>
         </Dialog>
@@ -178,7 +174,7 @@ export function ReimbursementsManagement() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">8</div>
+            <div className="text-2xl font-bold">{stats.pendingCount}</div>
             <p className="text-xs text-muted-foreground">Awaiting approval</p>
           </CardContent>
         </Card>
@@ -188,7 +184,7 @@ export function ReimbursementsManagement() {
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹45,000</div>
+            <div className="text-2xl font-bold">₹{stats.approvedAmount.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">This month</p>
           </CardContent>
         </Card>
@@ -198,7 +194,7 @@ export function ReimbursementsManagement() {
             <Receipt className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹12,500</div>
+            <div className="text-2xl font-bold">₹{stats.processingAmount.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">In pipeline</p>
           </CardContent>
         </Card>
@@ -208,7 +204,7 @@ export function ReimbursementsManagement() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹8,000</div>
+            <div className="text-2xl font-bold">₹{stats.myPendingAmount.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">Pending payout</p>
           </CardContent>
         </Card>
@@ -233,44 +229,72 @@ export function ReimbursementsManagement() {
           <CardTitle>Reimbursement Claims</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Employee</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Submitted</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredReimbursements.map((claim) => (
-                <TableRow key={claim.id}>
-                  <TableCell className="font-medium">{claim.employee_name}</TableCell>
-                  <TableCell>{getCategoryLabel(claim.category)}</TableCell>
-                  <TableCell>₹{claim.amount.toLocaleString()}</TableCell>
-                  <TableCell className="max-w-[200px] truncate">{claim.description}</TableCell>
-                  <TableCell>{format(new Date(claim.submitted_date), "MMM dd, yyyy")}</TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(claim.status)}>{claim.status}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button variant="ghost" size="sm">View</Button>
-                      {claim.status === "pending" && (
-                        <>
-                          <Button variant="ghost" size="sm" className="text-green-600">Approve</Button>
-                          <Button variant="ghost" size="sm" className="text-red-600">Reject</Button>
-                        </>
-                      )}
-                    </div>
-                  </TableCell>
+          {filteredReimbursements.length === 0 ? (
+            <div className="text-center py-12">
+              <FileX className="h-12 w-12 mx-auto text-muted-foreground" />
+              <h3 className="mt-4 font-semibold">No claims found</h3>
+              <p className="text-muted-foreground">Submit your first reimbursement claim</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Employee</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Submitted</TableHead>
+                  <TableHead>Status</TableHead>
+                  {canApprove && <TableHead>Actions</TableHead>}
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredReimbursements.map((claim) => (
+                  <TableRow key={claim.id}>
+                    <TableCell className="font-medium">
+                      {claim.employee?.full_name || 'Unknown'}
+                    </TableCell>
+                    <TableCell>{getCategoryLabel(claim.category)}</TableCell>
+                    <TableCell>₹{Number(claim.amount).toLocaleString()}</TableCell>
+                    <TableCell className="max-w-[200px] truncate">{claim.description || '-'}</TableCell>
+                    <TableCell>{format(new Date(claim.submitted_date), "MMM dd, yyyy")}</TableCell>
+                    <TableCell>
+                      <Badge className={getStatusColor(claim.status)}>{claim.status}</Badge>
+                    </TableCell>
+                    {canApprove && (
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button variant="ghost" size="sm">View</Button>
+                          {claim.status === "pending" && (
+                            <>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="text-green-600"
+                                onClick={() => handleApprove(claim.id)}
+                                disabled={isApproving}
+                              >
+                                Approve
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="text-red-600"
+                                onClick={() => handleReject(claim.id)}
+                                disabled={isApproving}
+                              >
+                                Reject
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>
