@@ -10822,6 +10822,82 @@ export type Database = {
           },
         ]
       }
+      reimbursements: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          category: string
+          created_at: string | null
+          description: string | null
+          employee_id: string
+          id: string
+          organization_id: string | null
+          payment_date: string | null
+          receipt_url: string | null
+          rejection_reason: string | null
+          status: string
+          submitted_date: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          category: string
+          created_at?: string | null
+          description?: string | null
+          employee_id: string
+          id?: string
+          organization_id?: string | null
+          payment_date?: string | null
+          receipt_url?: string | null
+          rejection_reason?: string | null
+          status?: string
+          submitted_date?: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          employee_id?: string
+          id?: string
+          organization_id?: string | null
+          payment_date?: string | null
+          receipt_url?: string | null
+          rejection_reason?: string | null
+          status?: string
+          submitted_date?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reimbursements_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reimbursements_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reimbursements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       remote_policies: {
         Row: {
           created_at: string | null
