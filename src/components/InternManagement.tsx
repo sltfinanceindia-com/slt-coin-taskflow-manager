@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useOrganization } from '@/hooks/useOrganization';
 import { usePagination } from '@/hooks/usePagination';
+import { useCustomRoles } from '@/hooks/useCustomRoles';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +15,8 @@ import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, Plus, Coins, Trash, Eye, UserCheck, UserX, AlertTriangle, Crown } from 'lucide-react';
+import { SelectGroup, SelectLabel, SelectSeparator } from '@/components/ui/select';
+import { Users, Plus, Coins, Trash, Eye, UserCheck, UserX, AlertTriangle, Crown, Building2, CalendarDays, Briefcase } from 'lucide-react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from '@/hooks/use-toast';
@@ -23,6 +25,17 @@ import { SkeletonCard } from '@/components/ui/skeleton';
 import { PaginationControls } from '@/components/common/PaginationControls';
 import { internFormSchema, type InternFormData } from '@/utils/validation-schemas';
 
+interface DepartmentInfo {
+  id: string;
+  name: string;
+  color?: string;
+}
+
+interface DesignationInfo {
+  id: string;
+  name: string;
+}
+
 interface Profile {
   id: string;
   user_id: string;
@@ -30,6 +43,10 @@ interface Profile {
   email: string;
   role: 'admin' | 'intern' | 'org_admin' | 'manager' | 'employee';
   department?: string;
+  department_id?: string;
+  department_info?: DepartmentInfo;
+  designation_id?: string;
+  designation_info?: DesignationInfo;
   employee_id?: string;
   avatar_url?: string;
   total_coins: number;
@@ -42,6 +59,7 @@ interface Profile {
   deactivation_reason?: string;
   reactivated_at?: string;
   organization_id?: string;
+  location?: string;
 }
 
 export function InternManagement() {
@@ -74,44 +92,86 @@ export function InternManagement() {
 
   const coinName = organization?.coin_name || 'Coins';
 
-  // Fetch all users from this organization with their roles from user_roles table
+  // Fetch custom roles from database for dynamic role dropdown
+  const { roles: customRoles } = useCustomRoles();
+
+  // System roles that are always available
+  const systemRoles = [
+    { value: 'org_admin', label: 'Organization Admin' },
+    { value: 'hr_admin', label: 'HR Admin' },
+    { value: 'project_manager', label: 'Project Manager' },
+    { value: 'finance_manager', label: 'Finance Manager' },
+    { value: 'manager', label: 'Manager' },
+    { value: 'team_lead', label: 'Team Lead' },
+    { value: 'employee', label: 'Employee' },
+    { value: 'intern', label: 'Intern' },
+  ];
+
+  // Fetch all users from this organization with their roles and department info
   const { data: interns = [], isLoading } = useQuery({
     queryKey: ['interns', profile?.organization_id],
     queryFn: async () => {
       if (!profile?.organization_id) return [];
       
-      // First get profiles
+      // Get profiles with department join only (designations may not have FK)
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('*')
+        .select(`
+          *,
+          department_info:departments(id, name, color)
+        `)
         .eq('organization_id', profile.organization_id)
         .order('is_active', { ascending: false })
         .order('created_at', { ascending: false });
 
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        // Fallback to simple query without joins
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('organization_id', profile.organization_id)
+          .order('is_active', { ascending: false })
+          .order('created_at', { ascending: false });
+        
+        if (fallbackError) throw fallbackError;
+        
+        // Get roles and merge
+        const { data: rolesData } = await supabase
+          .from('user_roles')
+          .select('user_id, role')
+          .eq('organization_id', profile.organization_id);
+        
+        const roleMap = new Map(rolesData?.map(r => [r.user_id, r.role]) || []);
+        
+        return (fallbackData || [])
+          .map(p => ({
+            ...p,
+            role: roleMap.get(p.id) || p.role || 'employee'
+          }))
+          .filter(p => p.role !== 'super_admin') as Profile[];
+      }
       
-      // Then get user roles
+      // Get user roles
       const { data: rolesData, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role')
         .eq('organization_id', profile.organization_id);
       
-      if (rolesError) throw rolesError;
+      if (rolesError) console.error('Error fetching roles:', rolesError);
       
-      // Create a map of user_id to role - user_roles.user_id matches profiles.id (not profiles.user_id)
+      // Create a map of user_id to role
       const roleMap = new Map(rolesData?.map(r => [r.user_id, r.role]) || []);
       
       // Merge profiles with roles from user_roles table
-      // Filter out super_admin but keep org_admin (they are normal admins for the org)
       const mergedData = (profilesData || [])
         .map(p => ({
           ...p,
-          // profiles.id is the user's UUID which matches user_roles.user_id
           role: roleMap.get(p.id) || p.role || 'employee'
         }))
         .filter(p => p.role !== 'super_admin');
       
-      return mergedData as Profile[];
+      return mergedData as unknown as Profile[];
     },
     enabled: !!profile?.organization_id,
   });
@@ -340,14 +400,27 @@ export function InternManagement() {
                         <SelectValue placeholder="Select role" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="org_admin">Organization Admin</SelectItem>
-                        <SelectItem value="hr_admin">HR Admin</SelectItem>
-                        <SelectItem value="project_manager">Project Manager</SelectItem>
-                        <SelectItem value="finance_manager">Finance Manager</SelectItem>
-                        <SelectItem value="manager">Manager</SelectItem>
-                        <SelectItem value="team_lead">Team Lead</SelectItem>
-                        <SelectItem value="employee">Employee</SelectItem>
-                        <SelectItem value="intern">Intern</SelectItem>
+                        <SelectGroup>
+                          <SelectLabel>System Roles</SelectLabel>
+                          {systemRoles.map((role) => (
+                            <SelectItem key={role.value} value={role.value}>
+                              {role.label}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                        {customRoles.length > 0 && (
+                          <>
+                            <SelectSeparator />
+                            <SelectGroup>
+                              <SelectLabel>Custom Roles</SelectLabel>
+                              {customRoles.map((role) => (
+                                <SelectItem key={role.id} value={role.role_type}>
+                                  {role.name}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </>
+                        )}
                       </SelectContent>
                     </Select>
                   )}
@@ -479,21 +552,51 @@ export function InternManagement() {
                       <Badge variant="outline">{intern.employee_id}</Badge>
                     </div>
                   )}
-                  {intern.department && (
+                  {/* Show department from relationship or fallback to string field */}
+                  {(intern.department_info || intern.department) && (
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Department:</span>
-                      <span>{intern.department}</span>
+                      <span className="text-muted-foreground flex items-center gap-1">
+                        <Building2 className="h-3 w-3" />
+                        Department:
+                      </span>
+                      {intern.department_info ? (
+                        <Badge 
+                          variant="secondary" 
+                          style={{ 
+                            backgroundColor: intern.department_info.color ? `${intern.department_info.color}20` : undefined,
+                            color: intern.department_info.color || undefined,
+                            borderColor: intern.department_info.color || undefined 
+                          }}
+                        >
+                          {intern.department_info.name}
+                        </Badge>
+                      ) : (
+                        <span>{intern.department}</span>
+                      )}
+                    </div>
+                  )}
+                  {/* Show designation if available */}
+                  {intern.designation_info && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground flex items-center gap-1">
+                        <Briefcase className="h-3 w-3" />
+                        Designation:
+                      </span>
+                      <span className="font-medium">{intern.designation_info.name}</span>
                     </div>
                   )}
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Total {coinName}:</span>
                     <div className="flex items-center space-x-1">
-                      <Coins className="h-3 w-3 text-amber-500" />
-                      <span className="font-semibold text-amber-500">{intern.total_coins}</span>
+                      <Coins className="h-3 w-3 text-coin-gold" />
+                      <span className="font-semibold text-coin-gold">{intern.total_coins}</span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Joined:</span>
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      <CalendarDays className="h-3 w-3" />
+                      Joined:
+                    </span>
                     <span>{new Date(intern.created_at).toLocaleDateString()}</span>
                   </div>
                   <div className="flex items-center justify-between pt-2 border-t">

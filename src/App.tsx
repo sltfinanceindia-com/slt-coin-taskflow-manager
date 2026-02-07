@@ -12,6 +12,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { UnifiedAssistant } from "@/components/ai/UnifiedAssistant";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { OrganizationProvider } from "@/hooks/useOrganization";
+import { SidebarProvider as AppSidebarProvider } from "@/contexts/SidebarContext";
 import { useAuthEmailNotifications } from "@/hooks/useAuthEmailNotifications";
 import { useUserRole } from "@/hooks/useUserRole";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -261,7 +262,9 @@ const App = () => (
     <ThemeProvider defaultTheme="system" storageKey="tenexa-ui-theme">
       <AuthProvider>
         <OrganizationProvider>
-          <AppContent />
+          <AppSidebarProvider>
+            <AppContent />
+          </AppSidebarProvider>
         </OrganizationProvider>
       </AuthProvider>
     </ThemeProvider>
