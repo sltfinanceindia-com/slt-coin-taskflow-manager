@@ -187,11 +187,11 @@ export function EnhancedDashboardWidgets() {
   return (
     <div className="space-y-8">
       {/* Main Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 items-stretch">
         {mainStats.map((stat, index) => (
-          <Card key={index} className="hover-scale card-gradient h-full">
-            <CardContent className="p-3 sm:p-4 lg:p-6 h-full">
-              <div className="flex items-center justify-between h-full">
+          <Card key={index} className="hover-scale card-gradient h-full min-h-[140px]">
+            <CardContent className="p-3 sm:p-4 lg:p-6 h-full flex flex-col justify-between">
+              <div className="flex items-start justify-between flex-1">
                 <div className="space-y-1 sm:space-y-2 min-w-0 flex-1">
                   <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{stat.title}</p>
                   <div className="flex items-center gap-1 sm:gap-2">
@@ -220,15 +220,15 @@ export function EnhancedDashboardWidgets() {
       </div>
 
       {/* Quick Action Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 items-stretch">
         {quickActions.map((action, index) => (
           <Card 
             key={index} 
-            className="hover-scale cursor-pointer transition-all hover:ring-2 hover:ring-primary/20"
+            className="hover-scale cursor-pointer transition-all hover:ring-2 hover:ring-primary/20 h-full min-h-[80px]"
             onClick={action.onClick}
           >
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex items-center gap-2 sm:gap-3">
+            <CardContent className="p-3 sm:p-4 h-full flex items-center">
+              <div className="flex items-center gap-2 sm:gap-3 w-full">
                 <action.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${action.color} shrink-0`} />
                 <div className="min-w-0 flex-1">
                   <p className="text-xs sm:text-sm font-medium truncate">{action.title}</p>
@@ -333,16 +333,16 @@ export function EnhancedDashboardWidgets() {
       </Card>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-stretch">
         {/* Weekly Activity Chart */}
-        <Card className="card-gradient">
+        <Card className="card-gradient h-full min-h-[350px]">
           <CardHeader className="pb-3 sm:pb-6">
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
               Weekly Activity
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-3 sm:p-6 pt-0">
+          <CardContent className="p-3 sm:p-6 pt-0 flex-1">
             {weeklyData.length > 0 ? (
               <SimpleLineChart 
                 data={weeklyData}
@@ -359,14 +359,14 @@ export function EnhancedDashboardWidgets() {
         </Card>
 
         {/* Task Status Distribution */}
-        <Card className="card-gradient">
+        <Card className="card-gradient h-full min-h-[350px]">
           <CardHeader className="pb-3 sm:pb-6">
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
               Task Distribution
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-3 sm:p-6 pt-0">
+          <CardContent className="p-3 sm:p-6 pt-0 flex-1">
             <div className="space-y-4">
               {taskStatusData.map((entry, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">

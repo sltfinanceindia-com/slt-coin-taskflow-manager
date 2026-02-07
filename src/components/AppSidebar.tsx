@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useMemo } from "react"
 import { NavLink, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { 
@@ -52,6 +52,7 @@ import { getNavGroupsForRole, filterNavGroupsByFeatures } from "@/config/navigat
 import type { AppRole } from "@/config/navigation/types"
 import { useOrganization } from "@/hooks/useOrganization"
 import { cn } from "@/lib/utils"
+import { useSidebarState } from "@/contexts/SidebarContext"
 
 import {
   Sidebar,
@@ -134,31 +135,12 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
     }
   };
 
-  // Track which groups are open - default first group open
-  const [openGroups, setOpenGroups] = useState<string[]>(() => {
-    const saved = localStorage.getItem('sidebar-open-groups');
-    return saved ? JSON.parse(saved) : ["Main"];
-  });
+  // Use context for persistent sidebar state across navigation
+  const { openGroups, toggleGroup, expandAllGroups, collapseAllGroups } = useSidebarState();
 
-  const toggleGroup = (label: string) => {
-    setOpenGroups(prev => {
-      const next = prev.includes(label) 
-        ? prev.filter(g => g !== label)
-        : [...prev, label];
-      localStorage.setItem('sidebar-open-groups', JSON.stringify(next));
-      return next;
-    });
-  };
-
-  const expandAllGroups = () => {
+  const handleExpandAll = () => {
     const allLabels = navGroups.map(g => g.label);
-    setOpenGroups(allLabels);
-    localStorage.setItem('sidebar-open-groups', JSON.stringify(allLabels));
-  };
-
-  const collapseAllGroups = () => {
-    setOpenGroups([]);
-    localStorage.setItem('sidebar-open-groups', JSON.stringify([]));
+    expandAllGroups(allLabels);
   };
 
   const allExpanded = openGroups.length === navGroups.length;
@@ -307,7 +289,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
               "h-7 text-xs text-muted-foreground hover:text-foreground transition-all",
               collapsed ? "w-full justify-center p-1" : "w-full justify-start px-2"
             )}
-            onClick={allExpanded ? collapseAllGroups : expandAllGroups}
+            onClick={allExpanded ? collapseAllGroups : handleExpandAll}
             title={allExpanded ? 'Collapse All Groups' : 'Expand All Groups'}
           >
             {collapsed ? (
