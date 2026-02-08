@@ -154,9 +154,9 @@ export function useCustomRoles() {
       toast.success('Role created successfully');
       queryClient.invalidateQueries({ queryKey: ['custom-roles'] });
     },
-    onError: (error) => {
-      toast.error('Failed to create role');
+    onError: (error: Error) => {
       console.error('Create role error:', error);
+      toast.error(`Failed to create role: ${error.message}`);
     }
   });
 
