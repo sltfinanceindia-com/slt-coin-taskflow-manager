@@ -17,11 +17,17 @@ export function useTabPersistence({
   // Get initial tab from URL, sessionStorage, or default
   const getInitialTab = () => {
     const urlTab = searchParams.get(paramName);
-    if (urlTab) return urlTab;
+    if (urlTab) {
+      // Return base tab without embedded query params (e.g., "tasks?view=kanban" → "tasks")
+      return urlTab.split('?')[0];
+    }
     
     if (storageKey) {
       const storedTab = sessionStorage.getItem(storageKey);
-      if (storedTab) return storedTab;
+      if (storedTab) {
+        // Also clean stored tab of any query params
+        return storedTab.split('?')[0];
+      }
     }
     
     return defaultTab;

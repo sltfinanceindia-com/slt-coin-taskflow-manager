@@ -126,9 +126,13 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
     if (standaloneRoutes[tab]) {
       navigate(standaloneRoutes[tab]);
     } else {
-      // Always navigate to dashboard with the tab parameter
-      // This ensures navigation works even from standalone pages
-      navigate(`/dashboard?tab=${tab}`);
+      // Handle tabs that include query params (e.g., "tasks?view=kanban")
+      if (tab.includes('?')) {
+        const [baseTab, queryString] = tab.split('?');
+        navigate(`/dashboard?tab=${baseTab}&${queryString}`);
+      } else {
+        navigate(`/dashboard?tab=${tab}`);
+      }
     }
     if (isMobile) {
       setOpenMobile(false);
@@ -145,7 +149,11 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
 
   const allExpanded = openGroups.length === navGroups.length;
 
-  const isActive = (tab: string) => activeTab === tab
+  // Check if tab is active, handling query param tabs (e.g., "tasks?view=kanban" matches activeTab "tasks")
+  const isActive = (tab: string) => {
+    const baseTab = tab.split('?')[0];
+    return activeTab === baseTab || activeTab === tab;
+  }
 
   // Check if any item in a group is active
   const isGroupActive = (items: { url: string }[]) => 
