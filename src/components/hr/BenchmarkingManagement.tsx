@@ -17,23 +17,35 @@ export function BenchmarkingManagement() {
     (region === 'all' || b.region === region)
   );
 
-  // Aggregated comparison data from benchmarks
-  const comparisonData = [
-    { metric: 'Avg Salary', company: 18, industry: 20 },
-    { metric: 'Benefits %', company: 15, industry: 18 },
-    { metric: 'Bonus %', company: 12, industry: 10 },
-    { metric: 'Training Days', company: 8, industry: 10 },
-    { metric: 'Leave Days', company: 25, industry: 22 },
-  ];
+  // Calculate stats first since other computed values depend on it
+  const stats = {
+    rolesAbove: filteredBenchmarks.filter(b => b.status === 'above').length,
+    rolesBelow: filteredBenchmarks.filter(b => b.status === 'below').length,
+    rolesAtMarket: filteredBenchmarks.filter(b => b.status === 'at').length,
+  };
 
-  const radarData = [
-    { subject: 'Compensation', A: 75, B: 80, fullMark: 100 },
-    { subject: 'Benefits', A: 80, B: 78, fullMark: 100 },
-    { subject: 'Work-Life', A: 85, B: 70, fullMark: 100 },
-    { subject: 'Growth', A: 70, B: 75, fullMark: 100 },
-    { subject: 'Culture', A: 88, B: 72, fullMark: 100 },
-    { subject: 'Stability', A: 82, B: 80, fullMark: 100 },
-  ];
+  // Aggregated comparison data from benchmarks - computed from real data
+  const comparisonData = filteredBenchmarks.length > 0 
+    ? [
+        { 
+          metric: 'Avg Salary (L)', 
+          company: Math.round((filteredBenchmarks.reduce((sum, b) => sum + (b.internal_avg || 0), 0) / filteredBenchmarks.length) / 100000), 
+          industry: Math.round((filteredBenchmarks.reduce((sum, b) => sum + (b.market_50 || 0), 0) / filteredBenchmarks.length) / 100000)
+        },
+        { metric: 'Above Market', company: stats.rolesAbove, industry: 0 },
+        { metric: 'At Market', company: stats.rolesAtMarket, industry: filteredBenchmarks.length },
+        { metric: 'Below Market', company: stats.rolesBelow, industry: 0 },
+      ]
+    : [];
+
+  // Radar data - will show when benchmarks exist
+  const radarData = filteredBenchmarks.length > 0
+    ? [
+        { subject: 'Compensation', A: stats.rolesAbove > stats.rolesBelow ? 80 : 60, B: 70, fullMark: 100 },
+        { subject: 'Market Position', A: (stats.rolesAtMarket / Math.max(filteredBenchmarks.length, 1)) * 100, B: 70, fullMark: 100 },
+        { subject: 'Competitiveness', A: stats.rolesBelow === 0 ? 90 : 70, B: 75, fullMark: 100 },
+      ]
+    : [];
 
   const getStatusIcon = (status: string | null) => {
     switch (status) {
@@ -58,12 +70,6 @@ export function BenchmarkingManagement() {
   const formatCurrency = (value: number | null) => {
     if (!value) return '₹0';
     return `₹${(value / 100000).toFixed(1)}L`;
-  };
-
-  const stats = {
-    rolesAbove: filteredBenchmarks.filter(b => b.status === 'above').length,
-    rolesBelow: filteredBenchmarks.filter(b => b.status === 'below').length,
-    rolesAtMarket: filteredBenchmarks.filter(b => b.status === 'at').length,
   };
 
   if (isLoading) {
