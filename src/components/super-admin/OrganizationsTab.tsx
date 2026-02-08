@@ -16,87 +16,55 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Building2, Users, Activity, Plus, Search, ExternalLink } from 'lucide-react';
-
-interface Organization {
-  id: string;
-  name: string;
-  plan: 'free' | 'starter' | 'professional' | 'enterprise';
-  status: 'active' | 'suspended' | 'trial';
-  employeeCount: number;
-  adminEmail: string;
-  createdAt: string;
-  lastActiveAt: string;
-}
-
-const mockOrganizations: Organization[] = [
-  {
-    id: '1',
-    name: 'Acme Corporation',
-    plan: 'enterprise',
-    status: 'active',
-    employeeCount: 250,
-    adminEmail: 'admin@acme.com',
-    createdAt: '2024-01-15',
-    lastActiveAt: '2025-02-01',
-  },
-  {
-    id: '2',
-    name: 'TechStart Inc',
-    plan: 'professional',
-    status: 'active',
-    employeeCount: 45,
-    adminEmail: 'hr@techstart.io',
-    createdAt: '2024-03-20',
-    lastActiveAt: '2025-01-31',
-  },
-  {
-    id: '3',
-    name: 'Global Retail Co',
-    plan: 'starter',
-    status: 'trial',
-    employeeCount: 15,
-    adminEmail: 'admin@globalretail.com',
-    createdAt: '2025-01-10',
-    lastActiveAt: '2025-02-01',
-  },
-];
+import { Building2, Users, Activity, Plus, Search, ExternalLink, Loader2, FileX } from 'lucide-react';
+import { useOrganizations, useOrganizationUserCounts } from '@/hooks/useOrganizations';
 
 export function OrganizationsTab() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [organizations] = useState<Organization[]>(mockOrganizations);
+  const { data: organizations = [], isLoading, error } = useOrganizations();
+  const { data: userCounts = {} } = useOrganizationUserCounts();
 
   const filteredOrgs = organizations.filter(
     (org) =>
       org.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      org.adminEmail.toLowerCase().includes(searchQuery.toLowerCase())
+      org.subdomain?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const getPlanColor = (plan: Organization['plan']) => {
-    switch (plan) {
-      case 'enterprise':
-        return 'bg-purple-500/10 text-purple-600';
-      case 'professional':
-        return 'bg-blue-500/10 text-blue-600';
-      case 'starter':
-        return 'bg-green-500/10 text-green-600';
-      default:
-        return 'bg-gray-500/10 text-gray-600';
-    }
-  };
-
-  const getStatusColor = (status: Organization['status']) => {
+  const getStatusColor = (status: string | null) => {
     switch (status) {
       case 'active':
         return 'default';
-      case 'trial':
+      case 'trialing':
         return 'secondary';
+      case 'canceled':
       case 'suspended':
         return 'destructive';
       default:
         return 'secondary';
     }
   };
+
+  const activeCount = organizations.filter((o) => o.subscription_status === 'active').length;
+  const trialCount = organizations.filter((o) => o.subscription_status === 'trialing').length;
+  const totalUsers = Object.values(userCounts).reduce((sum, count) => sum + count, 0);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="p-8 text-center border-destructive">
+        <FileX className="h-12 w-12 mx-auto text-destructive" />
+        <h3 className="mt-4 font-semibold">Error loading organizations</h3>
+        <p className="text-muted-foreground">{(error as Error).message}</p>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -135,9 +103,7 @@ export function OrganizationsTab() {
                 <Activity className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">
-                  {organizations.filter((o) => o.status === 'active').length}
-                </p>
+                <p className="text-2xl font-bold">{activeCount}</p>
                 <p className="text-sm text-muted-foreground">Active</p>
               </div>
             </div>
@@ -150,9 +116,7 @@ export function OrganizationsTab() {
                 <Users className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">
-                  {organizations.reduce((sum, o) => sum + o.employeeCount, 0)}
-                </p>
+                <p className="text-2xl font-bold">{totalUsers}</p>
                 <p className="text-sm text-muted-foreground">Total Users</p>
               </div>
             </div>
@@ -165,9 +129,7 @@ export function OrganizationsTab() {
                 <Building2 className="h-6 w-6 text-yellow-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">
-                  {organizations.filter((o) => o.status === 'trial').length}
-                </p>
+                <p className="text-2xl font-bold">{trialCount}</p>
                 <p className="text-sm text-muted-foreground">On Trial</p>
               </div>
             </div>
@@ -192,47 +154,51 @@ export function OrganizationsTab() {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Organization</TableHead>
-                <TableHead>Plan</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Employees</TableHead>
-                <TableHead>Admin</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredOrgs.map((org) => (
-                <TableRow key={org.id}>
-                  <TableCell className="font-medium">{org.name}</TableCell>
-                  <TableCell>
-                    <Badge className={getPlanColor(org.plan)}>{org.plan}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusColor(org.status) as any}>
-                      {org.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{org.employeeCount}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {org.adminEmail}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {new Date(org.createdAt).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="sm">
-                      <ExternalLink className="h-4 w-4 mr-1" />
-                      View
-                    </Button>
-                  </TableCell>
+          {filteredOrgs.length === 0 ? (
+            <div className="text-center py-8">
+              <FileX className="h-12 w-12 mx-auto text-muted-foreground" />
+              <h3 className="mt-4 font-semibold">No organizations found</h3>
+              <p className="text-muted-foreground">Create an organization to get started</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Organization</TableHead>
+                  <TableHead>Subdomain</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Users</TableHead>
+                  <TableHead>Max Users</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredOrgs.map((org) => (
+                  <TableRow key={org.id}>
+                    <TableCell className="font-medium">{org.name}</TableCell>
+                    <TableCell className="text-muted-foreground">{org.subdomain}</TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusColor(org.subscription_status) as any}>
+                        {org.subscription_status || 'unknown'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{userCounts[org.id] || 0}</TableCell>
+                    <TableCell>{org.max_users === -1 ? 'Unlimited' : org.max_users || '-'}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {org.created_at ? new Date(org.created_at).toLocaleDateString() : '-'}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="sm">
+                        <ExternalLink className="h-4 w-4 mr-1" />
+                        View
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>

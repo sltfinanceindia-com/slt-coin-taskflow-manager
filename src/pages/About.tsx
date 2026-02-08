@@ -48,12 +48,7 @@ const values = [
 ];
 
 const team = [
-  { name: 'Rajesh Kumar', role: 'CEO & Founder', image: null },
-  { name: 'Priya Sharma', role: 'CTO', image: null },
-  { name: 'Amit Patel', role: 'VP Engineering', image: null },
-  { name: 'Sneha Reddy', role: 'VP Product', image: null },
-  { name: 'Vikram Singh', role: 'VP Sales', image: null },
-  { name: 'Anita Desai', role: 'VP Customer Success', image: null },
+  { name: 'Komirisetti Gopi', role: 'Founder', image: null },
 ];
 
 const milestones = [
@@ -226,7 +221,7 @@ export default function About() {
               </motion.div>
 
               <motion.div
-                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 max-w-6xl mx-auto"
+                className="flex justify-center max-w-6xl mx-auto"
                 variants={staggerContainer}
                 initial="initial"
                 whileInView="animate"

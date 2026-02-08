@@ -25,41 +25,11 @@ import {
   CheckCircle,
   AlertCircle,
   FileText,
-  Users,
   Clock,
+  FileX,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-interface ImportHistory {
-  id: string;
-  fileName: string;
-  type: 'employees' | 'attendance' | 'leaves' | 'salaries';
-  status: 'completed' | 'failed' | 'processing';
-  recordsProcessed: number;
-  recordsFailed: number;
-  createdAt: string;
-}
-
-const mockHistory: ImportHistory[] = [
-  {
-    id: '1',
-    fileName: 'employees_jan2025.xlsx',
-    type: 'employees',
-    status: 'completed',
-    recordsProcessed: 150,
-    recordsFailed: 2,
-    createdAt: '2025-01-15T10:30:00',
-  },
-  {
-    id: '2',
-    fileName: 'attendance_dec2024.csv',
-    type: 'attendance',
-    status: 'completed',
-    recordsProcessed: 3200,
-    recordsFailed: 0,
-    createdAt: '2025-01-02T09:15:00',
-  },
-];
+import { useImportHistory } from '@/hooks/useImportHistory';
 
 export function BulkImportExport() {
   const [activeTab, setActiveTab] = useState('import');
@@ -69,6 +39,7 @@ export function BulkImportExport() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const { toast } = useToast();
+  const { data: importHistory = [], isLoading: historyLoading } = useImportHistory();
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -127,7 +98,7 @@ export function BulkImportExport() {
     });
   };
 
-  const getStatusBadge = (status: ImportHistory['status']) => {
+  const getStatusBadge = (status: 'completed' | 'failed' | 'processing') => {
     switch (status) {
       case 'completed':
         return (
@@ -317,37 +288,47 @@ export function BulkImportExport() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {mockHistory.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between p-4 border rounded-lg"
-                  >
-                    <div className="flex items-center gap-4">
-                      <FileSpreadsheet className="h-8 w-8 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">{item.fileName}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(item.createdAt).toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <p className="text-sm font-medium">
-                          {item.recordsProcessed} records
-                        </p>
-                        {item.recordsFailed > 0 && (
-                          <p className="text-sm text-destructive">
-                            {item.recordsFailed} failed
+              {historyLoading ? (
+                <div className="text-center py-8 text-muted-foreground">Loading...</div>
+              ) : importHistory.length === 0 ? (
+                <div className="text-center py-8">
+                  <FileX className="h-12 w-12 mx-auto text-muted-foreground" />
+                  <h3 className="mt-4 font-semibold">No import history</h3>
+                  <p className="text-muted-foreground">Import records will appear here after you perform an import</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {importHistory.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
+                      <div className="flex items-center gap-4">
+                        <FileSpreadsheet className="h-8 w-8 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium">{item.fileName}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(item.createdAt).toLocaleString()}
                           </p>
-                        )}
+                        </div>
                       </div>
-                      {getStatusBadge(item.status)}
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <p className="text-sm font-medium">
+                            {item.recordsProcessed} records
+                          </p>
+                          {item.recordsFailed > 0 && (
+                            <p className="text-sm text-destructive">
+                              {item.recordsFailed} failed
+                            </p>
+                          )}
+                        </div>
+                        {getStatusBadge(item.status)}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

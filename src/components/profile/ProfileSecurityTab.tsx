@@ -10,9 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Shield, Key, Smartphone, Monitor, LogOut, AlertTriangle } from 'lucide-react';
+import { Shield, Key, Smartphone, Monitor, LogOut, AlertTriangle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useActiveSessions } from '@/hooks/useActiveSessions';
 
 export function ProfileSecurityTab() {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -20,6 +20,8 @@ export function ProfileSecurityTab() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  const { sessions, isLoading, logoutSession, isLoggingOut } = useActiveSessions();
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,18 +53,14 @@ export function ProfileSecurityTab() {
     toast.info(twoFactorEnabled ? '2FA disabled' : '2FA setup would be initiated here');
   };
 
-  // Mock active sessions data
-  const activeSessions = [
-    { id: '1', device: 'Chrome on Windows', location: 'Mumbai, India', lastActive: 'Now', current: true },
-    { id: '2', device: 'Safari on iPhone', location: 'Mumbai, India', lastActive: '2 hours ago', current: false },
-  ];
-
-  // Mock login history
-  const loginHistory = [
-    { id: '1', date: new Date().toISOString(), device: 'Chrome on Windows', location: 'Mumbai, India', status: 'success' },
-    { id: '2', date: new Date(Date.now() - 86400000).toISOString(), device: 'Safari on iPhone', location: 'Mumbai, India', status: 'success' },
-    { id: '3', date: new Date(Date.now() - 172800000).toISOString(), device: 'Firefox on Mac', location: 'Unknown', status: 'failed' },
-  ];
+  // Transform sessions to display format
+  const activeSessions = sessions.map((session, index) => ({
+    id: session.id,
+    device: `${session.device_info?.browser || 'Unknown'} on ${session.device_info?.os || 'Unknown'}`,
+    location: session.geo_location?.city || 'Unknown Location',
+    lastActive: index === 0 ? 'Now' : new Date(session.last_activity_at).toLocaleString(),
+    current: index === 0,
+  }));
 
   return (
     <div className="space-y-6">
@@ -162,30 +160,43 @@ export function ProfileSecurityTab() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {activeSessions.map((session) => (
-            <div
-              key={session.id}
-              className="flex items-center justify-between p-3 border rounded-lg"
-            >
-              <div className="flex items-center gap-3">
-                <Monitor className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="font-medium">{session.device}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {session.location} • {session.lastActive}
-                  </p>
-                </div>
-              </div>
-              {session.current ? (
-                <Badge variant="secondary">Current</Badge>
-              ) : (
-                <Button variant="ghost" size="sm">
-                  <LogOut className="h-4 w-4 mr-1" />
-                  End
-                </Button>
-              )}
+          {isLoading ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-6 w-6 animate-spin" />
             </div>
-          ))}
+          ) : activeSessions.length === 0 ? (
+            <p className="text-center text-muted-foreground py-4">No active sessions found</p>
+          ) : (
+            activeSessions.map((session) => (
+              <div
+                key={session.id}
+                className="flex items-center justify-between p-3 border rounded-lg"
+              >
+                <div className="flex items-center gap-3">
+                  <Monitor className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">{session.device}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {session.location} • {session.lastActive}
+                    </p>
+                  </div>
+                </div>
+                {session.current ? (
+                  <Badge variant="secondary">Current</Badge>
+                ) : (
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => logoutSession(session.id)}
+                    disabled={isLoggingOut}
+                  >
+                    <LogOut className="h-4 w-4 mr-1" />
+                    End
+                  </Button>
+                )}
+              </div>
+            ))
+          )}
         </CardContent>
       </Card>
 
@@ -201,29 +212,29 @@ export function ProfileSecurityTab() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {loginHistory.map((login) => (
-            <div
-              key={login.id}
-              className="flex items-center justify-between p-3 border rounded-lg"
-            >
-              <div className="flex items-center gap-3">
-                {login.status === 'failed' ? (
-                  <AlertTriangle className="h-5 w-5 text-destructive" />
-                ) : (
+          {sessions.length === 0 ? (
+            <p className="text-center text-muted-foreground py-4">No login history available</p>
+          ) : (
+            sessions.slice(0, 5).map((session, index) => (
+              <div
+                key={session.id}
+                className="flex items-center justify-between p-3 border rounded-lg"
+              >
+                <div className="flex items-center gap-3">
                   <Shield className="h-5 w-5 text-primary" />
-                )}
-                <div>
-                  <p className="font-medium">{login.device}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {login.location} • {new Date(login.date).toLocaleDateString()}
-                  </p>
+                  <div>
+                    <p className="font-medium">
+                      {session.device_info?.browser || 'Unknown'} on {session.device_info?.os || 'Unknown'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {session.geo_location?.city || 'Unknown'} • {new Date(session.login_at).toLocaleDateString()}
+                    </p>
+                  </div>
                 </div>
+                <Badge variant="secondary">Success</Badge>
               </div>
-              <Badge variant={login.status === 'failed' ? 'destructive' : 'secondary'}>
-                {login.status === 'failed' ? 'Failed' : 'Success'}
-              </Badge>
-            </div>
-          ))}
+            ))
+          )}
         </CardContent>
       </Card>
     </div>

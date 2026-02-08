@@ -5,65 +5,13 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, CheckCircle, AlertTriangle, Clock, FileText, Calendar, Download } from "lucide-react";
-import { format, addDays } from "date-fns";
-
-interface ComplianceItem {
-  id: string;
-  name: string;
-  type: string;
-  due_date: string;
-  status: string;
-  last_filed?: string;
-  amount?: number;
-}
+import { Shield, CheckCircle, AlertTriangle, Clock, FileText, Calendar, Download, Loader2 } from "lucide-react";
+import { format } from "date-fns";
+import { useComplianceItems } from "@/hooks/useComplianceItems";
 
 export function ComplianceManagement() {
   const [activeTab, setActiveTab] = useState("overview");
-
-  const complianceItems: ComplianceItem[] = [
-    {
-      id: "1",
-      name: "PF Monthly Return",
-      type: "pf",
-      due_date: format(addDays(new Date(), 5), "yyyy-MM-dd"),
-      status: "pending",
-      amount: 125000
-    },
-    {
-      id: "2",
-      name: "ESI Contribution",
-      type: "esi",
-      due_date: format(addDays(new Date(), 10), "yyyy-MM-dd"),
-      status: "pending",
-      amount: 45000
-    },
-    {
-      id: "3",
-      name: "Professional Tax",
-      type: "pt",
-      due_date: format(addDays(new Date(), -2), "yyyy-MM-dd"),
-      status: "overdue",
-      amount: 12000
-    },
-    {
-      id: "4",
-      name: "TDS Quarterly Return",
-      type: "tds",
-      due_date: format(addDays(new Date(), 30), "yyyy-MM-dd"),
-      status: "upcoming",
-      last_filed: "2024-01-15"
-    },
-    {
-      id: "5",
-      name: "LWF Contribution",
-      type: "lwf",
-      due_date: format(addDays(new Date(), 15), "yyyy-MM-dd"),
-      status: "completed",
-      last_filed: format(new Date(), "yyyy-MM-dd"),
-      amount: 8000
-    }
-  ];
+  const { complianceItems, isLoading, updateStatus } = useComplianceItems();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -93,7 +41,17 @@ export function ComplianceManagement() {
     upcoming: complianceItems.filter(c => c.status === "upcoming").length
   };
 
-  const complianceScore = Math.round((stats.completed / complianceItems.length) * 100);
+  const complianceScore = complianceItems.length > 0 
+    ? Math.round((stats.completed / complianceItems.length) * 100)
+    : 0;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 p-6">
