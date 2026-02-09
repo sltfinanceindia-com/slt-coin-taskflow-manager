@@ -105,76 +105,76 @@ export function EmployeeDashboard() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="section-spacing">
       {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg p-6">
-        <h2 className="text-2xl font-bold">Welcome back, {profile?.full_name?.split(' ')[0] || 'there'}!</h2>
-        <p className="text-muted-foreground mt-1">
+      <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg p-4 sm:p-6">
+        <h2 className="text-page-title">Welcome back, {profile?.full_name?.split(' ')[0] || 'there'}!</h2>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">
           {format(new Date(), 'EEEE, MMMM d, yyyy')}
         </p>
       </div>
 
       {/* Main Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="hover:shadow-md transition-shadow">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">My Tasks</p>
-                <p className="text-2xl font-bold">{pendingTasks.length}</p>
-                <p className="text-xs text-muted-foreground">
+      <div className="dashboard-grid-stats">
+        <Card className="hover:shadow-md transition-shadow h-full card-stat">
+          <CardContent className="card-padding h-full flex flex-col justify-between">
+            <div className="flex items-start justify-between flex-1">
+              <div className="space-y-1 sm:space-y-2">
+                <p className="text-stat-label">My Tasks</p>
+                <p className="text-stat-value">{pendingTasks.length}</p>
+                <p className="text-caption">
                   {completedTasks.length} completed
                 </p>
               </div>
-              <div className="p-3 rounded-full bg-primary/10">
-                <Target className="h-6 w-6 text-primary" />
+              <div className="p-2 sm:p-3 rounded-full bg-primary/10 shrink-0">
+                <Target className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Hours This Week</p>
-                <p className="text-2xl font-bold">{weeklyHours}h</p>
-                <Progress value={(weeklyHours / 40) * 100} className="h-1.5 mt-2" />
+        <Card className="hover:shadow-md transition-shadow h-full card-stat">
+          <CardContent className="card-padding h-full flex flex-col justify-between">
+            <div className="flex items-start justify-between flex-1">
+              <div className="space-y-1 sm:space-y-2">
+                <p className="text-stat-label">Hours This Week</p>
+                <p className="text-stat-value">{weeklyHours}h</p>
+                <Progress value={(weeklyHours / 40) * 100} className="h-1.5 sm:h-2 mt-2" />
               </div>
-              <div className="p-3 rounded-full bg-info/10">
-                <Clock className="h-6 w-6 text-info" />
+              <div className="p-2 sm:p-3 rounded-full bg-info/10 shrink-0">
+                <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-info" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Leave Balance</p>
-                <p className="text-2xl font-bold">{totalLeaveBalance} days</p>
-                <p className="text-xs text-muted-foreground">
+        <Card className="hover:shadow-md transition-shadow h-full card-stat">
+          <CardContent className="card-padding h-full flex flex-col justify-between">
+            <div className="flex items-start justify-between flex-1">
+              <div className="space-y-1 sm:space-y-2">
+                <p className="text-stat-label">Leave Balance</p>
+                <p className="text-stat-value">{totalLeaveBalance} days</p>
+                <p className="text-caption">
                   {leaveBalance?.length || 0} leave types
                 </p>
               </div>
-              <div className="p-3 rounded-full bg-success/10">
-                <CalendarDays className="h-6 w-6 text-success" />
+              <div className="p-2 sm:p-3 rounded-full bg-success/10 shrink-0">
+                <CalendarDays className="h-5 w-5 sm:h-6 sm:w-6 text-success" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Completion Rate</p>
-                <p className="text-2xl font-bold">{completionRate}%</p>
-                <Progress value={completionRate} className="h-1.5 mt-2" />
+        <Card className="hover:shadow-md transition-shadow h-full card-stat">
+          <CardContent className="card-padding h-full flex flex-col justify-between">
+            <div className="flex items-start justify-between flex-1">
+              <div className="space-y-1 sm:space-y-2">
+                <p className="text-stat-label">Completion Rate</p>
+                <p className="text-stat-value">{completionRate}%</p>
+                <Progress value={completionRate} className="h-1.5 sm:h-2 mt-2" />
               </div>
-              <div className="p-3 rounded-full bg-warning/10">
-                <TrendingUp className="h-6 w-6 text-warning" />
+              <div className="p-2 sm:p-3 rounded-full bg-warning/10 shrink-0">
+                <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-warning" />
               </div>
             </div>
           </CardContent>
@@ -182,18 +182,18 @@ export function EmployeeDashboard() {
       </div>
 
       {/* Today's Status */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Clock className="h-5 w-5" />
+      <Card className="card-gradient">
+        <CardHeader className="pb-3 sm:pb-4">
+          <CardTitle className="text-card-title flex items-center gap-2">
+            <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
             Today&apos;s Status
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+        <CardContent className="card-padding-compact pt-0">
+          <div className="flex items-center justify-between p-3 sm:p-4 bg-muted/50 rounded-lg">
             <div>
-              <p className="font-medium">Attendance</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="font-medium text-sm sm:text-base">Attendance</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 {todayAttendance?.clock_in_time 
                   ? `Clocked in at ${format(parseISO(todayAttendance.clock_in_time), 'h:mm a')}`
                   : 'Not clocked in yet'}
@@ -207,73 +207,79 @@ export function EmployeeDashboard() {
       </Card>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="dashboard-grid-3">
         <Card 
-          className="cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all"
+          className="cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all h-full card-compact"
           onClick={() => navigateToTab('tasks')}
         >
-          <CardContent className="p-4 flex items-center gap-3">
-            <AlertCircle className="h-5 w-5 text-warning" />
-            <div className="flex-1">
-              <p className="font-medium">Due Today</p>
-              <p className="text-lg font-bold text-warning">{dueTodayTasks.length}</p>
+          <CardContent className="card-padding-compact h-full flex items-center">
+            <div className="flex items-center gap-2 sm:gap-3 w-full">
+              <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-warning shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm sm:text-base truncate">Due Today</p>
+                <p className="text-base sm:text-lg font-bold text-warning">{dueTodayTasks.length}</p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
             </div>
-            <ArrowRight className="h-4 w-4 text-muted-foreground" />
           </CardContent>
         </Card>
 
         <Card 
-          className="cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all"
+          className="cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all h-full card-compact"
           onClick={() => navigateToTab('leave')}
         >
-          <CardContent className="p-4 flex items-center gap-3">
-            <Calendar className="h-5 w-5 text-primary" />
-            <div className="flex-1">
-              <p className="font-medium">Apply Leave</p>
-              <p className="text-sm text-muted-foreground">{totalLeaveBalance} days available</p>
+          <CardContent className="card-padding-compact h-full flex items-center">
+            <div className="flex items-center gap-2 sm:gap-3 w-full">
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-primary shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm sm:text-base truncate">Apply Leave</p>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">{totalLeaveBalance} days available</p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
             </div>
-            <ArrowRight className="h-4 w-4 text-muted-foreground" />
           </CardContent>
         </Card>
 
         <Card 
-          className="cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all"
+          className="cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all h-full card-compact"
           onClick={() => navigateToTab('time')}
         >
-          <CardContent className="p-4 flex items-center gap-3">
-            <Clock className="h-5 w-5 text-info" />
-            <div className="flex-1">
-              <p className="font-medium">Log Time</p>
-              <p className="text-sm text-muted-foreground">{weeklyHours}h this week</p>
+          <CardContent className="card-padding-compact h-full flex items-center">
+            <div className="flex items-center gap-2 sm:gap-3 w-full">
+              <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-info shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm sm:text-base truncate">Log Time</p>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">{weeklyHours}h this week</p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
             </div>
-            <ArrowRight className="h-4 w-4 text-muted-foreground" />
           </CardContent>
         </Card>
       </div>
 
       {/* Upcoming Events */}
       {upcomingEvents.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
+        <Card className="card-gradient">
+          <CardHeader className="pb-3 sm:pb-4">
+            <CardTitle className="text-card-title flex items-center gap-2">
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
               Upcoming Events
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
+          <CardContent className="card-padding-compact pt-0">
+            <div className="space-y-2 sm:space-y-3">
               {upcomingEvents.map(event => (
                 <div 
                   key={event.id} 
-                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                  className="flex items-center justify-between p-2 sm:p-3 bg-muted/50 rounded-lg"
                 >
-                  <div>
-                    <p className="font-medium">{event.title}</p>
-                    <p className="text-sm text-muted-foreground">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-sm sm:text-base truncate">{event.title}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       {format(parseISO(event.start_time), 'MMM d, h:mm a')}
                     </p>
                   </div>
-                  <Badge variant="outline">{event.event_type}</Badge>
+                  <Badge variant="outline" className="shrink-0 ml-2">{event.event_type}</Badge>
                 </div>
               ))}
             </div>
@@ -282,26 +288,26 @@ export function EmployeeDashboard() {
       )}
 
       {/* Recent Tasks */}
-      <Card>
-        <CardHeader className="pb-3 flex-row items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Target className="h-5 w-5" />
+      <Card className="card-gradient card-list">
+        <CardHeader className="pb-3 sm:pb-4 flex-row items-center justify-between">
+          <CardTitle className="text-card-title flex items-center gap-2">
+            <Target className="h-4 w-4 sm:h-5 sm:w-5" />
             My Tasks
           </CardTitle>
           <Button variant="ghost" size="sm" onClick={() => navigateToTab('tasks')}>
             View All <ArrowRight className="h-4 w-4 ml-1" />
           </Button>
         </CardHeader>
-        <CardContent>
+        <CardContent className="card-padding-compact pt-0">
           {myTasks.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {myTasks.slice(0, 5).map(task => (
                 <div 
                   key={task.id} 
-                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                  className="flex items-center justify-between p-2 sm:p-3 bg-muted/50 rounded-lg hover-scale"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{task.title}</p>
+                    <p className="font-medium text-sm sm:text-base truncate">{task.title}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge variant="outline" className="text-xs">
                         {task.status.replace('_', ' ')}
@@ -313,7 +319,7 @@ export function EmployeeDashboard() {
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 text-amber-500">
+                  <div className="flex items-center gap-1 text-coin-gold shrink-0 ml-2">
                     <Coins className="h-4 w-4" />
                     <span className="font-medium">{task.slt_coin_value}</span>
                   </div>
@@ -321,7 +327,7 @@ export function EmployeeDashboard() {
               ))}
             </div>
           ) : (
-            <p className="text-center py-8 text-muted-foreground">
+            <p className="text-center py-8 text-muted-foreground text-sm">
               No tasks assigned yet
             </p>
           )}

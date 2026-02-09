@@ -289,13 +289,13 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
         )}
 
         {/* Expand/Collapse All + Notification Widget - Compact */}
-        <div className="px-3 py-1 border-b border-sidebar-border shrink-0 space-y-1">
+        <div className="px-3 py-2 border-b border-sidebar-border shrink-0 space-y-2">
           <Button
             variant="ghost"
             size="sm"
             className={cn(
-              "h-7 text-xs text-muted-foreground hover:text-foreground transition-all",
-              collapsed ? "w-full justify-center p-1" : "w-full justify-start px-2"
+              "h-8 text-xs text-muted-foreground hover:text-foreground transition-all",
+              collapsed ? "w-full justify-center p-1" : "w-full justify-start px-3"
             )}
             onClick={allExpanded ? collapseAllGroups : handleExpandAll}
             title={allExpanded ? 'Collapse All Groups' : 'Expand All Groups'}
@@ -311,7 +311,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
 
         {/* Navigation with Collapsible Groups */}
         <ScrollArea className="flex-1">
-          <div className="px-3 py-3 space-y-1">
+          <div className="px-3 py-3 space-y-2">
             {navGroups.map((group) => {
               const GroupIcon = group.icon
               const groupIsActive = isGroupActive(group.items)
@@ -368,7 +368,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
                       )} />
                     </button>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="pl-4 mt-1 space-y-0.5">
+                  <CollapsibleContent className="pl-4 mt-1.5 space-y-1 border-l-2 border-muted ml-3">
                     <SidebarMenu>
                       {group.items.map((item) => (
                         <SidebarMenuItem key={item.title}>
