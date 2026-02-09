@@ -2,7 +2,7 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-// Standard card
+// Standard card - uses design tokens
 const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -10,7 +10,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200",
+      "rounded-xl border border-border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow duration-200",
       className
     )}
     {...props}
@@ -18,7 +18,7 @@ const Card = React.forwardRef<
 ))
 Card.displayName = "Card"
 
-// Clickable card variant
+// Clickable card variant - uses design tokens
 const ClickableCard = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -26,7 +26,7 @@ const ClickableCard = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all duration-200 cursor-pointer",
+      "rounded-xl border border-border bg-card text-card-foreground shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-primary/50 transition-all duration-200 cursor-pointer",
       className
     )}
     {...props}
@@ -34,7 +34,7 @@ const ClickableCard = React.forwardRef<
 ))
 ClickableCard.displayName = "ClickableCard"
 
-// Compact card variant
+// Compact card variant - uses design tokens
 const CompactCard = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -42,7 +42,7 @@ const CompactCard = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm p-4 text-sm",
+      "rounded-lg border border-border bg-card text-card-foreground shadow-sm p-4 text-sm",
       className
     )}
     {...props}
@@ -56,7 +56,7 @@ const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col space-y-1.5 p-6 pb-4 border-b border-gray-200 dark:border-gray-800", className)}
+    className={cn("flex flex-col space-y-1.5 p-4 sm:p-6 pb-3 sm:pb-4 border-b border-border", className)}
     {...props}
   />
 ))
@@ -69,7 +69,7 @@ const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "text-lg font-semibold leading-none tracking-tight text-gray-900 dark:text-gray-100",
+      "text-base sm:text-lg font-semibold leading-none tracking-tight text-foreground",
       className
     )}
     {...props}
@@ -83,7 +83,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-sm text-gray-600 dark:text-gray-400 mt-1", className)}
+    className={cn("text-sm text-muted-foreground mt-1", className)}
     {...props}
   />
 ))
@@ -93,7 +93,7 @@ const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("p-6 py-4 space-y-4", className)} {...props} />
+  <div ref={ref} className={cn("p-4 sm:p-6 py-3 sm:py-4 space-y-3 sm:space-y-4", className)} {...props} />
 ))
 CardContent.displayName = "CardContent"
 
@@ -103,7 +103,7 @@ const CardFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-center justify-end gap-3 p-6 pt-4 border-t border-gray-200 dark:border-gray-800", className)}
+    className={cn("flex items-center justify-end gap-2 sm:gap-3 p-4 sm:p-6 pt-3 sm:pt-4 border-t border-border", className)}
     {...props}
   />
 ))

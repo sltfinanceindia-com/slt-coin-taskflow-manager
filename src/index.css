@@ -503,6 +503,103 @@ All colors MUST be HSL.
     transition: all 0.3s ease-out;
   }
 
+  /* ============================================
+   * STANDARDIZED LAYOUT UTILITIES
+   * Consistent spacing, grids, and card heights
+   * ============================================ */
+
+  /* Dashboard Grid System - Consistent gaps and alignment */
+  .dashboard-grid {
+    @apply grid gap-4 items-stretch;
+  }
+  
+  .dashboard-grid-stats {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch;
+  }
+  
+  .dashboard-grid-2 {
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch;
+  }
+  
+  .dashboard-grid-3 {
+    @apply grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch;
+  }
+
+  /* Standardized Card Min-Heights */
+  .card-stat {
+    min-height: 140px;
+  }
+  
+  .card-compact {
+    min-height: 80px;
+  }
+  
+  .card-chart {
+    min-height: 350px;
+  }
+  
+  .card-list {
+    min-height: 200px;
+  }
+
+  /* Standardized Card Padding */
+  .card-padding {
+    @apply p-4 sm:p-6;
+  }
+  
+  .card-padding-compact {
+    @apply p-3 sm:p-4;
+  }
+
+  /* Section Spacing */
+  .section-spacing {
+    @apply space-y-6;
+  }
+  
+  .section-spacing-compact {
+    @apply space-y-4;
+  }
+
+  /* Typography Utility Classes - Semantic naming */
+  .text-page-title {
+    @apply text-2xl sm:text-3xl font-bold tracking-tight;
+  }
+  
+  .text-section-title {
+    @apply text-lg sm:text-xl font-semibold;
+  }
+  
+  .text-card-title {
+    @apply text-base sm:text-lg font-medium;
+  }
+  
+  .text-stat-value {
+    @apply text-xl sm:text-2xl lg:text-3xl font-bold;
+  }
+  
+  .text-stat-label {
+    @apply text-xs sm:text-sm font-medium text-muted-foreground;
+  }
+  
+  .text-caption {
+    @apply text-xs text-muted-foreground;
+  }
+
+  /* Sidebar-specific typography */
+  .text-nav {
+    font-size: clamp(0.8125rem, 0.75rem + 0.2vw, 0.875rem);
+    line-height: 1.4;
+  }
+  
+  /* Table-specific typography */
+  .text-table-header {
+    @apply text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide;
+  }
+  
+  .text-table-cell {
+    @apply text-sm;
+  }
+
   /* Hover effects */
   .hover-lift {
     transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
