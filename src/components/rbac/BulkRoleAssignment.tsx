@@ -37,6 +37,10 @@ import { AppRole } from '@/hooks/useUserRole';
 
 const ROLE_OPTIONS: { value: AppRole; label: string }[] = [
   { value: 'org_admin', label: 'Organization Admin' },
+  { value: 'admin', label: 'Admin' },
+  { value: 'hr_admin', label: 'HR Admin' },
+  { value: 'project_manager', label: 'Project Manager' },
+  { value: 'finance_manager', label: 'Finance Manager' },
   { value: 'manager', label: 'Manager' },
   { value: 'team_lead', label: 'Team Lead' },
   { value: 'employee', label: 'Employee' },

@@ -294,28 +294,6 @@ export default function ModernDashboard() {
                   />
                 )}
 
-                {/* Header - hide on communication tab on mobile */}
-                {!(activeTab === 'communication' && isMobile) && (
-                  <header className="mb-4 sm:mb-6 lg:mb-8">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-                      <div>
-                        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                          Welcome back, {profile?.full_name}!
-                        </h1>
-                        <p className="text-muted-foreground text-xs sm:text-sm mt-1">
-                          Here's what's happening with your workspace today.
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="hidden sm:flex items-center gap-1">
-                          <Crown className="h-3 w-3" />
-                          {getRoleDisplayName()}
-                        </Badge>
-                        <NotificationCenter />
-                      </div>
-                    </div>
-                  </header>
-                )}
 
                 {/* Main Content Area */}
                 {renderTabContent()}
