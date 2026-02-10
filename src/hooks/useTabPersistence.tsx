@@ -36,19 +36,25 @@ export function useTabPersistence({
   const [activeTab, setActiveTabState] = useState(getInitialTab);
 
   // Sync tab state with URL and storage
-  const setActiveTab = useCallback((tab: string) => {
-    setActiveTabState(tab);
+  const setActiveTab = useCallback((tab: string | unknown) => {
+    // Guard against non-string values (e.g., objects passed from event handlers)
+    const tabStr = typeof tab === 'string' ? tab : String(tab || defaultTab);
+    if (tabStr === '[object Object]' || !tabStr) {
+      return; // Ignore invalid tab values
+    }
+    
+    setActiveTabState(tabStr);
     
     // Update URL without full page reload
     const newParams = new URLSearchParams(searchParams);
-    newParams.set(paramName, tab);
+    newParams.set(paramName, tabStr);
     setSearchParams(newParams, { replace: true });
     
     // Store in sessionStorage for refresh persistence
     if (storageKey) {
-      sessionStorage.setItem(storageKey, tab);
+      sessionStorage.setItem(storageKey, tabStr);
     }
-  }, [searchParams, setSearchParams, paramName, storageKey]);
+  }, [searchParams, setSearchParams, paramName, storageKey, defaultTab]);
 
   // Listen for URL changes (back/forward navigation)
   useEffect(() => {
