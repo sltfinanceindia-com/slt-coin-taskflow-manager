@@ -21,7 +21,6 @@ import { useUserRole } from "@/hooks/useUserRole"
 import { useNavigate } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { GlobalSearch } from "@/components/search/GlobalSearch"
-import { QuickActionsDropdown } from "@/components/navigation/QuickActionsDropdown"
 import { OrganizationSwitcher } from "@/components/navigation/OrganizationSwitcher"
 
 export function AppHeader() {
@@ -73,8 +72,6 @@ export function AppHeader() {
         </div>
         
         <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Quick Actions */}
-          <QuickActionsDropdown />
           {/* Super Admin Toggle - Navigate to Super Admin Panel */}
           {isSuperAdmin && (
             <Button

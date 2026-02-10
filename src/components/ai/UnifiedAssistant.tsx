@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,18 +7,22 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { useAuth } from '@/hooks/useAuth';
 import { 
   MessageCircle, X, Send, Bot, User, Loader2, Minimize2, Maximize2,
   Sparkles, HelpCircle, FileText, Calendar, Users, Clock, Palmtree,
-  Home, CheckSquare, Target, Heart, Receipt, Zap
+  Home, CheckSquare, Target, Heart, Receipt, Zap, Trash2, Copy, 
+  RotateCcw, ThumbsUp, ThumbsDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  feedback?: 'up' | 'down';
 }
 
 interface QuickAction {
@@ -35,6 +39,12 @@ const chatQuickActions = [
   { label: 'My Tasks', icon: CheckSquare, prompt: 'Show me my current tasks and their status' },
   { label: 'Team Info', icon: Users, prompt: 'Who are the members of my team?' },
   { label: 'Help', icon: HelpCircle, prompt: 'What can you help me with?' },
+];
+
+const followUpSuggestions = [
+  'Tell me more',
+  'Can you clarify?',
+  'What else should I know?',
 ];
 
 export function UnifiedAssistant() {
@@ -223,17 +233,15 @@ export function UnifiedAssistant() {
       <Button
         onClick={() => setIsOpen(true)}
         className={cn(
-          "fixed z-50 h-14 w-14 rounded-full shadow-lg",
-          "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70",
-          // Mobile: bottom-right, moved up for better visibility
+          "fixed z-50 h-14 w-14 rounded-full shadow-2xl",
+          "bg-gradient-to-r from-primary via-primary/90 to-accent hover:from-primary/90 hover:to-accent/80",
           "bottom-20 right-4 sm:bottom-8 sm:right-6",
-          // Ensure it's above other content
-          "hover:scale-105 transition-transform"
+          "hover:scale-110 transition-all duration-300 animate-pulse-ring"
         )}
         size="icon"
       >
-        <Zap className="h-6 w-6" />
-        <span className="sr-only">Open Assistant</span>
+        <Sparkles className="h-6 w-6" />
+        <span className="sr-only">Open AI Assistant</span>
       </Button>
     );
   }
@@ -252,20 +260,37 @@ export function UnifiedAssistant() {
           "h-[60vh] sm:h-[500px]"
         )
     )}>
-      <CardHeader className="flex flex-row items-center justify-between py-3 px-4 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-t-lg">
+      <CardHeader className="flex flex-row items-center justify-between py-3 px-4 bg-gradient-to-r from-primary via-primary/90 to-accent text-primary-foreground rounded-t-lg">
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Bot className="h-6 w-6" />
+            <Sparkles className="h-6 w-6" />
             <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 bg-green-400 rounded-full border-2 border-primary" />
           </div>
           <div>
-            <CardTitle className="text-sm font-semibold">AI Assistant</CardTitle>
+            <CardTitle className="text-sm font-semibold">TeneXA AI</CardTitle>
             {!isMinimized && (
-              <p className="text-xs opacity-80">Chat & Quick Actions</p>
+              <p className="text-xs opacity-80">Your intelligent work assistant</p>
             )}
           </div>
         </div>
         <div className="flex items-center gap-1">
+          {messages.length > 0 && !isMinimized && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
+                    onClick={() => { setMessages([]); toast.success('Chat cleared'); }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom"><p>Clear chat</p></TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -333,28 +358,77 @@ export function UnifiedAssistant() {
                       <div
                         key={index}
                         className={cn(
-                          "flex gap-3",
+                          "flex gap-3 group",
                           message.role === 'user' ? "justify-end" : "justify-start"
                         )}
                       >
                         {message.role === 'assistant' && (
                           <Avatar className="h-8 w-8 shrink-0">
                             <AvatarFallback className="bg-primary text-primary-foreground">
-                              <Bot className="h-4 w-4" />
+                              <Sparkles className="h-4 w-4" />
                             </AvatarFallback>
                           </Avatar>
                         )}
-                        <div
-                          className={cn(
-                            "rounded-lg px-3 py-2 max-w-[80%] text-sm",
-                            message.role === 'user'
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted"
-                          )}
-                        >
-                          <p className="whitespace-pre-wrap">{message.content}</p>
-                          {message.content === '' && message.role === 'assistant' && (
-                            <Loader2 className="h-4 w-4 animate-spin" />
+                        <div className="flex flex-col gap-1 max-w-[80%]">
+                          <div
+                            className={cn(
+                              "rounded-lg px-3 py-2 text-sm",
+                              message.role === 'user'
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-muted"
+                            )}
+                          >
+                            <p className="whitespace-pre-wrap">{message.content}</p>
+                            {message.content === '' && message.role === 'assistant' && (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            )}
+                          </div>
+                          {/* Action buttons for assistant messages */}
+                          {message.role === 'assistant' && message.content && (
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(message.content);
+                                  toast.success('Copied!');
+                                }}
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className={cn("h-6 w-6", message.feedback === 'up' && "text-green-500")}
+                                onClick={() => {
+                                  setMessages(prev => prev.map((m, i) => i === index ? { ...m, feedback: 'up' } : m));
+                                }}
+                              >
+                                <ThumbsUp className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className={cn("h-6 w-6", message.feedback === 'down' && "text-destructive")}
+                                onClick={() => {
+                                  setMessages(prev => prev.map((m, i) => i === index ? { ...m, feedback: 'down' } : m));
+                                }}
+                              >
+                                <ThumbsDown className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => {
+                                  const prevUserMsg = messages.slice(0, index).reverse().find(m => m.role === 'user');
+                                  if (prevUserMsg) sendMessage(prevUserMsg.content);
+                                }}
+                              >
+                                <RotateCcw className="h-3 w-3" />
+                              </Button>
+                            </div>
                           )}
                         </div>
                         {message.role === 'user' && (
@@ -367,6 +441,22 @@ export function UnifiedAssistant() {
                         )}
                       </div>
                     ))}
+                    {/* Follow-up suggestions after last assistant message */}
+                    {!isLoading && messages.length > 0 && messages[messages.length - 1]?.role === 'assistant' && messages[messages.length - 1]?.content && (
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {followUpSuggestions.map((suggestion) => (
+                          <Button
+                            key={suggestion}
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs rounded-full"
+                            onClick={() => sendMessage(suggestion)}
+                          >
+                            {suggestion}
+                          </Button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
