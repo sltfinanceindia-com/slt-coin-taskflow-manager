@@ -251,8 +251,9 @@ export default function ModernDashboard() {
       }
     }
     
-    // Fallback - just show the tab name
-    return [{ label: tab.charAt(0).toUpperCase() + tab.slice(1).replace(/-/g, ' ') }];
+    // Fallback - safely show the tab name
+    const tabStr = typeof tab === 'string' ? tab : 'overview';
+    return [{ label: tabStr.charAt(0).toUpperCase() + tabStr.slice(1).replace(/-/g, ' ') }];
   };
 
   return (
