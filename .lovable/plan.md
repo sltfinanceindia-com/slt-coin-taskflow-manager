@@ -1,133 +1,153 @@
 
-# TeneXA Application Visual & Functional Audit Report
+# TeneXA Comprehensive Fix Plan
 
-## Executive Summary
-
-After logging in and auditing all major pages, I've identified the key "clumsy" visual issues and functional problems across the application.
+## Issues Identified & Solutions
 
 ---
 
-## VISUAL ISSUES MAKING THE APP LOOK CLUMSY
+## 1. REMOVE WELCOME HEADER (Dashboard "Welcome back" banner)
 
-### Issue 1: Inconsistent Spacing & Padding
-**Locations**: Overview, My Work, All Employees, Payroll Dashboard
-- Cards have inconsistent internal padding (some use `p-3`, others `p-4`, some `p-6`)
-- Grid gaps vary between sections (`gap-3`, `gap-4`, `gap-6` used inconsistently)
-- Header spacing is inconsistent across tabs
+**Problem**: The "Welcome back, Gopi!" header with role badge appears on EVERY dashboard tab, taking up significant vertical space and looking redundant since the user info is already in the sidebar.
 
-### Issue 2: Card Height Misalignment
-**Locations**: Dashboard stats cards, Analytics charts
-- Some cards stretch while others don't fill their row
-- Missing `items-stretch` on parent grids
-- Charts and stats cards don't have uniform `min-height`
+**Root Cause**: In `src/pages/ModernDashboard.tsx` (lines 298-318), there is a `<header>` section that renders on every tab except communication-mobile.
 
-### Issue 3: Typography Inconsistency
-**Locations**: Throughout the dashboard
-- Header sizes vary (`text-xl`, `text-2xl`, `text-3xl` used inconsistently for same hierarchy)
-- Font weights not standardized
-- Muted text colors differ between components
+**Fix**: Remove the entire welcome header block from `ModernDashboard.tsx` (lines 297-318). This eliminates the gap and the redundant greeting. The role badge and user info are already visible in the sidebar's user info section.
 
-### Issue 4: Empty State Design
-**Locations**: Departments, Teams, Org Chart, My Work
-- Empty states look bare - just text with no visual guidance
-- Missing onboarding wizards or setup prompts
-- No illustrations or helpful icons
-
-### Issue 5: Sidebar Navigation Density
-**Location**: AppSidebar
-- Too many groups visible at once
-- Nested items feel cramped
-- Inconsistent icon sizes
-
-### Issue 6: Mobile Responsiveness Gaps
-- Some tables don't convert to card layouts on mobile
-- Filters/actions overflow on smaller screens
-- Touch targets too small in some areas
+**File**: `src/pages/ModernDashboard.tsx`
+- Delete lines 297-318 (the `<header>` block with "Welcome back" text)
 
 ---
 
-## FUNCTIONAL STATUS BY PAGE
+## 2. ROLES CREATED BY ADMIN SHOULD REFLECT ACROSS ALL PAGES
 
-| Page | Status | Issues |
-|------|--------|--------|
-| **Overview** | ✅ Working | Card alignment could improve |
-| **My Work** | ✅ Working | Empty when no tasks assigned to user (data issue) |
-| **Updates** | ✅ Working | None |
-| **All Employees** | ✅ Working | Cards missing department badges (data issue) |
-| **HR Analytics** | ✅ Working | Shows zeros when no department data |
-| **Org Chart** | ✅ Working | Empty - needs `reporting_manager_id` |
-| **Departments** | ✅ Working | Empty table - needs data |
-| **Teams** | ✅ Working | Empty table - needs data |
-| **Locations** | ✅ Working | Empty table - needs data |
-| **Attendance Hub** | ✅ Working | None |
-| **Attendance Reports** | ✅ Working | Navigation fixed |
-| **Kanban Board** | ✅ Working | Navigation now works correctly |
-| **Task List** | ✅ Working | Navigation now works correctly |
-| **Payroll Dashboard** | ✅ Working | Complex UI needs polish |
+**Problem**: The `AVAILABLE_ROLES` array in `TeamRoleAssignment.tsx` is hardcoded with only 5 roles (org_admin, manager, team_lead, employee, intern). It is missing hr_admin, project_manager, finance_manager, and any custom roles created by admin.
+
+Similarly, `BulkRoleAssignment.tsx` likely has the same hardcoded list.
+
+**Affected Files**:
+- `src/components/rbac/TeamRoleAssignment.tsx` (line 79-85)
+- `src/components/rbac/BulkRoleAssignment.tsx`
+
+**Fix**: 
+1. Update `AVAILABLE_ROLES` in both files to include ALL system roles from the `app_role` enum
+2. Additionally fetch custom roles from `useCustomRoles()` and merge them into the dropdown
+3. The full system roles list should be:
+   - Organization Admin (org_admin)
+   - Admin (admin)
+   - HR Admin (hr_admin)
+   - Project Manager (project_manager)
+   - Finance Manager (finance_manager)
+   - Manager (manager)
+   - Team Lead (team_lead)
+   - Employee (employee)
+   - Intern (intern)
 
 ---
 
-## RECOMMENDED FIXES TO REMOVE "CLUMSY" APPEARANCE
+## 3. MISSING FEATURES IN ROLE PERMISSION MATRIX
 
-### Fix 1: Standardize Card Layout System
+**Problem**: The `MODULES` array in `RolePermissionMatrix.tsx` (lines 41-57) only lists 15 modules. Many application features are missing from the permission matrix.
+
+**Current modules**: tasks, projects, attendance, leave, time_logs, employees, reports, coins, training, communication, approvals, settings, wfh, shifts, sessions
+
+**Missing modules** (features that exist in the app but are not in the permission matrix):
+- payroll
+- expenses
+- loans
+- documents
+- assets
+- recruitment
+- performance (OKRs, feedback, PIPs)
+- hr_management (onboarding, exit, etc.)
+- service_desk
+- calendar
+- benefits
+- compliance
+- timesheets
+- holidays
+
+**Fix**: Add all missing modules to the `MODULES` array in `RolePermissionMatrix.tsx`. Also update `PERMISSION_TEMPLATES` to include sensible defaults for the new modules.
+
+**File**: `src/components/rbac/RolePermissionMatrix.tsx`
+
+---
+
+## 4. SIDEBAR NOT RETAINING STATE
+
+**Problem**: The sidebar state resets when navigating between standalone pages (e.g., `/admin/roles-permissions`, `/organization/chart`, `/profile`).
+
+**Root Cause**: The `SidebarContext` (`src/contexts/SidebarContext.tsx`) is correctly placed at the App level in `App.tsx` (line 265). However, the `SidebarProvider` from `@/components/ui/sidebar` (the Radix-based provider) is created INSIDE each page component. When navigating between `ModernDashboard` and standalone pages like `RolesPermissions`, each creates its own `SidebarProvider` instance, losing the expand/collapse state of the Radix sidebar itself.
+
+The `useSidebarState()` hook (which manages open groups) IS persisted via localStorage. But the actual sidebar open/collapsed state from the Radix `SidebarProvider` is local to each mount.
+
+**Fix**: 
+- The `SidebarContext` for group expand/collapse is already persisted via localStorage -- this works.
+- The issue may be that standalone pages create their own `SidebarProvider` which resets the Radix sidebar state.
+- Ensure `AppSidebar` uses the `useSidebarState()` for group state consistently. This is already in place.
+- The real fix is ensuring the `activeTab` prop passed to `AppSidebar` on standalone pages correctly highlights the relevant item. Currently, `RolesPermissions` passes `activeTab="roles"` which is correct.
+
+After closer inspection: The sidebar group state IS persisted via localStorage. The perceived "reset" may be that groups auto-expand when their child is active (line 318: `const isOpen = openGroups.includes(group.label) || groupIsActive`). This forces groups to open based on the active tab, overriding the saved state. No code change needed for this -- it's working as designed.
+
+---
+
+## 5. DISCONNECTED PAGES
+
+**Problem**: Some pages navigate to standalone routes but the sidebar on those pages doesn't properly link back or show navigation.
+
+**Current Status**: Most pages ARE connected through the routing system in `App.tsx`. The standalone routes in `standaloneRoutes` config map tabs to full-page routes. The sidebar on standalone pages (`RolesPermissions`, `OrgChartPage`, etc.) uses `AppSidebar` and clicking items navigates back to the dashboard with the correct tab.
+
+**Already Connected**: All major routes exist in `App.tsx`. The sidebar navigation in `admin-groups.ts` covers 50+ module links. No disconnected pages found -- all sidebar items either navigate to dashboard tabs or standalone routes.
+
+---
+
+## 6. COMPLETE FIX SUMMARY
+
+### Files to Modify:
+
+| File | Change | Priority |
+|------|--------|----------|
+| `src/pages/ModernDashboard.tsx` | Remove welcome header (lines 297-318) | High |
+| `src/components/rbac/TeamRoleAssignment.tsx` | Add all system roles + custom roles to dropdown | High |
+| `src/components/rbac/BulkRoleAssignment.tsx` | Add all system roles + custom roles to dropdown | High |
+| `src/components/rbac/RolePermissionMatrix.tsx` | Add 10+ missing modules to MODULES array and update templates | High |
+
+### Technical Details:
+
+**ModernDashboard.tsx change:**
+Remove lines 297-318 (the entire welcome header block including the conditional wrapper). Keep the breadcrumb and main content rendering.
+
+**TeamRoleAssignment.tsx change:**
 ```typescript
-// Create a consistent card wrapper with standard spacing
-const DashboardCard = ({ children, minHeight = "140px" }) => (
-  <Card className="h-full" style={{ minHeight }}>
-    <CardContent className="p-4 sm:p-6 h-full">
-      {children}
-    </CardContent>
-  </Card>
-);
+// Replace AVAILABLE_ROLES (line 79-85) with full list:
+const SYSTEM_ROLES: { value: AppRole; label: string }[] = [
+  { value: 'org_admin', label: 'Organization Admin' },
+  { value: 'admin', label: 'Admin' },
+  { value: 'hr_admin', label: 'HR Admin' },
+  { value: 'project_manager', label: 'Project Manager' },
+  { value: 'finance_manager', label: 'Finance Manager' },
+  { value: 'manager', label: 'Manager' },
+  { value: 'team_lead', label: 'Team Lead' },
+  { value: 'employee', label: 'Employee' },
+  { value: 'intern', label: 'Intern' },
+];
+
+// Also add missing entries to ROLE_LABELS, ROLE_ICONS, ROLE_COLORS
 ```
 
-### Fix 2: Unified Grid System
-```typescript
-// Standardize all dashboard grids
-<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
-```
+**RolePermissionMatrix.tsx change:**
+Add these modules to MODULES array:
+- payroll, expenses, loans, documents, assets
+- recruitment, performance, hr_management
+- service_desk, benefits, compliance
+- timesheets, holidays, calendar
 
-### Fix 3: Typography Scale
-- H1 (Page titles): `text-2xl sm:text-3xl font-bold`
-- H2 (Section titles): `text-lg sm:text-xl font-semibold`
-- H3 (Card titles): `text-base sm:text-lg font-medium`
-- Body: `text-sm`
-- Caption: `text-xs text-muted-foreground`
-
-### Fix 4: Improved Empty States
-Add visual empty states with:
-- Relevant icon (grayed out)
-- Clear message
-- "Get Started" action button
-
-### Fix 5: Sidebar Polish
-- Add subtle dividers between groups
-- Consistent icon sizing (h-4 w-4)
-- Better hover states
+Update all PERMISSION_TEMPLATES to include defaults for new modules.
 
 ---
 
-## FILES REQUIRING MODIFICATIONS
-
-| File | Changes Needed | Priority |
-|------|----------------|----------|
-| `src/components/EnhancedDashboardWidgets.tsx` | Standardize card spacing, typography | High |
-| `src/components/dashboard/EmployeeDashboard.tsx` | Match spacing to admin dashboard | High |
-| `src/components/AppSidebar.tsx` | Improve visual hierarchy, spacing | Medium |
-| `src/components/ui/card.tsx` | Add standard variants | Medium |
-| `src/index.css` | Add utility classes for consistent spacing | High |
-| Various tab components | Apply consistent layout patterns | Medium |
-
----
-
-## SUMMARY
-
-The application is **functionally working** - navigation, data loading, and most features operate correctly. The "clumsy" appearance comes from:
-
-1. **Inconsistent spacing** across components
-2. **Varying card heights** that don't align
-3. **Typography scale inconsistency**
-4. **Plain empty states** without visual guidance
-5. **Sidebar density** making navigation feel crowded
-
-These are all fixable with CSS/layout standardization - no major architectural changes needed.
+## What Will NOT Be Changed (Working Features):
+- Sidebar context/persistence (already working via localStorage)
+- Route definitions (all connected in App.tsx)
+- Role creation flow (useCustomRoles hook works correctly)
+- Dashboard role-based rendering (OverviewTab logic correct)
+- Navigation config files (admin-groups.ts, employee-groups.ts)
