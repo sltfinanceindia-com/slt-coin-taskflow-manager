@@ -67,8 +67,6 @@ export function AIAssistantButton({
           action,
           content,
           options,
-          userId: profile?.id,
-          organizationId: profile?.organization_id,
         },
       });
 

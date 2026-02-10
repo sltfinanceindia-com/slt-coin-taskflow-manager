@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { authenticateRequest } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -32,7 +33,10 @@ serve(async (req) => {
   }
 
   try {
-    const { action, content, options, userId, organizationId } = await req.json();
+    // Authenticate and get verified user info
+    const authedUser = await authenticateRequest(req);
+
+    const { action, content, options } = await req.json();
 
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
@@ -47,7 +51,6 @@ serve(async (req) => {
 
     let userMessage = content;
     
-    // Add options to the prompt if provided
     if (action === 'change_tone' && options?.tone) {
       userMessage = `Change the tone to ${options.tone}: ${content}`;
     } else if (action === 'translate' && options?.targetLanguage) {
@@ -75,8 +78,8 @@ serve(async (req) => {
 
     if (!response.ok) {
       await supabase.from('ai_usage_logs').insert({
-        user_id: userId,
-        organization_id: organizationId,
+        user_id: authedUser.userId,
+        organization_id: authedUser.organizationId,
         feature_type: 'composer',
         action,
         response_time_ms: responseTime,
@@ -96,10 +99,10 @@ serve(async (req) => {
     const data = await response.json();
     const result = data.choices?.[0]?.message?.content || '';
 
-    // Log successful usage
+    // Log successful usage with verified user info
     await supabase.from('ai_usage_logs').insert({
-      user_id: userId,
-      organization_id: organizationId,
+      user_id: authedUser.userId,
+      organization_id: authedUser.organizationId,
       feature_type: 'composer',
       action,
       response_time_ms: responseTime,
@@ -110,8 +113,9 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
+    if (error instanceof Response) return error;
     console.error("AI Communication Assistant error:", error);
-    return new Response(JSON.stringify({ error: error.message || "Unknown error" }), {
+    return new Response(JSON.stringify({ error: "An internal error occurred" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
