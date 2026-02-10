@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { authenticateRequest } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,7 +16,6 @@ async function getOrganizationContext(supabase: any, organizationId: string, use
   let context = '';
   
   try {
-    // Get organization details
     const { data: org } = await supabase
       .from('organizations')
       .select('name, domain, settings')
@@ -26,7 +26,6 @@ async function getOrganizationContext(supabase: any, organizationId: string, use
       context += `Organization: ${org.name}\n`;
     }
 
-    // Get user's profile and role
     const { data: userProfile } = await supabase
       .from('profiles')
       .select('full_name, role, department_id, departments(name)')
@@ -41,7 +40,6 @@ async function getOrganizationContext(supabase: any, organizationId: string, use
       context += '\n';
     }
 
-    // Get user's tasks
     const { data: tasks } = await supabase
       .from('tasks')
       .select('id, title, status, priority, end_date')
@@ -57,10 +55,9 @@ async function getOrganizationContext(supabase: any, organizationId: string, use
       });
     }
 
-    // Get team members (direct reports or same department)
     const { data: teamMembers } = await supabase
       .from('profiles')
-      .select('id, full_name, role, email')
+      .select('id, full_name, role')
       .eq('organization_id', organizationId)
       .eq('is_active', true)
       .limit(20);
@@ -75,7 +72,6 @@ async function getOrganizationContext(supabase: any, organizationId: string, use
       }
     }
 
-    // Get departments
     const { data: departments } = await supabase
       .from('departments')
       .select('name, description')
@@ -85,7 +81,6 @@ async function getOrganizationContext(supabase: any, organizationId: string, use
       context += `\nDepartments: ${departments.map((d: any) => d.name).join(', ')}\n`;
     }
 
-    // Get active projects
     const { data: projects } = await supabase
       .from('projects')
       .select('name, status, description')
@@ -100,7 +95,6 @@ async function getOrganizationContext(supabase: any, organizationId: string, use
       });
     }
 
-    // Get leave balance (if table exists)
     const { data: leaveBalance } = await supabase
       .from('leave_balances')
       .select('leave_type, balance, used')
@@ -127,13 +121,21 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, conversationId, userId, organizationId, userRole = 'employee', stream = true } = await req.json();
+    // Authenticate and get verified user info
+    const authedUser = await authenticateRequest(req);
+
+    const { messages, conversationId, stream = true } = await req.json();
 
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+
+    // Use verified user info instead of request body
+    const userId = authedUser.userId;
+    const organizationId = authedUser.organizationId;
+    const userRole = authedUser.role;
 
     // Fetch organization context
     let orgContext = '';
@@ -245,7 +247,7 @@ Remember: You have access to real organization data - use it to provide relevant
       throw new Error(`AI gateway error: ${response.status}`);
     }
 
-    // Log successful usage
+    // Log successful usage with verified user info
     const responseTime = Date.now() - startTime;
     await supabase.from('ai_usage_logs').insert({
       user_id: userId,
@@ -267,8 +269,9 @@ Remember: You have access to real organization data - use it to provide relevant
       });
     }
   } catch (error) {
+    if (error instanceof Response) return error;
     console.error("AI HR Chatbot error:", error);
-    return new Response(JSON.stringify({ error: error.message || "Unknown error" }), {
+    return new Response(JSON.stringify({ error: "An internal error occurred" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

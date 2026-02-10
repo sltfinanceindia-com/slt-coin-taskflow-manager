@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -129,22 +130,23 @@ export function UnifiedAssistant() {
     setIsLoading(true);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token;
+      if (!accessToken) throw new Error('Not authenticated');
+
       const response = await fetch(
-        `https://orybzmkhccrqmjuvioln.supabase.co/functions/v1/ai-hr-chatbot`,
+        `${import.meta.env.VITE_SUPABASE_URL || 'https://orybzmkhccrqmjuvioln.supabase.co'}/functions/v1/ai-hr-chatbot`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yeWJ6bWtoY2NycW1qdXZpb2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0MjIxMjMsImV4cCI6MjA2Njk5ODEyM30.7ExzbKzuM2Vu7sMBVaLOoWGs1nHEOW2KyTcomRR8QsQ`,
+            Authorization: `Bearer ${accessToken}`,
           },
           body: JSON.stringify({
             messages: [...messages, userMessage].map(m => ({
               role: m.role,
               content: m.content,
             })),
-            userId: profile?.id,
-            organizationId: profile?.organization_id,
-            userRole: profile?.role || 'employee',
             stream: true,
           }),
         }

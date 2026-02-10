@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { authenticateRequest } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -65,7 +66,10 @@ serve(async (req) => {
   }
 
   try {
-    const { action, data, userId, organizationId } = await req.json();
+    // Authenticate and get verified user info
+    const authedUser = await authenticateRequest(req);
+
+    const { action, data } = await req.json();
 
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
@@ -99,8 +103,8 @@ serve(async (req) => {
 
     if (!response.ok) {
       await supabase.from('ai_usage_logs').insert({
-        user_id: userId,
-        organization_id: organizationId,
+        user_id: authedUser.userId,
+        organization_id: authedUser.organizationId,
         feature_type: 'performance',
         action,
         response_time_ms: responseTime,
@@ -120,10 +124,10 @@ serve(async (req) => {
     const responseData = await response.json();
     const result = responseData.choices?.[0]?.message?.content || '';
 
-    // Log successful usage
+    // Log successful usage with verified user info
     await supabase.from('ai_usage_logs').insert({
-      user_id: userId,
-      organization_id: organizationId,
+      user_id: authedUser.userId,
+      organization_id: authedUser.organizationId,
       feature_type: 'performance',
       action,
       response_time_ms: responseTime,
@@ -134,8 +138,9 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
+    if (error instanceof Response) return error;
     console.error("AI Performance Assistant error:", error);
-    return new Response(JSON.stringify({ error: error.message || "Unknown error" }), {
+    return new Response(JSON.stringify({ error: "An internal error occurred" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

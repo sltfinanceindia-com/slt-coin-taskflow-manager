@@ -91,8 +91,6 @@ export function AIDocumentGenerator() {
         body: {
           documentType,
           details,
-          userId: profile?.id,
-          organizationId: profile?.organization_id,
         },
       });
 

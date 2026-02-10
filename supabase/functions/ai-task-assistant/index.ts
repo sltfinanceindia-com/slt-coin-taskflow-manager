@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { authenticateRequest } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,15 +7,17 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Authenticate and get verified user info
+    const authedUser = await authenticateRequest(req);
+
     const { action, taskTitle, taskDescription, projectContext } = await req.json();
 
-    console.log(`AI Task Assistant called with action: ${action}, title: ${taskTitle}`);
+    console.log(`AI Task Assistant called with action: ${action}, title: ${taskTitle}, user: ${authedUser.userId}`);
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -103,7 +106,7 @@ Respond with ONLY the improved description text, no formatting or labels.`;
     if (!response.ok) {
       const errorText = await response.text();
       console.error("AI Gateway Error:", response.status, errorText);
-      throw new Error(`AI Gateway error: ${response.status} - ${errorText}`);
+      throw new Error(`AI Gateway error: ${response.status}`);
     }
 
     const data = await response.json();
@@ -119,9 +122,10 @@ Respond with ONLY the improved description text, no formatting or labels.`;
       }
     );
   } catch (error) {
+    if (error instanceof Response) return error;
     console.error("Error in ai-task-assistant:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "An internal error occurred" }),
       { 
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 500 
