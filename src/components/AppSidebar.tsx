@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { NavLink, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { 
@@ -27,7 +27,10 @@ import {
   Activity,
   HeartPulse,
   Zap,
-  ChevronDown,
+   ChevronDown,
+   ChevronUp,
+   PanelTopClose,
+   PanelTopOpen,
   Briefcase,
   TrendingUp,
   Users2,
@@ -82,6 +85,51 @@ import { SidebarNotificationWidget } from "@/components/SidebarNotificationWidge
 // Note: Navigation groups are now imported from @/config/navigation
 // The hardcoded adminNavGroups and internNavGroups have been removed.
 // The sidebar uses getNavGroupsForRole() from the navigation config.
+
+// Collapsible wrapper for sidebar header (Logo, User Info, Super Admin)
+function SidebarHeaderCollapsible({ 
+  collapsed: sidebarCollapsed, 
+  isMobile, 
+  children 
+}: { 
+  collapsed: boolean; 
+  isMobile: boolean; 
+  children: React.ReactNode;
+}) {
+  const [headerHidden, setHeaderHidden] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const saved = localStorage.getItem('sidebar-header-collapsed');
+    if (saved !== null) return JSON.parse(saved);
+    return false; // default expanded
+  });
+
+  useEffect(() => {
+    localStorage.setItem('sidebar-header-collapsed', JSON.stringify(headerHidden));
+  }, [headerHidden]);
+
+  if (sidebarCollapsed) {
+    // When sidebar is icon-collapsed, just render children normally
+    return <>{children}</>;
+  }
+
+  return (
+    <Collapsible open={!headerHidden} onOpenChange={(open) => setHeaderHidden(!open)}>
+      <CollapsibleContent>{children}</CollapsibleContent>
+      <CollapsibleTrigger asChild>
+        <button
+          className="flex items-center justify-center w-full py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors border-b border-sidebar-border"
+          title={headerHidden ? 'Show header' : 'Hide header'}
+        >
+          {headerHidden ? (
+            <><ChevronDown className="h-3.5 w-3.5 mr-1" /> Show Profile</>
+          ) : (
+            <><ChevronUp className="h-3.5 w-3.5 mr-1" /> Hide Profile</>
+          )}
+        </button>
+      </CollapsibleTrigger>
+    </Collapsible>
+  );
+}
 
 interface AppSidebarProps {
   activeTab: string
@@ -203,90 +251,93 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
       collapsible="icon"
     >
       <SidebarContent className="bg-sidebar h-screen flex flex-col">
-        {/* Logo Section */}
-        <div className="p-4 border-b border-sidebar-border shrink-0">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <img 
-                src="/slt-hub-icon.png" 
-                alt="Tenexa"
-                className="h-9 w-auto object-contain shrink-0 rounded-xl"
-              />
-              {!collapsed && (
-                <div className="min-w-0 flex-1">
-                  <h2 className="text-sidebar-foreground text-base truncate font-black">
-                    Tenexa
-                  </h2>
-                </div>
-              )}
-            </div>
-            {!collapsed && <NotificationCenter />}
-          </div>
-        </div>
-
-        {/* User Info - Compact */}
-        {!collapsed && (
-          <div className="px-4 py-3 border-b border-sidebar-border shrink-0">
-            <div className="flex items-center gap-2">
-              <Avatar className="h-8 w-8 shrink-0">
-                <AvatarImage 
-                  src={profile?.avatar_url} 
-                  alt={profile?.full_name || 'User'} 
+        {/* Collapsible Header: Logo + User Info + Super Admin */}
+        <SidebarHeaderCollapsible collapsed={collapsed} isMobile={isMobile}>
+          {/* Logo Section */}
+          <div className="p-4 border-b border-sidebar-border shrink-0">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <img 
+                  src="/slt-hub-icon.png" 
+                  alt="Tenexa"
+                  className="h-9 w-auto object-contain shrink-0 rounded-xl"
                 />
-                <AvatarFallback className={cn(
-                  "text-sm font-medium",
-                  isSuperAdmin 
-                    ? "bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400" 
-                    : "bg-emerald-100 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-400"
-                )}>
-                  {profile?.full_name?.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-sidebar-foreground truncate">
-                  {profile?.full_name}
-                </p>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">{roleBadge.label}</span>
-                  <span className="text-xs text-coin-gold font-medium flex items-center gap-1">
-                    <Coins className="h-3 w-3" />
-                    {profile?.total_coins || 0}
-                  </span>
-                </div>
-                {organization?.name && (
-                  <p className="text-xs text-muted-foreground truncate">
-                    {organization.name}
-                  </p>
+                {!collapsed && (
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-sidebar-foreground text-base truncate font-black">
+                      Tenexa
+                    </h2>
+                  </div>
                 )}
               </div>
+              {!collapsed && <NotificationCenter />}
             </div>
           </div>
-        )}
 
-        {/* Super Admin Quick Access */}
-        {isSuperAdmin && (
-          <div className="px-3 py-2 border-b border-sidebar-border shrink-0">
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <NavLink to="/super-admin" className="w-full">
-                  {({ isActive: navIsActive }) => (
-                    <SidebarMenuButton 
-                      className={cn(
-                        "h-9 w-full px-3 py-2 rounded-lg gap-3 transition-colors text-nav",
-                        navIsActive 
-                          ? "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-400 font-medium"
-                          : "hover:bg-purple-50 dark:hover:bg-purple-900/30 text-purple-600 dark:text-purple-400"
-                      )}
-                    >
-                      <Crown className="h-4 w-4 shrink-0" />
-                      {!collapsed && <span className="truncate">Super Admin Panel</span>}
-                    </SidebarMenuButton>
+          {/* User Info - Compact */}
+          {!collapsed && (
+            <div className="px-4 py-3 border-b border-sidebar-border shrink-0">
+              <div className="flex items-center gap-2">
+                <Avatar className="h-8 w-8 shrink-0">
+                  <AvatarImage 
+                    src={profile?.avatar_url} 
+                    alt={profile?.full_name || 'User'} 
+                  />
+                  <AvatarFallback className={cn(
+                    "text-sm font-medium",
+                    isSuperAdmin 
+                      ? "bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400" 
+                      : "bg-emerald-100 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-400"
+                  )}>
+                    {profile?.full_name?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-sidebar-foreground truncate">
+                    {profile?.full_name}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">{roleBadge.label}</span>
+                    <span className="text-xs text-coin-gold font-medium flex items-center gap-1">
+                      <Coins className="h-3 w-3" />
+                      {profile?.total_coins || 0}
+                    </span>
+                  </div>
+                  {organization?.name && (
+                    <p className="text-xs text-muted-foreground truncate">
+                      {organization.name}
+                    </p>
                   )}
-                </NavLink>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </div>
-        )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Super Admin Quick Access */}
+          {isSuperAdmin && (
+            <div className="px-3 py-2 border-b border-sidebar-border shrink-0">
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <NavLink to="/super-admin" className="w-full">
+                    {({ isActive: navIsActive }) => (
+                      <SidebarMenuButton 
+                        className={cn(
+                          "h-9 w-full px-3 py-2 rounded-lg gap-3 transition-colors text-nav",
+                          navIsActive 
+                            ? "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-400 font-medium"
+                            : "hover:bg-purple-50 dark:hover:bg-purple-900/30 text-purple-600 dark:text-purple-400"
+                        )}
+                      >
+                        <Crown className="h-4 w-4 shrink-0" />
+                        {!collapsed && <span className="truncate">Super Admin Panel</span>}
+                      </SidebarMenuButton>
+                    )}
+                  </NavLink>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </div>
+          )}
+        </SidebarHeaderCollapsible>
 
         {/* Expand/Collapse All + Notification Widget - Compact */}
         <div className="px-3 py-2 border-b border-sidebar-border shrink-0 space-y-2">
