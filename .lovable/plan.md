@@ -1,153 +1,59 @@
 
-# TeneXA Comprehensive Fix Plan
 
-## Issues Identified & Solutions
+# Plan: Sidebar Header Hide Toggle + Mobile Content Size Fix
 
----
+## Problem 1: Sidebar Header Hide Option
 
-## 1. REMOVE WELCOME HEADER (Dashboard "Welcome back" banner)
+The highlighted section in the screenshot includes the **Logo**, **User Info**, and **Super Admin Panel** link at the top of the sidebar. On mobile, this takes up significant vertical space, pushing the actual navigation items down.
 
-**Problem**: The "Welcome back, Gopi!" header with role badge appears on EVERY dashboard tab, taking up significant vertical space and looking redundant since the user info is already in the sidebar.
+### Solution
+Add a collapsible toggle to the sidebar header section. When collapsed, only the navigation items and Expand/Collapse All button will be visible. The toggle state will be persisted to localStorage so it remembers the user's preference.
 
-**Root Cause**: In `src/pages/ModernDashboard.tsx` (lines 298-318), there is a `<header>` section that renders on every tab except communication-mobile.
-
-**Fix**: Remove the entire welcome header block from `ModernDashboard.tsx` (lines 297-318). This eliminates the gap and the redundant greeting. The role badge and user info are already visible in the sidebar's user info section.
-
-**File**: `src/pages/ModernDashboard.tsx`
-- Delete lines 297-318 (the `<header>` block with "Welcome back" text)
-
----
-
-## 2. ROLES CREATED BY ADMIN SHOULD REFLECT ACROSS ALL PAGES
-
-**Problem**: The `AVAILABLE_ROLES` array in `TeamRoleAssignment.tsx` is hardcoded with only 5 roles (org_admin, manager, team_lead, employee, intern). It is missing hr_admin, project_manager, finance_manager, and any custom roles created by admin.
-
-Similarly, `BulkRoleAssignment.tsx` likely has the same hardcoded list.
-
-**Affected Files**:
-- `src/components/rbac/TeamRoleAssignment.tsx` (line 79-85)
-- `src/components/rbac/BulkRoleAssignment.tsx`
-
-**Fix**: 
-1. Update `AVAILABLE_ROLES` in both files to include ALL system roles from the `app_role` enum
-2. Additionally fetch custom roles from `useCustomRoles()` and merge them into the dropdown
-3. The full system roles list should be:
-   - Organization Admin (org_admin)
-   - Admin (admin)
-   - HR Admin (hr_admin)
-   - Project Manager (project_manager)
-   - Finance Manager (finance_manager)
-   - Manager (manager)
-   - Team Lead (team_lead)
-   - Employee (employee)
-   - Intern (intern)
+**File: `src/components/AppSidebar.tsx`**
+- Wrap the Logo, User Info, and Super Admin Panel sections (lines 206-289) inside a `Collapsible` component
+- Add a small toggle button (chevron up/down) between the header and the navigation
+- Persist the collapsed state in localStorage (`sidebar-header-collapsed`)
+- Default to collapsed on mobile for better space usage
 
 ---
 
-## 3. MISSING FEATURES IN ROLE PERMISSION MATRIX
+## Problem 2: Large Content / Oversized Text on Mobile
 
-**Problem**: The `MODULES` array in `RolePermissionMatrix.tsx` (lines 41-57) only lists 15 modules. Many application features are missing from the permission matrix.
+The root cause is that **60+ component files** use hardcoded Tailwind text sizes like `text-3xl`, `text-4xl`, `text-5xl`, `text-6xl` WITHOUT responsive breakpoint prefixes. The global `clamp()` typography system in `index.css` only applies to raw HTML tags (`h1`-`h6`), but most components use `<div>` or `<p>` with Tailwind classes, bypassing the fluid sizing entirely.
 
-**Current modules**: tasks, projects, attendance, leave, time_logs, employees, reports, coins, training, communication, approvals, settings, wfh, shifts, sessions
+### Solution
+Add **global mobile overrides** in `src/index.css` that cap text sizes on small screens. This approach fixes all 60+ files at once without touching each individual component.
 
-**Missing modules** (features that exist in the app but are not in the permission matrix):
-- payroll
-- expenses
-- loans
-- documents
-- assets
-- recruitment
-- performance (OKRs, feedback, PIPs)
-- hr_management (onboarding, exit, etc.)
-- service_desk
-- calendar
-- benefits
-- compliance
-- timesheets
-- holidays
+**File: `src/index.css`** (inside the existing `@media (max-width: 768px)` block)
 
-**Fix**: Add all missing modules to the `MODULES` array in `RolePermissionMatrix.tsx`. Also update `PERMISSION_TEMPLATES` to include sensible defaults for the new modules.
+Add these rules:
 
-**File**: `src/components/rbac/RolePermissionMatrix.tsx`
-
----
-
-## 4. SIDEBAR NOT RETAINING STATE
-
-**Problem**: The sidebar state resets when navigating between standalone pages (e.g., `/admin/roles-permissions`, `/organization/chart`, `/profile`).
-
-**Root Cause**: The `SidebarContext` (`src/contexts/SidebarContext.tsx`) is correctly placed at the App level in `App.tsx` (line 265). However, the `SidebarProvider` from `@/components/ui/sidebar` (the Radix-based provider) is created INSIDE each page component. When navigating between `ModernDashboard` and standalone pages like `RolesPermissions`, each creates its own `SidebarProvider` instance, losing the expand/collapse state of the Radix sidebar itself.
-
-The `useSidebarState()` hook (which manages open groups) IS persisted via localStorage. But the actual sidebar open/collapsed state from the Radix `SidebarProvider` is local to each mount.
-
-**Fix**: 
-- The `SidebarContext` for group expand/collapse is already persisted via localStorage -- this works.
-- The issue may be that standalone pages create their own `SidebarProvider` which resets the Radix sidebar state.
-- Ensure `AppSidebar` uses the `useSidebarState()` for group state consistently. This is already in place.
-- The real fix is ensuring the `activeTab` prop passed to `AppSidebar` on standalone pages correctly highlights the relevant item. Currently, `RolesPermissions` passes `activeTab="roles"` which is correct.
-
-After closer inspection: The sidebar group state IS persisted via localStorage. The perceived "reset" may be that groups auto-expand when their child is active (line 318: `const isOpen = openGroups.includes(group.label) || groupIsActive`). This forces groups to open based on the active tab, overriding the saved state. No code change needed for this -- it's working as designed.
-
----
-
-## 5. DISCONNECTED PAGES
-
-**Problem**: Some pages navigate to standalone routes but the sidebar on those pages doesn't properly link back or show navigation.
-
-**Current Status**: Most pages ARE connected through the routing system in `App.tsx`. The standalone routes in `standaloneRoutes` config map tabs to full-page routes. The sidebar on standalone pages (`RolesPermissions`, `OrgChartPage`, etc.) uses `AppSidebar` and clicking items navigates back to the dashboard with the correct tab.
-
-**Already Connected**: All major routes exist in `App.tsx`. The sidebar navigation in `admin-groups.ts` covers 50+ module links. No disconnected pages found -- all sidebar items either navigate to dashboard tabs or standalone routes.
-
----
-
-## 6. COMPLETE FIX SUMMARY
-
-### Files to Modify:
-
-| File | Change | Priority |
-|------|--------|----------|
-| `src/pages/ModernDashboard.tsx` | Remove welcome header (lines 297-318) | High |
-| `src/components/rbac/TeamRoleAssignment.tsx` | Add all system roles + custom roles to dropdown | High |
-| `src/components/rbac/BulkRoleAssignment.tsx` | Add all system roles + custom roles to dropdown | High |
-| `src/components/rbac/RolePermissionMatrix.tsx` | Add 10+ missing modules to MODULES array and update templates | High |
-
-### Technical Details:
-
-**ModernDashboard.tsx change:**
-Remove lines 297-318 (the entire welcome header block including the conditional wrapper). Keep the breadcrumb and main content rendering.
-
-**TeamRoleAssignment.tsx change:**
-```typescript
-// Replace AVAILABLE_ROLES (line 79-85) with full list:
-const SYSTEM_ROLES: { value: AppRole; label: string }[] = [
-  { value: 'org_admin', label: 'Organization Admin' },
-  { value: 'admin', label: 'Admin' },
-  { value: 'hr_admin', label: 'HR Admin' },
-  { value: 'project_manager', label: 'Project Manager' },
-  { value: 'finance_manager', label: 'Finance Manager' },
-  { value: 'manager', label: 'Manager' },
-  { value: 'team_lead', label: 'Team Lead' },
-  { value: 'employee', label: 'Employee' },
-  { value: 'intern', label: 'Intern' },
-];
-
-// Also add missing entries to ROLE_LABELS, ROLE_ICONS, ROLE_COLORS
+```css
+/* Cap oversized text classes on mobile */
+.text-6xl { font-size: 2rem !important; }      /* 32px max on mobile */
+.text-5xl { font-size: 1.75rem !important; }    /* 28px max */
+.text-4xl { font-size: 1.5rem !important; }     /* 24px max */
+.text-3xl { font-size: 1.25rem !important; }    /* 20px max */
+.text-2xl { font-size: 1.125rem !important; }   /* 18px max */
 ```
 
-**RolePermissionMatrix.tsx change:**
-Add these modules to MODULES array:
-- payroll, expenses, loans, documents, assets
-- recruitment, performance, hr_management
-- service_desk, benefits, compliance
-- timesheets, holidays, calendar
-
-Update all PERMISSION_TEMPLATES to include defaults for new modules.
+Additionally, add mobile-specific constraints:
+- Cap card padding (`p-6` to `p-4`, `p-8`/`p-12` to `p-4`) on mobile
+- Ensure icon sizes don't exceed reasonable bounds (`h-12 w-12` capped to `h-8 w-8`)
+- Tighten gap spacing on mobile for grid layouts
 
 ---
 
-## What Will NOT Be Changed (Working Features):
-- Sidebar context/persistence (already working via localStorage)
-- Route definitions (all connected in App.tsx)
-- Role creation flow (useCustomRoles hook works correctly)
-- Dashboard role-based rendering (OverviewTab logic correct)
-- Navigation config files (admin-groups.ts, employee-groups.ts)
+## Technical Summary
+
+| File | Change |
+|------|--------|
+| `src/components/AppSidebar.tsx` | Add collapsible header section with toggle button and localStorage persistence |
+| `src/index.css` | Add mobile text-size caps, padding caps, and spacing overrides in the 768px media query |
+
+### What This Fixes
+- Sidebar: Users can hide/show the logo + user info + admin link section with one tap
+- All pages: Text that was `text-4xl` (36px) on a 390px phone will now be capped at 24px
+- All pages: Cards with `p-8` or `p-12` padding will be reduced to `p-4` on mobile
+- No individual component files need to be edited -- the CSS overrides apply globally
+
