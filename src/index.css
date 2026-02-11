@@ -269,13 +269,16 @@ All colors MUST be HSL.
 
   /* Enhanced Animation utilities with colorful effects */
   .hover-scale {
-    @apply transition-all duration-300 ease-out hover:scale-105;
+    @apply transition-all duration-300 ease-out;
     box-shadow: var(--shadow-card);
   }
   
-  .hover-scale:hover {
-    box-shadow: var(--shadow-green);
-    transform: scale(1.02) translateY(-2px);
+  /* Disable hover transforms on touch/mobile devices */
+  @media (hover: hover) {
+    .hover-scale:hover {
+      box-shadow: var(--shadow-green);
+      transform: scale(1.02) translateY(-2px);
+    }
   }
   
   .glass-effect {
@@ -306,12 +309,14 @@ All colors MUST be HSL.
     background: var(--gradient-card);
     border: 1px solid rgba(140, 255, 140, 0.1);
     box-shadow: var(--shadow-card);
-    transition: all 0.3s ease;
+    transition: box-shadow 0.3s ease;
   }
 
-  .card-gradient:hover {
-    box-shadow: var(--shadow-green);
-    transform: translateY(-2px);
+  @media (hover: hover) {
+    .card-gradient:hover {
+      box-shadow: var(--shadow-green);
+      transform: translateY(-2px);
+    }
   }
 
   /* Button enhancements */
@@ -383,14 +388,8 @@ All colors MUST be HSL.
     }
   }
 
-  /* Smooth transitions for theme switching */
-  * {
-    transition: 
-      background-color 0.3s ease,
-      border-color 0.3s ease,
-      color 0.3s ease,
-      box-shadow 0.3s ease;
-  }
+  /* Smooth transitions for theme switching - scoped to avoid layout issues */
+  /* Removed global * transition to prevent transform/scale interference on mobile */
 
   /* Custom scrollbar for comments section */
   .custom-scrollbar::-webkit-scrollbar {
@@ -778,10 +777,16 @@ All colors MUST be HSL.
 
   /* Mobile Responsive Enhancements */
   @media (max-width: 768px) {
-    /* Better touch targets */
-    button, a, [role="button"] {
-      min-height: 44px;
-      min-width: 44px;
+    /* Prevent horizontal overflow on mobile */
+    html, body {
+      overflow-x: hidden;
+      max-width: 100vw;
+    }
+
+    /* Touch targets - only apply to standalone interactive elements, not inline links/spans */
+    button:not(.inline-btn), 
+    [role="button"] {
+      min-height: 36px;
     }
 
     /* Improve mobile readability */
@@ -793,13 +798,18 @@ All colors MUST be HSL.
 
     /* Better mobile spacing */
     .container {
-      padding-left: 1rem;
-      padding-right: 1rem;
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
     }
 
     /* Mobile-optimized cards */
     .card {
       border-radius: 0.5rem;
+    }
+
+    /* Reduce stat card height on mobile */
+    .card-stat {
+      min-height: 100px;
     }
 
     /* Fix for iOS Safari 100vh issue */
@@ -830,6 +840,12 @@ All colors MUST be HSL.
     [role="dialog"] {
       max-height: 90vh;
       overflow-y: auto;
+    }
+
+    /* Force grids to single column on small screens */
+    .grid-auto-fit,
+    .grid-auto-fill {
+      grid-template-columns: 1fr !important;
     }
   }
 
@@ -1006,15 +1022,15 @@ All colors MUST be HSL.
     @apply w-full;
   }
 
-  /* Mobile-first grid utilities */
+  /* Mobile-first grid utilities - use smaller minmax for mobile safety */
   .grid-auto-fit {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
   }
 
   .grid-auto-fill {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr));
   }
 
   /* Truncate with ellipsis for multiple lines */
