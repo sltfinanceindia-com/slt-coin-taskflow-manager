@@ -101,18 +101,18 @@ const Contact = () => {
           <div className="absolute inset-0 bg-background/85 dark:bg-background/90" />
           
           {/* Decorative Background Shapes */}
-          <div className="absolute top-0 left-0 w-72 h-72 bg-emerald-400/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" aria-hidden="true" />
+          <div className="absolute top-0 left-0 w-72 h-72 bg-primary/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" aria-hidden="true" />
           <div className="absolute top-1/3 right-0 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl translate-x-1/2" aria-hidden="true" />
           <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-purple-400/10 rounded-full blur-3xl translate-y-1/2" aria-hidden="true" />
           
           <div className="container relative mx-auto px-4">
-            <Badge className="mb-4 sm:mb-6 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-700 text-xs sm:text-sm animate-bounce-subtle">
+            <Badge className="mb-4 sm:mb-6 bg-primary/10 text-primary border-primary/20 text-xs sm:text-sm animate-bounce-subtle">
               <MessageSquare className="h-3 w-3 mr-1" />
               Get in Touch
             </Badge>
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-4 sm:mb-6 tracking-tight leading-tight animate-fade-in">
               Contact
-              <span className="block text-emerald-600 dark:text-emerald-400">Our Team</span>
+              <span className="block text-primary">Our Team</span>
             </h1>
             <p className="text-base sm:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto px-4 leading-relaxed animate-fade-in" style={{ animationDelay: '100ms' }}>
               Have questions about our enterprise plans or need custom solutions? 
@@ -198,7 +198,7 @@ const Contact = () => {
                     {errors.message && <p className="text-xs text-red-500">{errors.message}</p>}
                   </div>
 
-                  <Button type="submit" className="w-full min-h-[44px] bg-emerald-600 hover:bg-emerald-700" disabled={isSubmitting}>
+                  <Button type="submit" className="w-full min-h-[44px]" disabled={isSubmitting}>
                     {isSubmitting ? (
                       "Sending..."
                     ) : (
@@ -223,8 +223,8 @@ const Contact = () => {
                 </CardHeader>
                 <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0 space-y-4 sm:space-y-6">
                   <div className="flex items-start gap-3 sm:gap-4">
-                    <div className="p-2.5 sm:p-3 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 shrink-0">
-                      <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600" />
+                    <div className="p-2.5 sm:p-3 rounded-lg bg-primary/10 shrink-0">
+                      <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                     </div>
                     <div>
                       <p className="font-medium text-sm sm:text-base">Email</p>
@@ -234,8 +234,8 @@ const Contact = () => {
                   </div>
 
                   <div className="flex items-start gap-3 sm:gap-4">
-                    <div className="p-2.5 sm:p-3 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 shrink-0">
-                      <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600" />
+                    <div className="p-2.5 sm:p-3 rounded-lg bg-primary/10 shrink-0">
+                      <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                     </div>
                     <div>
                       <p className="font-medium text-sm sm:text-base">Phone</p>
@@ -245,8 +245,8 @@ const Contact = () => {
                   </div>
 
                   <div className="flex items-start gap-3 sm:gap-4">
-                    <div className="p-2.5 sm:p-3 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 shrink-0">
-                      <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600" />
+                    <div className="p-2.5 sm:p-3 rounded-lg bg-primary/10 shrink-0">
+                      <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                     </div>
                     <div>
                       <p className="font-medium text-sm sm:text-base">Office</p>

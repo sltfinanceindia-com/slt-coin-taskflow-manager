@@ -115,7 +115,7 @@ export function PublicHeader() {
                           className="flex items-start gap-4 p-3 rounded-xl hover:bg-muted/50 transition-colors group"
                           onClick={() => setFeaturesOpen(false)}
                         >
-                          <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 group-hover:bg-emerald-500/20 transition-colors">
+                          <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors">
                             <feature.icon className="h-5 w-5" />
                           </div>
                           <div>
@@ -128,7 +128,7 @@ export function PublicHeader() {
                     <div className="mt-4 pt-4 border-t border-border">
                       <Link 
                         to="/features" 
-                        className="flex items-center gap-2 text-sm font-medium text-emerald-600 hover:text-emerald-700"
+                        className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80"
                         onClick={() => setFeaturesOpen(false)}
                       >
                         View all features
@@ -201,7 +201,7 @@ export function PublicHeader() {
                 </Button>
               </Link>
               <Link to="/start-trial">
-                <Button className="bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-600/20">
+                <Button className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20">
                   Start Free Trial
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -295,7 +295,7 @@ export function PublicHeader() {
                         </Button>
                       </Link>
                       <Link to="/start-trial" onClick={() => setMobileMenuOpen(false)}>
-                        <Button className="w-full justify-center bg-emerald-600 hover:bg-emerald-700">
+                        <Button className="w-full justify-center bg-primary hover:bg-primary/90">
                           Start Free Trial
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>

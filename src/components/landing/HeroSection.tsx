@@ -27,7 +27,7 @@ export function HeroSection() {
         >
           {/* Badge */}
           <motion.div variants={fadeInUp}>
-            <Badge className="mb-6 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-700 px-4 py-2 text-sm font-medium">
+            <Badge className="mb-6 bg-primary/10 text-primary border-primary/20 px-4 py-2 text-sm font-medium">
               <Sparkles className="mr-2 h-4 w-4" />
               All-in-One HR & BPO Platform
             </Badge>
@@ -45,14 +45,14 @@ export function HeroSection() {
                 variants={wordFadeIn}
               >
                 {index === 2 ? (
-                  <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-primary to-[#64A8FF] bg-clip-text text-transparent">
                     {word}
                   </span>
                 ) : word}
               </motion.span>
             ))}
             <motion.span 
-              className="block mt-2 bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 bg-clip-text text-transparent"
+              className="block mt-2 bg-gradient-to-r from-primary via-[#64A8FF] to-[#2E5F99] bg-clip-text text-transparent"
               variants={wordFadeIn}
             >
               with TeneXA
@@ -81,7 +81,7 @@ export function HeroSection() {
               <Link to="/start-trial">
                 <Button 
                   size="lg" 
-                  className="w-full sm:w-auto h-14 px-8 text-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all duration-300"
+                  className="w-full sm:w-auto h-14 px-8 text-lg bg-gradient-to-r from-primary to-[#2E5F99] hover:from-[#64A8FF] hover:to-primary shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all duration-300"
                 >
                   Start Free Trial
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -111,15 +111,15 @@ export function HeroSection() {
             variants={fadeInUp}
           >
             <div className="flex items-center gap-2 text-sm font-medium">
-              <Shield className="h-5 w-5 text-emerald-600" />
+              <Shield className="h-5 w-5 text-primary" />
               <span>Enterprise Security</span>
             </div>
             <div className="flex items-center gap-2 text-sm font-medium">
-              <Globe className="h-5 w-5 text-emerald-600" />
+              <Globe className="h-5 w-5 text-primary" />
               <span>Cloud-Native</span>
             </div>
             <div className="flex items-center gap-2 text-sm font-medium">
-              <HeadphonesIcon className="h-5 w-5 text-emerald-600" />
+              <HeadphonesIcon className="h-5 w-5 text-primary" />
               <span>24/7 Support</span>
             </div>
           </motion.div>
@@ -131,7 +131,7 @@ export function HeroSection() {
             whileHover={{ y: -5 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-cyan-500/20 rounded-2xl blur-2xl opacity-60" />
+            <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 via-[#64A8FF]/20 to-[#2E5F99]/20 rounded-2xl blur-2xl opacity-60" />
             <div className="relative rounded-xl overflow-hidden border border-border/50 shadow-2xl bg-background">
               <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10 pointer-events-none" />
               <motion.img 
@@ -166,7 +166,7 @@ export function HeroSection() {
       >
         <div className="w-6 h-10 rounded-full border-2 border-muted-foreground/30 flex justify-center pt-2">
           <motion.div 
-            className="w-1.5 h-1.5 rounded-full bg-emerald-600"
+            className="w-1.5 h-1.5 rounded-full bg-primary"
             animate={{ y: [0, 16, 0] }}
             transition={{ duration: 2, repeat: Infinity }}
           />

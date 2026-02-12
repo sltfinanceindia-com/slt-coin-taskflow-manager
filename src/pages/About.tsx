@@ -84,7 +84,7 @@ export default function About() {
                 animate="animate"
               >
                 <motion.div variants={fadeInUp}>
-                  <Badge className="mb-6 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-700">
+                  <Badge className="mb-6 bg-primary/10 text-primary border-primary/20">
                     <Target className="mr-2 h-4 w-4" />
                     Our Mission
                   </Badge>
@@ -95,7 +95,7 @@ export default function About() {
                   className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight"
                 >
                   Building the Future of
-                  <span className="block bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
+                  <span className="block bg-gradient-to-r from-primary to-[#64A8FF] bg-clip-text text-transparent">
                     Work Management
                   </span>
                 </motion.h1>
@@ -145,11 +145,11 @@ export default function About() {
                       transition={{ delay: index * 0.1 }}
                     >
                       {/* Timeline dot */}
-                      <div className="absolute left-4 md:left-1/2 w-4 h-4 rounded-full bg-emerald-600 border-4 border-background md:-translate-x-2 z-10" />
+                      <div className="absolute left-4 md:left-1/2 w-4 h-4 rounded-full bg-primary border-4 border-background md:-translate-x-2 z-10" />
                       
                       {/* Content */}
                       <div className={`flex-1 ml-12 md:ml-0 ${index % 2 === 0 ? 'md:pr-12 md:text-right' : 'md:pl-12'}`}>
-                        <span className="text-emerald-600 font-bold text-lg">{milestone.year}</span>
+                        <span className="text-primary font-bold text-lg">{milestone.year}</span>
                         <h3 className="text-xl font-semibold text-foreground mt-1">{milestone.title}</h3>
                         <p className="text-muted-foreground mt-2">{milestone.description}</p>
                       </div>
@@ -190,7 +190,7 @@ export default function About() {
                   <motion.div
                     key={value.title}
                     variants={fadeInUp}
-                    className="group p-6 rounded-2xl bg-background border border-border/50 hover:border-emerald-500/50 transition-all duration-300 hover:shadow-lg"
+                    className="group p-6 rounded-2xl bg-background border border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg"
                   >
                     <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${value.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
                       <value.icon className="h-7 w-7 text-white" />
@@ -234,7 +234,7 @@ export default function About() {
                     className="group text-center"
                   >
                     <div className="relative mb-4">
-                      <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-2xl font-bold group-hover:scale-105 transition-transform">
+                      <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-primary to-[#2E5F99] flex items-center justify-center text-white text-2xl font-bold group-hover:scale-105 transition-transform">
                         {member.name.split(' ').map(n => n[0]).join('')}
                       </div>
                       {/* Social overlay on hover */}
