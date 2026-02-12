@@ -10,19 +10,19 @@ export function AnimatedBackground({ variant = 'hero', className = '' }: Animate
   
   return (
     <div className={`absolute inset-0 overflow-hidden ${className}`} aria-hidden="true">
-      {/* Animated gradient mesh background */}
+      {/* Base gradient background */}
       <div 
         className={`absolute inset-0 ${
           isDark 
-            ? 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900' 
-            : 'bg-gradient-to-br from-emerald-50/50 via-background to-indigo-50/30'
+            ? 'bg-gradient-to-br from-[#0A0A0A] via-[#1A1A1A] to-[#0A0A0A]' 
+            : 'bg-gradient-to-br from-primary/5 via-background to-primary/3'
         }`}
       />
       
-      {/* Primary floating orb */}
+      {/* Blue floating orb */}
       <motion.div
         className={`absolute w-[600px] h-[600px] rounded-full blur-3xl ${
-          isDark ? 'bg-emerald-500/10' : 'bg-emerald-400/20'
+          isDark ? 'bg-[#4A90E2]/10' : 'bg-primary/15'
         }`}
         style={{ top: '-10%', left: '-5%' }}
         animate={{
@@ -37,10 +37,10 @@ export function AnimatedBackground({ variant = 'hero', className = '' }: Animate
         }}
       />
       
-      {/* Secondary floating orb */}
+      {/* Secondary blue orb */}
       <motion.div
         className={`absolute w-[500px] h-[500px] rounded-full blur-3xl ${
-          isDark ? 'bg-indigo-500/10' : 'bg-indigo-400/15'
+          isDark ? 'bg-[#4A90E2]/8' : 'bg-primary/10'
         }`}
         style={{ top: '20%', right: '-10%' }}
         animate={{
@@ -56,10 +56,10 @@ export function AnimatedBackground({ variant = 'hero', className = '' }: Animate
         }}
       />
       
-      {/* Tertiary floating orb */}
+      {/* Tertiary orb */}
       <motion.div
         className={`absolute w-[400px] h-[400px] rounded-full blur-3xl ${
-          isDark ? 'bg-purple-500/10' : 'bg-purple-400/10'
+          isDark ? 'bg-[#2E5F99]/10' : 'bg-primary/8'
         }`}
         style={{ bottom: '10%', left: '30%' }}
         animate={{
@@ -75,22 +75,34 @@ export function AnimatedBackground({ variant = 'hero', className = '' }: Animate
         }}
       />
       
-      {/* Small accent orbs */}
-      <motion.div
-        className={`absolute w-[200px] h-[200px] rounded-full blur-2xl ${
-          isDark ? 'bg-cyan-500/10' : 'bg-cyan-400/20'
-        }`}
-        style={{ top: '60%', right: '20%' }}
-        animate={{
-          x: [0, -20, 0],
-          y: [0, 20, 0]
-        }}
-        transition={{
-          duration: 12,
-          repeat: Infinity,
-          ease: 'easeInOut'
-        }}
-      />
+      {/* Scattered blue dots pattern (banner-inspired) */}
+      {isDark && (
+        <>
+          {[...Array(20)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute rounded-full bg-[#4A90E2]"
+              style={{
+                width: `${8 + (i % 3) * 4}px`,
+                height: `${8 + (i % 3) * 4}px`,
+                top: `${10 + (i * 4.5) % 80}%`,
+                left: `${5 + (i * 7.3) % 90}%`,
+                opacity: 0.08 + (i % 5) * 0.04,
+              }}
+              animate={{
+                opacity: [0.08 + (i % 5) * 0.04, 0.15 + (i % 5) * 0.05, 0.08 + (i % 5) * 0.04],
+                scale: [1, 1.2, 1]
+              }}
+              transition={{
+                duration: 4 + (i % 3) * 2,
+                repeat: Infinity,
+                ease: 'easeInOut',
+                delay: i * 0.3
+              }}
+            />
+          ))}
+        </>
+      )}
       
       {/* Subtle grid pattern overlay */}
       <div 
@@ -108,7 +120,7 @@ export function AnimatedBackground({ variant = 'hero', className = '' }: Animate
       <div 
         className={`absolute inset-0 ${
           isDark 
-            ? 'bg-gradient-radial from-transparent via-transparent to-slate-900/50' 
+            ? 'bg-gradient-radial from-transparent via-transparent to-[#0A0A0A]/50' 
             : 'bg-gradient-radial from-transparent via-transparent to-background/30'
         }`}
       />

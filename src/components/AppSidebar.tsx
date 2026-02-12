@@ -287,7 +287,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
                     "text-sm font-medium",
                     isSuperAdmin 
                       ? "bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400" 
-                      : "bg-emerald-100 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-400"
+                      : "bg-primary/10 text-primary"
                   )}>
                     {profile?.full_name?.charAt(0).toUpperCase()}
                   </AvatarFallback>

@@ -43,7 +43,7 @@ const socialLinks = [
 export function PublicFooter() {
   return (
     <>
-      <footer className="bg-slate-900 dark:bg-slate-950 text-slate-100 py-16 lg:py-20" role="contentinfo">
+      <footer className="bg-[#0A0A0A] dark:bg-[#050505] text-slate-100 py-16 lg:py-20" role="contentinfo">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Main footer content */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 lg:gap-12 mb-12">
@@ -86,7 +86,7 @@ export function PublicFooter() {
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-emerald-600 hover:text-white transition-all duration-300"
+                    className="w-10 h-10 rounded-lg bg-[#1A1A1A] flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white transition-all duration-300"
                     aria-label={social.name}
                   >
                     <social.icon className="h-5 w-5" />
@@ -165,12 +165,12 @@ export function PublicFooter() {
           </div>
 
           {/* Bottom bar */}
-          <div className="pt-8 border-t border-slate-800">
+          <div className="pt-8 border-t border-[#2A2A2A]">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <p className="text-sm text-slate-500">
                 © {new Date().getFullYear()} TeneXA. All rights reserved.
               </p>
-              <div className="flex items-center gap-2 text-sm text-emerald-500">
+              <div className="flex items-center gap-2 text-sm text-primary">
                 <span>Made with ❤️ in</span>
                 <span className="font-semibold">भारत 🇮🇳</span>
               </div>
