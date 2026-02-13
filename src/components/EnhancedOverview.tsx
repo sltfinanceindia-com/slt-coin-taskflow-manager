@@ -228,11 +228,11 @@ export function EnhancedOverview() {
                     )}
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                    {stat.trending && <TrendingUp className="h-3 w-3 text-emerald-500" />}
+                    {stat.trending && <TrendingUp className="h-3 w-3 text-primary" />}
                     {stat.change}
                   </p>
                   {(stat as any).subtitle && (
-                    <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                    <p className="text-xs font-medium text-primary">
                       {(stat as any).subtitle}
                     </p>
                   )}
@@ -240,8 +240,8 @@ export function EnhancedOverview() {
                     <Progress value={stat.progress} className="h-2 max-w-full" aria-label={`${stat.title} progress: ${Math.round(stat.progress)}%`} />
                   )}
                 </div>
-                <div className="p-3 rounded-full bg-emerald-100 dark:bg-emerald-900 hover-glow flex items-center justify-center flex-shrink-0 ml-3">
-                  <stat.icon className="h-6 w-6 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                <div className="p-3 rounded-full bg-primary/10 hover-glow flex items-center justify-center flex-shrink-0 ml-3">
+                  <stat.icon className="h-6 w-6 text-primary" aria-hidden="true" />
                 </div>
               </div>
             </CardContent>

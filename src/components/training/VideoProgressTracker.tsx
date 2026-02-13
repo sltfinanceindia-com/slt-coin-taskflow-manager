@@ -104,7 +104,7 @@ export function VideoProgressTracker({
         <div className="relative aspect-video bg-muted rounded-lg overflow-hidden flex items-center justify-center">
           {isCompleted && (
             <div className="absolute top-2 right-2 z-10">
-              <Badge className="bg-emerald-500 text-white gap-1">
+              <Badge className="bg-primary text-primary-foreground gap-1">
                 <CheckCircle className="h-3 w-3" />
                 Completed
               </Badge>
@@ -159,8 +159,8 @@ export function VideoProgressTracker({
         </div>
 
         {isCompleted && (
-          <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3 text-center">
-            <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium">
+          <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 text-center">
+            <p className="text-sm text-primary font-medium">
               🎉 You've completed this video!
             </p>
           </div>

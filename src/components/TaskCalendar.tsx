@@ -22,7 +22,7 @@ const statusColors: Record<string, string> = {
   assigned: 'bg-blue-500',
   in_progress: 'bg-purple-500',
   completed: 'bg-green-500',
-  verified: 'bg-emerald-600',
+  verified: 'bg-primary',
   rejected: 'bg-red-500',
 };
 

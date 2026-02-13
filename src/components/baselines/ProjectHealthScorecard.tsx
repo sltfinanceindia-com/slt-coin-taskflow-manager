@@ -79,7 +79,7 @@ export function ProjectHealthScorecard() {
   const getHealthIcon = (level: string) => {
     switch (level) {
       case 'healthy':
-        return <CheckCircle2 className="h-8 w-8 text-emerald-500" />;
+        return <CheckCircle2 className="h-8 w-8 text-green-500" />;
       case 'at-risk':
         return <AlertTriangle className="h-8 w-8 text-yellow-500" />;
       case 'critical':
@@ -92,7 +92,7 @@ export function ProjectHealthScorecard() {
   const getHealthBadge = (level: string) => {
     switch (level) {
       case 'healthy':
-        return <Badge className="bg-emerald-500">Healthy</Badge>;
+        return <Badge className="bg-green-500 hover:bg-green-600">Healthy</Badge>;
       case 'at-risk':
         return <Badge variant="outline" className="border-yellow-500 text-yellow-600">At Risk</Badge>;
       case 'critical':
@@ -103,13 +103,13 @@ export function ProjectHealthScorecard() {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 70) return 'text-emerald-600';
+    if (score >= 70) return 'text-green-600';
     if (score >= 40) return 'text-yellow-600';
     return 'text-destructive';
   };
 
   const getProgressColor = (score: number) => {
-    if (score >= 70) return 'bg-emerald-500';
+    if (score >= 70) return 'bg-green-500';
     if (score >= 40) return 'bg-yellow-500';
     return 'bg-destructive';
   };

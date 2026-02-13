@@ -145,7 +145,7 @@ export default function SuperAdminLayout({ children }: SuperAdminLayoutProps) {
                   <p className="text-[10px] text-muted-foreground">Orgs</p>
                 </div>
                 <div className="text-center p-2 rounded-lg bg-background/50">
-                  <p className="text-lg font-bold text-emerald-600">{quickStats.activeOrgs}</p>
+                  <p className="text-lg font-bold text-primary">{quickStats.activeOrgs}</p>
                   <p className="text-[10px] text-muted-foreground">Active</p>
                 </div>
                 <div className="text-center p-2 rounded-lg bg-background/50">

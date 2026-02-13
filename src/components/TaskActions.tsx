@@ -65,7 +65,7 @@ export function TaskActions({ task, onUpdateStatus, onVerifyTask }: TaskActionsP
               Mark as Completed
             </Button>
           ) : (
-            <div className="space-y-3 p-4 bg-gradient-to-br from-green-50/50 to-emerald-50/50 rounded-lg border border-green-200/50 animate-fade-in">
+            <div className="space-y-3 p-4 bg-gradient-to-br from-green-50/50 to-green-50/30 dark:from-green-950/20 dark:to-green-950/10 rounded-lg border border-green-200/50 dark:border-green-800/30 animate-fade-in">
               <Textarea
                 placeholder="Describe what you accomplished and any challenges faced..."
                 value={submissionNotes}

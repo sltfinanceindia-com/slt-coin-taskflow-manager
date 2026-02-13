@@ -108,7 +108,7 @@ const getPlanGradient = (code: string, isPopular: boolean) => {
   if (isPopular) return 'from-primary/10 via-purple-500/5 to-pink-500/10';
   switch (code) {
     case 'free': return 'from-muted/50 to-muted/30';
-    case 'starter': return 'from-emerald-500/10 to-emerald-500/5';
+    case 'starter': return 'from-primary/10 to-primary/5';
     case 'enterprise': return 'from-purple-500/10 to-purple-500/5';
     default: return 'from-muted/50 to-muted/30';
   }

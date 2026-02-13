@@ -267,7 +267,7 @@ export default function SuperAdminUsers() {
                             ) : (
                               <DropdownMenuItem
                                 onClick={() => handleStatusChange(user.id, true)}
-                                className="text-emerald-600"
+                                className="text-green-600"
                               >
                                 <CheckCircle className="h-4 w-4 mr-2" />
                                 Activate
@@ -283,7 +283,7 @@ export default function SuperAdminUsers() {
                       <div className="flex flex-wrap gap-2">
                         {getRoleBadge(user.role)}
                         {user.is_active ? (
-                          <Badge className="bg-emerald-500">Active</Badge>
+                          <Badge className="bg-green-600 hover:bg-green-700">Active</Badge>
                         ) : (
                           <Badge variant="secondary">Inactive</Badge>
                         )}
@@ -328,7 +328,7 @@ export default function SuperAdminUsers() {
                           <TableCell>{getRoleBadge(user.role)}</TableCell>
                           <TableCell>
                             {user.is_active ? (
-                              <Badge className="bg-emerald-500">Active</Badge>
+                              <Badge className="bg-green-600 hover:bg-green-700">Active</Badge>
                             ) : (
                               <Badge variant="secondary">Inactive</Badge>
                             )}
@@ -360,7 +360,7 @@ export default function SuperAdminUsers() {
                                 ) : (
                                   <DropdownMenuItem
                                     onClick={() => handleStatusChange(user.id, true)}
-                                    className="text-emerald-600"
+                                    className="text-green-600"
                                   >
                                     <CheckCircle className="h-4 w-4 mr-2" />
                                     Activate

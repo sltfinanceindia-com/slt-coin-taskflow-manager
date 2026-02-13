@@ -35,7 +35,7 @@ const statusConfig = {
   assigned: { icon: Circle, color: 'text-blue-500', bg: 'bg-blue-100' },
   in_progress: { icon: Clock, color: 'text-yellow-500', bg: 'bg-yellow-100' },
   completed: { icon: CheckCircle2, color: 'text-green-500', bg: 'bg-green-100' },
-  verified: { icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-100' },
+  verified: { icon: CheckCircle2, color: 'text-primary', bg: 'bg-primary/10' },
 };
 
 export function EnhancedSubtaskList({ parentTaskId, readOnly = false }: EnhancedSubtaskListProps) {

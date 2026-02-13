@@ -317,7 +317,7 @@ export function InternManagement() {
       case 'manager':
         return <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"><Crown className="h-3 w-3 mr-1" />Manager</Badge>;
       case 'team_lead':
-        return <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300">Team Lead</Badge>;
+        return <Badge variant="secondary" className="bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-300">Team Lead</Badge>;
       case 'employee':
         return <Badge variant="outline">Employee</Badge>;
       case 'intern':

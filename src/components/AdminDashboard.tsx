@@ -153,7 +153,7 @@ export function AdminDashboard() {
             <Card className="min-h-[140px]">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Interns</CardTitle>
-                <Users className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                <Users className="h-5 w-5 text-primary" />
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-gray-900 dark:text-gray-50">{stats.totalInterns}</div>
@@ -212,7 +212,7 @@ export function AdminDashboard() {
                   <h3 className="font-semibold mb-1">Manage Coin Rate</h3>
                   <p className="text-sm text-muted-foreground">Update the current coin rate and view history</p>
                 </div>
-                <Button onClick={() => setActiveTab('coin-rate')} className="bg-emerald-600 hover:bg-emerald-700">
+                <Button onClick={() => setActiveTab('coin-rate')} className="bg-primary hover:bg-primary/90">
                   <Coins className="h-4 w-4 mr-2" />
                   Update Rate
                 </Button>

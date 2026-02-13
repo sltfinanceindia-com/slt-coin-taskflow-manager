@@ -75,15 +75,15 @@ export function DashboardWidgets() {
                     )}
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                    {widget.trending && <TrendingUp className="h-3 w-3 text-emerald-500" />}
+                    {widget.trending && <TrendingUp className="h-3 w-3 text-primary" />}
                     {widget.change}
                   </p>
                   {widget.progress !== undefined && (
                     <Progress value={widget.progress} className="h-2 max-w-full" />
                   )}
                 </div>
-                <div className="p-3 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center flex-shrink-0 ml-3">
-                  <widget.icon className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                <div className="p-3 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 ml-3">
+                  <widget.icon className="h-6 w-6 text-primary" />
                 </div>
               </div>
             </CardContent>
