@@ -367,11 +367,11 @@ export function TicketAnalytics({ metrics, tickets }: TicketAnalyticsProps) {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="flex items-center gap-4 p-4 border rounded-lg bg-emerald-50 dark:bg-emerald-950/20">
-              <CheckCircle className="h-8 w-8 text-emerald-600" />
+            <div className="flex items-center gap-4 p-4 border rounded-lg bg-green-50 dark:bg-green-900/20">
+              <CheckCircle className="h-8 w-8 text-green-600" />
               <div>
-                <div className="text-2xl font-bold text-emerald-700">{analyticsData.slaOnTrack}</div>
-                <p className="text-sm text-emerald-600">On Track</p>
+                <div className="text-2xl font-bold text-green-700">{analyticsData.slaOnTrack}</div>
+                <p className="text-sm text-green-600">On Track</p>
               </div>
             </div>
             <div className="flex items-center gap-4 p-4 border rounded-lg bg-amber-50 dark:bg-amber-950/20">

@@ -206,7 +206,7 @@ export function TaskEditDialog({ task, onUpdateTask, isUpdating }: TaskEditDialo
     { value: 'assigned', label: 'Assigned', color: 'bg-blue-500' },
     { value: 'in_progress', label: 'In Progress', color: 'bg-yellow-500' },
     { value: 'completed', label: 'Completed', color: 'bg-green-500' },
-    { value: 'verified', label: 'Verified', color: 'bg-emerald-500' },
+    { value: 'verified', label: 'Verified', color: 'bg-primary' },
     { value: 'rejected', label: 'Rejected', color: 'bg-red-500' },
   ];
 

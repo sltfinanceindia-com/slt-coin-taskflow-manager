@@ -22,8 +22,8 @@ export default function Privacy() {
         <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center gap-3 mb-6 sm:mb-8">
-              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600" />
+              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground">Privacy Policy</h1>
@@ -168,7 +168,7 @@ export default function Privacy() {
                 </Button>
               </Link>
               <Link to="/terms">
-                <Button className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700">
+                <Button className="w-full sm:w-auto">
                   View Terms of Service
                 </Button>
               </Link>

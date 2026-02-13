@@ -107,10 +107,10 @@ export function CoinRateManagement() {
   return (
     <div className="space-y-6">
       {/* Current Rate Card */}
-      <Card className="bg-gradient-to-br from-emerald-50 to-blue-50 border-2 border-emerald-200">
+      <Card className="bg-gradient-to-br from-primary/10 to-blue-50/50 border-2 border-primary/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Coins className="h-6 w-6 text-emerald-600" />
+            <Coins className="h-6 w-6 text-primary" />
             Current {coinName} Rate
           </CardTitle>
           <CardDescription>Real-time coin rate and market statistics (INR)</CardDescription>
@@ -128,7 +128,7 @@ export function CoinRateManagement() {
                 <p className="text-sm text-muted-foreground mb-1">24h Change</p>
                 <div className="flex items-center gap-2">
                   {Number(latestRate.change_percentage) >= 0 ? (
-                    <TrendingUp className="h-5 w-5 text-emerald-600" />
+                    <TrendingUp className="h-5 w-5 text-green-600" />
                   ) : (
                     <TrendingDown className="h-5 w-5 text-red-600" />
                   )}
@@ -250,7 +250,7 @@ export function CoinRateManagement() {
                 <Button
                   type="submit"
                   disabled={addRateMutation.isPending}
-                  className="bg-emerald-600 hover:bg-emerald-700"
+                  className="bg-primary hover:bg-primary/90"
                 >
                   {addRateMutation.isPending ? "Adding..." : "Add Rate"}
                 </Button>

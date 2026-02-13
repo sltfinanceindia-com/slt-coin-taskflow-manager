@@ -43,10 +43,10 @@ export function TimesheetSummaryCards({ summary }: TimesheetSummaryCardsProps) {
       </Card>
 
       {/* Billable Hours */}
-      <Card className="border-green-200 dark:border-green-800">
+      <Card className="border-primary/20">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-xs font-medium text-green-600">Billable</CardTitle>
-          <DollarSign className="h-4 w-4 text-green-500" />
+          <CardTitle className="text-xs font-medium text-primary">Billable</CardTitle>
+          <DollarSign className="h-4 w-4 text-primary" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-green-600">{summary.billableHours.toFixed(1)}h</div>

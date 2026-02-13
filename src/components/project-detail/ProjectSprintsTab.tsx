@@ -145,7 +145,7 @@ export function ProjectSprintsTab({ projectId }: ProjectSprintsTabProps) {
                       {format(parseISO(sprint.start_date), 'MMM dd')} - {format(parseISO(sprint.end_date), 'MMM dd')}
                     </p>
                   </div>
-                  <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30">Completed</Badge>
+                  <Badge className="bg-primary/10 text-primary">Completed</Badge>
                 </div>
               ))}
             </div>

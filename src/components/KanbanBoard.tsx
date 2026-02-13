@@ -349,7 +349,7 @@ export function KanbanBoard({
             {columns.map((column) => (
               <div key={column.id} className="flex flex-col min-h-[350px] sm:min-h-[500px] lg:min-h-[600px] w-[280px] sm:w-auto flex-shrink-0 snap-start">
                 {/* Column Header */}
-                <div className={`px-3 sm:px-4 py-2 sm:py-3 rounded-t-lg bg-gray-100 dark:bg-gray-800 border-b-2 ${column.id === 'assigned' ? 'border-blue-500' : column.id === 'in_progress' ? 'border-yellow-500' : column.id === 'completed' ? 'border-purple-500' : column.id === 'verified' ? 'border-emerald-500' : 'border-red-500'}`}>
+                <div className={`px-3 sm:px-4 py-2 sm:py-3 rounded-t-lg bg-gray-100 dark:bg-gray-800 border-b-2 ${column.id === 'assigned' ? 'border-blue-500' : column.id === 'in_progress' ? 'border-yellow-500' : column.id === 'completed' ? 'border-purple-500' : column.id === 'verified' ? 'border-primary' : 'border-red-500'}`}>
                   <div className="flex items-center justify-between">
                     <h3 className="font-bold text-xs sm:text-sm uppercase tracking-wide text-gray-900 dark:text-gray-50">
                       {column.title}
@@ -367,7 +367,7 @@ export function KanbanBoard({
                       {...provided.droppableProps}
                       className={`
                         flex-1 min-h-0 max-h-[calc(100vh-300px)] overflow-y-auto p-3 border-2 border-dashed rounded-b-lg transition-all duration-200
-                        ${snapshot.isDraggingOver ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20' : 'border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50'}
+                        ${snapshot.isDraggingOver ? 'border-primary bg-primary/5' : 'border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50'}
                       `}
                     >
                       {filteredTasks.filter(task => task.status === column.status).length === 0 ? (

@@ -176,8 +176,8 @@ export function ProductivityDashboard({ userId }: ProductivityDashboardProps) {
                   {activityStats.focusTime > 6 ? 'Excellent focus!' : 'Could be better'}
                 </p>
               </div>
-              <div className="p-3 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center flex-shrink-0 ml-3">
-                <Focus className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+              <div className="p-3 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 ml-3">
+                <Focus className="h-6 w-6 text-primary" />
               </div>
             </div>
           </CardContent>
