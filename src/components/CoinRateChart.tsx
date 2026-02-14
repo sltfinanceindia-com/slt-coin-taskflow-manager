@@ -111,11 +111,11 @@ export function CoinRateChart() {
         {latestRate && (
           <div className="flex items-center gap-2">
             {priceChange >= 0 ? (
-              <TrendingUp className="h-5 w-5 text-emerald-600" />
+              <TrendingUp className="h-5 w-5 text-green-600" />
             ) : (
               <TrendingDown className="h-5 w-5 text-red-600" />
             )}
-            <span className={`text-sm font-medium ${priceChange >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+            <span className={`text-sm font-medium ${priceChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {priceChange >= 0 ? '+' : ''}{priceChangePercent.toFixed(2)}%
             </span>
           </div>
@@ -130,7 +130,7 @@ export function CoinRateChart() {
             dataKey="rate"
             xAxisKey="date"
             height={300}
-            color="hsl(var(--emerald-600))"
+            color="hsl(var(--primary))"
           />
         ) : (
           <div className="flex items-center justify-center h-[300px] text-muted-foreground">
@@ -149,7 +149,7 @@ export function CoinRateChart() {
         </div>
         <div className="bg-muted/20 rounded-lg p-3">
           <p className="text-xs text-muted-foreground mb-1">24h Change</p>
-          <p className={`text-lg font-bold ${priceChange >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+          <p className={`text-lg font-bold ${priceChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
             {priceChange >= 0 ? '+₹' : '₹'}{Math.abs(priceChange).toFixed(4)}
           </p>
         </div>

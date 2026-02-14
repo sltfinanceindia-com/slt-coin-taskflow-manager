@@ -48,8 +48,8 @@ const getPasswordStrength = (password: string): { score: number; label: string; 
   if (score <= 1) return { score: 20, label: 'Weak', color: 'bg-red-500' };
   if (score === 2) return { score: 40, label: 'Fair', color: 'bg-orange-500' };
   if (score === 3) return { score: 60, label: 'Good', color: 'bg-yellow-500' };
-  if (score === 4) return { score: 80, label: 'Strong', color: 'bg-emerald-500' };
-  return { score: 100, label: 'Very Strong', color: 'bg-emerald-600' };
+  if (score === 4) return { score: 80, label: 'Strong', color: 'bg-green-500' };
+  return { score: 100, label: 'Very Strong', color: 'bg-primary' };
 };
 
 export default function CreateOrganization() {
@@ -376,26 +376,26 @@ export default function CreateOrganization() {
                     <div className="space-y-1">
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-muted-foreground">Password strength:</span>
-                        <span className={`font-medium ${passwordStrength.score >= 60 ? 'text-emerald-600' : 'text-muted-foreground'}`}>
+                        <span className={`font-medium ${passwordStrength.score >= 60 ? 'text-primary' : 'text-muted-foreground'}`}>
                           {passwordStrength.label}
                         </span>
                       </div>
                       <Progress value={passwordStrength.score} className={`h-1.5 ${passwordStrength.color}`} />
                       <div className="grid grid-cols-2 gap-1 text-xs text-muted-foreground mt-2">
                         <div className="flex items-center gap-1">
-                          {formData.adminPassword.length >= 8 ? <Check className="h-3 w-3 text-emerald-500" /> : <X className="h-3 w-3 text-muted-foreground" />}
+                          {formData.adminPassword.length >= 8 ? <Check className="h-3 w-3 text-green-500" /> : <X className="h-3 w-3 text-muted-foreground" />}
                           8+ characters
                         </div>
                         <div className="flex items-center gap-1">
-                          {/[A-Z]/.test(formData.adminPassword) ? <Check className="h-3 w-3 text-emerald-500" /> : <X className="h-3 w-3 text-muted-foreground" />}
+                          {/[A-Z]/.test(formData.adminPassword) ? <Check className="h-3 w-3 text-green-500" /> : <X className="h-3 w-3 text-muted-foreground" />}
                           Uppercase
                         </div>
                         <div className="flex items-center gap-1">
-                          {/[a-z]/.test(formData.adminPassword) ? <Check className="h-3 w-3 text-emerald-500" /> : <X className="h-3 w-3 text-muted-foreground" />}
+                          {/[a-z]/.test(formData.adminPassword) ? <Check className="h-3 w-3 text-green-500" /> : <X className="h-3 w-3 text-muted-foreground" />}
                           Lowercase
                         </div>
                         <div className="flex items-center gap-1">
-                          {/\d/.test(formData.adminPassword) ? <Check className="h-3 w-3 text-emerald-500" /> : <X className="h-3 w-3 text-muted-foreground" />}
+                          {/\d/.test(formData.adminPassword) ? <Check className="h-3 w-3 text-green-500" /> : <X className="h-3 w-3 text-muted-foreground" />}
                           Number
                         </div>
                       </div>

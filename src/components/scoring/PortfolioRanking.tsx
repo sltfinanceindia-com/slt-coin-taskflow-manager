@@ -69,7 +69,7 @@ export function PortfolioRanking() {
   };
 
   const getScoreBadge = (score: number) => {
-    if (score >= 70) return <Badge className="bg-emerald-500">High</Badge>;
+    if (score >= 70) return <Badge className="bg-primary">High</Badge>;
     if (score >= 40) return <Badge variant="outline" className="border-yellow-500 text-yellow-600">Medium</Badge>;
     return <Badge variant="secondary">Low</Badge>;
   };
@@ -79,7 +79,7 @@ export function PortfolioRanking() {
       case 'active':
         return <Badge variant="default">Active</Badge>;
       case 'completed':
-        return <Badge className="bg-emerald-500">Completed</Badge>;
+        return <Badge className="bg-green-500">Completed</Badge>;
       case 'on_hold':
         return <Badge variant="outline">On Hold</Badge>;
       case 'cancelled':
@@ -131,7 +131,7 @@ export function PortfolioRanking() {
           <StatCard
             title="High Priority"
             value={ranking.filter(r => r.total_score >= 70).length}
-            color="text-emerald-600"
+            color="text-primary"
           />
           <StatCard
             title="Medium Priority"
@@ -218,8 +218,8 @@ export function PortfolioRanking() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 rounded-lg border border-emerald-200 dark:border-emerald-900">
-                <h4 className="font-medium text-emerald-700 dark:text-emerald-400 mb-2 flex items-center gap-2">
+              <div className="p-4 bg-primary/5 dark:bg-primary/10 rounded-lg border border-primary/20 dark:border-primary/30">
+                <h4 className="font-medium text-primary mb-2 flex items-center gap-2">
                   <ArrowUp className="h-4 w-4" />
                   Fund These ({ranking.filter(r => r.total_score >= 70).length})
                 </h4>

@@ -49,14 +49,14 @@ export function VarianceDashboard() {
   const getVarianceColor = (value: number) => {
     if (value > 10) return 'text-destructive';
     if (value > 0) return 'text-yellow-600';
-    if (value < -10) return 'text-emerald-600';
+    if (value < -10) return 'text-green-600';
     return 'text-muted-foreground';
   };
 
   const getVarianceBadge = (value: number) => {
     if (value > 10) return <Badge variant="destructive">Over Budget</Badge>;
     if (value > 0) return <Badge variant="outline" className="border-yellow-500 text-yellow-600">Slightly Over</Badge>;
-    if (value < -10) return <Badge variant="default" className="bg-emerald-500">Under Budget</Badge>;
+    if (value < -10) return <Badge variant="default" className="bg-green-500">Under Budget</Badge>;
     return <Badge variant="secondary">On Track</Badge>;
   };
 
@@ -144,9 +144,9 @@ export function VarianceDashboard() {
               icon={Calendar}
               badge={variance.schedule_variance_days > 0 ? 
                 <Badge variant="destructive">Behind</Badge> : 
-                <Badge variant="default" className="bg-emerald-500">On/Ahead</Badge>
+                <Badge variant="default" className="bg-green-500">On/Ahead</Badge>
               }
-              valueColor={variance.schedule_variance_days > 0 ? 'text-destructive' : 'text-emerald-600'}
+              valueColor={variance.schedule_variance_days > 0 ? 'text-destructive' : 'text-green-600'}
             />
 
             <MetricCard
@@ -174,12 +174,12 @@ export function VarianceDashboard() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-3">
-                <div className="flex items-center gap-4 p-4 rounded-lg bg-emerald-50 dark:bg-emerald-950/20">
-                  <div className="p-3 rounded-full bg-emerald-100 dark:bg-emerald-900">
-                    <CheckCircle className="h-6 w-6 text-emerald-600" />
+                <div className="flex items-center gap-4 p-4 rounded-lg bg-green-50 dark:bg-green-950/20">
+                  <div className="p-3 rounded-full bg-green-100 dark:bg-green-900">
+                    <CheckCircle className="h-6 w-6 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-emerald-600">{variance.tasks_on_track}</p>
+                    <p className="text-2xl font-bold text-green-600">{variance.tasks_on_track}</p>
                     <p className="text-sm text-muted-foreground">On Track</p>
                   </div>
                 </div>

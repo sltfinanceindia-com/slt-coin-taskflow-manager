@@ -43,7 +43,7 @@ const values = [
     icon: Users,
     title: 'Team Excellence',
     description: 'Great products come from great teams. We invest in our people and celebrate collective achievements.',
-    color: 'from-emerald-500 to-teal-600'
+    color: 'from-sky-500 to-blue-600'
   }
 ];
 

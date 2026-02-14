@@ -86,7 +86,7 @@ export function ProjectScoreCard() {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 70) return 'text-emerald-600';
+    if (score >= 70) return 'text-green-600';
     if (score >= 40) return 'text-yellow-600';
     return 'text-destructive';
   };
@@ -159,7 +159,7 @@ export function ProjectScoreCard() {
                 </div>
                 <Badge 
                   variant={calculatedScore && calculatedScore >= 70 ? 'default' : 'secondary'}
-                  className={calculatedScore && calculatedScore >= 70 ? 'bg-emerald-500' : ''}
+                  className={calculatedScore && calculatedScore >= 70 ? 'bg-primary' : ''}
                 >
                   {calculatedScore && calculatedScore >= 70 ? 'High Priority' : 
                    calculatedScore && calculatedScore >= 40 ? 'Medium Priority' : 'Low Priority'}

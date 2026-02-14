@@ -102,20 +102,20 @@ export default function SystemHealth() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'healthy':
-        return <CheckCircle className="h-5 w-5 text-emerald-500" />;
+        return <CheckCircle className="h-5 w-5 text-green-500" />;
       case 'warning':
         return <AlertTriangle className="h-5 w-5 text-amber-500" />;
       case 'error':
         return <XCircle className="h-5 w-5 text-red-500" />;
       default:
-        return <CheckCircle className="h-5 w-5 text-emerald-500" />;
+        return <CheckCircle className="h-5 w-5 text-green-500" />;
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'healthy':
-        return <Badge className="bg-emerald-500">Healthy</Badge>;
+        return <Badge className="bg-green-500">Healthy</Badge>;
       case 'warning':
         return <Badge className="bg-amber-500">Warning</Badge>;
       case 'error':
@@ -160,13 +160,13 @@ export default function SystemHealth() {
         {/* Overall Status */}
         <Card className={cn(
           "border-2",
-          overallHealth === 'healthy' && "border-emerald-500/50 bg-emerald-50/50 dark:bg-emerald-950/20",
+          overallHealth === 'healthy' && "border-green-500/50 bg-green-50/50 dark:bg-green-950/20",
           overallHealth === 'warning' && "border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20",
           overallHealth === 'error' && "border-red-500/50 bg-red-50/50 dark:bg-red-950/20"
         )}>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              {overallHealth === 'healthy' && <CheckCircle className="h-12 w-12 text-emerald-500" />}
+              {overallHealth === 'healthy' && <CheckCircle className="h-12 w-12 text-green-500" />}
               {overallHealth === 'warning' && <AlertTriangle className="h-12 w-12 text-amber-500" />}
               {overallHealth === 'error' && <XCircle className="h-12 w-12 text-red-500" />}
               <div>
@@ -192,13 +192,13 @@ export default function SystemHealth() {
                   <div className="flex items-center gap-3">
                     <div className={cn(
                       "h-12 w-12 rounded-xl flex items-center justify-center",
-                      metric.status === 'healthy' && "bg-emerald-100 dark:bg-emerald-900/30",
+                      metric.status === 'healthy' && "bg-green-100 dark:bg-green-900/30",
                       metric.status === 'warning' && "bg-amber-100 dark:bg-amber-900/30",
                       metric.status === 'error' && "bg-red-100 dark:bg-red-900/30"
                     )}>
                       <metric.icon className={cn(
                         "h-6 w-6",
-                        metric.status === 'healthy' && "text-emerald-600",
+                        metric.status === 'healthy' && "text-green-600",
                         metric.status === 'warning' && "text-amber-600",
                         metric.status === 'error' && "text-red-600"
                       )} />

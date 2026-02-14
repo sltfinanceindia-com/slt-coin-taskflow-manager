@@ -144,7 +144,7 @@ export default function Signup() {
 
   const passwordStrength = getPasswordStrength(formData.password);
   const strengthLabels = ['Very Weak', 'Weak', 'Fair', 'Strong', 'Very Strong'];
-  const strengthColors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500', 'bg-emerald-500'];
+  const strengthColors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500', 'bg-primary'];
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-muted/30 to-background">

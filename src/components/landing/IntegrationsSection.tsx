@@ -6,7 +6,7 @@ const integrations = [
   { name: 'Razorpay', icon: CreditCard, category: 'Payments', color: 'from-blue-500 to-indigo-600' },
   { name: 'Slack', icon: MessageSquare, category: 'Communication', color: 'from-purple-500 to-pink-600' },
   { name: 'MS Teams', icon: Video, category: 'Communication', color: 'from-blue-600 to-blue-700' },
-  { name: 'Google Workspace', icon: Cloud, category: 'Productivity', color: 'from-green-500 to-emerald-600' },
+  { name: 'Google Workspace', icon: Cloud, category: 'Productivity', color: 'from-green-500 to-green-600' },
   { name: 'Zoom', icon: Video, category: 'Meetings', color: 'from-blue-500 to-blue-600' },
   { name: 'Tally', icon: FileSpreadsheet, category: 'Accounting', color: 'from-red-500 to-orange-600' },
   { name: 'Gmail', icon: Mail, category: 'Email', color: 'from-red-500 to-red-600' },

@@ -154,7 +154,7 @@ function TaskComparisonRow({ snapshot }: { snapshot: TaskBaselineSnapshot }) {
   const getVarianceIcon = (value: number | null) => {
     if (value === null) return <Minus className="h-4 w-4 text-muted-foreground" />;
     if (value > 0) return <TrendingUp className="h-4 w-4 text-destructive" />;
-    if (value < 0) return <TrendingDown className="h-4 w-4 text-emerald-600" />;
+    if (value < 0) return <TrendingDown className="h-4 w-4 text-green-600" />;
     return <Minus className="h-4 w-4 text-muted-foreground" />;
   };
 
@@ -162,7 +162,7 @@ function TaskComparisonRow({ snapshot }: { snapshot: TaskBaselineSnapshot }) {
     switch (status) {
       case 'completed':
       case 'verified':
-        return <Badge variant="default" className="bg-emerald-500">Done</Badge>;
+        return <Badge variant="default" className="bg-green-500">Done</Badge>;
       case 'in_progress':
         return <Badge variant="secondary">In Progress</Badge>;
       case 'rejected':
@@ -203,7 +203,7 @@ function TaskComparisonRow({ snapshot }: { snapshot: TaskBaselineSnapshot }) {
             {endDateVariance !== null && endDateVariance !== 0 && (
               <Badge 
                 variant={endDateVariance > 0 ? 'destructive' : 'default'}
-                className={endDateVariance < 0 ? 'bg-emerald-500' : ''}
+                className={endDateVariance < 0 ? 'bg-green-500' : ''}
               >
                 {endDateVariance > 0 ? '+' : ''}{endDateVariance}d
               </Badge>
@@ -221,7 +221,7 @@ function TaskComparisonRow({ snapshot }: { snapshot: TaskBaselineSnapshot }) {
               {task.estimated_hours || 0}h
             </span>
             {hoursVariance !== 0 && (
-              <span className={`text-xs ${hoursVariance > 0 ? 'text-destructive' : 'text-emerald-600'}`}>
+              <span className={`text-xs ${hoursVariance > 0 ? 'text-destructive' : 'text-green-600'}`}>
                 ({hoursVariance > 0 ? '+' : ''}{hoursVariance}h)
               </span>
             )}

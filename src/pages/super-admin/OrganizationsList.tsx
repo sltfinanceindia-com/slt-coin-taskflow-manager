@@ -177,7 +177,7 @@ export default function OrganizationsList() {
   const getStatusBadge = (status: OrganizationStatus) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-emerald-500">Active</Badge>;
+        return <Badge className="bg-green-500">Active</Badge>;
       case 'suspended':
         return <Badge variant="destructive">Suspended</Badge>;
       case 'pending':
@@ -305,7 +305,7 @@ export default function OrganizationsList() {
                             ) : (
                               <DropdownMenuItem
                                 onClick={() => handleStatusChange(org.id, 'active')}
-                                className="text-emerald-600"
+                                className="text-green-600"
                               >
                                 <CheckCircle className="h-4 w-4 mr-2" />
                                 Activate
@@ -412,7 +412,7 @@ export default function OrganizationsList() {
                                 ) : (
                                   <DropdownMenuItem
                                     onClick={() => handleStatusChange(org.id, 'active')}
-                                    className="text-emerald-600"
+                                    className="text-green-600"
                                   >
                                     <CheckCircle className="h-4 w-4 mr-2" />
                                     Activate
