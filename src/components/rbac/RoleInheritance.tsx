@@ -30,7 +30,7 @@ import { useCustomRoles } from '@/hooks/useCustomRoles';
 const ROLE_HIERARCHY = [
   { role: 'org_admin', label: 'Organization Admin', icon: Shield, level: 5, color: 'bg-purple-500' },
   { role: 'manager', label: 'Manager', icon: Users, level: 4, color: 'bg-blue-500' },
-  { role: 'team_lead', label: 'Team Lead', icon: UserCheck, level: 3, color: 'bg-emerald-500' },
+  { role: 'team_lead', label: 'Team Lead', icon: UserCheck, level: 3, color: 'bg-sky-500' },
   { role: 'employee', label: 'Employee', icon: User, level: 2, color: 'bg-amber-500' },
   { role: 'intern', label: 'Intern', icon: GraduationCap, level: 1, color: 'bg-gray-500' },
 ];

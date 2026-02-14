@@ -115,7 +115,7 @@ export default function Terms() {
                 <section className="mb-8">
                   <h2 className="text-xl sm:text-2xl font-semibold text-foreground mb-4">7. Privacy and Data Protection</h2>
                   <p className="text-muted-foreground leading-relaxed">
-                    Your use of the Platform is also governed by our <Link to="/privacy" className="text-emerald-600 hover:underline">Privacy Policy</Link>. 
+                    Your use of the Platform is also governed by our <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>. 
                     We are committed to protecting your personal information and complying with applicable data protection 
                     regulations including GDPR and applicable data protection laws.
                   </p>
@@ -160,7 +160,7 @@ export default function Terms() {
                 </Button>
               </Link>
               <Link to="/privacy">
-                <Button className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700">
+                <Button className="w-full sm:w-auto">
                   View Privacy Policy
                 </Button>
               </Link>

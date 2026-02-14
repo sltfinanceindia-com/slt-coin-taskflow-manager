@@ -75,7 +75,7 @@ export function ReimbursementsManagement() {
       case "pending": return "bg-yellow-500";
       case "processing": return "bg-blue-500";
       case "rejected": return "bg-red-500";
-      case "paid": return "bg-emerald-600";
+      case "paid": return "bg-green-600";
       default: return "bg-gray-500";
     }
   };

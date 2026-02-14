@@ -24,7 +24,7 @@ export function TaskStatusIndicator({ status, coinValue }: TaskStatusIndicatorPr
         return {
           icon: CheckCircle,
           message: `✅ Task approved! ${coinValue} Coins awarded`,
-          bgColor: 'bg-gradient-to-r from-green-50 to-emerald-50',
+          bgColor: 'bg-gradient-to-r from-green-50 to-green-50',
           borderColor: 'border-green-200',
           textColor: 'text-green-800',
         };

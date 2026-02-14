@@ -135,8 +135,8 @@ export function PrioritizationMatrix() {
             {/* Grid Lines */}
             <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
               {/* Quick Wins - High Impact, Low Effort */}
-              <div className="bg-emerald-50 dark:bg-emerald-950/30 border-r border-b flex items-start justify-end p-2">
-                <Badge variant="default" className="bg-emerald-500">Quick Wins</Badge>
+              <div className="bg-primary/5 dark:bg-primary/10 border-r border-b flex items-start justify-end p-2">
+                <Badge variant="default" className="bg-primary">Quick Wins</Badge>
               </div>
               {/* Major Projects - High Impact, High Effort */}
               <div className="bg-blue-50 dark:bg-blue-950/30 border-b flex items-start justify-end p-2">
@@ -178,7 +178,7 @@ export function PrioritizationMatrix() {
                 >
                   <div
                     className={`w-4 h-4 rounded-full border-2 border-background shadow-md cursor-pointer transition-transform hover:scale-150 ${
-                      quadrant === 'quick-wins' ? 'bg-emerald-500' :
+                      quadrant === 'quick-wins' ? 'bg-primary' :
                       quadrant === 'major-projects' ? 'bg-blue-500' :
                       quadrant === 'fill-ins' ? 'bg-gray-400' : 'bg-red-500'
                     }`}
@@ -199,7 +199,7 @@ export function PrioritizationMatrix() {
           {/* Legend */}
           <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
             <QuadrantLegend
-              color="bg-emerald-500"
+              color="bg-primary"
               title="Quick Wins"
               description="High impact, low effort - Do first"
               count={matrixProjects.filter(p => getQuadrant(p.impact, p.effort, maxScale) === 'quick-wins').length}

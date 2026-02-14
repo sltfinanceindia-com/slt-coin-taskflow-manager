@@ -96,7 +96,7 @@ export function TimesheetSummaryCards({ summary }: TimesheetSummaryCardsProps) {
       </Card>
 
       {/* Estimated Revenue */}
-      <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800">
+      <Card className="bg-gradient-to-br from-green-50 to-green-50 dark:from-green-900/20 dark:to-green-900/20 border-green-200 dark:border-green-800">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-xs font-medium text-green-700 dark:text-green-400">Est. Revenue</CardTitle>
           <CheckCircle className="h-4 w-4 text-green-600" />

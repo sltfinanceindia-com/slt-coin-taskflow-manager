@@ -177,7 +177,7 @@ export function TrainingCourses({ sections: propSections, isLoading: propIsLoadi
                                 </div>
                               </div>
                               {isVideoCompleted(video.id) ? (
-                                <CheckCircle className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+                                <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
                               ) : (
                                 <Circle className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                               )}

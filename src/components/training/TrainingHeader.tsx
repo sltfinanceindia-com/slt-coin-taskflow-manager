@@ -31,7 +31,7 @@ export function TrainingHeader() {
         </div>
         <div className="bg-card border rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="h-4 w-4 text-emerald-600" />
+            <TrendingUp className="h-4 w-4 text-primary" />
             <span className="text-sm font-medium text-muted-foreground">Progress</span>
           </div>
           <p className="text-2xl font-bold">45%</p>

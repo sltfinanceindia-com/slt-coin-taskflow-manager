@@ -165,7 +165,7 @@ export function GanttChart({ projectId }: GanttChartProps) {
       assigned: 'bg-blue-400',
       in_progress: 'bg-amber-400',
       completed: 'bg-green-400',
-      verified: 'bg-emerald-500'
+      verified: 'bg-green-500'
     };
     return colors[status] || 'bg-gray-400';
   };

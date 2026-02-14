@@ -40,7 +40,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 // Theme presets
 const themePresets = [
-  { name: 'Emerald Green', primary: '#10b981', secondary: '#059669', icon: '🌿' },
+  { name: 'Classic Green', primary: '#10b981', secondary: '#059669', icon: '🌿' },
   { name: 'Ocean Blue', primary: '#3b82f6', secondary: '#1d4ed8', icon: '🌊' },
   { name: 'Purple Premium', primary: '#8b5cf6', secondary: '#7c3aed', icon: '💜' },
   { name: 'Sunset Orange', primary: '#f97316', secondary: '#ea580c', icon: '🌅' },

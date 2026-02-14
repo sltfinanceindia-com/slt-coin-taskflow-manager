@@ -165,7 +165,7 @@ export default function OrganizationDetail() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-emerald-500">Active</Badge>;
+        return <Badge className="bg-green-500">Active</Badge>;
       case 'suspended':
         return <Badge variant="destructive">Suspended</Badge>;
       case 'pending':
@@ -365,7 +365,7 @@ export default function OrganizationDetail() {
                               <TableCell>{getRoleBadge(user.role)}</TableCell>
                               <TableCell>
                                 {user.is_active ? (
-                                  <Badge className="bg-emerald-500 text-xs">Active</Badge>
+                                  <Badge className="bg-green-500 text-xs">Active</Badge>
                                 ) : (
                                   <Badge variant="secondary" className="text-xs">Inactive</Badge>
                                 )}

@@ -41,7 +41,7 @@ const statusConfig = {
   approved: { label: 'Approved', color: 'bg-blue-100 text-blue-800', icon: CheckCircle },
   rejected: { label: 'Rejected', color: 'bg-red-100 text-red-800', icon: XCircle },
   disbursed: { label: 'Disbursed', color: 'bg-green-100 text-green-800', icon: IndianRupee },
-  active: { label: 'Active', color: 'bg-emerald-100 text-emerald-800', icon: TrendingDown },
+  active: { label: 'Active', color: 'bg-primary/10 text-primary', icon: TrendingDown },
   completed: { label: 'Completed', color: 'bg-gray-100 text-gray-800', icon: CheckCircle },
   cancelled: { label: 'Cancelled', color: 'bg-gray-100 text-gray-800', icon: XCircle },
 };

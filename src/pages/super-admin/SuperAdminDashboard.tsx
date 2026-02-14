@@ -130,7 +130,7 @@ export default function SuperAdminDashboard() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-emerald-500">Active</Badge>;
+        return <Badge className="bg-green-500">Active</Badge>;
       case 'suspended':
         return <Badge variant="destructive">Suspended</Badge>;
       case 'pending':
@@ -195,10 +195,10 @@ export default function SuperAdminDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-6 sm:pb-2">
               <CardTitle className="text-xs sm:text-sm font-medium">Active Orgs</CardTitle>
-              <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-500" />
+              <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500" />
             </CardHeader>
             <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
-              <div className="text-xl sm:text-2xl font-bold text-emerald-600">{stats.activeOrganizations}</div>
+              <div className="text-xl sm:text-2xl font-bold text-green-600">{stats.activeOrganizations}</div>
               <p className="text-xs text-muted-foreground">
                 Currently active
               </p>

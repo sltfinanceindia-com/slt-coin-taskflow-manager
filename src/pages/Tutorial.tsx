@@ -1218,7 +1218,7 @@ export default function TutorialPage() {
                               title="Payroll" 
                               description="Process salaries"
                               path="/dashboard?tab=payroll"
-                              color="bg-emerald-500"
+                              color="bg-primary"
                             />
                             <FeatureHighlight 
                               icon={Coins} 

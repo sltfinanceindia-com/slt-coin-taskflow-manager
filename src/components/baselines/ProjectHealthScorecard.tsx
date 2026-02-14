@@ -252,8 +252,8 @@ export function ProjectHealthScorecard() {
                   </li>
                 )}
                 {healthScore.level === 'healthy' && (
-                  <li className="flex items-start gap-3 p-3 bg-emerald-50 dark:bg-emerald-950/20 rounded-lg">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-600 mt-0.5" />
+                  <li className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
                     <div>
                       <p className="font-medium">Project is on track</p>
                       <p className="text-sm text-muted-foreground">
@@ -295,7 +295,7 @@ function ScoreCard({
   description: string;
 }) {
   const getScoreColor = (score: number) => {
-    if (score >= 70) return 'text-emerald-600';
+    if (score >= 70) return 'text-green-600';
     if (score >= 40) return 'text-yellow-600';
     return 'text-destructive';
   };
