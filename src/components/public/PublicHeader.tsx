@@ -105,7 +105,7 @@ export function PublicHeader() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute top-full left-0 mt-2 w-[600px] p-6 rounded-2xl bg-background border border-border shadow-xl"
+                    className="absolute top-full left-0 mt-2 w-[600px] p-6 rounded-2xl bg-background dark:bg-[#1A1A1A] backdrop-blur-xl border border-border shadow-xl"
                   >
                     <div className="grid grid-cols-2 gap-4">
                       {features.map((feature) => (
@@ -113,7 +113,20 @@ export function PublicHeader() {
                           key={feature.name}
                           to={feature.href}
                           className="flex items-start gap-4 p-3 rounded-xl hover:bg-muted/50 transition-colors group"
-                          onClick={() => setFeaturesOpen(false)}
+                          onClick={(e) => {
+                            setFeaturesOpen(false);
+                            // If already on /features, manually trigger hash scroll
+                            if (location.pathname === '/features') {
+                              const hash = feature.href.split('#')[1];
+                              if (hash) {
+                                e.preventDefault();
+                                window.location.hash = hash;
+                                setTimeout(() => {
+                                  document.getElementById('features-tabs')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                }, 100);
+                              }
+                            }
+                          }}
                         >
                           <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors">
                             <feature.icon className="h-5 w-5" />

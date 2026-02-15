@@ -373,7 +373,7 @@ export default function TutorialPage() {
                         <FeatureHighlight icon={CheckSquare} title="Task Management" description="View and update your tasks" path="/dashboard?tab=tasks" color="bg-green-500" />
                         <FeatureHighlight icon={Clock} title="Time Tracking" description="Log hours spent on work" path="/dashboard?tab=time" color="bg-blue-500" />
                         <FeatureHighlight icon={MapPin} title="Attendance" description="Clock in/out daily" path="/dashboard?tab=attendance" color="bg-purple-500" />
-                        <FeatureHighlight icon={Palmtree} title="Leave Requests" description="Apply for time off" path="/dashboard?tab=leave" color="bg-teal-500" />
+                        <FeatureHighlight icon={Palmtree} title="Leave Requests" description="Apply for time off" path="/dashboard?tab=leave" color="bg-cyan-500" />
                         <FeatureHighlight icon={MessageSquare} title="Communication" description="Chat with your team" path="/dashboard?tab=communication" color="bg-pink-500" />
                         <FeatureHighlight icon={Coins} title={`My ${coinName}`} description="View your rewards" path="/dashboard?tab=my-coins" color="bg-yellow-500" />
                         <FeatureHighlight icon={HeartPulse} title="Kudos Wall" description="Recognize teammates" path="/kudos" color="bg-red-500" />
@@ -772,7 +772,7 @@ export default function TutorialPage() {
                       {/* Leave Requests */}
                       <div className="space-y-4">
                         <h3 className="font-semibold flex items-center gap-2">
-                          <Palmtree className="h-5 w-5 text-teal-500" />
+                          <Palmtree className="h-5 w-5 text-primary" />
                           Leave Requests
                         </h3>
                         
@@ -1038,9 +1038,9 @@ export default function TutorialPage() {
                             </div>
                           </div>
                           
-                          <div className="p-4 rounded-lg border bg-gradient-to-r from-teal-500/10 to-transparent">
+                          <div className="p-4 rounded-lg border bg-gradient-to-r from-primary/10 to-transparent">
                             <div className="flex items-start gap-3">
-                              <Clock className="h-5 w-5 text-teal-500 mt-1" />
+                              <Clock className="h-5 w-5 text-primary mt-1" />
                               <div>
                                 <h4 className="font-medium">On-Time Submissions</h4>
                                 <p className="text-sm text-muted-foreground">
