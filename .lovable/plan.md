@@ -1,103 +1,63 @@
 
-# Plan: Complete Theme Migration -- Remove All Remaining Emerald/Green References
 
-There are still **64 files** using hardcoded `emerald` colors and **6 files** using `teal` colors that were not updated in the previous round. This plan covers all of them systematically.
+# Plan: Fix All Known Issues
 
----
-
-## Priority 1: UI Primitives (8 files -- highest impact)
-
-These components are used across the entire app, so updating them fixes hundreds of instances at once.
-
-| File | Change |
-|------|--------|
-| `src/components/ui/button.tsx` | Replace `emerald-500` focus ring with `ring-primary`, `emerald-600` default bg with `bg-primary`, `emerald-700` hover with `hover:bg-primary/90`, link variant `emerald-600` with `text-primary` |
-| `src/components/ui/checkbox.tsx` | Replace `emerald-500/600` checked states with `bg-primary` and `border-primary` |
-| `src/components/ui/dialog.tsx` | Replace `emerald-500` focus ring with `ring-primary` |
-| `src/components/ui/progress.tsx` | Replace `emerald-500` bar with `bg-primary` |
-| `src/components/ui/progress-bar.tsx` | Replace `emerald-600/500` bar with `bg-primary` |
-| `src/components/ui/radio-group.tsx` | Replace `emerald-600/500` colors with `text-primary`, `fill-primary` |
-| `src/components/ui/select.tsx` | Replace `emerald-500` focus ring with `ring-primary` |
-| `src/components/ui/spinner.tsx` | Replace `emerald-600` border with `border-primary` |
+Three concrete issues remain unfixed from previous rounds. Here is exactly what needs to change.
 
 ---
 
-## Priority 2: Core App Components (12 files)
+## Issue 1: Features Page Hash Navigation Not Scrolling
 
-| File | Change |
-|------|--------|
-| `src/App.tsx` | Line 94: Replace `border-emerald-600` spinner with `border-primary` |
-| `src/components/EnhancedOverview.tsx` | Replace `emerald-500/600/100/900` icon backgrounds and trending indicators with `primary` tokens |
-| `src/components/DashboardWidgets.tsx` | Same as EnhancedOverview -- icon backgrounds and trending colors |
-| `src/components/ProductivityDashboard.tsx` | Replace `emerald-100/600/900/400` focus score colors with `primary` tokens |
-| `src/components/KanbanBoard.tsx` | Replace `emerald-500/50/950` verified column border and drag-over states with `primary` tokens |
-| `src/components/TaskCalendar.tsx` | Replace `emerald-600` verified status color |
-| `src/components/TaskEditDialog.tsx` | Replace `emerald-500` verified status dot |
-| `src/components/TaskStatusIndicator.tsx` | Replace `emerald-50` gradient in approved status (keep green since it's semantic "success") |
-| `src/components/TaskActions.tsx` | Replace `emerald-50/50` gradient background |
-| `src/components/InternManagement.tsx` | Replace `emerald-100/800/900/300` team lead badge colors |
-| `src/components/common/FeaturePlaceholder.tsx` | Replace `emerald-100/700/900/400` finance category color |
-| `src/components/tasks/EnhancedSubtaskList.tsx` | Replace `emerald-500/100` verified status |
+**Problem:** When navigating to `/features#hr` from the PublicHeader dropdown, the tab changes but the page doesn't scroll to the tabbed section -- the user stays at the top of the page staring at the hero.
+
+**Fix in `src/pages/Features.tsx` (lines 201-207):**
+- After setting `activeTab` from the hash, add a `setTimeout` that scrolls the Tabs section into view using `document.getElementById` and `scrollIntoView({ behavior: 'smooth', block: 'start' })`
+- Add an `id="features-tabs"` to the Tabs section container (line 263) so it can be targeted
+
+**Fix in `src/components/public/PublicHeader.tsx` (lines 112-126):**
+- When clicking a feature link like `/features#hr`, if user is already ON `/features`, the React Router `Link` won't trigger a re-mount. Add an `onClick` handler that manually parses the hash and calls `scrollIntoView` + sets the hash for the existing `useEffect` to pick up.
 
 ---
 
-## Priority 3: Page-Level Components (16 files)
+## Issue 2: Sidebar Active Item Not Scrolling Into View
 
-| File | Change |
-|------|--------|
-| `src/pages/Pricing.tsx` | Line 111: Replace `emerald-500/10` starter gradient with `primary/10` |
-| `src/pages/Privacy.tsx` | Lines 25-26, 171: Replace `emerald-100/900/600` icon bg and button colors |
-| `src/pages/super-admin/OrganizationDetail.tsx` | Replace `emerald-500` active badges |
-| `src/pages/super-admin/SuperAdminDashboard.tsx` | Replace `emerald-500/600` active org stats |
-| `src/pages/super-admin/OrganizationsList.tsx` | Replace `emerald-500/600` active badges and menu items |
-| `src/pages/super-admin/CreateOrganization.tsx` | Replace `emerald-500/600` password strength indicators |
-| `src/pages/TaskDetailPage.tsx` | Replace `emerald-100/800/900` verified status badge |
-| `src/pages/ProjectDetailPage.tsx` | Replace `emerald-100/800/900/400` completed status |
-| `src/pages/Tutorial.tsx` | Replace `emerald-500` payroll feature highlight |
-| `src/pages/settings/RolesPermissions.tsx` | Replace `emerald-100/800/900/300` team lead role color |
-| `src/pages/admin/OrganizationSettings.tsx` | Update Emerald Green theme preset name/reference |
-| `src/components/super-admin/SuperAdminLayout.tsx` | Replace `emerald-600` active org count |
-| `src/components/servicedesk/TicketAnalytics.tsx` | Replace `emerald-50/600/700/950` SLA on-track colors |
-| `src/components/training/VideoProgressTracker.tsx` | Replace `emerald-500/50/800/300/950` completion states |
-| `src/components/project-detail/ProjectSprintsTab.tsx` | Replace `emerald-100/800/900` completed badge |
-| `src/components/project-detail/ProjectTasksTab.tsx` | Replace `emerald-100/800/900/400` verified status |
+**Problem:** When navigating between tabs, the sidebar doesn't scroll to keep the active item visible. Users with many nav groups have to manually scroll to find the active item.
+
+**Fix in `src/components/AppSidebar.tsx`:**
+- Add `data-tab-url` attribute to each sidebar button (lines 385 and 435) so we can query them
+- Add a `useEffect` that runs when `activeTab` changes, finds the matching `[data-tab-url="..."]` element, and calls `scrollIntoView({ block: 'nearest', behavior: 'smooth' })`
 
 ---
 
-## Priority 4: Baseline & RBAC Components (7 files)
+## Issue 3: Remaining `teal` Color References
 
-| File | Change |
-|------|--------|
-| `src/components/baselines/ProjectHealthScorecard.tsx` | Replace `emerald-500/600/50/950` healthy status colors with success/primary tokens |
-| `src/components/baselines/BaselineComparisonChart.tsx` | Replace `emerald-500/600` positive variance colors |
-| `src/components/rbac/OrgChartViewer.tsx` | Replace `emerald-500/50/950` team lead node colors |
-| `src/components/rbac/RoleEditor.tsx` | Replace `emerald-500` team lead role color |
-| `src/components/rbac/TeamRoleAssignment.tsx` | Replace `emerald-100/800/900/300` team lead role badge |
-| `src/components/timesheets/TimesheetSummaryCards.tsx` | Replace `emerald-50/900` revenue card gradient |
+**Problem:** 3 instances of `teal-500` in `src/pages/Tutorial.tsx` that were missed.
+
+**Fix:**
+- Line 376: `bg-teal-500` -> `bg-cyan-500` (keeping it distinct from other feature colors in the tutorial grid)
+- Line 775: `text-teal-500` -> `text-primary`  
+- Line 1041/1043: `from-teal-500/10` and `text-teal-500` -> `from-primary/10` and `text-primary`
 
 ---
 
-## Remaining Files (searched but with fewer occurrences)
+## Issue 4: Dropdown Backgrounds in Dark Mode
 
-Any additional files found with `emerald` references in the search results will also be updated with the same pattern:
-- Semantic success/healthy indicators: Use `text-green-600` or `hsl(var(--success))` 
-- Branding/accent colors: Use `primary` CSS variable tokens
-- Status-specific verified/completed: Use `primary` or `success` tokens
+**Problem:** The useful-context warns that dropdowns can become see-through. The PublicHeader features dropdown and all Radix UI overlay components use `bg-popover` which resolves correctly via CSS variables, but in dark mode the glassmorphism effect on the header can cause visual issues.
 
----
-
-## Approach for Color Replacement
-
-The replacement strategy is contextual:
-
-1. **Brand/accent colors** (buttons, links, focus rings, badges used for branding): Replace with `primary` CSS variable tokens (e.g., `bg-primary`, `text-primary`, `ring-primary`)
-
-2. **Success/healthy status indicators** (health scores, on-track SLA, password strength): Replace with `text-green-600` / `bg-green-500` since green is semantically correct for "success" -- these are NOT emerald-brand colors, they are status colors
-
-3. **Role-specific badge colors** (team_lead, supervisor): These use emerald/teal as a differentiating color in a multi-color palette. Replace with `bg-sky-100 text-sky-800` (blue family) to align with the new blue theme
+**Fix in `src/components/public/PublicHeader.tsx` (line 108):**
+- Add explicit dark mode background to the features dropdown: change from `bg-background` to include `dark:bg-[#1A1A1A]` to ensure it's never transparent
+- Add `backdrop-blur-xl` for the glassmorphism effect
 
 ---
 
-## Total Files to Update: ~43 files
+## Technical Summary
 
-All changes are color-class replacements with no logic changes. The UI primitives (Priority 1) will have the biggest visual impact since they propagate to every page.
+| File | Changes |
+|------|---------|
+| `src/pages/Features.tsx` | Add `id="features-tabs"` to tabs section; enhance hash `useEffect` to scroll into view after tab change |
+| `src/components/public/PublicHeader.tsx` | Add onClick scroll logic for feature links when already on /features; fix dropdown dark bg |
+| `src/components/AppSidebar.tsx` | Add `data-tab-url` attributes; add `useEffect` for active item scroll-into-view |
+| `src/pages/Tutorial.tsx` | Replace 3 `teal-500` references with `primary` or `cyan-500` |
+
+Total: 4 files, all surgical edits with no structural changes.
+
