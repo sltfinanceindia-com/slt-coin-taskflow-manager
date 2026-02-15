@@ -203,6 +203,12 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
     return activeTab === baseTab || activeTab === tab;
   }
 
+  // Scroll active sidebar item into view when tab changes
+  useEffect(() => {
+    const el = document.querySelector(`[data-tab-url="${activeTab}"]`);
+    el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [activeTab]);
+
   // Check if any item in a group is active
   const isGroupActive = (items: { url: string }[]) => 
     items.some(item => isActive(item.url))
@@ -385,6 +391,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
                             onClick={() => handleTabChange(item.url)}
                             className="w-full flex items-center justify-center"
                             title={item.title}
+                            data-tab-url={item.url.split('?')[0]}
                           >
                             <item.icon className="h-4 w-4 shrink-0" />
                           </button>
@@ -433,6 +440,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
                             <button
                               onClick={() => handleTabChange(item.url)}
                               className="w-full flex items-center gap-2"
+                              data-tab-url={item.url.split('?')[0]}
                             >
                               <item.icon className="h-4 w-4 shrink-0" />
                               <span className="truncate">{item.title}</span>
@@ -447,6 +455,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
             })}
           </div>
         </ScrollArea>
+
 
         {/* Settings */}
         <div className="mt-auto p-3 pt-2 border-t border-sidebar-border shrink-0">

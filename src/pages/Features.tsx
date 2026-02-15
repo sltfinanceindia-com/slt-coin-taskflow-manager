@@ -198,11 +198,14 @@ export default function Features() {
   const location = useLocation();
   const activeFeature = featureTabs.find(tab => tab.id === activeTab) || featureTabs[0];
 
-  // Parse URL hash to auto-select tab
+  // Parse URL hash to auto-select tab and scroll into view
   useEffect(() => {
     const hash = location.hash.replace('#', '');
     if (hash && featureTabs.some(tab => tab.id === hash)) {
       setActiveTab(hash);
+      setTimeout(() => {
+        document.getElementById('features-tabs')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     }
   }, [location.hash]);
 
@@ -260,7 +263,7 @@ export default function Features() {
         </section>
 
         {/* Tabbed Features Section */}
-        <section className="py-16 lg:py-24">
+        <section id="features-tabs" className="py-16 lg:py-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div 
               className="text-center mb-12"
