@@ -138,7 +138,19 @@ export function usePresence() {
   };
 
   const fetchPresenceList = async () => {
+    if (!profile?.organization_id) return;
+
     try {
+      // Get org member IDs first for filtering
+      const { data: orgMembers } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('organization_id', profile.organization_id)
+        .eq('is_active', true);
+
+      const memberIds = orgMembers?.map(m => m.id) || [];
+      if (memberIds.length === 0) return;
+
       const { data, error } = await supabase
         .from('user_presence')
         .select(`
@@ -150,6 +162,7 @@ export function usePresence() {
             role
           )
         `)
+        .in('user_id', memberIds)
         .order('last_activity_at', { ascending: false });
 
       if (error) {

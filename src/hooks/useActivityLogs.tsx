@@ -60,7 +60,8 @@ export function useActivityLogs() {
           user_profile:profiles!inner(id, full_name, email, organization_id)
         `)
         .eq('organization_id', profile.organization_id)
-        .order('timestamp', { ascending: false });
+        .order('timestamp', { ascending: false })
+        .limit(500);
 
       if (error) throw error;
       return data as ActivityLog[];

@@ -31,18 +31,19 @@ export interface GroupMember {
 }
 
 export const useGroups = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Fetch user's groups
   const fetchGroups = async () => {
-    if (!user) return;
+    if (!user || !profile?.organization_id) return;
 
     try {
       const { data, error } = await supabase
         .from('groups')
         .select('*')
+        .eq('organization_id', profile.organization_id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -56,7 +57,7 @@ export const useGroups = () => {
 
   // Create new group
   const createGroup = async (name: string, description?: string, isPrivate = false): Promise<Group | null> => {
-    if (!user) return null;
+    if (!user || !profile?.organization_id) return null;
 
     try {
       const { data, error } = await supabase
@@ -66,7 +67,8 @@ export const useGroups = () => {
           description,
           created_by: user.id,
           is_private: isPrivate,
-          member_count: 1
+          member_count: 1,
+          organization_id: profile.organization_id
         })
         .select()
         .single();
@@ -199,7 +201,7 @@ export const useGroups = () => {
 
   useEffect(() => {
     fetchGroups();
-  }, [user]);
+  }, [user, profile?.organization_id]);
 
   // Set up real-time subscription
   useEffect(() => {

@@ -143,10 +143,12 @@ export function useCommunication() {
       throw new Error('Failed to load team members');
     }
 
-    // Fetch presence data separately
+    // Fetch presence data only for org team members
+    const teamMemberIds = (profiles || []).map(p => p.id);
     const { data: presenceData } = await supabase
       .from('user_presence')
-      .select('*');
+      .select('*')
+      .in('user_id', teamMemberIds);
 
     const teamMembersData: TeamMember[] = (profiles || []).map(profileData => {
       const presence = presenceData?.find(p => p.user_id === profileData.id);
@@ -182,6 +184,7 @@ export function useCommunication() {
     const { data: channelsData, error: channelsError } = await supabase
       .from('communication_channels')
       .select('*')
+      .eq('organization_id', profile.organization_id)
       .order('last_message_at', { ascending: false, nullsFirst: false });
 
     if (channelsError) {
