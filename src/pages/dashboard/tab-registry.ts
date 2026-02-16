@@ -428,6 +428,10 @@ export const tabRegistry: Record<string, TabConfig> = {
   'regularization': {
     component: lazy(() => import('@/components/workforce/AttendanceRegularization').then(m => ({ default: m.AttendanceRegularization }))),
   },
+  'attendance-reports': {
+    component: lazy(() => import('@/components/workforce/AttendanceReports').then(m => ({ default: m.AttendanceReports }))),
+    adminOnly: true,
+  },
 
   // Bulk Operations
   'bulk-import': {
