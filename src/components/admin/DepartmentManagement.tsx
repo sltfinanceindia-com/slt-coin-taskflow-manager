@@ -89,7 +89,7 @@ export function DepartmentManagement() {
           name: formData.name,
           code: formData.code,
           description: formData.description,
-          parent_id: formData.parentId || null,
+          parent_id: formData.parentId && formData.parentId !== 'none' ? formData.parentId : null,
           status: formData.status,
         });
       } else {
@@ -97,7 +97,7 @@ export function DepartmentManagement() {
           name: formData.name,
           code: formData.code,
           description: formData.description,
-          parent_id: formData.parentId || null,
+          parent_id: formData.parentId && formData.parentId !== 'none' ? formData.parentId : null,
           status: formData.status,
         });
       }
@@ -333,7 +333,7 @@ export function DepartmentManagement() {
                   <SelectValue placeholder="Select parent (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None (Top Level)</SelectItem>
+                  <SelectItem value="none">None (Top Level)</SelectItem>
                   {departments
                     .filter((d) => d.id !== editingDepartment?.id && !d.parent_id)
                     .map((dept) => (
