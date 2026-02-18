@@ -1553,6 +1553,7 @@ export type Database = {
       }
       budget_allocations: {
         Row: {
+          alert_threshold_percentage: number | null
           allocated_amount: number | null
           category: string
           created_at: string | null
@@ -1567,6 +1568,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          alert_threshold_percentage?: number | null
           allocated_amount?: number | null
           category: string
           created_at?: string | null
@@ -1581,6 +1583,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          alert_threshold_percentage?: number | null
           allocated_amount?: number | null
           category?: string
           created_at?: string | null
@@ -12453,6 +12456,58 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sprint_tasks: {
+        Row: {
+          added_at: string
+          id: string
+          organization_id: string | null
+          sort_order: number | null
+          sprint_id: string
+          story_points: number | null
+          task_id: string
+        }
+        Insert: {
+          added_at?: string
+          id?: string
+          organization_id?: string | null
+          sort_order?: number | null
+          sprint_id: string
+          story_points?: number | null
+          task_id: string
+        }
+        Update: {
+          added_at?: string
+          id?: string
+          organization_id?: string | null
+          sort_order?: number | null
+          sprint_id?: string
+          story_points?: number | null
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sprint_tasks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sprint_tasks_sprint_id_fkey"
+            columns: ["sprint_id"]
+            isOneToOne: false
+            referencedRelation: "sprints"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sprint_tasks_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
             referencedColumns: ["id"]
           },
         ]
