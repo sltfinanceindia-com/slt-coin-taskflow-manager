@@ -26,6 +26,7 @@ export interface Task {
   estimated_hours?: number | null;
   actual_hours?: number | null;
   progress_percentage?: number;
+  is_archived?: boolean;
   assigned_profile?: {
     id: string;
     full_name: string;

@@ -17,7 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { usePersistedKanbanFilters } from '@/hooks/usePersistedKanbanFilters';
 import { 
   BarChart3, Filter, LayoutGrid, Table, AlertCircle, 
-  UserPlus, CheckCircle, Clock, XCircle, Inbox, Play
+  UserPlus, CheckCircle, Clock, XCircle, Inbox, Play, Archive
 } from 'lucide-react';
 
 interface TabBasedKanbanProps {
@@ -59,6 +59,7 @@ export function TabBasedKanban({
   const [activeTab, setActiveTab] = useState<StatusTab>('current');
   const [showFilters, setShowFilters] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const { filters, setFilters } = usePersistedKanbanFilters('tab-kanban');
 
@@ -82,6 +83,8 @@ export function TabBasedKanban({
   // Apply filters
   const filteredTasks = useMemo(() => {
     return visibleTasks.filter(task => {
+      // Filter out archived tasks unless toggle is on
+      if (!showArchived && task.is_archived) return false;
       if (filters.priority.length > 0 && !filters.priority.includes(task.priority || '')) {
         return false;
       }
@@ -99,7 +102,7 @@ export function TabBasedKanban({
       }
       return true;
     });
-  }, [visibleTasks, filters]);
+  }, [visibleTasks, filters, showArchived]);
 
   // Get tasks for each status tab
   const getTasksForTab = useCallback((tab: StatusTab) => {
@@ -142,6 +145,26 @@ export function TabBasedKanban({
         description: error.message || "Failed to assign task",
         variant: "destructive",
       });
+    }
+  };
+
+  // Handle archive/unarchive
+  const handleArchiveTask = async (taskId: string, archive: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ is_archived: archive } as any)
+        .eq('id', taskId);
+      if (error) throw error;
+      if (onUpdateTask) {
+        onUpdateTask(taskId, { is_archived: archive } as any);
+      }
+      toast({
+        title: archive ? "Task Archived" : "Task Unarchived",
+        description: archive ? "Task moved to archive." : "Task restored from archive.",
+      });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     }
   };
 
@@ -205,6 +228,15 @@ export function TabBasedKanban({
               >
                 <BarChart3 className="h-3 w-3" />
                 Analytics
+              </Button>
+              <Button
+                variant={showArchived ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowArchived(!showArchived)}
+                className="gap-1.5 text-xs h-8"
+              >
+                <Archive className="h-3 w-3" />
+                {showArchived ? 'Hide Archived' : 'Show Archived'}
               </Button>
             </div>
           </div>
@@ -294,17 +326,31 @@ export function TabBasedKanban({
                               isUpdating={isUpdating}
                               onAdminOverride={handleAdminOverride}
                             />
-                            {/* Assign to me button for Current tab */}
-                            {tab.id === 'current' && (
-                              <Button
-                                size="sm"
-                                className="absolute bottom-2 right-2 gap-1.5"
-                                onClick={() => handleAssignToMe(task.id)}
-                              >
-                                <UserPlus className="h-3 w-3" />
-                                Assign to me
-                              </Button>
-                            )}
+                            <div className="absolute bottom-2 right-2 flex gap-1.5">
+                              {/* Archive/Unarchive button */}
+                              {(tab.id === 'verified' || tab.id === 'rejected' || task.is_archived) && (
+                                <Button
+                                  size="sm"
+                                  variant={task.is_archived ? "default" : "outline"}
+                                  className="gap-1 text-xs"
+                                  onClick={() => handleArchiveTask(task.id, !task.is_archived)}
+                                >
+                                  <Archive className="h-3 w-3" />
+                                  {task.is_archived ? 'Unarchive' : 'Archive'}
+                                </Button>
+                              )}
+                              {/* Assign to me button for Current tab */}
+                              {tab.id === 'current' && (
+                                <Button
+                                  size="sm"
+                                  className="gap-1.5"
+                                  onClick={() => handleAssignToMe(task.id)}
+                                >
+                                  <UserPlus className="h-3 w-3" />
+                                  Assign to me
+                                </Button>
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>
