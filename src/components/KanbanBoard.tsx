@@ -14,6 +14,7 @@ import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUserRole } from '@/hooks/useUserRole';
+import { usePersistedKanbanFilters } from '@/hooks/usePersistedKanbanFilters';
 
 interface KanbanBoardProps {
   tasks: Task[];
@@ -49,12 +50,7 @@ export function KanbanBoard({
   const { isAdmin } = useUserRole();
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState<KanbanFilters>({
-    priority: [],
-    assignedTo: [],
-    dateRange: { start: null, end: null },
-    projects: [],
-  });
+  const { filters, setFilters } = usePersistedKanbanFilters('kanban-board');
   const [optimizationSuggestions, setOptimizationSuggestions] = useState<string[]>([]);
 
   // Advanced filtering logic
