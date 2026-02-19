@@ -13246,6 +13246,7 @@ export type Database = {
           end_date: string | null
           estimated_hours: number | null
           id: string
+          is_archived: boolean | null
           is_critical: boolean | null
           is_milestone: boolean | null
           is_subtask: boolean | null
@@ -13281,6 +13282,7 @@ export type Database = {
           end_date?: string | null
           estimated_hours?: number | null
           id?: string
+          is_archived?: boolean | null
           is_critical?: boolean | null
           is_milestone?: boolean | null
           is_subtask?: boolean | null
@@ -13316,6 +13318,7 @@ export type Database = {
           end_date?: string | null
           estimated_hours?: number | null
           id?: string
+          is_archived?: boolean | null
           is_critical?: boolean | null
           is_milestone?: boolean | null
           is_subtask?: boolean | null
