@@ -14,6 +14,7 @@ import { KanbanTableView } from '@/components/KanbanTableView';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { usePersistedKanbanFilters } from '@/hooks/usePersistedKanbanFilters';
 import { 
   BarChart3, Filter, LayoutGrid, Table, AlertCircle, 
   UserPlus, CheckCircle, Clock, XCircle, Inbox, Play
@@ -59,12 +60,7 @@ export function TabBasedKanban({
   const [showFilters, setShowFilters] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
-  const [filters, setFilters] = useState<KanbanFiltersState>({
-    priority: [],
-    assignedTo: [],
-    dateRange: { start: null, end: null },
-    projects: [],
-  });
+  const { filters, setFilters } = usePersistedKanbanFilters('tab-kanban');
 
   // Filter tasks based on user role
   const visibleTasks = useMemo(() => {
