@@ -56,7 +56,7 @@ export function TabBasedKanban({
   const { profile } = useAuth();
   const { isAdmin, isManager, isTeamLead } = useUserRole();
   const { updateTask } = useTasks();
-  const [activeTab, setActiveTab] = useState<StatusTab>('current');
+  const [activeTab, setActiveTab] = useState<StatusTab>('assigned');
   const [showFilters, setShowFilters] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showArchived, setShowArchived] = useState(false);

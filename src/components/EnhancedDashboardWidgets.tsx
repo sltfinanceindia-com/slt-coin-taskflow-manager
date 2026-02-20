@@ -55,7 +55,7 @@ export function EnhancedDashboardWidgets() {
         const date = subDays(new Date(), i);
         const dateStr = format(date, 'yyyy-MM-dd');
         
-        // Filter time logs for this specific day
+        // For admins, show all org time logs; for employees, show personal only
         const dayLogs = timeLogs.filter(log => log.date_logged === dateStr);
         const totalHours = dayLogs.reduce((sum, log) => sum + (log.hours_worked || 0), 0);
         
@@ -98,8 +98,11 @@ export function EnhancedDashboardWidgets() {
     return taskDate >= weekAgo;
   });
 
-  const weeklyHours = getWeeklyHours();
-  const completionRate = stats?.totalTasks ? (stats.completedTasks / stats.totalTasks) * 100 : 0;
+  // For admins, show org-wide hours; for employees, show personal hours
+  const weeklyHours = isAdmin ? getWeeklyHours() : getWeeklyHours(profile?.id);
+  const completionRate = myTasks.length > 0 
+    ? (myTasks.filter(t => t.status === 'verified' || t.status === 'completed').length / myTasks.length) * 100 
+    : 0;
   const totalEarned = getTotalEarned();
   const pendingCoins = getPendingCoins();
 

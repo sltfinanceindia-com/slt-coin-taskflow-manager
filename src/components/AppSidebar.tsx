@@ -368,6 +368,13 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
 
         {/* Navigation with Collapsible Groups */}
         <ScrollArea className="flex-1">
+          {roleLoading ? (
+            <div className="px-3 py-6 space-y-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="h-8 bg-muted/50 rounded-lg animate-pulse" />
+              ))}
+            </div>
+          ) : (
           <div className="px-3 py-3 space-y-2">
             {navGroups.map((group) => {
               const GroupIcon = group.icon
@@ -454,6 +461,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
               )
             })}
           </div>
+          )}
         </ScrollArea>
 
 
