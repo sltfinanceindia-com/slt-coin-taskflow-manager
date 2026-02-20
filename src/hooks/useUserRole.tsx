@@ -43,19 +43,25 @@ function getHighestPriorityRole(roles: AppRole[]): AppRole {
 
 export function useUserRole(): UserRoleData {
   const { user, profile } = useAuth();
+  
+  // Cache last-known role to prevent flicker on reload
+  const cachedRole = typeof window !== 'undefined' 
+    ? (localStorage.getItem('tenexa-cached-role') as AppRole | null) 
+    : null;
+  
   const [roleData, setRoleData] = useState<UserRoleData>({
-    role: 'employee',
-    allRoles: [],
+    role: cachedRole || 'employee',
+    allRoles: cachedRole ? [cachedRole] : [],
     organizationId: null,
-    isSuperAdmin: false,
-    isOrgAdmin: false,
-    isAdmin: false,
-    isHRAdmin: false,
+    isSuperAdmin: cachedRole === 'super_admin',
+    isOrgAdmin: cachedRole === 'super_admin' || cachedRole === 'org_admin',
+    isAdmin: cachedRole === 'super_admin' || cachedRole === 'org_admin' || cachedRole === 'admin',
+    isHRAdmin: cachedRole === 'hr_admin' || cachedRole === 'super_admin' || cachedRole === 'org_admin' || cachedRole === 'admin',
     isProjectManager: false,
     isFinanceManager: false,
     isManager: false,
     isTeamLead: false,
-    isEmployee: false,
+    isEmployee: !cachedRole || cachedRole === 'employee',
     isLoading: true,
   });
 
@@ -114,6 +120,11 @@ export function useUserRole(): UserRoleData {
         const isHRAdmin = isAdmin || highestRole === 'hr_admin' || allRoles.includes('hr_admin');
         const isProjectManager = isAdmin || highestRole === 'project_manager' || allRoles.includes('project_manager');
         const isFinanceManager = isAdmin || highestRole === 'finance_manager' || allRoles.includes('finance_manager');
+
+        // Cache the resolved role for next page load
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('tenexa-cached-role', highestRole);
+        }
 
         setRoleData({
           role: highestRole,
