@@ -3542,6 +3542,80 @@ export type Database = {
           },
         ]
       }
+      employee_bonuses: {
+        Row: {
+          amount: number
+          approved_by: string | null
+          bonus_type: string
+          created_at: string
+          created_by: string | null
+          employee_id: string
+          id: string
+          organization_id: string
+          payout_date: string | null
+          reason: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          approved_by?: string | null
+          bonus_type?: string
+          created_at?: string
+          created_by?: string | null
+          employee_id: string
+          id?: string
+          organization_id: string
+          payout_date?: string | null
+          reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          approved_by?: string | null
+          bonus_type?: string
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string
+          id?: string
+          organization_id?: string
+          payout_date?: string | null
+          reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_bonuses_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_bonuses_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_bonuses_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_bonuses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_capacity: {
         Row: {
           available_from: string | null
