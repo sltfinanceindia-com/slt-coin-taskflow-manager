@@ -1,90 +1,116 @@
 
 
-# TeneXA Tab Audit Results & Fix Plan
+# TeneXA Complete Application Audit -- Findings & Fix Plan
 
 ## Critical Issues Found
 
-### Issue 1: Tasks Tab -- Default "Current" Tab Always Empty
-**Status:** BROKEN (data exists but not visible)
-**Root Cause:** The Kanban board defaults to the "Current" tab which only shows unassigned tasks (`!task.assigned_to && status === 'assigned'`). Since all 6 tasks in the org are assigned to a user, the default view is always empty. The user sees "No tasks in Current" even though Assigned: 1 and Verified: 1 exist.
+### CATEGORY 1: BROKEN (Missing Database Table)
 
-**Fix:** Change the default tab from `'current'` to `'assigned'` in `TabBasedKanban.tsx` (line 59). This way users see their assigned tasks first, which is the most useful default.
+| Tab | Issue | Root Cause |
+|-----|-------|------------|
+| **Bonus Management** | Infinite loading spinner, cannot add data | `employee_bonuses` table does NOT exist in the database. The component queries `supabase.from('employee_bonuses')` which silently fails. |
 
-### Issue 2: Overview Dashboard -- Shows "0 Hours This Week" Despite 3 Time Logs
-**Status:** PARTIAL (data mismatch)
-**Root Cause:** The dashboard widgets (`EnhancedDashboardWidgets`) likely filter time_logs by the current user's profile ID and current week. The 3 time_logs are dated Dec 2025 and Jan 2026 (old data), and may be logged by the other user (`slthostels@gmail.com`). The "Total Tasks: 2" only counts parent tasks, which is correct.
+### CATEGORY 2: CONNECTIVITY / DATA ISSUES
 
-**Fix:** The dashboard widgets need to aggregate org-wide data for admins rather than just current user data. Review `EnhancedDashboardWidgets` to ensure admin users see organization-wide stats.
+| Tab | Issue | Root Cause |
+|-----|-------|------------|
+| **Leave Management** | Shows "No leave balances configured" despite 26 leave_types existing | Leave balances (0 records for this user) need to be initialized per-employee. No auto-provisioning when employee is created. |
+| **Overview Dashboard** | Shows "0 Hours This Week", "0 completed this week" | Time logs are from Dec 2025/Jan 2026 (old data). Dashboard only shows current week. This is correct behavior but misleading with old data. |
+| **Coin Transactions** | Shows "0 0" on dashboard | 0 coin_transactions for this org. Coins tab works but no transactions have been created. |
 
-### Issue 3: OKRs Tab -- Blank/Skeleton Cards Rendering
-**Status:** BROKEN (UI renders empty cards)
-**Root Cause:** The OKR component loads but shows blank gray cards instead of proper content. This is likely a rendering issue where the component structure loads but data binding fails silently. Need to inspect the OKRManagement component.
-
-**Fix:** Review `OKRManagement.tsx` to fix the card rendering -- ensure proper loading states and empty-state messaging instead of blank cards.
-
-### Issue 4: Sidebar Role Flicker
-**Status:** INTERMITTENT
-**Root Cause:** On initial page load or fast tab switches, the `useUserRole` hook hasn't resolved yet, causing the sidebar to briefly show "Employee" navigation instead of "Admin" navigation. After a few seconds it corrects itself, but during that window, admin-only tabs are hidden.
-
-**Fix:** Add a loading guard in `AppSidebar` that prevents rendering the navigation until the role is fully resolved, or cache the last-known role to prevent flicker.
-
-## Tabs Verified as Working
+### CATEGORY 3: WORKING CORRECTLY (Verified)
 
 | Tab | Status | Data |
 |-----|--------|------|
-| Overview | WORKS | Shows 2 tasks, 1 high priority, task distribution chart |
-| Projects | WORKS | Shows "SLT Hostels Marketing", 50% completion, budget |
-| Time Logs | WORKS | Shows 3 entries with correct task names and hours |
-| Attendance | WORKS | Clock in/out with live time display |
-| Leave | WORKS | Shows leave management (no balances configured yet) |
-| Sprint Planning | WORKS | Shows 1 sprint "test" with correct dates and status |
-| Payroll | WORKS | Shows 2 employees, correct processed amount |
+| Overview Dashboard | WORKS | Shows 2 tasks, charts render |
+| Kanban Board (Tasks) | WORKS | Shows "Assigned: 1" correctly (fix applied) |
+| Projects | WORKS | 1 project "SLT Hostels Marketing" |
+| OKRs | WORKS | 1 objective "Increase customer satisfaction" |
+| Expenses | WORKS | 1 claim (Rs 5,000 pending) |
+| Shifts | WORKS | Shows overview, 1 shift type |
+| Overtime | WORKS | Queries time_logs correctly |
+| Comp-Off | WORKS | Uses leave_requests table |
+| Risk Register | WORKS | Uses project_risks table |
+| Attendance | WORKS | 6 records |
+| Time Logs | WORKS | 3 entries |
+| Timesheets | WORKS | 6 timesheets |
+| Sprint Planning | WORKS | 1 sprint |
+| Backlog | WORKS | Uses tasks table |
+| Payroll | WORKS | Component loads |
 
-## Tabs That Are Empty (No Data Entered Yet -- Not Broken)
+### CATEGORY 4: EMPTY BUT FUNCTIONAL (No data entered yet)
 
-These tabs load correctly but have no data because the admin hasn't created records yet. They are working as designed:
-- WFH, Shifts, Holidays, Comp-Off, On-Call, Shift Swap
-- Expenses, Loans, Documents, Assets
-- All Finance sub-tabs (Tax, Salary Structure, Bonus, etc.)
-- All Employee Lifecycle tabs (Onboarding, Exit, Contracts, etc.)
-- All HR Analytics tabs
-- All Recruitment tabs
+These tabs load correctly with proper empty states -- they just need data:
+
+- WFH, Holidays, On-Call, Shift Swap
+- Meeting Notes, Decision Log, Lessons Learned, Work Calendars
+- Issue Tracker, Dependencies, Milestones
+- Project/Task/Recurring Templates
+- Documents, Assets, Loans and Advances
+- Expense Categories, Reimbursements
+- Salary Structure, Salary Revisions, Tax Management
+- Form 16, Compliance
+- Investments, Benefits, F&F Settlement, Gratuity
+- Onboarding, Exit Management, Contracts, Verification
+- Probation, Confirmations, Handbook, Grievances, Disciplinary
+- HR Analytics, Benchmarking, Succession, Career Paths
+- Job Postings, Recruitment, Interviews, Offers
 - Budget Planning, Cost Centers
-- Meeting Notes, Decisions, Lessons Learned
-- Risk Register, Issue Tracker
-- Templates (Project/Task/Recurring)
+- Feedback (360), 1:1 Meetings, PIPs
+- All Admin Tools tabs
 
-## Implementation Plan
+---
 
-### Fix 1: Change Kanban Default Tab (Quick Win)
-**File:** `src/components/kanban/TabBasedKanban.tsx`
-- Change line 59: `useState<StatusTab>('current')` to `useState<StatusTab>('assigned')`
-- This immediately shows assigned tasks as the default view
+## Fix Plan
 
-### Fix 2: Fix Overview Dashboard Stats for Admins
-**File:** `src/components/EnhancedDashboardWidgets.tsx`
-- Ensure admin users see org-wide task counts and hours
-- Fix "Hours This Week" to aggregate across all org members for admins
-- Fix "Completion Rate" to reflect actual task completion
+### Fix 1: Create `employee_bonuses` table (CRITICAL)
+This is the only truly broken tab. Create the missing database table with proper schema:
 
-### Fix 3: Fix OKRs Page Blank Cards
-**File:** `src/components/performance/OKRManagement.tsx`
-- Inspect and fix the card rendering to show proper content or empty states
-- Replace blank skeleton cards with proper "No OKRs created yet" messaging
+```
+- id (uuid, PK)
+- employee_id (uuid, FK to profiles)
+- organization_id (uuid, FK to organizations)
+- bonus_type (text: performance, festival, retention, spot, referral)
+- amount (numeric)
+- reason (text)
+- status (text: pending, approved, rejected, paid)
+- payout_date (date, nullable)
+- approved_by (uuid, nullable)
+- created_at, updated_at (timestamptz)
+```
 
-### Fix 4: Prevent Sidebar Role Flicker
-**File:** `src/components/AppSidebar.tsx`
-- Add loading guard before rendering navigation
-- Cache last-known role to prevent brief "Employee" flash
+Add RLS policies using `is_same_org_user` and `is_same_org_admin` patterns.
 
-### Technical Details
+### Fix 2: Auto-provision leave balances for new employees
+When a new profile is created in an organization, auto-create `leave_balances` entries for all active `leave_types` in that org. This requires a database trigger on `profiles` INSERT.
 
-All fixes are frontend-only code changes. No database migrations needed.
+### Fix 3: Update Supabase types
+After creating the `employee_bonuses` table, the TypeScript types file will auto-update, removing the need for `(supabase as any)` casts in `BonusManagement.tsx`.
 
-| Fix | File | Type | Impact |
-|-----|------|------|--------|
-| 1 | TabBasedKanban.tsx | 1 line change | Tasks tab shows data immediately |
-| 2 | EnhancedDashboardWidgets.tsx | Logic update | Overview shows correct org stats |
-| 3 | OKRManagement.tsx | UI fix | OKRs renders properly |
-| 4 | AppSidebar.tsx | Loading guard | No sidebar flicker |
+---
+
+## Implementation Details
+
+### Database Migration
+
+1. Create `employee_bonuses` table with all columns matching the component's expected schema
+2. Add RLS policies for org-scoped access
+3. Create trigger `auto_provision_leave_balances` on `profiles` INSERT to populate leave balances from `leave_types`
+4. Add indexes on `employee_id` and `organization_id`
+
+### Code Changes
+
+- None required for Fix 1 (component already written correctly, just needs the table)
+- No code changes for Fix 2 (trigger handles it)
+- Types file auto-updates
+
+### Summary
+
+| Fix | Type | Impact |
+|-----|------|--------|
+| Create `employee_bonuses` table | DB migration | Unblocks Bonus Management tab |
+| Auto-provision leave balances | DB trigger | New employees get leave balances automatically |
+| RLS policies | DB migration | Secures new table |
+
+**Total: 1 database migration with 2 fixes. No frontend code changes needed.**
 
