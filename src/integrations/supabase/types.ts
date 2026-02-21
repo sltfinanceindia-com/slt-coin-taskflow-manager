@@ -5893,6 +5893,7 @@ export type Database = {
           description: string | null
           due_date: string | null
           id: string
+          linked_task_ids: string[] | null
           objective_id: string
           organization_id: string | null
           start_value: number | null
@@ -5908,6 +5909,7 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           id?: string
+          linked_task_ids?: string[] | null
           objective_id: string
           organization_id?: string | null
           start_value?: number | null
@@ -5923,6 +5925,7 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           id?: string
+          linked_task_ids?: string[] | null
           objective_id?: string
           organization_id?: string | null
           start_value?: number | null
@@ -11630,6 +11633,93 @@ export type Database = {
           },
           {
             foreignKeyName: "salary_revisions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salary_structures: {
+        Row: {
+          basic_salary: number
+          created_at: string | null
+          da: number | null
+          effective_from: string
+          effective_to: string | null
+          employee_id: string
+          esi_contribution: number | null
+          gross_salary: number | null
+          hra: number | null
+          id: string
+          is_active: boolean | null
+          medical_allowance: number | null
+          net_salary: number | null
+          organization_id: string | null
+          other_deductions: number | null
+          pf_contribution: number | null
+          professional_tax: number | null
+          special_allowance: number | null
+          total_deductions: number | null
+          transport_allowance: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          basic_salary?: number
+          created_at?: string | null
+          da?: number | null
+          effective_from?: string
+          effective_to?: string | null
+          employee_id: string
+          esi_contribution?: number | null
+          gross_salary?: number | null
+          hra?: number | null
+          id?: string
+          is_active?: boolean | null
+          medical_allowance?: number | null
+          net_salary?: number | null
+          organization_id?: string | null
+          other_deductions?: number | null
+          pf_contribution?: number | null
+          professional_tax?: number | null
+          special_allowance?: number | null
+          total_deductions?: number | null
+          transport_allowance?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          basic_salary?: number
+          created_at?: string | null
+          da?: number | null
+          effective_from?: string
+          effective_to?: string | null
+          employee_id?: string
+          esi_contribution?: number | null
+          gross_salary?: number | null
+          hra?: number | null
+          id?: string
+          is_active?: boolean | null
+          medical_allowance?: number | null
+          net_salary?: number | null
+          organization_id?: string | null
+          other_deductions?: number | null
+          pf_contribution?: number | null
+          professional_tax?: number | null
+          special_allowance?: number | null
+          total_deductions?: number | null
+          transport_allowance?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salary_structures_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salary_structures_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"

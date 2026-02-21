@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,9 +16,10 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { Plus, Target, ChevronDown, ChevronRight, Building2, Users, User, Trash2, Download } from 'lucide-react';
+import { Plus, Target, ChevronDown, ChevronRight, Building2, Users, User, Trash2, Download, Link2, Edit2, Check } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { exportToCSV, formatDateForExport } from '@/lib/export';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export function OKRManagement() {
   const { objectives, isLoading, createObjective, updateObjective, deleteObjective } = useObjectives();
@@ -314,12 +315,33 @@ function ObjectiveCard({ objective, onUpdate, onDelete, isAdmin }: any) {
   const [isOpen, setIsOpen] = useState(false);
   const { keyResults, createKeyResult, updateKeyResult } = useKeyResults(objective.id);
   const [krDialogOpen, setKrDialogOpen] = useState(false);
+  const [editingKrId, setEditingKrId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState<number>(0);
+  const [linkDialogKrId, setLinkDialogKrId] = useState<string | null>(null);
+  const { profile } = useAuth();
   const [krFormData, setKrFormData] = useState({
     title: '',
     description: '',
     target_value: 100,
     unit: '%',
     due_date: '',
+  });
+
+  // Fetch tasks for linking
+  const { data: orgTasks = [] } = useQuery({
+    queryKey: ['tasks-for-okr', profile?.organization_id],
+    queryFn: async () => {
+      if (!profile?.organization_id) return [];
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('id, title, status')
+        .eq('organization_id', profile.organization_id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!profile?.organization_id && linkDialogKrId !== null,
   });
 
   const handleCreateKR = async () => {
@@ -448,28 +470,101 @@ function ObjectiveCard({ objective, onUpdate, onDelete, isAdmin }: any) {
                 </Dialog>
               </div>
 
-              {objective.key_results?.length === 0 ? (
+               {objective.key_results?.length === 0 ? (
                 <p className="text-muted-foreground text-sm">No key results defined yet.</p>
               ) : (
                 <div className="space-y-3">
-                  {objective.key_results?.map((kr: any) => (
-                    <div key={kr.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{kr.title}</span>
-                          {getStatusBadge(kr.status)}
+                  {objective.key_results?.map((kr: any) => {
+                    const linkedCount = kr.linked_task_ids?.length || 0;
+                    const isEditing = editingKrId === kr.id;
+                    
+                    return (
+                      <div key={kr.id} className="p-3 bg-muted/50 rounded-lg space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 flex-1">
+                            <span className="font-medium">{kr.title}</span>
+                            {getStatusBadge(kr.status)}
+                            {linkedCount > 0 && (
+                              <Badge variant="outline" className="text-xs">
+                                <Link2 className="h-3 w-3 mr-1" />
+                                {linkedCount} tasks
+                              </Badge>
+                            )}
+                          </div>
+                          {isAdmin && (
+                            <div className="flex items-center gap-1">
+                              {isEditing ? (
+                                <div className="flex items-center gap-1">
+                                  <Input
+                                    type="number"
+                                    value={editValue}
+                                    onChange={(e) => setEditValue(parseFloat(e.target.value) || 0)}
+                                    className="w-20 h-7 text-sm"
+                                  />
+                                  <Button size="sm" variant="ghost" className="h-7 w-7 p-0"
+                                    onClick={() => {
+                                      updateKeyResult.mutate({ id: kr.id, current_value: editValue });
+                                      setEditingKrId(null);
+                                    }}>
+                                    <Check className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0"
+                                  onClick={() => { setEditingKrId(kr.id); setEditValue(kr.current_value); }}>
+                                  <Edit2 className="h-3 w-3" />
+                                </Button>
+                              )}
+                              <Button size="sm" variant="ghost" className="h-7 w-7 p-0"
+                                onClick={() => setLinkDialogKrId(kr.id)}>
+                                <Link2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
                         </div>
-                        <div className="flex items-center gap-4 mt-1">
+                        <div className="flex items-center gap-4">
                           <Progress value={(kr.current_value / kr.target_value) * 100} className="flex-1 h-2" />
                           <span className="text-sm text-muted-foreground">
                             {kr.current_value} / {kr.target_value} {kr.unit}
                           </span>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
+
+              {/* Task Link Dialog */}
+              <Dialog open={linkDialogKrId !== null} onOpenChange={(open) => !open && setLinkDialogKrId(null)}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Link Tasks to Key Result</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {orgTasks.map((task: any) => {
+                      const currentKr = objective.key_results?.find((kr: any) => kr.id === linkDialogKrId);
+                      const isLinked = currentKr?.linked_task_ids?.includes(task.id) || false;
+                      return (
+                        <div key={task.id} className="flex items-center gap-2 p-2 rounded hover:bg-muted/50">
+                          <Checkbox
+                            checked={isLinked}
+                            onCheckedChange={(checked) => {
+                              const currentIds = currentKr?.linked_task_ids || [];
+                              const newIds = checked
+                                ? [...currentIds, task.id]
+                                : currentIds.filter((id: string) => id !== task.id);
+                              updateKeyResult.mutate({ id: linkDialogKrId!, linked_task_ids: newIds } as any);
+                            }}
+                          />
+                          <span className="text-sm flex-1">{task.title}</span>
+                          <Badge variant="outline" className="text-xs">{task.status}</Badge>
+                        </div>
+                      );
+                    })}
+                    {orgTasks.length === 0 && <p className="text-sm text-muted-foreground">No tasks available</p>}
+                  </div>
+                </DialogContent>
+              </Dialog>
 
               {isAdmin && (
                 <div className="flex justify-end pt-4 border-t">

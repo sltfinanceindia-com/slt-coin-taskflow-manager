@@ -244,7 +244,7 @@ export function useKeyResults(objectiveId?: string) {
   });
 
   const updateKeyResult = useMutation({
-    mutationFn: async ({ id, ...data }: { id: string; current_value?: number; status?: string }) => {
+    mutationFn: async ({ id, ...data }: { id: string; current_value?: number; status?: string; linked_task_ids?: string[] }) => {
       const { error } = await supabase.from('key_results').update(data).eq('id', id);
       if (error) throw error;
     },
