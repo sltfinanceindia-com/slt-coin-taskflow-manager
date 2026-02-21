@@ -118,7 +118,7 @@ export function AutomatedPayrollProcessor() {
     enabled: !!profile?.organization_id
   });
 
-  // Create new payroll run
+  // Create new payroll run with salary structure integration
   const createPayrollRun = useMutation({
     mutationFn: async () => {
       if (!employees || employees.length === 0) {
@@ -141,20 +141,52 @@ export function AutomatedPayrollProcessor() {
 
       if (runError) throw runError;
 
-      // Create payroll items for each employee
-      const items = employees.map(emp => ({
-        payroll_run_id: run.id,
-        employee_id: emp.id,
-        organization_id: profile?.organization_id,
-        base_salary: 0,
-        overtime_pay: 0,
-        bonuses: 0,
-        deductions: 0,
-        loan_deductions: 0,
-        tax_amount: 0,
-        net_pay: 0,
-        status: 'pending'
-      }));
+      // Fetch salary structures for all employees
+      const { data: salaryData } = await supabase
+        .from('salary_structures')
+        .select('employee_id, gross_salary, total_deductions, net_salary, pf_contribution, esi_contribution, professional_tax')
+        .eq('organization_id', profile?.organization_id)
+        .eq('is_active', true);
+
+      const salaryMap = new Map(
+        (salaryData || []).map(s => [s.employee_id, s])
+      );
+
+      // Fetch active loan balances for deductions
+      const { data: loanData } = await supabase
+        .from('loan_requests')
+        .select('employee_id, emi_amount')
+        .eq('organization_id', profile?.organization_id)
+        .eq('status', 'approved');
+
+      const loanMap = new Map<string, number>();
+      (loanData || []).forEach(l => {
+        loanMap.set(l.employee_id, (loanMap.get(l.employee_id) || 0) + (l.emi_amount || 0));
+      });
+
+      // Create payroll items with salary data pre-filled
+      const items = employees.map(emp => {
+        const salary = salaryMap.get(emp.id);
+        const loanDeduction = loanMap.get(emp.id) || 0;
+        const baseSalary = salary?.gross_salary || 0;
+        const deductions = salary?.total_deductions || 0;
+        const taxAmount = salary?.professional_tax || 0;
+        const netPay = baseSalary - deductions - loanDeduction;
+
+        return {
+          payroll_run_id: run.id,
+          employee_id: emp.id,
+          organization_id: profile?.organization_id,
+          base_salary: baseSalary,
+          overtime_pay: 0,
+          bonuses: 0,
+          deductions: deductions,
+          loan_deductions: loanDeduction,
+          tax_amount: taxAmount,
+          net_pay: Math.max(0, netPay),
+          status: 'pending'
+        };
+      });
 
       const { error: itemsError } = await supabase
         .from('payroll_items')
