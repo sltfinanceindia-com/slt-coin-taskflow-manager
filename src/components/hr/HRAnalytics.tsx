@@ -18,7 +18,7 @@ export function HRAnalytics() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, created_at, is_active, department_id, departments(name)')
+        .select('id, created_at, is_active, department_id, departments!profiles_department_id_fkey(name)')
         .eq('organization_id', profile?.organization_id);
       if (error) throw error;
       return data || [];
@@ -30,9 +30,9 @@ export function HRAnalytics() {
   const { data: exitData, isLoading: loadingExits } = useQuery({
     queryKey: ['hr-exits', profile?.organization_id],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from('exit_interviews')
-        .select('*, profiles!inner(department_id, departments(name))')
+      const { data, error } = await supabase
+        .from('exit_requests')
+        .select('id, employee_id, reason, status, created_at, profiles!exit_requests_employee_id_fkey(department_id, departments!profiles_department_id_fkey(name))')
         .eq('organization_id', profile?.organization_id);
       if (error) throw error;
       return data || [];
@@ -155,7 +155,7 @@ export function HRAnalytics() {
     
     const reasons: Record<string, number> = {};
     exitData.forEach((e: any) => {
-      const reason = e.reason_for_leaving || 'Other';
+      const reason = e.reason || 'Other';
       reasons[reason] = (reasons[reason] || 0) + 1;
     });
     
