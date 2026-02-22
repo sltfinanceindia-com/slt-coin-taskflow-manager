@@ -213,7 +213,7 @@ export function useOrgChart() {
       // Get all profiles in the org
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, full_name, email, avatar_url, department_id, is_active, reporting_manager_id, departments(name)')
+        .select('id, full_name, email, avatar_url, department_id, is_active, reporting_manager_id, departments!profiles_department_id_fkey(name)')
         .eq('organization_id', profile.organization_id)
         .eq('is_active', true);
 
