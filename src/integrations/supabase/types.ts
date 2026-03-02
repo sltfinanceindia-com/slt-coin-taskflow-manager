@@ -1364,6 +1364,94 @@ export type Database = {
           },
         ]
       }
+      audit_packs: {
+        Row: {
+          attachments: Json | null
+          audit_type: string | null
+          auditor: string | null
+          auditor_id: string | null
+          created_at: string | null
+          created_by: string | null
+          department: string | null
+          description: string | null
+          end_date: string | null
+          findings: Json | null
+          id: string
+          organization_id: string | null
+          recommendations: Json | null
+          risk_rating: string | null
+          scope: string | null
+          start_date: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          attachments?: Json | null
+          audit_type?: string | null
+          auditor?: string | null
+          auditor_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          department?: string | null
+          description?: string | null
+          end_date?: string | null
+          findings?: Json | null
+          id?: string
+          organization_id?: string | null
+          recommendations?: Json | null
+          risk_rating?: string | null
+          scope?: string | null
+          start_date?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          attachments?: Json | null
+          audit_type?: string | null
+          auditor?: string | null
+          auditor_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          department?: string | null
+          description?: string | null
+          end_date?: string | null
+          findings?: Json | null
+          id?: string
+          organization_id?: string | null
+          recommendations?: Json | null
+          risk_rating?: string | null
+          scope?: string | null
+          start_date?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_packs_auditor_id_fkey"
+            columns: ["auditor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_packs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_packs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       automation_logs: {
         Row: {
           actions_executed: Json | null
@@ -1544,6 +1632,78 @@ export type Database = {
           },
           {
             foreignKeyName: "background_verifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      benchmarking_data: {
+        Row: {
+          bottom_quartile: number | null
+          created_at: string | null
+          created_by: string | null
+          department: string | null
+          id: string
+          industry_average: number | null
+          internal_value: number | null
+          metric_category: string | null
+          metric_name: string
+          notes: string | null
+          organization_id: string | null
+          period: string | null
+          source: string | null
+          top_quartile: number | null
+          unit: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          bottom_quartile?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          department?: string | null
+          id?: string
+          industry_average?: number | null
+          internal_value?: number | null
+          metric_category?: string | null
+          metric_name: string
+          notes?: string | null
+          organization_id?: string | null
+          period?: string | null
+          source?: string | null
+          top_quartile?: number | null
+          unit?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          bottom_quartile?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          department?: string | null
+          id?: string
+          industry_average?: number | null
+          internal_value?: number | null
+          metric_category?: string | null
+          metric_name?: string
+          notes?: string | null
+          organization_id?: string | null
+          period?: string | null
+          source?: string | null
+          top_quartile?: number | null
+          unit?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "benchmarking_data_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "benchmarking_data_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -10348,6 +10508,76 @@ export type Database = {
           },
         ]
       }
+      project_scoring: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          criteria_name: string
+          id: string
+          max_score: number | null
+          notes: string | null
+          organization_id: string | null
+          project_id: string
+          score: number | null
+          scored_at: string | null
+          scored_by: string | null
+          updated_at: string | null
+          weight: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          criteria_name: string
+          id?: string
+          max_score?: number | null
+          notes?: string | null
+          organization_id?: string | null
+          project_id: string
+          score?: number | null
+          scored_at?: string | null
+          scored_by?: string | null
+          updated_at?: string | null
+          weight?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          criteria_name?: string
+          id?: string
+          max_score?: number | null
+          notes?: string | null
+          organization_id?: string | null
+          project_id?: string
+          score?: number | null
+          scored_at?: string | null
+          scored_by?: string | null
+          updated_at?: string | null
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_scoring_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_scoring_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_scoring_scored_by_fkey"
+            columns: ["scored_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_templates: {
         Row: {
           category: string | null
@@ -12192,6 +12422,74 @@ export type Database = {
           },
         ]
       }
+      shift_assignments: {
+        Row: {
+          assigned_by: string | null
+          assignment_date: string
+          created_at: string | null
+          employee_id: string
+          id: string
+          notes: string | null
+          organization_id: string | null
+          shift_id: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_by?: string | null
+          assignment_date: string
+          created_at?: string | null
+          employee_id: string
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          shift_id: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_by?: string | null
+          assignment_date?: string
+          created_at?: string | null
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          shift_id?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_assignments_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_assignments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_assignments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_assignments_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "shifts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shift_schedules: {
         Row: {
           actual_end_time: string | null
@@ -12471,6 +12769,72 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "shift_types_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shifts: {
+        Row: {
+          break_duration_minutes: number | null
+          color: string | null
+          created_at: string | null
+          created_by: string | null
+          days_of_week: number[] | null
+          description: string | null
+          end_time: string
+          id: string
+          is_active: boolean | null
+          is_night_shift: boolean | null
+          name: string
+          organization_id: string | null
+          start_time: string
+          updated_at: string | null
+        }
+        Insert: {
+          break_duration_minutes?: number | null
+          color?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          days_of_week?: number[] | null
+          description?: string | null
+          end_time: string
+          id?: string
+          is_active?: boolean | null
+          is_night_shift?: boolean | null
+          name: string
+          organization_id?: string | null
+          start_time: string
+          updated_at?: string | null
+        }
+        Update: {
+          break_duration_minutes?: number | null
+          color?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          days_of_week?: number[] | null
+          description?: string | null
+          end_time?: string
+          id?: string
+          is_active?: boolean | null
+          is_night_shift?: boolean | null
+          name?: string
+          organization_id?: string | null
+          start_time?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shifts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shifts_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -13550,6 +13914,88 @@ export type Database = {
           },
         ]
       }
+      tax_declarations: {
+        Row: {
+          approved_amount: number | null
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string | null
+          declaration_type: string
+          declared_amount: number | null
+          employee_id: string
+          fiscal_year: string
+          id: string
+          notes: string | null
+          organization_id: string | null
+          proof_submitted: boolean | null
+          proof_url: string | null
+          regime: string | null
+          section: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          approved_amount?: number | null
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          declaration_type: string
+          declared_amount?: number | null
+          employee_id: string
+          fiscal_year: string
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          proof_submitted?: boolean | null
+          proof_url?: string | null
+          regime?: string | null
+          section: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          approved_amount?: number | null
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          declaration_type?: string
+          declared_amount?: number | null
+          employee_id?: string
+          fiscal_year?: string
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          proof_submitted?: boolean | null
+          proof_url?: string | null
+          regime?: string | null
+          section?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tax_declarations_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tax_declarations_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tax_declarations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teams: {
         Row: {
           created_at: string | null
@@ -13977,6 +14423,103 @@ export type Database = {
             columns: ["section_id"]
             isOneToOne: false
             referencedRelation: "training_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_programs: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          created_by: string | null
+          current_participants: number | null
+          department: string | null
+          description: string | null
+          duration_hours: number | null
+          end_date: string | null
+          id: string
+          is_mandatory: boolean | null
+          is_online: boolean | null
+          location: string | null
+          materials_url: string | null
+          max_participants: number | null
+          meeting_url: string | null
+          organization_id: string | null
+          start_date: string | null
+          status: string | null
+          title: string
+          trainer: string | null
+          trainer_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          current_participants?: number | null
+          department?: string | null
+          description?: string | null
+          duration_hours?: number | null
+          end_date?: string | null
+          id?: string
+          is_mandatory?: boolean | null
+          is_online?: boolean | null
+          location?: string | null
+          materials_url?: string | null
+          max_participants?: number | null
+          meeting_url?: string | null
+          organization_id?: string | null
+          start_date?: string | null
+          status?: string | null
+          title: string
+          trainer?: string | null
+          trainer_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          current_participants?: number | null
+          department?: string | null
+          description?: string | null
+          duration_hours?: number | null
+          end_date?: string | null
+          id?: string
+          is_mandatory?: boolean | null
+          is_online?: boolean | null
+          location?: string | null
+          materials_url?: string | null
+          max_participants?: number | null
+          meeting_url?: string | null
+          organization_id?: string | null
+          start_date?: string | null
+          status?: string | null
+          title?: string
+          trainer?: string | null
+          trainer_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_programs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_programs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_programs_trainer_id_fkey"
+            columns: ["trainer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -14699,6 +15242,75 @@ export type Database = {
             columns: ["reviewed_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_calendars: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          holidays: Json | null
+          id: string
+          is_default: boolean | null
+          name: string
+          organization_id: string | null
+          special_working_days: Json | null
+          status: string | null
+          updated_at: string | null
+          work_end_time: string | null
+          work_start_time: string | null
+          working_days: number[] | null
+          year: number
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          holidays?: Json | null
+          id?: string
+          is_default?: boolean | null
+          name: string
+          organization_id?: string | null
+          special_working_days?: Json | null
+          status?: string | null
+          updated_at?: string | null
+          work_end_time?: string | null
+          work_start_time?: string | null
+          working_days?: number[] | null
+          year: number
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          holidays?: Json | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          organization_id?: string | null
+          special_working_days?: Json | null
+          status?: string | null
+          updated_at?: string | null
+          work_end_time?: string | null
+          work_start_time?: string | null
+          working_days?: number[] | null
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_calendars_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_calendars_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
