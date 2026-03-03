@@ -42,10 +42,10 @@ export function BonusManagement() {
   const { data: employees } = useQuery({
     queryKey: ['employees-list', profile?.organization_id],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, email')
-        .eq('organization_id', profile?.organization_id);
+        .eq('organization_id', profile?.organization_id!);
       if (error) throw error;
       return data || [];
     },
@@ -55,13 +55,13 @@ export function BonusManagement() {
   const { data: bonuses, isLoading } = useQuery({
     queryKey: ['bonuses', profile?.organization_id, filter],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('employee_bonuses')
         .select(`
           id, employee_id, bonus_type, amount, reason, status, payout_date, created_at,
           profiles(full_name)
         `)
-        .eq('organization_id', profile?.organization_id)
+        .eq('organization_id', profile?.organization_id!)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -76,7 +76,7 @@ export function BonusManagement() {
 
   const createMutation = useMutation({
     mutationFn: async (bonus: typeof newBonus) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('employee_bonuses')
         .insert({
           organization_id: profile?.organization_id,
@@ -105,9 +105,9 @@ export function BonusManagement() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, status, payout_date }: { id: string; status: string; payout_date?: string }) => {
-      const updates: any = { status };
+      const updates: Record<string, any> = { status };
       if (payout_date) updates.payout_date = payout_date;
-      const { error } = await (supabase as any).from('employee_bonuses').update(updates).eq('id', id);
+      const { error } = await supabase.from('employee_bonuses').update(updates).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -118,7 +118,7 @@ export function BonusManagement() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from('employee_bonuses').delete().eq('id', id);
+      const { error } = await supabase.from('employee_bonuses').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {

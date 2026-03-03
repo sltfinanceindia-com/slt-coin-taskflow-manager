@@ -2,11 +2,13 @@
 import { InternDashboard } from "@/components/InternDashboard";
 import { AdminDashboard } from "@/components/AdminDashboard";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const Index = () => {
   const { profile, loading } = useAuth();
+  const { isAdmin, isLoading: roleLoading } = useUserRole();
 
-  if (loading) {
+  if (loading || roleLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
@@ -27,7 +29,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {profile.role === 'admin' ? <AdminDashboard /> : <InternDashboard />}
+      {isAdmin ? <AdminDashboard /> : <InternDashboard />}
     </div>
   );
 };

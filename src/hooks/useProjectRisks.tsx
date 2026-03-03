@@ -39,7 +39,7 @@ export function useProjectRisks(projectId?: string) {
     queryFn: async () => {
       if (!profile?.organization_id) return [];
       
-      let query = (supabase as any)
+      let query = supabase
         .from('project_risks')
         .select(`
           *,
@@ -62,7 +62,7 @@ export function useProjectRisks(projectId?: string) {
 
   const createRisk = useMutation({
     mutationFn: async (risk: Omit<ProjectRisk, 'id' | 'created_at' | 'updated_at' | 'project' | 'owner' | 'organization_id'>) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('project_risks')
         .insert({
           ...risk,
@@ -82,7 +82,7 @@ export function useProjectRisks(projectId?: string) {
 
   const updateRisk = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<ProjectRisk> & { id: string }) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('project_risks')
         .update(updates)
         .eq('id', id)
@@ -100,7 +100,7 @@ export function useProjectRisks(projectId?: string) {
 
   const deleteRisk = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('project_risks')
         .delete()
         .eq('id', id);
@@ -113,7 +113,6 @@ export function useProjectRisks(projectId?: string) {
     onError: (error: any) => toast.error(error.message),
   });
 
-  // Calculate risk score (probability x impact)
   const getRiskScore = (risk: ProjectRisk) => {
     const probScore = { low: 1, medium: 2, high: 3, very_high: 4 };
     const impactScore = { low: 1, medium: 2, high: 3, critical: 4 };

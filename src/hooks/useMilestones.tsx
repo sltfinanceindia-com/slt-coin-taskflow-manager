@@ -34,7 +34,7 @@ export function useMilestones(projectId?: string) {
     queryFn: async () => {
       if (!profile?.organization_id) return [];
       
-      let query = (supabase as any)
+      let query = supabase
         .from('milestones')
         .select(`
           *,
@@ -57,7 +57,7 @@ export function useMilestones(projectId?: string) {
 
   const createMilestone = useMutation({
     mutationFn: async (milestone: Omit<Milestone, 'id' | 'created_at' | 'updated_at' | 'project' | 'owner' | 'organization_id'>) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('milestones')
         .insert({
           ...milestone,
@@ -77,7 +77,7 @@ export function useMilestones(projectId?: string) {
 
   const updateMilestone = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Milestone> & { id: string }) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('milestones')
         .update(updates)
         .eq('id', id)
@@ -95,7 +95,7 @@ export function useMilestones(projectId?: string) {
 
   const deleteMilestone = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('milestones')
         .delete()
         .eq('id', id);

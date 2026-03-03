@@ -48,10 +48,10 @@ export function RiskManagement() {
   const { data: projects } = useQuery({
     queryKey: ['projects-list', profile?.organization_id],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('projects')
         .select('id, name')
-        .eq('organization_id', profile?.organization_id);
+        .eq('organization_id', profile?.organization_id!);
       if (error) throw error;
       return data || [];
     },
@@ -61,13 +61,13 @@ export function RiskManagement() {
   const { data: risks, isLoading } = useQuery({
     queryKey: ['risks', profile?.organization_id, filter],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('project_risks')
         .select(`
           id, title, description, category, probability, impact, status, mitigation_plan, owner_id, project_id, created_at,
           projects(name)
         `)
-        .eq('organization_id', profile?.organization_id)
+        .eq('organization_id', profile?.organization_id!)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -82,7 +82,7 @@ export function RiskManagement() {
 
   const createMutation = useMutation({
     mutationFn: async (risk: typeof newRisk) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('project_risks')
         .insert({
           organization_id: profile?.organization_id,
@@ -114,7 +114,7 @@ export function RiskManagement() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await (supabase as any).from('project_risks').update({ status }).eq('id', id);
+      const { error } = await supabase.from('project_risks').update({ status }).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -125,7 +125,7 @@ export function RiskManagement() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from('project_risks').delete().eq('id', id);
+      const { error } = await supabase.from('project_risks').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {

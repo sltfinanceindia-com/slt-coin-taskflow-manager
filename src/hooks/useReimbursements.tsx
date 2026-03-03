@@ -42,13 +42,12 @@ export function useReimbursements() {
   const { profile } = useAuth();
   const queryClient = useQueryClient();
 
-  // Fetch all reimbursements for the organization
   const reimbursementsQuery = useQuery({
     queryKey: ['reimbursements', profile?.organization_id],
     queryFn: async () => {
       if (!profile?.organization_id) return [];
       
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('reimbursements')
         .select(`
           *,
@@ -64,13 +63,12 @@ export function useReimbursements() {
     enabled: !!profile?.organization_id,
   });
 
-  // Fetch my reimbursements only
   const myReimbursementsQuery = useQuery({
     queryKey: ['my-reimbursements', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
       
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('reimbursements')
         .select('*')
         .eq('employee_id', profile.id)
@@ -82,14 +80,13 @@ export function useReimbursements() {
     enabled: !!profile?.id,
   });
 
-  // Create reimbursement
   const createMutation = useMutation({
     mutationFn: async (input: ReimbursementInput) => {
       if (!profile?.id || !profile?.organization_id) {
         throw new Error('User not authenticated');
       }
       
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('reimbursements')
         .insert({
           ...input,
@@ -114,12 +111,11 @@ export function useReimbursements() {
     },
   });
 
-  // Approve reimbursement
   const approveMutation = useMutation({
     mutationFn: async (id: string) => {
       if (!profile?.id) throw new Error('User not authenticated');
       
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('reimbursements')
         .update({
           status: 'approved',
@@ -142,12 +138,11 @@ export function useReimbursements() {
     },
   });
 
-  // Reject reimbursement
   const rejectMutation = useMutation({
     mutationFn: async ({ id, reason }: { id: string; reason: string }) => {
       if (!profile?.id) throw new Error('User not authenticated');
       
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('reimbursements')
         .update({
           status: 'rejected',
@@ -171,10 +166,9 @@ export function useReimbursements() {
     },
   });
 
-  // Mark as paid
   const markPaidMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('reimbursements')
         .update({
           status: 'paid',
@@ -196,7 +190,6 @@ export function useReimbursements() {
     },
   });
 
-  // Calculate stats
   const reimbursements = reimbursementsQuery.data || [];
   const myReimbursements = myReimbursementsQuery.data || [];
   
