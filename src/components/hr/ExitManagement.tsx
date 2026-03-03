@@ -45,10 +45,10 @@ export function ExitManagement() {
   const { data: employees } = useQuery({
     queryKey: ['employees-list', profile?.organization_id],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, email')
-        .eq('organization_id', profile?.organization_id);
+        .eq('organization_id', profile?.organization_id!);
       if (error) throw error;
       return data || [];
     },
@@ -58,13 +58,13 @@ export function ExitManagement() {
   const { data: exits, isLoading } = useQuery({
     queryKey: ['exit-requests', profile?.organization_id, filter],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('exit_requests')
         .select(`
           id, employee_id, resignation_date, last_working_day, notice_period_days, reason, exit_interview_done, clearance_status, status, created_at,
           profiles(full_name)
         `)
-        .eq('organization_id', profile?.organization_id)
+        .eq('organization_id', profile?.organization_id!)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -79,7 +79,7 @@ export function ExitManagement() {
 
   const createMutation = useMutation({
     mutationFn: async (exit: typeof newExit) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('exit_requests')
         .insert({
           organization_id: profile?.organization_id,
@@ -110,7 +110,7 @@ export function ExitManagement() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, ...updates }: { id: string; status?: string; exit_interview_done?: boolean; clearance_status?: number }) => {
-      const { error } = await (supabase as any).from('exit_requests').update(updates).eq('id', id);
+      const { error } = await supabase.from('exit_requests').update(updates).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -121,7 +121,7 @@ export function ExitManagement() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from('exit_requests').delete().eq('id', id);
+      const { error } = await supabase.from('exit_requests').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {

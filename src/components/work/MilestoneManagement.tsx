@@ -43,10 +43,10 @@ export function MilestoneManagement() {
   const { data: projects } = useQuery({
     queryKey: ['projects-list', profile?.organization_id],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('projects')
         .select('id, name')
-        .eq('organization_id', profile?.organization_id);
+        .eq('organization_id', profile?.organization_id!);
       if (error) throw error;
       return data || [];
     },
@@ -56,13 +56,13 @@ export function MilestoneManagement() {
   const { data: milestones, isLoading } = useQuery({
     queryKey: ['milestones', profile?.organization_id, filter],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('project_milestones')
         .select(`
           id, name, description, due_date, status, progress_percentage, project_id, created_at,
           projects(name)
         `)
-        .eq('organization_id', profile?.organization_id)
+        .eq('organization_id', profile?.organization_id!)
         .order('due_date', { ascending: true });
 
       if (error) throw error;
@@ -84,7 +84,7 @@ export function MilestoneManagement() {
 
   const createMutation = useMutation({
     mutationFn: async (milestone: typeof newMilestone) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('project_milestones')
         .insert({
           organization_id: profile?.organization_id,
@@ -113,7 +113,7 @@ export function MilestoneManagement() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, ...updates }: { id: string; status?: string; progress_percentage?: number }) => {
-      const { error } = await (supabase as any).from('project_milestones').update(updates).eq('id', id);
+      const { error } = await supabase.from('project_milestones').update(updates).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -124,7 +124,7 @@ export function MilestoneManagement() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from('project_milestones').delete().eq('id', id);
+      const { error } = await supabase.from('project_milestones').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {

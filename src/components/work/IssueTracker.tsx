@@ -44,10 +44,10 @@ export function IssueTracker() {
   const { data: projects } = useQuery({
     queryKey: ['projects-list', profile?.organization_id],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('projects')
         .select('id, name')
-        .eq('organization_id', profile?.organization_id);
+        .eq('organization_id', profile?.organization_id!);
       if (error) throw error;
       return data || [];
     },
@@ -57,13 +57,13 @@ export function IssueTracker() {
   const { data: issues, isLoading } = useQuery({
     queryKey: ['issues', profile?.organization_id, filter],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('project_issues')
         .select(`
           id, title, description, severity, status, reported_by, assigned_to, project_id, created_at, resolution,
           projects(name)
         `)
-        .eq('organization_id', profile?.organization_id)
+        .eq('organization_id', profile?.organization_id!)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -78,7 +78,7 @@ export function IssueTracker() {
 
   const createMutation = useMutation({
     mutationFn: async (issue: typeof newIssue) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('project_issues')
         .insert({
           organization_id: profile?.organization_id,
@@ -107,7 +107,7 @@ export function IssueTracker() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await (supabase as any).from('project_issues').update({ status }).eq('id', id);
+      const { error } = await supabase.from('project_issues').update({ status }).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -118,7 +118,7 @@ export function IssueTracker() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from('project_issues').delete().eq('id', id);
+      const { error } = await supabase.from('project_issues').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {

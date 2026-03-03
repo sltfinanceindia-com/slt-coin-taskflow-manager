@@ -50,7 +50,7 @@ export function DependencyManagement() {
   const { data: dependencies, isLoading } = useQuery({
     queryKey: ['task-dependencies', profile?.organization_id],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('task_dependencies')
         .select('id, task_id, depends_on_task_id, dependency_type, created_at')
         .order('created_at', { ascending: false });
@@ -86,7 +86,7 @@ export function DependencyManagement() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('task_dependencies')
         .insert({
           depends_on_task_id: predecessorId,

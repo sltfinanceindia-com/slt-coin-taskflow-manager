@@ -83,7 +83,7 @@ export function OvertimeManagement() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('time_logs')
         .insert({
           user_id: profile?.id,

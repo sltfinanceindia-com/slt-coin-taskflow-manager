@@ -48,10 +48,10 @@ export function TaxManagement() {
   const { data: employees } = useQuery({
     queryKey: ['employees-list', profile?.organization_id],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, email')
-        .eq('organization_id', profile?.organization_id);
+        .eq('organization_id', profile?.organization_id!);
       if (error) throw error;
       return data || [];
     },
@@ -61,13 +61,13 @@ export function TaxManagement() {
   const { data: declarations, isLoading } = useQuery({
     queryKey: ['tax-declarations', profile?.organization_id],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('tax_declarations')
         .select(`
           id, employee_id, financial_year, regime, section_80c, section_80d, hra, other_deductions, status, created_at,
           profiles(full_name)
         `)
-        .eq('organization_id', profile?.organization_id)
+        .eq('organization_id', profile?.organization_id!)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -83,7 +83,7 @@ export function TaxManagement() {
 
   const createMutation = useMutation({
     mutationFn: async (declaration: typeof newDeclaration) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('tax_declarations')
         .insert({
           organization_id: profile?.organization_id,
@@ -114,7 +114,7 @@ export function TaxManagement() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await (supabase as any).from('tax_declarations').update({ status }).eq('id', id);
+      const { error } = await supabase.from('tax_declarations').update({ status }).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
