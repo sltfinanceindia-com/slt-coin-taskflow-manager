@@ -51,8 +51,8 @@ export function useReimbursements() {
         .from('reimbursements')
         .select(`
           *,
-          employee:employee_id(id, full_name, email, avatar_url),
-          approver:approved_by(id, full_name)
+          employee:profiles!reimbursements_employee_id_fkey(id, full_name, email, avatar_url),
+          approver:profiles!reimbursements_approved_by_fkey(id, full_name)
         `)
         .eq('organization_id', profile.organization_id)
         .order('submitted_date', { ascending: false });

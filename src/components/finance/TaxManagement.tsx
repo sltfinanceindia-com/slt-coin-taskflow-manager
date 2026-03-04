@@ -88,12 +88,11 @@ export function TaxManagement() {
         .insert({
           organization_id: profile?.organization_id,
           employee_id: declaration.employee_id,
-          financial_year: declaration.financial_year,
+          fiscal_year: declaration.financial_year,
           regime: declaration.regime,
-          section_80c: declaration.section_80c,
-          section_80d: declaration.section_80d,
-          hra: declaration.hra,
-          other_deductions: declaration.other_deductions,
+          declaration_type: 'investment',
+          section: '80C',
+          declared_amount: (declaration.section_80c || 0) + (declaration.section_80d || 0) + (declaration.hra || 0) + (declaration.other_deductions || 0),
           status: 'draft',
         })
         .select()

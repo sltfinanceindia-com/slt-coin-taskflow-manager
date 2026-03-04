@@ -86,10 +86,12 @@ export function OvertimeManagement() {
       const { error } = await supabase
         .from('time_logs')
         .insert({
-          user_id: profile?.id,
+          user_id: profile?.id!,
           organization_id: profile?.organization_id,
+          task_id: '00000000-0000-0000-0000-000000000000',
           date_logged: newRequest.date,
-          hours_worked: 8 + newRequest.hours, // Regular + overtime
+          hours_worked: newRequest.hours,
+          log_type: 'overtime',
           description: `Overtime: ${newRequest.reason}`,
         });
       if (error) throw error;

@@ -10,9 +10,10 @@ export interface Milestone {
   name: string;
   description: string | null;
   due_date: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'missed';
-  completion_percentage: number;
-  owner_id: string | null;
+  status: string;
+  completion_percentage: number | null;
+  created_by: string | null;
+  deliverables: string[] | null;
   created_at: string;
   updated_at: string;
   project?: {
@@ -39,7 +40,7 @@ export function useMilestones(projectId?: string) {
         .select(`
           *,
           project:projects(id, name),
-          owner:profiles!milestones_owner_id_fkey(id, full_name)
+          owner:profiles!milestones_created_by_fkey(id, full_name)
         `)
         .eq('organization_id', profile.organization_id)
         .order('due_date', { ascending: true });
@@ -56,7 +57,7 @@ export function useMilestones(projectId?: string) {
   });
 
   const createMilestone = useMutation({
-    mutationFn: async (milestone: Omit<Milestone, 'id' | 'created_at' | 'updated_at' | 'project' | 'owner' | 'organization_id'>) => {
+    mutationFn: async (milestone: Omit<Milestone, 'id' | 'created_at' | 'updated_at' | 'project' | 'owner' | 'organization_id' | 'created_by' | 'deliverables'>) => {
       const { data, error } = await supabase
         .from('milestones')
         .insert({
