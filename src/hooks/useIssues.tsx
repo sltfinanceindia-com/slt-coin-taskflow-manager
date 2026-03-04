@@ -8,12 +8,13 @@ export interface Issue {
   organization_id: string | null;
   project_id: string | null;
   task_id: string | null;
-  issue_number: string;
+  issue_number: string | null;
   title: string;
   description: string | null;
-  issue_type: 'bug' | 'defect' | 'improvement' | 'question' | 'other';
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  status: 'open' | 'in_progress' | 'blocked' | 'resolved' | 'closed' | 'wont_fix';
+  issue_type: string;
+  priority: string;
+  severity: string | null;
+  status: string;
   reporter_id: string | null;
   assignee_id: string | null;
   root_cause: string | null;
@@ -44,11 +45,11 @@ export function useIssues(projectId?: string) {
     queryFn: async () => {
       if (!profile?.organization_id) return [];
       
-      let query = (supabase as any)
+      let query = supabase
         .from('issues')
         .select(`
           *,
-          project:projects(id, name),
+          project:projects!issues_project_id_fkey(id, name),
           reporter:profiles!issues_reporter_id_fkey(id, full_name),
           assignee:profiles!issues_assignee_id_fkey(id, full_name)
         `)
@@ -61,7 +62,7 @@ export function useIssues(projectId?: string) {
       
       const { data, error } = await query;
       if (error) throw error;
-      return (data || []) as Issue[];
+      return (data || []) as unknown as Issue[];
     },
     enabled: !!profile?.organization_id,
   });
@@ -69,10 +70,21 @@ export function useIssues(projectId?: string) {
   const createIssue = useMutation({
     mutationFn: async (issue: Omit<Issue, 'id' | 'created_at' | 'updated_at' | 'project' | 'reporter' | 'assignee' | 'organization_id' | 'issue_number'>) => {
       const issueNumber = `ISS-${Date.now().toString().slice(-6)}`;
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('issues')
         .insert({
-          ...issue,
+          title: issue.title,
+          description: issue.description,
+          issue_type: issue.issue_type,
+          priority: issue.priority,
+          severity: issue.severity,
+          status: issue.status,
+          project_id: issue.project_id,
+          task_id: issue.task_id,
+          assignee_id: issue.assignee_id,
+          root_cause: issue.root_cause,
+          resolution: issue.resolution,
+          resolved_at: issue.resolved_at,
           issue_number: issueNumber,
           organization_id: profile?.organization_id,
           reporter_id: profile?.id,
@@ -91,12 +103,17 @@ export function useIssues(projectId?: string) {
 
   const updateIssue = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Issue> & { id: string }) => {
-      const updateData: any = { ...updates };
+      const updateData: Record<string, any> = { ...updates };
+      // Remove relation fields that aren't columns
+      delete updateData.project;
+      delete updateData.reporter;
+      delete updateData.assignee;
+      
       if (updates.status === 'resolved' && !updates.resolved_at) {
         updateData.resolved_at = new Date().toISOString();
       }
       
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('issues')
         .update(updateData)
         .eq('id', id)
@@ -114,7 +131,7 @@ export function useIssues(projectId?: string) {
 
   const deleteIssue = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('issues')
         .delete()
         .eq('id', id);
