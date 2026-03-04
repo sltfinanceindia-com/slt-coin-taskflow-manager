@@ -9,15 +9,14 @@ export interface ProjectRisk {
   project_id: string | null;
   title: string;
   description: string | null;
-  category: 'technical' | 'resource' | 'schedule' | 'budget' | 'external' | 'other';
-  probability: 'low' | 'medium' | 'high' | 'very_high';
-  impact: 'low' | 'medium' | 'high' | 'critical';
-  status: 'identified' | 'analyzing' | 'mitigating' | 'monitoring' | 'closed';
+  category: string;
+  probability: string;
+  impact: string;
+  status: string;
   mitigation_plan: string | null;
-  contingency_plan: string | null;
   owner_id: string | null;
-  identified_date: string;
-  review_date: string | null;
+  identified_date: string | null;
+  created_by: string | null;
   created_at: string;
   updated_at: string;
   project?: {

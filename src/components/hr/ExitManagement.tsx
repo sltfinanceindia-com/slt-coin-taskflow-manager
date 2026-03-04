@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Progress } from '@/components/ui/progress';
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -21,13 +21,12 @@ interface ExitRequest {
   employee_id: string;
   employee_name?: string;
   resignation_date: string;
-  last_working_day: string;
-  notice_period_days: number;
+  last_working_date: string;
+  notice_period_days: number | null;
   reason: string | null;
-  exit_interview_done: boolean;
-  clearance_status: number;
-  status: 'pending' | 'approved' | 'in_progress' | 'completed' | 'withdrawn';
-  created_at: string;
+  fnf_status: string | null;
+  status: string | null;
+  created_at: string | null;
 }
 
 export function ExitManagement() {
@@ -61,8 +60,8 @@ export function ExitManagement() {
       const { data, error } = await supabase
         .from('exit_requests')
         .select(`
-          id, employee_id, resignation_date, last_working_day, notice_period_days, reason, exit_interview_done, clearance_status, status, created_at,
-          profiles(full_name)
+          id, employee_id, resignation_date, last_working_date, notice_period_days, reason, fnf_status, status, created_at,
+          profiles!exit_requests_employee_id_fkey(full_name)
         `)
         .eq('organization_id', profile?.organization_id!)
         .order('created_at', { ascending: false });
@@ -85,12 +84,10 @@ export function ExitManagement() {
           organization_id: profile?.organization_id,
           employee_id: exit.employee_id,
           resignation_date: exit.resignation_date,
-          last_working_day: format(addDays(new Date(exit.resignation_date), exit.notice_period_days), 'yyyy-MM-dd'),
+          last_working_date: format(addDays(new Date(exit.resignation_date), exit.notice_period_days), 'yyyy-MM-dd'),
           notice_period_days: exit.notice_period_days,
-          reason: exit.reason,
+          reason: exit.reason || 'Not specified',
           status: 'pending',
-          clearance_status: 0,
-          exit_interview_done: false,
         })
         .select()
         .single();
@@ -149,7 +146,7 @@ export function ExitManagement() {
     pending: exits?.filter(e => e.status === 'pending').length || 0,
     inProgress: exits?.filter(e => e.status === 'in_progress').length || 0,
     thisMonth: exits?.filter(e => {
-      const lwd = new Date(e.last_working_day);
+      const lwd = new Date(e.last_working_date);
       const now = new Date();
       return lwd.getMonth() === now.getMonth() && lwd.getFullYear() === now.getFullYear();
     }).length || 0,
@@ -223,7 +220,7 @@ export function ExitManagement() {
         <CardContent>
           {isLoading ? <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div> : filteredExits.length > 0 ? (
             <Table>
-              <TableHeader><TableRow><TableHead>Employee</TableHead><TableHead>Resignation</TableHead><TableHead>LWD</TableHead><TableHead>Clearance</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+              <TableHeader><TableRow><TableHead>Employee</TableHead><TableHead>Resignation</TableHead><TableHead>LWD</TableHead><TableHead>F&F</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
               <TableBody>
                 {filteredExits.map((exit) => (
                   <TableRow key={exit.id}>
@@ -233,27 +230,21 @@ export function ExitManagement() {
                     </TableCell>
                     <TableCell>{format(new Date(exit.resignation_date), 'MMM dd, yyyy')}</TableCell>
                     <TableCell>
-                      <div>{format(new Date(exit.last_working_day), 'MMM dd, yyyy')}</div>
-                      {getDaysRemaining(exit.last_working_day) > 0 && exit.status !== 'completed' && (
-                        <Badge variant="outline" className="mt-1">{getDaysRemaining(exit.last_working_day)} days left</Badge>
+                      <div>{format(new Date(exit.last_working_date), 'MMM dd, yyyy')}</div>
+                      {getDaysRemaining(exit.last_working_date) > 0 && exit.status !== 'completed' && (
+                        <Badge variant="outline" className="mt-1">{getDaysRemaining(exit.last_working_date)} days left</Badge>
                       )}
                     </TableCell>
                     <TableCell>
-                      <div className="w-24 space-y-1">
-                        <div className="text-xs text-right">{exit.clearance_status}%</div>
-                        <Progress value={exit.clearance_status} className="h-2" />
-                      </div>
+                      <Badge variant="secondary">{exit.fnf_status || 'N/A'}</Badge>
                     </TableCell>
-                    <TableCell>{getStatusBadge(exit.status)}</TableCell>
+                    <TableCell>{getStatusBadge(exit.status || 'pending')}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         {exit.status === 'pending' && <Button size="sm" variant="outline" onClick={() => updateMutation.mutate({ id: exit.id, status: 'approved' })}>Approve</Button>}
                         {exit.status === 'approved' && <Button size="sm" variant="outline" onClick={() => updateMutation.mutate({ id: exit.id, status: 'in_progress' })}>Start</Button>}
                         {exit.status === 'in_progress' && (
-                          <>
-                            <Button size="sm" variant="outline" onClick={() => updateMutation.mutate({ id: exit.id, clearance_status: Math.min(100, exit.clearance_status + 25) })}>+25%</Button>
-                            {exit.clearance_status >= 100 && <Button size="sm" onClick={() => updateMutation.mutate({ id: exit.id, status: 'completed' })}>Complete</Button>}
-                          </>
+                          <Button size="sm" onClick={() => updateMutation.mutate({ id: exit.id, status: 'completed' })}>Complete</Button>
                         )}
                         {exit.status === 'pending' && <Button size="sm" variant="ghost" onClick={() => deleteMutation.mutate(exit.id)}><Trash2 className="h-3 w-3" /></Button>}
                       </div>

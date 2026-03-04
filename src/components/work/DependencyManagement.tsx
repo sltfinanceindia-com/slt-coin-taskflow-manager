@@ -52,7 +52,7 @@ export function DependencyManagement() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('task_dependencies')
-        .select('id, task_id, depends_on_task_id, dependency_type, created_at')
+        .select('id, predecessor_id, successor_id, dependency_type, created_at')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -60,8 +60,8 @@ export function DependencyManagement() {
       // Fetch task details separately
       const taskIds = new Set<string>();
       (data || []).forEach((d: any) => {
-        taskIds.add(d.task_id);
-        taskIds.add(d.depends_on_task_id);
+        taskIds.add(d.successor_id);
+        taskIds.add(d.predecessor_id);
       });
       
       const { data: taskDetails } = await supabase
@@ -73,12 +73,12 @@ export function DependencyManagement() {
       
       return (data || []).map((d: any) => ({
         id: d.id,
-        predecessor_task_id: d.depends_on_task_id,
-        successor_task_id: d.task_id,
+        predecessor_task_id: d.predecessor_id,
+        successor_task_id: d.successor_id,
         dependency_type: d.dependency_type || 'finish_to_start',
         created_at: d.created_at,
-        predecessor_task: taskMap.get(d.depends_on_task_id),
-        successor_task: taskMap.get(d.task_id),
+        predecessor_task: taskMap.get(d.predecessor_id),
+        successor_task: taskMap.get(d.successor_id),
       })) as TaskDependency[];
     },
     enabled: !!profile?.organization_id,
@@ -89,8 +89,8 @@ export function DependencyManagement() {
       const { error } = await supabase
         .from('task_dependencies')
         .insert({
-          depends_on_task_id: predecessorId,
-          task_id: successorId,
+          predecessor_id: predecessorId,
+          successor_id: successorId,
           dependency_type: dependencyType,
         });
       if (error) throw error;
