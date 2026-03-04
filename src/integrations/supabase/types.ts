@@ -5672,6 +5672,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          issue_number: string | null
           issue_type: string
           organization_id: string | null
           priority: string
@@ -5679,6 +5680,8 @@ export type Database = {
           reporter_id: string | null
           resolution: string | null
           resolved_at: string | null
+          root_cause: string | null
+          severity: string | null
           status: string
           task_id: string | null
           title: string
@@ -5689,6 +5692,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          issue_number?: string | null
           issue_type?: string
           organization_id?: string | null
           priority?: string
@@ -5696,6 +5700,8 @@ export type Database = {
           reporter_id?: string | null
           resolution?: string | null
           resolved_at?: string | null
+          root_cause?: string | null
+          severity?: string | null
           status?: string
           task_id?: string | null
           title: string
@@ -5706,6 +5712,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          issue_number?: string | null
           issue_type?: string
           organization_id?: string | null
           priority?: string
@@ -5713,6 +5720,8 @@ export type Database = {
           reporter_id?: string | null
           resolution?: string | null
           resolved_at?: string | null
+          root_cause?: string | null
+          severity?: string | null
           status?: string
           task_id?: string | null
           title?: string

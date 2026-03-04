@@ -60,14 +60,12 @@ export function SalaryStructureManagement() {
     queryFn: async (): Promise<SalaryTemplate[]> => {
       if (!profile?.organization_id) return [];
       
-      // Using projects table with type 'salary_template' to store templates
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const client = supabase as any;
-      const { data, error } = await client
+      // Using projects table to store salary templates via stage field
+      const { data, error } = await supabase
         .from('projects')
         .select('id, name, priority, budget, description, created_at')
         .eq('organization_id', profile.organization_id)
-        .eq('project_type', 'salary_template')
+        .eq('stage', 'salary_template')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -100,10 +98,9 @@ export function SalaryStructureManagement() {
         priority: template.grade,
         budget: parseFloat(template.basic_salary) || 0,
         description: JSON.stringify(defaultComponents),
-        project_type: 'salary_template' as const,
-        owner_id: profile?.id || '',
-        status: 'active' as const,
+        stage: 'salary_template',
         created_by: profile?.id || '',
+        status: 'active',
       };
 
       const { error } = await supabase.from('projects').insert(insertData);
