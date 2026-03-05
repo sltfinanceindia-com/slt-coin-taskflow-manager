@@ -1,109 +1,92 @@
 
 
-## TeneXA Application - Comprehensive Status Summary (March 5, 2026)
+# TeneXA Audit Implementation Plan
 
-### **What is TeneXA?**
-Enterprise HR and Project Management SaaS platform built on React 18, Vite, TypeScript, Tailwind CSS, and Supabase (Postgres + RLS + Edge Functions). Published at **sltwork.lovable.app**. Features 10-tier RBAC (Super Admin to Intern) across 80+ modules supporting work management, HR, finance, performance, and recruitment workflows.
-
----
-
-### **Current Platform Health**
-- **Deployment Status:** Live and operational
-- **Database Tables:** 180+ tables configured
-- **Active Data:** ~440 records across core modules
-- **Implementation Rate:** ~40% fully functional, 60% UI-ready but empty
+## Scope
+Based on your priorities: **RLS hardening**, **account lockout/login protection**, and **performance optimizations**.
 
 ---
 
-### **🟢 WORKING FEATURES (21 modules fully operational)**
+## Step 1: RLS Hardening (12 Remaining Permissive Policies)
 
-| Category | Modules | Status |
-|----------|---------|--------|
-| **Core Work** | Dashboard, Kanban (55 tasks), Projects (3) | ✅ Live data |
-| **Time & Attendance** | Time Logs (151), Attendance (20), Timesheets (9) | ✅ Live data |
-| **Leave & Requests** | Leave Management (78 balances), WFH Requests (4) | ✅ Live data |
-| **Performance** | 1:1 Meetings (4), PIPs (4), Pulse Surveys (2) | ✅ Live data |
-| **Engagement** | Kudos (5), Coins, Automation Rules (5) | ✅ Live data |
-| **Planning** | OKRs (2), Sprint Planning (1), Budget (2) | ✅ Live data |
-| **Organization** | Org Chart (7 depts), HR Analytics (29 employees), RBAC | ✅ Live data |
-| **System** | Work Health, Analytics, Roles & Permissions | ✅ Functional |
+Create a single SQL migration to tighten the 12 remaining `WITH CHECK (true)` INSERT policies. These are on system/logging tables but should still require authentication to prevent anonymous abuse.
 
----
+**Tables and policy changes:**
+| Table | Current | New Policy |
+|-------|---------|------------|
+| audit_logs | `WITH CHECK (true)` | `WITH CHECK (auth.uid() IS NOT NULL)` |
+| automation_logs | `WITH CHECK (true)` | `WITH CHECK (auth.uid() IS NOT NULL)` |
+| contact_submissions | `WITH CHECK (true)` | Keep as-is (public form) |
+| daily_email_log | INSERT + UPDATE `true` | `WITH CHECK (auth.uid() IS NOT NULL)` |
+| email_notifications | `WITH CHECK (true)` | `WITH CHECK (auth.uid() IS NOT NULL)` |
+| notifications | `WITH CHECK (true)` | `WITH CHECK (auth.uid() IS NOT NULL)` |
+| payments | `WITH CHECK (true)` | `WITH CHECK (auth.uid() IS NOT NULL)` |
+| referral_tracking | `WITH CHECK (true)` | `WITH CHECK (auth.uid() IS NOT NULL)` |
+| scratch_cards | `WITH CHECK (true)` | `WITH CHECK (auth.uid() IS NOT NULL)` |
+| subscription_history | `WITH CHECK (true)` | `WITH CHECK (auth.uid() IS NOT NULL)` |
+| trial_signups | `WITH CHECK (true)` | Keep as-is (public form) |
 
-### **🟡 FUNCTIONAL BUT EMPTY (40+ modules with UI, no data)**
-
-**Work Management (empty):** Requests, Capacity, Backlog, Milestones, Dependencies, Risk Register, Issue Tracker, Resource Allocation, Workload, Overtime, Comp-Off, On-Call, Shift Swap, Templates, Meeting Notes, Decision Log
-
-**Finance (empty):** Payroll, Expenses, Loans, Salary Structure, Salary Revisions, Bonus Management, Reimbursements, Form 16, Investments, Benefits, F&F Settlement, Gratuity, Compliance
-
-**Employee Lifecycle (empty):** Onboarding, Exit Management, Contracts, Grievances, Disciplinary, Probation, Confirmations
-
-**Recruitment (empty):** Job Postings, Pipeline, Interviews, Offers
-
-**Specialized Tables (0 records):** shifts, tax_declarations, training_programs, work_calendars, benchmarking_data, audit_packs, project_scoring, issues
+**Note:** `contact_submissions` and `trial_signups` are intentionally public-facing -- they remain permissive. The remaining 10 policies get hardened.
 
 ---
 
-### **⚠️ KNOWN ISSUES & FIXES**
+## Step 2: Account Lockout & Login Protection
 
-#### **Issue 1: Type Safety - Remaining `as any` Casts [FIXED ✅]**
-- **Status:** Resolution completed in previous iteration
-- **Details:** Two files (`useIssues.tsx`, `SalaryStructureManagement.tsx`) had unsafe Supabase casts—now removed
-- **Verification:** All 15 files updated to use typed Supabase client
+### 2a. Database: Create `login_attempts` table
+- Columns: `id`, `email`, `ip_address`, `attempted_at`, `success`, `organization_id`
+- Create a helper function `is_account_locked(p_email TEXT)` that checks if 5+ failed attempts occurred in the last 15 minutes
+- Auto-cleanup trigger to purge attempts older than 24 hours
 
-#### **Issue 2: Schema Alignment - Missing `issue_number` Column [FIXED ✅]**
-- **Status:** Migration applied
-- **Details:** `issues` table now includes `issue_number`, `severity`, and `root_cause` columns
-- **Impact:** Issue Tracker module now fully functional at DB level
+### 2b. Frontend: Update `useAuth.tsx` sign-in flow
+- Before calling `signInWithPassword`, check lockout status via a lightweight edge function or RPC
+- On failed login, record the attempt
+- On successful login, clear failed attempts for that email
+- Show user-friendly lockout message with remaining time
 
-#### **Issue 3: RLS Security Hardening [PARTIALLY FIXED]**
-- **Status:** 15 permissive RLS policies remain (WARN level from linter)
-- **Policies with `USING(true)` or `WITH CHECK(true)`:** audit_logs, automation_logs, contact_submissions, daily_email_log, email_notifications, feedback_responses, notifications, payments, referral_tracking, scratch_cards, subscription_history, trial_signups
-- **Risk Assessment:** Most are system/logging tables (acceptable). `feedback_responses` INSERT policy represents minor abuse vector
-- **Recommendation:** Optional hardening if database is customer-facing; acceptable for internal SaaS
-
-#### **Issue 4: Authentication Security Warnings [MANUAL ACTION REQUIRED]**
-- **Status:** Not yet addressed (requires Supabase Dashboard)
-- **Items:**
-  - OTP expiry configuration exceeds recommended threshold
-  - Leaked password protection disabled
-  - Postgres security patches available
-- **Fix Location:** Supabase Dashboard → Auth Settings & Project Settings
-
-#### **Issue 5: Empty Specialized Tables [NO CODE FIX NEEDED]**
-- **Status:** Tables created, awaiting data seeding
-- **Tables:** shifts, shift_assignments, tax_declarations, training_programs, work_calendars, benchmarking_data, audit_packs, project_scoring
-- **Next Step:** Manual seed data insertion or bulk data import
+### 2c. Edge Function: `check-login-status`
+- Accepts email, returns `{ locked: boolean, remainingMinutes: number }`
+- Uses service role to query `login_attempts` (user isn't authenticated yet)
+- Records failed/successful attempts
 
 ---
 
-### **🔧 Technical Debt Status**
+## Step 3: Performance Optimizations
 
-| Item | Status | Priority |
-|------|--------|----------|
-| Type safety (Supabase client) | ✅ Resolved | — |
-| Database schema completeness | ✅ Resolved | — |
-| RLS policy audit | ⚠️ 15 warnings remain | Low |
-| Auth security settings | ❌ Pending | Manual |
-| Seed data for empty tables | ❌ Pending | Medium |
-| TODO/FIXME code comments | ⚠️ 520+ matches | Low |
+### 3a. Route-level code splitting (App.tsx)
+Currently all 40+ page imports are eager in `App.tsx`. Convert to `React.lazy()`:
+- Super Admin pages (12 imports)
+- Module landing pages (9 imports)
+- Detail pages (5 imports)
+- Other protected pages
 
----
+This will significantly reduce initial bundle size.
 
-### **📊 Data Distribution**
+### 3b. Query optimization
+- Add `gcTime` and tighter `staleTime` to QueryClient defaults
+- Ensure all large-table queries have `LIMIT` clauses (time_logs, attendance_records, leave_balances)
 
-- **Largest tables:** time_logs (151), leave_balances (78), profiles (29), tasks (55)
-- **Smallest active tables:** Most have 1-5 records (PIPs, meetings, surveys)
-- **Dormant tables:** 22 tables with 0 records (awaiting organizational data)
-
----
-
-### **🎯 Recommended Next Steps (Priority Order)**
-
-1. **Immediate:** Add test data to empty specialized tables (shifts, tax_declarations, training_programs) to enable module testing
-2. **Short-term:** Seed recruitment pipeline, exit requests, and employee lifecycle tables with sample data
-3. **Optional:** Harden `feedback_responses` RLS policy for multi-tenant security
-4. **Manual:** Update OTP and password protection settings in Supabase Dashboard
-5. **Backlog:** Populate finance modules (payroll, expenses) with sample data for admin testing
+### 3c. Suspense boundaries
+- Add `<Suspense>` fallbacks with existing skeleton components around lazy-loaded routes
 
 ---
+
+## Technical Details
+
+### Migration SQL (Step 1)
+Single migration dropping old policies and creating authenticated-only replacements for 10 tables.
+
+### New Files
+- `supabase/migrations/[timestamp]_rls_hardening.sql` -- RLS policy updates
+- `supabase/migrations/[timestamp]_login_attempts.sql` -- Login attempts table + RPC
+- `supabase/functions/check-login-status/index.ts` -- Login lockout check edge function
+
+### Modified Files
+- `src/hooks/useAuth.tsx` -- Add lockout check before sign-in, record attempts
+- `src/App.tsx` -- Convert eager imports to `React.lazy()` with Suspense
+- `supabase/config.toml` -- Add `check-login-status` function config
+
+### Estimated Changes
+- 2 SQL migrations
+- 1 new edge function
+- 2 file modifications
+
