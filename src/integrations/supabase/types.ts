@@ -6938,6 +6938,41 @@ export type Database = {
           },
         ]
       }
+      login_attempts: {
+        Row: {
+          attempted_at: string
+          email: string
+          id: string
+          ip_address: string | null
+          organization_id: string | null
+          success: boolean
+        }
+        Insert: {
+          attempted_at?: string
+          email: string
+          id?: string
+          ip_address?: string | null
+          organization_id?: string | null
+          success?: boolean
+        }
+        Update: {
+          attempted_at?: string
+          email?: string
+          id?: string
+          ip_address?: string | null
+          organization_id?: string | null
+          success?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "login_attempts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meeting_action_items: {
         Row: {
           assigned_to: string
@@ -15641,6 +15676,7 @@ export type Database = {
       check_sla_breaches: { Args: never; Returns: undefined }
       cleanup_expired_otps: { Args: never; Returns: undefined }
       cleanup_expired_typing_indicators: { Args: never; Returns: undefined }
+      cleanup_old_login_attempts: { Args: never; Returns: undefined }
       create_direct_message_channel: {
         Args: { user1_id: string; user2_id: string }
         Returns: string
@@ -15797,6 +15833,14 @@ export type Database = {
       initialize_default_roles: {
         Args: { p_created_by?: string; p_org_id: string }
         Returns: undefined
+      }
+      is_account_locked: {
+        Args: { p_email: string }
+        Returns: {
+          failed_count: number
+          locked: boolean
+          remaining_minutes: number
+        }[]
       }
       is_admin_user: {
         Args: { _organization_id: string; _user_id: string }

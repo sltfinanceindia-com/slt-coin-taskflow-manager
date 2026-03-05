@@ -379,6 +379,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     console.log('🔓 Signing in user:', email);
     
+    // Check account lockout before attempting login
+    try {
+      const lockoutRes = await supabase.functions.invoke('check-login-status', {
+        body: { email, action: 'check' },
+      });
+      
+      if (lockoutRes.data?.locked) {
+        const mins = lockoutRes.data.remainingMinutes || 15;
+        console.warn('🔒 Account locked:', email);
+        return { 
+          error: new Error(`Account temporarily locked due to multiple failed login attempts. Please try again in ${mins} minute${mins !== 1 ? 's' : ''}.`) 
+        };
+      }
+    } catch (lockoutError) {
+      console.warn('⚠️ Lockout check failed, proceeding with login:', lockoutError);
+    }
+    
     const { error, data } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -386,7 +403,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     if (error) {
       console.error('❌ Sign in error:', error);
+      // Record failed attempt
+      try {
+        await supabase.functions.invoke('check-login-status', {
+          body: { email, action: 'record', success: false },
+        });
+      } catch (recordError) {
+        console.warn('⚠️ Failed to record login attempt:', recordError);
+      }
       return { error };
+    }
+    
+    // Record successful attempt (clears failed attempts)
+    try {
+      await supabase.functions.invoke('check-login-status', {
+        body: { email, action: 'record', success: true },
+      });
+    } catch (recordError) {
+      console.warn('⚠️ Failed to record successful login:', recordError);
     }
     
     console.log('✅ Sign in successful');

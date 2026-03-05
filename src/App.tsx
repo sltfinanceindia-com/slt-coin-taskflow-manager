@@ -1,10 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
-import Features from "@/pages/Features";
-import Terms from "@/pages/Terms";
-import Privacy from "@/pages/Privacy";
-import Contact from "@/pages/Contact";
-import About from "@/pages/About";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -21,79 +16,101 @@ import { SkipLink } from "@/components/SkipLink";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { ContentProtection } from "@/components/ContentProtection";
 import SplashScreen from "@/components/SplashScreen";
+import { useVisibilityHandler } from '@/hooks/useVisibilityHandler';
+
+// Eagerly loaded public pages (small, critical path)
 import Landing from "./pages/Landing";
-import ModernDashboard from "./pages/ModernDashboard";
 import Auth from "./pages/Auth";
 import Signup from "./pages/Signup";
-import Pricing from "./pages/Pricing";
-import Profile from "./pages/Profile";
-import Training from "./pages/Training";
-import Assessment from "./pages/Assessment";
-import NotFound from "./pages/NotFound";
-import CalendarPage from "./pages/CalendarPage";
-import HelpCenterPage from "./pages/HelpCenterPage";
-import SuperAdminDashboard from "./pages/super-admin/SuperAdminDashboard";
-import OrganizationsList from "./pages/super-admin/OrganizationsList";
-import CreateOrganization from "./pages/super-admin/CreateOrganization";
-import OrganizationDetail from "./pages/super-admin/OrganizationDetail";
-import SuperAdminUsers from "./pages/super-admin/SuperAdminUsers";
-import SuperAdminSettings from "./pages/super-admin/SuperAdminSettings";
-import BillingDashboard from "./pages/super-admin/BillingDashboard";
-import SubscriptionAnalytics from "./pages/super-admin/SubscriptionAnalytics";
-import PlansManagement from "./pages/super-admin/PlansManagement";
-import SystemHealth from "./pages/super-admin/SystemHealth";
-import AuditTrail from "./pages/super-admin/AuditTrail";
-import PlatformAnnouncements from "./pages/super-admin/PlatformAnnouncements";
-import OrganizationSettings from "./pages/admin/OrganizationSettings";
-import RolesPermissions from "./pages/settings/RolesPermissions";
-import OrgChartPage from "./pages/organization/OrgChart";
-import KudosWallPage from "./pages/KudosWall";
-import PulseSurveysPage from "./pages/PulseSurveys";
-import MyGoalsPage from "./pages/MyGoals";
-import TutorialPage from "./pages/Tutorial";
-import TaskDetailPage from "./pages/TaskDetailPage";
-import PortfolioDetailPage from "./pages/PortfolioDetailPage";
-import ProgramDetailPage from "./pages/ProgramDetailPage";
-import EmployeeDetailPage from "./pages/EmployeeDetailPage";
-import ProjectDetailPage from "./pages/ProjectDetailPage";
-import Resources from "./pages/Resources";
-import StartTrial from "./pages/StartTrial";
 
-// Module Landing Pages
-import EmployeesPage from "./pages/modules/EmployeesPage";
-import ProjectsPage from "./pages/modules/ProjectsPage";
-import AttendancePage from "./pages/modules/AttendancePage";
-import LeavesPage from "./pages/modules/LeavesPage";
-import PayrollPage from "./pages/modules/PayrollPage";
-import PerformancePage from "./pages/modules/PerformancePage";
-import ApprovalsPage from "./pages/modules/ApprovalsPage";
-import ReportsPage from "./pages/modules/ReportsPage";
-import TasksPage from "./pages/modules/TasksPage";
+// Lazy-loaded pages
+const Features = lazy(() => import("@/pages/Features"));
+const Terms = lazy(() => import("@/pages/Terms"));
+const Privacy = lazy(() => import("@/pages/Privacy"));
+const Contact = lazy(() => import("@/pages/Contact"));
+const About = lazy(() => import("@/pages/About"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Resources = lazy(() => import("./pages/Resources"));
+const StartTrial = lazy(() => import("./pages/StartTrial"));
+const FeedbackPage = lazy(() => import('./pages/Feedback'));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const HelpCenterPage = lazy(() => import("./pages/HelpCenterPage"));
+
+// Protected pages - lazy loaded
+const ModernDashboard = lazy(() => import("./pages/ModernDashboard"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Training = lazy(() => import("./pages/Training"));
+const Assessment = lazy(() => import("./pages/Assessment"));
+const CalendarPage = lazy(() => import("./pages/CalendarPage"));
+const KudosWallPage = lazy(() => import("./pages/KudosWall"));
+const PulseSurveysPage = lazy(() => import("./pages/PulseSurveys"));
+const MyGoalsPage = lazy(() => import("./pages/MyGoals"));
+const TutorialPage = lazy(() => import("./pages/Tutorial"));
+
+// Detail pages
+const TaskDetailPage = lazy(() => import("./pages/TaskDetailPage"));
+const PortfolioDetailPage = lazy(() => import("./pages/PortfolioDetailPage"));
+const ProgramDetailPage = lazy(() => import("./pages/ProgramDetailPage"));
+const EmployeeDetailPage = lazy(() => import("./pages/EmployeeDetailPage"));
+const ProjectDetailPage = lazy(() => import("./pages/ProjectDetailPage"));
+
+// Module pages
+const EmployeesPage = lazy(() => import("./pages/modules/EmployeesPage"));
+const ProjectsPage = lazy(() => import("./pages/modules/ProjectsPage"));
+const AttendancePage = lazy(() => import("./pages/modules/AttendancePage"));
+const LeavesPage = lazy(() => import("./pages/modules/LeavesPage"));
+const PayrollPage = lazy(() => import("./pages/modules/PayrollPage"));
+const PerformancePage = lazy(() => import("./pages/modules/PerformancePage"));
+const ApprovalsPage = lazy(() => import("./pages/modules/ApprovalsPage"));
+const ReportsPage = lazy(() => import("./pages/modules/ReportsPage"));
+const TasksPage = lazy(() => import("./pages/modules/TasksPage"));
+
+// Super Admin pages
+const SuperAdminDashboard = lazy(() => import("./pages/super-admin/SuperAdminDashboard"));
+const OrganizationsList = lazy(() => import("./pages/super-admin/OrganizationsList"));
+const CreateOrganization = lazy(() => import("./pages/super-admin/CreateOrganization"));
+const OrganizationDetail = lazy(() => import("./pages/super-admin/OrganizationDetail"));
+const SuperAdminUsers = lazy(() => import("./pages/super-admin/SuperAdminUsers"));
+const SuperAdminSettings = lazy(() => import("./pages/super-admin/SuperAdminSettings"));
+const BillingDashboard = lazy(() => import("./pages/super-admin/BillingDashboard"));
+const SubscriptionAnalytics = lazy(() => import("./pages/super-admin/SubscriptionAnalytics"));
+const PlansManagement = lazy(() => import("./pages/super-admin/PlansManagement"));
+const SystemHealth = lazy(() => import("./pages/super-admin/SystemHealth"));
+const AuditTrail = lazy(() => import("./pages/super-admin/AuditTrail"));
+const PlatformAnnouncements = lazy(() => import("./pages/super-admin/PlatformAnnouncements"));
+const FeedbackRewards = lazy(() => import('./pages/super-admin/FeedbackRewards'));
+
+// Admin pages
+const OrganizationSettings = lazy(() => import("./pages/admin/OrganizationSettings"));
+const RolesPermissions = lazy(() => import("./pages/settings/RolesPermissions"));
+const OrgChartPage = lazy(() => import("./pages/organization/OrgChart"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 2, // 2 minutes
-      refetchOnWindowFocus: true, // Refetch when tab becomes active
-      refetchOnReconnect: true, // Refetch when network reconnects
+      staleTime: 1000 * 60 * 2,
+      gcTime: 1000 * 60 * 10,
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
     },
   },
 });
 
-import FeedbackPage from './pages/Feedback';
-import FeedbackRewards from './pages/super-admin/FeedbackRewards';
-
+// Suspense fallback
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full" />
+    </div>
+  );
+}
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full" />
-      </div>
-    );
+    return <PageLoader />;
   }
 
   if (!user) {
@@ -103,32 +120,26 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-import { useVisibilityHandler } from '@/hooks/useVisibilityHandler';
-
 function AppContent() {
   useAuthEmailNotifications();
-  useVisibilityHandler(); // Handle tab switching / sleep mode
+  useVisibilityHandler();
   const { user, loading } = useAuth();
   const { isSuperAdmin } = useUserRole();
   const [showSplash, setShowSplash] = useState(true);
   const [minTimeElapsed, setMinTimeElapsed] = useState(false);
   const [initialAuthChecked, setInitialAuthChecked] = useState(false);
 
-  // Show splash for minimum 2.5 seconds AND until auth is loaded
   useEffect(() => {
     const timer = setTimeout(() => setMinTimeElapsed(true), 2500);
     return () => clearTimeout(timer);
   }, []);
 
-  // Track when initial auth check completes
   useEffect(() => {
     if (!loading) {
       setInitialAuthChecked(true);
     }
   }, [loading]);
 
-  // Only show splash for authenticated users navigating to protected routes
-  // Public pages load instantly without splash
   const isPublicRoute = typeof window !== 'undefined' && 
     ['/', '/auth', '/signup', '/pricing', '/features', '/terms', '/privacy', '/contact', '/about', '/resources', '/start-trial', '/feedback'].includes(window.location.pathname);
 
@@ -151,6 +162,7 @@ function AppContent() {
         <PWAInstallPrompt />
         {user && <UnifiedAssistant />}
       <BrowserRouter>
+        <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Landing />} />
@@ -191,38 +203,10 @@ function AppContent() {
           <Route path="/organization/chart" element={<ProtectedRoute><OrgChartPage /></ProtectedRoute>} />
           
           {/* Protected Routes */}
-          <Route 
-            path="/dashboard" 
-            element={
-              <ProtectedRoute>
-                <ModernDashboard />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/profile" 
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/training" 
-            element={
-              <ProtectedRoute>
-                <Training />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/assessment/:id" 
-            element={
-              <ProtectedRoute>
-                <Assessment />
-              </ProtectedRoute>
-            } 
-          />
+          <Route path="/dashboard" element={<ProtectedRoute><ModernDashboard /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/training" element={<ProtectedRoute><Training /></ProtectedRoute>} />
+          <Route path="/assessment/:id" element={<ProtectedRoute><Assessment /></ProtectedRoute>} />
           <Route path="/kudos" element={<ProtectedRoute><KudosWallPage /></ProtectedRoute>} />
           <Route path="/pulse-surveys" element={<ProtectedRoute><PulseSurveysPage /></ProtectedRoute>} />
           <Route path="/my-goals" element={<ProtectedRoute><MyGoalsPage /></ProtectedRoute>} />
@@ -230,7 +214,7 @@ function AppContent() {
           <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
           <Route path="/help" element={<HelpCenterPage />} />
           
-          {/* Module Landing Pages - Standalone Routes */}
+          {/* Module Landing Pages */}
           <Route path="/employees" element={<ProtectedRoute><EmployeesPage /></ProtectedRoute>} />
           <Route path="/projects" element={<ProtectedRoute><ProjectsPage /></ProtectedRoute>} />
           <Route path="/tasks" element={<ProtectedRoute><TasksPage /></ProtectedRoute>} />
@@ -241,7 +225,7 @@ function AppContent() {
           <Route path="/approvals" element={<ProtectedRoute><ApprovalsPage /></ProtectedRoute>} />
           <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
           
-          {/* Detail Pages - Full Page Views */}
+          {/* Detail Pages */}
           <Route path="/tasks/:id" element={<ProtectedRoute><TaskDetailPage /></ProtectedRoute>} />
           <Route path="/portfolios/:id" element={<ProtectedRoute><PortfolioDetailPage /></ProtectedRoute>} />
           <Route path="/programs/:id" element={<ProtectedRoute><ProgramDetailPage /></ProtectedRoute>} />
@@ -251,6 +235,7 @@ function AppContent() {
           {/* 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </Suspense>
       </BrowserRouter>
     </TooltipProvider>
     </ContentProtection>
