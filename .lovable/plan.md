@@ -107,4 +107,3 @@ Enterprise HR and Project Management SaaS platform built on React 18, Vite, Type
 5. **Backlog:** Populate finance modules (payroll, expenses) with sample data for admin testing
 
 ---
-
