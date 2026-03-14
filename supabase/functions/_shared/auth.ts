@@ -42,7 +42,7 @@ export async function authenticateRequest(req: Request): Promise<AuthenticatedUs
 
   const { data: profile, error: profileError } = await userClient
     .from("profiles")
-    .select("id, organization_id, role")
+    .select("id, organization_id")
     .eq("user_id", user.id)
     .single();
 
@@ -53,10 +53,32 @@ export async function authenticateRequest(req: Request): Promise<AuthenticatedUs
     );
   }
 
+  // Read role from user_roles table (authoritative source) instead of profiles.role
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const serviceClient = createClient(Deno.env.get("SUPABASE_URL")!, supabaseServiceKey);
+
+  const { data: roleRecords } = await serviceClient
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", user.id);
+
+  const rolePriority: Record<string, number> = {
+    super_admin: 10, org_admin: 9, admin: 9, hr_admin: 8,
+    project_manager: 8, finance_manager: 8, manager: 7,
+    team_lead: 6, employee: 5, intern: 4,
+  };
+
+  let highestRole = "employee";
+  if (roleRecords && roleRecords.length > 0) {
+    highestRole = roleRecords.reduce((best, cur) =>
+      (rolePriority[cur.role] || 0) > (rolePriority[best.role] || 0) ? cur : best
+    ).role;
+  }
+
   return {
     userId: profile.id,
     authUserId: user.id,
     organizationId: profile.organization_id,
-    role: profile.role,
+    role: highestRole,
   };
 }
