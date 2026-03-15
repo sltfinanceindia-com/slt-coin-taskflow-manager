@@ -49,13 +49,22 @@ export function useTrainingPrograms() {
 
   const createProgram = useMutation({
     mutationFn: async (input: Partial<TrainingProgram>) => {
+      const record = {
+        title: input.title || '',
+        description: input.description,
+        category: input.category,
+        duration_hours: input.duration_hours,
+        is_mandatory: input.is_mandatory,
+        status: input.status || 'active',
+        start_date: input.start_date,
+        end_date: input.end_date,
+        department: input.department,
+        organization_id: profile?.organization_id,
+        created_by: profile?.id,
+      };
       const { data, error } = await supabase
         .from('training_programs')
-        .insert({
-          ...input,
-          organization_id: profile?.organization_id,
-          created_by: profile?.id,
-        })
+        .insert(record)
         .select()
         .single();
       if (error) throw error;

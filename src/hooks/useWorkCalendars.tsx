@@ -42,13 +42,21 @@ export function useWorkCalendars() {
 
   const createCalendar = useMutation({
     mutationFn: async (input: Partial<WorkCalendar>) => {
+      const record = {
+        name: input.name || '',
+        year: input.year || new Date().getFullYear(),
+        description: input.description,
+        is_default: input.is_default,
+        working_days: input.working_days,
+        work_start_time: input.work_start_time,
+        work_end_time: input.work_end_time,
+        status: input.status || 'active',
+        organization_id: profile?.organization_id,
+        created_by: profile?.id,
+      };
       const { data, error } = await supabase
         .from('work_calendars')
-        .insert({
-          ...input,
-          organization_id: profile?.organization_id,
-          created_by: profile?.id,
-        })
+        .insert(record)
         .select()
         .single();
       if (error) throw error;
