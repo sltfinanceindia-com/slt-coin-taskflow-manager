@@ -48,7 +48,7 @@ export default function Training() {
       <TrainingHeader />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview" className="flex items-center gap-2 text-xs sm:text-sm">
             <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
             Overview
@@ -56,6 +56,10 @@ export default function Training() {
           <TabsTrigger value="courses" className="flex items-center gap-2 text-xs sm:text-sm">
             <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
             Courses
+          </TabsTrigger>
+          <TabsTrigger value="programs" className="flex items-center gap-2 text-xs sm:text-sm">
+            <GraduationCap className="h-3 w-3 sm:h-4 sm:w-4" />
+            Programs
           </TabsTrigger>
         </TabsList>
 
@@ -65,6 +69,10 @@ export default function Training() {
 
         <TabsContent value="courses" className="space-y-4 sm:space-y-6">
           <TrainingCourses sections={sections} isLoading={sectionsLoading} />
+        </TabsContent>
+
+        <TabsContent value="programs" className="space-y-4 sm:space-y-6">
+          <TrainingProgramsList />
         </TabsContent>
       </Tabs>
     </StandalonePageLayout>
