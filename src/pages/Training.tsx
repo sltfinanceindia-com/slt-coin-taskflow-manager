@@ -4,11 +4,13 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { Navigate } from 'react-router-dom';
 import { TrainingManagement } from '@/components/TrainingManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TrendingUp, BookOpen } from 'lucide-react';
+import { TrendingUp, BookOpen, GraduationCap } from 'lucide-react';
 import { useTrainingSections } from '@/hooks/useTrainingSections';
+import { useTrainingPrograms } from '@/hooks/useTrainingPrograms';
 import { TrainingHeader } from '@/components/training/TrainingHeader';
 import { TrainingOverview } from '@/components/training/TrainingOverview';
 import { TrainingCourses } from '@/components/training/TrainingCourses';
+import { TrainingProgramsList } from '@/components/training/TrainingProgramsList';
 import { LoadingSpinner } from '@/components/training/LoadingSpinner';
 import { StandalonePageLayout } from '@/layouts/StandalonePageLayout';
 
@@ -44,7 +46,7 @@ export default function Training() {
       <TrainingHeader />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview" className="flex items-center gap-2 text-xs sm:text-sm">
             <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
             Overview
@@ -52,6 +54,10 @@ export default function Training() {
           <TabsTrigger value="courses" className="flex items-center gap-2 text-xs sm:text-sm">
             <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
             Courses
+          </TabsTrigger>
+          <TabsTrigger value="programs" className="flex items-center gap-2 text-xs sm:text-sm">
+            <GraduationCap className="h-3 w-3 sm:h-4 sm:w-4" />
+            Programs
           </TabsTrigger>
         </TabsList>
 
@@ -61,6 +67,10 @@ export default function Training() {
 
         <TabsContent value="courses" className="space-y-4 sm:space-y-6">
           <TrainingCourses sections={sections} isLoading={sectionsLoading} />
+        </TabsContent>
+
+        <TabsContent value="programs" className="space-y-4 sm:space-y-6">
+          <TrainingProgramsList />
         </TabsContent>
       </Tabs>
     </StandalonePageLayout>
