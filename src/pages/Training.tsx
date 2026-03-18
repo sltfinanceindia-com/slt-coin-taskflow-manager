@@ -13,8 +13,6 @@ import { TrainingCourses } from '@/components/training/TrainingCourses';
 import { TrainingProgramsList } from '@/components/training/TrainingProgramsList';
 import { LoadingSpinner } from '@/components/training/LoadingSpinner';
 import { StandalonePageLayout } from '@/layouts/StandalonePageLayout';
-import { LoadingSpinner } from '@/components/training/LoadingSpinner';
-import { StandalonePageLayout } from '@/layouts/StandalonePageLayout';
 
 export default function Training() {
   const { user, loading } = useAuth();
