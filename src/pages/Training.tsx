@@ -4,11 +4,13 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { Navigate } from 'react-router-dom';
 import { TrainingManagement } from '@/components/TrainingManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TrendingUp, BookOpen } from 'lucide-react';
+import { TrendingUp, BookOpen, GraduationCap } from 'lucide-react';
 import { useTrainingSections } from '@/hooks/useTrainingSections';
+import { useTrainingPrograms } from '@/hooks/useTrainingPrograms';
 import { TrainingHeader } from '@/components/training/TrainingHeader';
 import { TrainingOverview } from '@/components/training/TrainingOverview';
 import { TrainingCourses } from '@/components/training/TrainingCourses';
+import { TrainingProgramsList } from '@/components/training/TrainingProgramsList';
 import { LoadingSpinner } from '@/components/training/LoadingSpinner';
 import { StandalonePageLayout } from '@/layouts/StandalonePageLayout';
 
