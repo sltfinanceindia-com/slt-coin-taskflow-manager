@@ -230,7 +230,7 @@ export default function SuperAdminLayout({ children }: SuperAdminLayoutProps) {
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 min-h-screen">
+        <main className="flex-1 min-h-screen min-w-0 overflow-x-hidden">
           {/* Desktop Header with Breadcrumb */}
           <div className="hidden lg:flex items-center justify-between p-4 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-40">
             <div className="flex items-center gap-2 text-sm">

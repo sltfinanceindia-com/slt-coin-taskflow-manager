@@ -63,15 +63,15 @@ export function AppHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 h-14 sm:h-16 w-full bg-background border-b border-border shadow-sm">
-      <div className="flex h-full items-center justify-between px-3 sm:px-4 lg:px-6">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <SidebarTrigger className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg hover:bg-muted" />
+    <header className="sticky top-0 z-40 h-14 sm:h-16 w-full bg-background border-b border-border shadow-sm" data-testid="app-header">
+      <div className="flex h-full items-center justify-between px-3 sm:px-4 lg:px-6 min-w-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+          <SidebarTrigger className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg hover:bg-muted shrink-0" data-testid="button-sidebar-toggle" />
           <OrganizationSwitcher className="hidden md:flex" />
           <GlobalSearch />
         </div>
         
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Super Admin Toggle - Navigate to Super Admin Panel */}
           {isSuperAdmin && (
             <Button

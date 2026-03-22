@@ -82,9 +82,12 @@ export function BottomNavigation({ variant, activeTab, onTabChange }: BottomNavi
   return (
     <nav 
       className="fixed bottom-0 left-0 right-0 z-[9999] bg-background/95 backdrop-blur-md border-t border-border md:hidden shadow-lg"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)', position: 'fixed' }}
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      data-testid="bottom-navigation"
+      role="navigation"
+      aria-label="Mobile navigation"
     >
-      <div className="flex items-center justify-around h-16 px-2">
+      <div className="flex items-center justify-around h-16 px-1 sm:px-2">
         {items.map((item) => {
           const Icon = item.icon;
           

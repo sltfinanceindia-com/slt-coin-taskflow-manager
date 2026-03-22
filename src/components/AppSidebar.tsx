@@ -255,8 +255,9 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
         collapsed ? "w-16" : "w-64"
       )}
       collapsible="icon"
+      data-testid="app-sidebar"
     >
-      <SidebarContent className="bg-sidebar h-screen flex flex-col">
+      <SidebarContent className="bg-sidebar h-screen flex flex-col overflow-x-hidden">
         {/* Collapsible Header: Logo + User Info + Super Admin */}
         <SidebarHeaderCollapsible collapsed={collapsed} isMobile={isMobile}>
           {/* Logo Section */}

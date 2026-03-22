@@ -105,7 +105,7 @@ export function PublicHeader() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute top-full left-0 mt-2 w-[600px] p-6 rounded-2xl bg-background dark:bg-[#1A1A1A] backdrop-blur-xl border border-border shadow-xl"
+                    className="absolute top-full left-0 mt-2 w-[600px] max-w-[calc(100vw-2rem)] p-6 rounded-2xl bg-background dark:bg-[#1A1A1A] backdrop-blur-xl border border-border shadow-xl"
                   >
                     <div className="grid grid-cols-2 gap-4">
                       {features.map((feature) => (

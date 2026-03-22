@@ -224,7 +224,7 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background" data-testid="auth-page">
       {/* Back Button */}
       <div className="p-4">
         <Button 
@@ -232,6 +232,7 @@ export default function Auth() {
           size="sm" 
           onClick={() => navigate('/')}
           className="gap-2"
+          data-testid="button-back-home"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Home
@@ -239,7 +240,7 @@ export default function Auth() {
       </div>
 
       <div className="flex-1 flex items-center justify-center px-3 sm:px-4 py-6 sm:py-8">
-        <div className="w-full max-w-md space-y-6 sm:space-y-8">
+        <div className="w-full max-w-md space-y-6 sm:space-y-8 min-w-0">
           <div className="text-center">
             <Link to="/" className="inline-flex items-center justify-center mb-3 sm:mb-4">
               <img 

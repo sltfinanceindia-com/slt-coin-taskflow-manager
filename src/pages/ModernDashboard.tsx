@@ -261,10 +261,10 @@ export default function ModernDashboard() {
       <div className="flex min-h-screen w-full bg-gradient-background">
         <AppSidebar activeTab={activeTab} onTabChange={setActiveTab} />
         
-        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           <AppHeader />
           
-          <main id="main-content" className="flex-1 overflow-auto pb-20 md:pb-0" role="main">
+          <main id="main-content" className="flex-1 overflow-y-auto overflow-x-hidden pb-20 md:pb-0" role="main">
             {/* Full-screen communication on mobile */}
             {activeTab === 'communication' && isMobile ? (
               <Suspense fallback={
@@ -286,7 +286,7 @@ export default function ModernDashboard() {
                 })()}
               </Suspense>
             ) : (
-              <div className="w-full max-w-none px-2 sm:px-4 lg:px-6 xl:px-8 py-2 sm:py-4 lg:py-6">
+              <div className="w-full max-w-none px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 lg:py-6">
                 {/* Breadcrumb Navigation */}
                 {activeTab !== 'overview' && !(activeTab === 'communication' && isMobile) && (
                   <BreadcrumbNav 
