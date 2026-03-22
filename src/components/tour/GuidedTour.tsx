@@ -2,6 +2,7 @@ import Joyride, { CallBackProps, STATUS, ACTIONS } from 'react-joyride';
 import { useLocation } from 'react-router-dom';
 import { useTour } from '@/hooks/useTour';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { getTourStepsForRole } from '@/config/tourSteps';
 import { useMemo } from 'react';
 
@@ -9,6 +10,7 @@ export function GuidedTour() {
   const { isTourRunning, completeTour } = useTour();
   const { role } = useUserRole();
   const location = useLocation();
+  const isMobile = useIsMobile();
 
   const isDashboard = location.pathname === '/dashboard';
 
@@ -24,7 +26,7 @@ export function GuidedTour() {
     }
   };
 
-  if (!isTourRunning || !isDashboard || steps.length === 0) return null;
+  if (!isTourRunning || !isDashboard || isMobile || steps.length === 0) return null;
 
   return (
     <Joyride
