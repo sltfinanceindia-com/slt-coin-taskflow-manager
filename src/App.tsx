@@ -105,7 +105,6 @@ function PageLoader() {
   );
 }
 
-// Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
 
@@ -115,6 +114,25 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (!user) {
     return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+function SuperAdminRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  const { isSuperAdmin, isLoading: roleLoading } = useUserRole();
+
+  if (loading || roleLoading) {
+    return <PageLoader />;
+  }
+
+  if (!user) {
+    return <Navigate to="/" replace />;
+  }
+
+  if (!isSuperAdmin) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;
@@ -178,19 +196,19 @@ function AppContent() {
           <Route path="/start-trial" element={<StartTrial />} />
           
           {/* Super Admin Routes */}
-          <Route path="/super-admin" element={<ProtectedRoute><SuperAdminDashboard /></ProtectedRoute>} />
-          <Route path="/super-admin/organizations" element={<ProtectedRoute><OrganizationsList /></ProtectedRoute>} />
-          <Route path="/super-admin/organizations/new" element={<ProtectedRoute><CreateOrganization /></ProtectedRoute>} />
-          <Route path="/super-admin/organizations/:id" element={<ProtectedRoute><OrganizationDetail /></ProtectedRoute>} />
-          <Route path="/super-admin/users" element={<ProtectedRoute><SuperAdminUsers /></ProtectedRoute>} />
-          <Route path="/super-admin/billing" element={<ProtectedRoute><BillingDashboard /></ProtectedRoute>} />
-          <Route path="/super-admin/analytics" element={<ProtectedRoute><SubscriptionAnalytics /></ProtectedRoute>} />
-          <Route path="/super-admin/plans" element={<ProtectedRoute><PlansManagement /></ProtectedRoute>} />
-          <Route path="/super-admin/settings" element={<ProtectedRoute><SuperAdminSettings /></ProtectedRoute>} />
-          <Route path="/super-admin/feedback-rewards" element={<ProtectedRoute><FeedbackRewards /></ProtectedRoute>} />
-          <Route path="/super-admin/health" element={<ProtectedRoute><SystemHealth /></ProtectedRoute>} />
-          <Route path="/super-admin/audit" element={<ProtectedRoute><AuditTrail /></ProtectedRoute>} />
-          <Route path="/super-admin/announcements" element={<ProtectedRoute><PlatformAnnouncements /></ProtectedRoute>} />
+          <Route path="/super-admin" element={<SuperAdminRoute><SuperAdminDashboard /></SuperAdminRoute>} />
+          <Route path="/super-admin/organizations" element={<SuperAdminRoute><OrganizationsList /></SuperAdminRoute>} />
+          <Route path="/super-admin/organizations/new" element={<SuperAdminRoute><CreateOrganization /></SuperAdminRoute>} />
+          <Route path="/super-admin/organizations/:id" element={<SuperAdminRoute><OrganizationDetail /></SuperAdminRoute>} />
+          <Route path="/super-admin/users" element={<SuperAdminRoute><SuperAdminUsers /></SuperAdminRoute>} />
+          <Route path="/super-admin/billing" element={<SuperAdminRoute><BillingDashboard /></SuperAdminRoute>} />
+          <Route path="/super-admin/analytics" element={<SuperAdminRoute><SubscriptionAnalytics /></SuperAdminRoute>} />
+          <Route path="/super-admin/plans" element={<SuperAdminRoute><PlansManagement /></SuperAdminRoute>} />
+          <Route path="/super-admin/settings" element={<SuperAdminRoute><SuperAdminSettings /></SuperAdminRoute>} />
+          <Route path="/super-admin/feedback-rewards" element={<SuperAdminRoute><FeedbackRewards /></SuperAdminRoute>} />
+          <Route path="/super-admin/health" element={<SuperAdminRoute><SystemHealth /></SuperAdminRoute>} />
+          <Route path="/super-admin/audit" element={<SuperAdminRoute><AuditTrail /></SuperAdminRoute>} />
+          <Route path="/super-admin/announcements" element={<SuperAdminRoute><PlatformAnnouncements /></SuperAdminRoute>} />
           
           {/* Public Routes */}
           <Route path="/feedback" element={<FeedbackPage />} />

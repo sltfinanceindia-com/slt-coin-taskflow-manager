@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -30,8 +31,12 @@ export const SubscriptionGate = ({
     shouldShowUpgradePrompt,
     paymentFailedAt
   } = useSubscriptionStatus();
+  const { isSuperAdmin } = useUserRole();
 
-  // Service is suspended - show block screen
+  if (isSuperAdmin) {
+    return <>{children}</>;
+  }
+
   if (isServiceSuspended) {
     return (
       <div className="flex items-center justify-center min-h-[400px] p-8">

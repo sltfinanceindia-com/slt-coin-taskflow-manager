@@ -1,19 +1,16 @@
 import { useEffect, ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 
 interface ContentProtectionProps {
   children: ReactNode;
 }
 
-/**
- * Content protection wrapper that prevents screenshots and screen recording
- * for non-admin users. Admins are exempt from these restrictions.
- */
 export function ContentProtection({ children }: ContentProtectionProps) {
   const { profile } = useAuth();
+  const { isAdmin: isAdminRole } = useUserRole();
   
-  // Check if user is admin (super_admin, org_admin, or admin)
-  const isAdmin = profile?.role && ['super_admin', 'org_admin', 'admin'].includes(profile.role);
+  const isAdmin = isAdminRole || (profile?.role && ['super_admin', 'org_admin', 'admin'].includes(profile.role));
   
   useEffect(() => {
     // Skip protection for admins

@@ -255,9 +255,28 @@ export function RolePermissionMatrix({
   );
 }
 
-// Quick Templates for Permission Presets
-export const PERMISSION_TEMPLATES = {
+export const PERMISSION_TEMPLATES: Record<string, ModulePermission[]> = {
+  super_admin: MODULES.map((m) => ({
+    module_name: m.key,
+    can_view: true,
+    can_create: true,
+    can_edit: true,
+    can_delete: true,
+    can_approve: true,
+    can_export: true,
+    visibility_scope: 'all' as VisibilityScope,
+  })),
   org_admin: MODULES.map((m) => ({
+    module_name: m.key,
+    can_view: true,
+    can_create: true,
+    can_edit: true,
+    can_delete: true,
+    can_approve: true,
+    can_export: true,
+    visibility_scope: 'all' as VisibilityScope,
+  })),
+  admin: MODULES.map((m) => ({
     module_name: m.key,
     can_view: true,
     can_create: true,

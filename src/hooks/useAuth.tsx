@@ -8,7 +8,7 @@ export interface Profile {
   user_id?: string;
   full_name: string;
   email: string;
-  role: 'super_admin' | 'org_admin' | 'admin' | 'manager' | 'intern' | 'employee';
+  role: 'super_admin' | 'org_admin' | 'admin' | 'hr_admin' | 'project_manager' | 'finance_manager' | 'manager' | 'team_lead' | 'employee' | 'intern';
   department?: string;
   employee_id?: string;
   avatar_url?: string;
@@ -72,15 +72,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Fetch the authoritative role from user_roles table
       const { data: userRoleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', profileData.id)
-        .maybeSingle();
+        .eq('user_id', profileData.id);
 
-      // Use user_roles.role if available, otherwise fall back to profiles.role
-      const authoritativeRole = userRoleData?.role || profileData.role;
+      const ROLE_PRIORITY: Record<string, number> = {
+        'super_admin': 10, 'org_admin': 9, 'admin': 9,
+        'hr_admin': 8, 'project_manager': 8, 'finance_manager': 8,
+        'manager': 7, 'team_lead': 6, 'employee': 5, 'intern': 4,
+      };
+
+      let authoritativeRole = profileData.role;
+      if (userRoleData && userRoleData.length > 0) {
+        authoritativeRole = userRoleData.reduce((highest, current) =>
+          (ROLE_PRIORITY[current.role] || 0) > (ROLE_PRIORITY[highest.role] || 0) ? current : highest
+        , userRoleData[0]).role;
+      }
 
       console.log('✅ Profile loaded:', profileData.id, profileData.full_name, 'Role from user_roles:', authoritativeRole);
       setProfile({ ...profileData, role: authoritativeRole } as Profile);

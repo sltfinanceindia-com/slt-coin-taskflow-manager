@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Shield, Users, UserCheck, User, GraduationCap, Wand2 } from 'lucide-react';
+import { Shield, Users, UserCheck, User, GraduationCap, Wand2, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -37,26 +37,24 @@ import { toast } from 'sonner';
 const roleFormSchema = z.object({
   name: z.string().min(2, 'Role name must be at least 2 characters'),
   description: z.string().optional(),
-  role_type: z.enum(['org_admin', 'hr_admin', 'finance_admin', 'department_head', 'manager', 'supervisor', 'team_lead', 'senior_employee', 'employee', 'contractor', 'consultant', 'intern']),
+  role_type: z.enum(['super_admin', 'org_admin', 'admin', 'hr_admin', 'project_manager', 'finance_manager', 'manager', 'team_lead', 'employee', 'intern']),
   hierarchy_level: z.number().min(1).max(10),
 });
 
 type RoleFormValues = z.infer<typeof roleFormSchema>;
 
 const ROLE_TYPES = [
-  { value: 'org_admin', label: 'Organization Admin', icon: Shield, level: 10, color: 'bg-purple-500' },
-  { value: 'hr_admin', label: 'HR Admin', icon: Shield, level: 9, color: 'bg-pink-500' },
-  { value: 'finance_admin', label: 'Finance Admin', icon: Shield, level: 9, color: 'bg-cyan-500' },
-  { value: 'department_head', label: 'Department Head', icon: Users, level: 8, color: 'bg-indigo-500' },
+  { value: 'super_admin', label: 'Super Admin', icon: Crown, level: 10, color: 'bg-red-500', systemOnly: true },
+  { value: 'org_admin', label: 'Organization Admin', icon: Shield, level: 9, color: 'bg-purple-500' },
+  { value: 'admin', label: 'Admin', icon: Shield, level: 9, color: 'bg-indigo-500' },
+  { value: 'hr_admin', label: 'HR Admin', icon: Shield, level: 8, color: 'bg-pink-500' },
+  { value: 'project_manager', label: 'Project Manager', icon: Users, level: 8, color: 'bg-blue-500' },
+  { value: 'finance_manager', label: 'Finance Manager', icon: Shield, level: 8, color: 'bg-cyan-500' },
   { value: 'manager', label: 'Manager', icon: Users, level: 7, color: 'bg-blue-500' },
-  { value: 'supervisor', label: 'Supervisor', icon: UserCheck, level: 6, color: 'bg-sky-500' },
-  { value: 'team_lead', label: 'Team Lead', icon: UserCheck, level: 5, color: 'bg-sky-500' },
-  { value: 'senior_employee', label: 'Senior Employee', icon: User, level: 4, color: 'bg-orange-500' },
-  { value: 'employee', label: 'Employee', icon: User, level: 3, color: 'bg-amber-500' },
-  { value: 'contractor', label: 'Contractor', icon: User, level: 2, color: 'bg-slate-500' },
-  { value: 'consultant', label: 'Consultant', icon: User, level: 2, color: 'bg-violet-500' },
-  { value: 'intern', label: 'Intern', icon: GraduationCap, level: 1, color: 'bg-gray-500' },
-];
+  { value: 'team_lead', label: 'Team Lead', icon: UserCheck, level: 6, color: 'bg-sky-500' },
+  { value: 'employee', label: 'Employee', icon: User, level: 5, color: 'bg-amber-500' },
+  { value: 'intern', label: 'Intern', icon: GraduationCap, level: 4, color: 'bg-gray-500' },
+] as const;
 
 interface RoleEditorProps {
   initialData?: {
@@ -91,9 +89,12 @@ export function RoleEditor({ initialData, onSave, onCancel }: RoleEditorProps) {
   const selectedRoleType = form.watch('role_type');
   const isSystemRole = initialData?.is_system_role;
 
-  const applyTemplate = (template: keyof typeof PERMISSION_TEMPLATES) => {
-    setPermissions(PERMISSION_TEMPLATES[template]);
-    toast.success(`Applied ${template.replace('_', ' ')} template`);
+  const applyTemplate = (template: string) => {
+    const templatePerms = PERMISSION_TEMPLATES[template];
+    if (templatePerms) {
+      setPermissions(templatePerms);
+      toast.success(`Applied ${template.replace('_', ' ')} template`);
+    }
   };
 
   const handleRoleTypeChange = (value: string) => {
@@ -103,7 +104,7 @@ export function RoleEditor({ initialData, onSave, onCancel }: RoleEditorProps) {
       form.setValue('hierarchy_level', roleConfig.level);
       // Auto-apply template for new roles
       if (!initialData?.id) {
-        applyTemplate(value as keyof typeof PERMISSION_TEMPLATES);
+        applyTemplate(value);
       }
     }
   };
@@ -170,7 +171,7 @@ export function RoleEditor({ initialData, onSave, onCancel }: RoleEditorProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {ROLE_TYPES.map((role) => (
+                          {ROLE_TYPES.filter(role => !('systemOnly' in role && role.systemOnly) || initialData?.role_type === role.value).map((role) => (
                             <SelectItem key={role.value} value={role.value}>
                               <div className="flex items-center gap-2">
                                 <role.icon className="h-4 w-4" />
@@ -223,13 +224,14 @@ export function RoleEditor({ initialData, onSave, onCancel }: RoleEditorProps) {
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {ROLE_TYPES.map((role) => (
+                  {ROLE_TYPES.filter(role => !('systemOnly' in role && role.systemOnly)).map((role) => (
                     <Button
                       key={role.value}
                       type="button"
                       variant={selectedRoleType === role.value ? 'default' : 'outline'}
                       size="sm"
-                      onClick={() => applyTemplate(role.value as keyof typeof PERMISSION_TEMPLATES)}
+                      onClick={() => applyTemplate(role.value)}
+                      data-testid={`template-${role.value}`}
                     >
                       <Wand2 className="h-3 w-3 mr-1" />
                       {role.label}

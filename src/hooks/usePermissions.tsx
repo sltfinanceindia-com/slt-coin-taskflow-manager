@@ -213,6 +213,42 @@ function getDefaultPermissions(role: string): ModulePermission[] {
         visibility_scope: 'all' as VisibilityScope
       }));
 
+    case 'hr_admin':
+      return modules.map(module => ({
+        module_name: module,
+        can_view: true,
+        can_create: ['employees', 'leave', 'communication', 'training', 'lifecycle', 'wfh', 'shifts'].includes(module),
+        can_edit: ['employees', 'leave', 'attendance', 'training', 'lifecycle', 'wfh', 'shifts'].includes(module),
+        can_delete: ['employees'].includes(module),
+        can_approve: ['leave', 'attendance', 'wfh', 'approvals'].includes(module),
+        can_export: true,
+        visibility_scope: 'all' as VisibilityScope
+      }));
+
+    case 'project_manager':
+      return modules.map(module => ({
+        module_name: module,
+        can_view: true,
+        can_create: ['tasks', 'projects', 'communication', 'time_logs'].includes(module),
+        can_edit: ['tasks', 'projects', 'time_logs'].includes(module),
+        can_delete: ['tasks', 'projects'].includes(module),
+        can_approve: ['leave', 'time_logs', 'approvals'].includes(module),
+        can_export: true,
+        visibility_scope: 'department' as VisibilityScope
+      }));
+
+    case 'finance_manager':
+      return modules.map(module => ({
+        module_name: module,
+        can_view: true,
+        can_create: ['communication'].includes(module),
+        can_edit: false,
+        can_delete: false,
+        can_approve: ['approvals'].includes(module),
+        can_export: ['reports'].includes(module),
+        visibility_scope: 'all' as VisibilityScope,
+      }));
+
     case 'manager':
       return modules.map(module => ({
         module_name: module,

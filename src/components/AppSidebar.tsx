@@ -157,12 +157,12 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
   // Get enabled features from organization
   const enabledFeatures = organization?.enabled_features || {};
   
-  // Get role-based navigation groups using the new navigation system
   const navGroups = useMemo(() => {
+    if (roleLoading) return [];
     const userRole = (role || 'employee') as AppRole;
     const baseGroups = getNavGroupsForRole(userRole);
     return filterNavGroupsByFeatures(baseGroups, enabledFeatures as Record<string, boolean> | undefined);
-  }, [role, enabledFeatures]);
+  }, [role, enabledFeatures, roleLoading]);
   
   const collapsed = state === "collapsed"
 

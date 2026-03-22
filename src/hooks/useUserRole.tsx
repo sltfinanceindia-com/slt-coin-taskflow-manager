@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -41,16 +41,30 @@ function getHighestPriorityRole(roles: AppRole[]): AppRole {
   , roles[0]);
 }
 
+const PROFILE_HYDRATION_TIMEOUT_MS = 10000;
+
 export function useUserRole(): UserRoleData {
-  const { user, profile } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
+  const [profileTimedOut, setProfileTimedOut] = useState(false);
+
+  useEffect(() => {
+    if (!user || profile?.id) {
+      setProfileTimedOut(false);
+      return;
+    }
+    const timer = setTimeout(() => setProfileTimedOut(true), PROFILE_HYDRATION_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [user, profile?.id]);
+
+  const profileReady = !!user && !!profile?.id;
 
   const { data: roleRecords, isLoading: isQueryLoading } = useQuery({
-    queryKey: ['user-role', user?.id],
+    queryKey: ['user-role', profile?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('user_roles')
         .select('role, organization_id')
-        .eq('user_id', user!.id);
+        .eq('user_id', profile!.id);
 
       if (error) {
         console.error('Error fetching user roles:', error);
@@ -58,9 +72,11 @@ export function useUserRole(): UserRoleData {
       }
       return data;
     },
-    enabled: !!user,
+    enabled: profileReady,
     staleTime: 1000 * 60 * 5,
   });
+
+  const isRoleLoading = authLoading || (!!user && !profile?.id && !profileTimedOut) || (profileReady && isQueryLoading);
 
   return useMemo<UserRoleData>(() => {
     if (!user) {
@@ -72,7 +88,7 @@ export function useUserRole(): UserRoleData {
       };
     }
 
-    if (isQueryLoading) {
+    if (isRoleLoading) {
       const cachedRole = typeof window !== 'undefined'
         ? (localStorage.getItem('tenexa-cached-role') as AppRole | null)
         : null;
@@ -118,7 +134,7 @@ export function useUserRole(): UserRoleData {
       isProjectManager, isFinanceManager, isManager, isTeamLead,
       isEmployee, isLoading: false,
     };
-  }, [user, profile, roleRecords, isQueryLoading]);
+  }, [user, profile, roleRecords, isRoleLoading]);
 }
 
 export function useIsSuperAdmin(): { isSuperAdmin: boolean; isLoading: boolean } {
