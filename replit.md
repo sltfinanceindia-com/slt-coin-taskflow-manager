@@ -40,3 +40,11 @@ The following are stored as Replit environment variables:
 - Removed `componentTagger()` plugin (Lovable-specific)
 - Supabase credentials moved from hardcoded `.env` to Replit environment variables
 - `.env` added to `.gitignore`
+
+## Guided Product Tour
+- **Package**: react-joyride for interactive step-by-step tooltips
+- **Tour config**: `src/config/tourSteps.ts` — role-based step definitions using actual navigation `data-tab-url` selectors
+- **Tour state**: `src/hooks/useTour.tsx` — TourStateProvider with localStorage persistence per user ID
+- **Components**: `src/components/tour/WelcomeDialog.tsx` (first-login welcome modal), `src/components/tour/GuidedTour.tsx` (Joyride wrapper)
+- **Integration**: Mounted inside BrowserRouter in `src/App.tsx`, gated to `/dashboard` route only
+- **Restart**: "Restart Tour" button in `src/components/ProfileDashboard.tsx`

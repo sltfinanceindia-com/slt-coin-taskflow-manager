@@ -17,6 +17,9 @@ import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { ContentProtection } from "@/components/ContentProtection";
 import SplashScreen from "@/components/SplashScreen";
 import { useVisibilityHandler } from '@/hooks/useVisibilityHandler';
+import { TourStateProvider } from "@/hooks/useTour";
+import { GuidedTour } from "@/components/tour/GuidedTour";
+import { WelcomeDialog } from "@/components/tour/WelcomeDialog";
 
 // Eagerly loaded public pages (small, critical path)
 import Landing from "./pages/Landing";
@@ -172,6 +175,7 @@ function AppContent() {
 
   return (
     <ContentProtection>
+      <TourStateProvider userId={user?.id}>
       <TooltipProvider>
         <ThemeApplier />
         <SkipLink />
@@ -180,6 +184,8 @@ function AppContent() {
         <PWAInstallPrompt />
         {user && <UnifiedAssistant />}
       <BrowserRouter>
+        {user && <WelcomeDialog />}
+        {user && <GuidedTour />}
         <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Public Routes */}
@@ -256,6 +262,7 @@ function AppContent() {
         </Suspense>
       </BrowserRouter>
     </TooltipProvider>
+    </TourStateProvider>
     </ContentProtection>
   );
 }

@@ -11,7 +11,8 @@ import { AvatarUpload } from '@/components/AvatarUpload';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole, type AppRole } from '@/hooks/useUserRole';
-import { Coins, Clock, Target, User, Calendar, Award, ArrowLeft } from 'lucide-react';
+import { Coins, Clock, Target, User, Calendar, Award, ArrowLeft, RotateCcw } from 'lucide-react';
+import { useTour } from '@/hooks/useTour';
 
 const roleDisplayNames: Record<AppRole, string> = {
   super_admin: 'Super Administrator',
@@ -46,6 +47,7 @@ export function ProfileDashboard() {
   const { profile: currentProfile } = useAuth();
   const { profile, stats, updateProfile, isUpdating } = useProfile();
   const { role } = useUserRole();
+  const { resetTour } = useTour();
   const [isEditing, setIsEditing] = useState(false);
   
   // Use role from useUserRole (authoritative) or fallback
@@ -209,6 +211,30 @@ export function ProfileDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Quick Actions */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium">Guided Tour</p>
+                <p className="text-xs text-muted-foreground">Restart the platform walkthrough to explore features</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  resetTour();
+                  navigate('/dashboard');
+                }}
+                data-testid="button-restart-tour"
+              >
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Restart Tour
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Profile Details */}
         <Tabs defaultValue="personal" className="space-y-4">

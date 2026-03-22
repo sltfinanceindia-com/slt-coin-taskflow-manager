@@ -74,8 +74,8 @@ export default function ModernDashboard() {
     switch (activeTab) {
       case 'overview':
         return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-end gap-2">
+          <div className="space-y-6" data-tour="dashboard-overview">
+            <div className="flex items-center justify-end gap-2" data-tour="dashboard-builder">
               <DashboardBuilder />
             </div>
             <EnhancedDashboardWidgets />
