@@ -13,7 +13,6 @@ import {
   Plus, 
   Save, 
   Play, 
-  Download, 
   Calendar,
   BarChart3,
   PieChart,
@@ -26,9 +25,13 @@ import {
   Mail,
   Trash2,
   Copy,
-  Eye
+  Eye,
+  FileSpreadsheet
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { fetchReportData, type ReportData, type ReportType, type DateRange } from "./ReportDataFetcher";
+import { exportToExcel, generatePDFReport } from "@/lib/export";
 
 interface ReportColumn {
   id: string;
@@ -64,6 +67,7 @@ const savedReports: SavedReport[] = [
 ];
 
 export function CustomReportBuilder() {
+  const { profile } = useAuth();
   const [reportName, setReportName] = useState("");
   const [reportType, setReportType] = useState("tasks");
   const [columns, setColumns] = useState<ReportColumn[]>(availableColumns);
@@ -71,6 +75,9 @@ export function CustomReportBuilder() {
   const [dateRange, setDateRange] = useState("last_30_days");
   const [isScheduled, setIsScheduled] = useState(false);
   const [scheduleFrequency, setScheduleFrequency] = useState("weekly");
+  const [reportData, setReportData] = useState<ReportData | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const toggleColumn = (id: string) => {
     setColumns(prev => 
@@ -88,12 +95,72 @@ export function CustomReportBuilder() {
     toast.success("Report saved successfully!");
   };
 
-  const handleRunReport = () => {
-    toast.success("Report is being generated...");
+  const handleRunReport = async () => {
+    if (!profile?.organization_id) {
+      toast.error("Organization not found");
+      return;
+    }
+    setIsRunning(true);
+    try {
+      const data = await fetchReportData({
+        reportType: reportType as ReportType,
+        dateRange: dateRange as DateRange,
+        organizationId: profile.organization_id,
+      });
+      setReportData(data);
+      toast.success(`Report generated with ${data.rows.length} records`);
+    } catch {
+      toast.error("Failed to generate report");
+    } finally {
+      setIsRunning(false);
+    }
   };
 
-  const handleExport = (format: string) => {
-    toast.success(`Exporting report as ${format.toUpperCase()}...`);
+  const getExportData = () => {
+    if (!reportData) return { columns: [] as { key: string; label: string }[], data: [] as Record<string, any>[] };
+    const visibleCols = columns.filter(c => c.visible);
+    const exportColumns = reportData.columns.map((colLabel, i) => {
+      const matchedCol = visibleCols.find(vc => vc.name === colLabel);
+      const key = matchedCol?.field || colLabel.toLowerCase().replace(/\s+/g, '_');
+      return { key, label: colLabel };
+    });
+    return { columns: exportColumns, data: reportData.rows };
+  };
+
+  const handleExport = async (format: string) => {
+    if (!reportData || reportData.rows.length === 0) {
+      toast.error("Run the report first to generate data for export");
+      return;
+    }
+    setIsExporting(true);
+    try {
+      const { columns: exportCols, data } = getExportData();
+      const exportFilename = reportName.trim() || `${reportType}_report`;
+
+      if (format === 'excel') {
+        const result = exportToExcel(data, exportFilename, {
+          columns: exportCols,
+          organizationName: profile?.organization_id ? 'Organization Report' : undefined,
+        });
+        if (result.success) toast.success(result.message);
+        else toast.error(result.message);
+      } else if (format === 'pdf') {
+        const result = generatePDFReport({
+          title: reportName.trim() || `${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report`,
+          columns: exportCols,
+          data,
+          summary: reportData.summary ? Object.fromEntries(
+            Object.entries(reportData.summary).map(([k, v]) => [k.replace(/([A-Z])/g, ' $1').trim(), v])
+          ) : undefined,
+        });
+        if (result.success) toast.success(result.message);
+        else toast.error(result.message);
+      }
+    } catch {
+      toast.error(`Failed to export as ${format.toUpperCase()}`);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -104,12 +171,12 @@ export function CustomReportBuilder() {
           <p className="text-muted-foreground">Create, customize, and schedule reports</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => handleExport("pdf")}>
-            <Download className="h-4 w-4 mr-2" />
+          <Button variant="outline" onClick={() => handleExport("pdf")} disabled={isExporting || !reportData} data-testid="button-export-report-pdf">
+            <FileText className="h-4 w-4 mr-2" />
             Export PDF
           </Button>
-          <Button variant="outline" onClick={() => handleExport("excel")}>
-            <Download className="h-4 w-4 mr-2" />
+          <Button variant="outline" onClick={() => handleExport("excel")} disabled={isExporting || !reportData} data-testid="button-export-report-excel">
+            <FileSpreadsheet className="h-4 w-4 mr-2" />
             Export Excel
           </Button>
         </div>
@@ -279,9 +346,9 @@ export function CustomReportBuilder() {
                 </div>
 
                 <div className="flex gap-2 pt-4">
-                  <Button onClick={handleRunReport} className="bg-primary">
+                  <Button onClick={handleRunReport} className="bg-primary" disabled={isRunning} data-testid="button-run-report">
                     <Play className="h-4 w-4 mr-2" />
-                    Run Report
+                    {isRunning ? 'Generating...' : 'Run Report'}
                   </Button>
                   <Button variant="outline" onClick={handleSaveReport}>
                     <Save className="h-4 w-4 mr-2" />
@@ -302,13 +369,31 @@ export function CustomReportBuilder() {
               <CardContent>
                 <div className="space-y-4">
                   <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                    {chartType === "bar" && <BarChart3 className="h-12 w-12 text-muted-foreground" />}
-                    {chartType === "pie" && <PieChart className="h-12 w-12 text-muted-foreground" />}
-                    {chartType === "line" && <LineChart className="h-12 w-12 text-muted-foreground" />}
-                    {chartType === "table" && <Table className="h-12 w-12 text-muted-foreground" />}
+                    {reportData ? (
+                      <div className="text-center p-4">
+                        <p className="text-2xl font-bold">{reportData.rows.length}</p>
+                        <p className="text-sm text-muted-foreground">records found</p>
+                        {reportData.summary && Object.keys(reportData.summary).length > 0 && (
+                          <div className="mt-2 space-y-1">
+                            {Object.entries(reportData.summary).slice(0, 3).map(([key, val]) => (
+                              <p key={key} className="text-xs text-muted-foreground">
+                                {key.replace(/([A-Z])/g, ' $1').trim()}: <span className="font-medium">{val}</span>
+                              </p>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <>
+                        {chartType === "bar" && <BarChart3 className="h-12 w-12 text-muted-foreground" />}
+                        {chartType === "pie" && <PieChart className="h-12 w-12 text-muted-foreground" />}
+                        {chartType === "line" && <LineChart className="h-12 w-12 text-muted-foreground" />}
+                        {chartType === "table" && <Table className="h-12 w-12 text-muted-foreground" />}
+                      </>
+                    )}
                   </div>
                   <div className="text-sm text-muted-foreground text-center">
-                    Run the report to see preview
+                    {reportData ? `${reportData.columns.length} columns, ${reportData.rows.length} rows` : 'Run the report to see preview'}
                   </div>
                   <div className="space-y-2">
                     <p className="text-xs font-medium text-muted-foreground">Selected Columns:</p>

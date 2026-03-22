@@ -10,15 +10,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Search, Users, Grid3X3, List, Mail, MessageSquare, 
-  Coins, Calendar, Building2, User, Download, ShieldAlert, Home
+  Coins, Calendar, Building2, User, ShieldAlert, Home
 } from 'lucide-react';
 import { useEmployeeDirectory } from '@/hooks/useEmployeeDirectory';
 import { useAchievements } from '@/hooks/useAchievements';
 import { useWFHMode } from '@/hooks/useWFHMode';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { exportToCSV } from '@/lib/export';
-import { toast } from 'sonner';
+import { ExportDropdown } from '@/components/ExportDropdown';
 
 interface EmployeeProfileModalProps {
   employee: any;
@@ -177,24 +176,26 @@ export function EmployeeDirectory() {
             </CardTitle>
             <div className="flex items-center gap-2">
               {canExport && (
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => {
-                    exportToCSV(filteredEmployees.map(e => ({
-                      Name: e.full_name,
-                      Email: e.email,
-                      Role: e.role,
-                      Department: e.department?.name || '',
-                      'Total Coins': e.total_coins || 0,
-                      'Joined': e.created_at ? format(new Date(e.created_at), 'yyyy-MM-dd') : '',
-                    })), 'employee_directory');
-                    toast.success('Exported employee directory');
-                  }}
-                >
-                  <Download className="h-4 w-4" />
-                </Button>
+                <ExportDropdown
+                  data={filteredEmployees.map(e => ({
+                    Name: e.full_name,
+                    Email: e.email,
+                    Role: e.role,
+                    Department: e.department?.name || '',
+                    'Total Coins': e.total_coins || 0,
+                    Joined: e.created_at ? format(new Date(e.created_at), 'yyyy-MM-dd') : '',
+                  }))}
+                  columns={[
+                    { key: 'Name', label: 'Name' },
+                    { key: 'Email', label: 'Email' },
+                    { key: 'Role', label: 'Role' },
+                    { key: 'Department', label: 'Department' },
+                    { key: 'Total Coins', label: 'Total Coins' },
+                    { key: 'Joined', label: 'Joined' },
+                  ]}
+                  filename="employee_directory"
+                  title="Employee Directory"
+                />
               )}
               <Button
                 variant={viewMode === 'grid' ? 'default' : 'outline'}

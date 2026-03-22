@@ -19,7 +19,7 @@ import { format, startOfWeek, endOfWeek, addDays, parseISO, isWithinInterval, st
 import { TimesheetSummaryCards } from './TimesheetSummaryCards';
 import { EnhancedTimesheetEntry } from './EnhancedTimesheetEntry';
 import { WeeklyCalendarGrid } from './WeeklyCalendarGrid';
-import { exportToCSV } from '@/lib/export';
+import { ExportDropdown } from '@/components/ExportDropdown';
 import { 
   Clock, 
   Plus, 
@@ -30,7 +30,6 @@ import {
   Square,
   ChevronLeft,
   ChevronRight,
-  Download,
   Upload,
   Filter,
   CalendarIcon,
@@ -334,29 +333,6 @@ export function TimesheetManagement() {
     };
   }, [filteredEntries]);
 
-  // Export to CSV
-  const handleExportCSV = () => {
-    const exportData = filteredEntries.map(entry => ({
-      Date: format(parseISO(entry.work_date), 'yyyy-MM-dd'),
-      Project: entry.project?.name || '-',
-      Task: entry.task ? `${entry.task.task_number}: ${entry.task.title}` : '-',
-      'Regular Hours': entry.regular_hours,
-      'Overtime Hours': entry.overtime_hours,
-      'Total Hours': (entry.regular_hours || 0) + (entry.overtime_hours || 0),
-      Type: entry.hours_type || 'regular',
-      Billable: entry.is_billable ? 'Yes' : 'No',
-      'Billing Rate': entry.billing_rate || 0,
-      Description: entry.description || '',
-    }));
-
-    const result = exportToCSV(exportData, `timesheet-export-${format(new Date(), 'yyyy-MM-dd')}`);
-    if (result.success) {
-      toast({ title: 'Export successful', description: `Exported ${result.recordCount || 0} entries` });
-    } else {
-      toast({ title: 'Export failed', description: result.message, variant: 'destructive' });
-    }
-  };
-
   const clearFilters = () => {
     setFilterDateRange({ from: startOfMonth(subMonths(new Date(), 1)), to: new Date() });
     setFilterEmployee('all');
@@ -410,14 +386,39 @@ export function TimesheetManagement() {
             <Filter className="h-4 w-4 mr-2" />
             Filters
           </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleExportCSV}
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export CSV
-          </Button>
+          <ExportDropdown
+            data={filteredEntries.map(entry => ({
+              Date: format(parseISO(entry.work_date), 'yyyy-MM-dd'),
+              Project: entry.project?.name || '-',
+              Task: entry.task ? `${entry.task.task_number}: ${entry.task.title}` : '-',
+              'Regular Hours': entry.regular_hours,
+              'Overtime Hours': entry.overtime_hours,
+              'Total Hours': (entry.regular_hours || 0) + (entry.overtime_hours || 0),
+              Type: entry.hours_type || 'regular',
+              Billable: entry.is_billable ? 'Yes' : 'No',
+              'Billing Rate': entry.billing_rate || 0,
+              Description: entry.description || '',
+            }))}
+            columns={[
+              { key: 'Date', label: 'Date' },
+              { key: 'Project', label: 'Project' },
+              { key: 'Task', label: 'Task' },
+              { key: 'Regular Hours', label: 'Regular Hours' },
+              { key: 'Overtime Hours', label: 'Overtime Hours' },
+              { key: 'Total Hours', label: 'Total Hours' },
+              { key: 'Type', label: 'Type' },
+              { key: 'Billable', label: 'Billable' },
+              { key: 'Billing Rate', label: 'Billing Rate' },
+              { key: 'Description', label: 'Description' },
+            ]}
+            filename="timesheet_summary"
+            title="Timesheet Summary"
+            summary={{
+              'Total Hours': summary.totalHours.toFixed(1),
+              'Billable Hours': summary.billableHours.toFixed(1),
+              'Overtime': summary.overtimeHours.toFixed(1),
+            }}
+          />
           <Button 
             variant="outline" 
             size="sm"

@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Users, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
+import { ExportDropdown } from '@/components/ExportDropdown';
 
 export function AttendanceReports() {
   const { profile } = useAuth();
@@ -54,16 +55,45 @@ export function AttendanceReports() {
           <h2 className="text-2xl font-bold tracking-tight">Attendance Reports</h2>
           <p className="text-muted-foreground">Organization attendance summary and analytics</p>
         </div>
-        <Select value={period} onValueChange={setPeriod}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="current">Current Month</SelectItem>
-            <SelectItem value="last">Last Month</SelectItem>
-            <SelectItem value="2months">2 Months Ago</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <ExportDropdown
+            data={records.map((r: any) => ({
+              Employee: r.employee?.full_name || 'Unknown',
+              Date: r.attendance_date,
+              'Clock In': r.clock_in_time ? format(new Date(r.clock_in_time), 'HH:mm') : '-',
+              'Clock Out': r.clock_out_time ? format(new Date(r.clock_out_time), 'HH:mm') : '-',
+              Hours: r.total_hours?.toFixed(1) || '-',
+              Status: r.status || 'unknown',
+            }))}
+            columns={[
+              { key: 'Employee', label: 'Employee' },
+              { key: 'Date', label: 'Date' },
+              { key: 'Clock In', label: 'Clock In' },
+              { key: 'Clock Out', label: 'Clock Out' },
+              { key: 'Hours', label: 'Hours' },
+              { key: 'Status', label: 'Status' },
+            ]}
+            filename="attendance_report"
+            title="Attendance Report"
+            summary={{
+              'Total Records': totalRecords,
+              Present: presentCount,
+              'Late Arrivals': lateCount,
+              'Avg Hours': avgHours,
+            }}
+            disabled={isLoading}
+          />
+          <Select value={period} onValueChange={setPeriod}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="current">Current Month</SelectItem>
+              <SelectItem value="last">Last Month</SelectItem>
+              <SelectItem value="2months">2 Months Ago</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">

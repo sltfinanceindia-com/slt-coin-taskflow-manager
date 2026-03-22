@@ -18,7 +18,6 @@ import { format } from 'date-fns';
 import { 
   Receipt, 
   Plus, 
-  Download, 
   CheckCircle, 
   Clock, 
   XCircle,
@@ -29,6 +28,7 @@ import {
 } from 'lucide-react';
 import { ReceiptUpload } from './ReceiptUpload';
 import { BulkExpenseApproval } from './BulkExpenseApproval';
+import { ExportDropdown } from '@/components/ExportDropdown';
 
 const EXPENSE_CATEGORIES = [
   { value: 'travel', label: 'Travel' },
@@ -170,10 +170,35 @@ export function ExpenseManagement() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
+          <ExportDropdown
+            data={(expenses || []).map(e => ({
+              'Claim #': e.claim_number || '',
+              Employee: (e.employee as any)?.full_name || '',
+              Title: e.title,
+              Category: e.category,
+              Date: format(new Date(e.expense_date), 'yyyy-MM-dd'),
+              Amount: Number(e.amount),
+              Status: e.status,
+            }))}
+            columns={[
+              { key: 'Claim #', label: 'Claim #' },
+              { key: 'Employee', label: 'Employee' },
+              { key: 'Title', label: 'Title' },
+              { key: 'Category', label: 'Category' },
+              { key: 'Date', label: 'Date' },
+              { key: 'Amount', label: 'Amount (₹)' },
+              { key: 'Status', label: 'Status' },
+            ]}
+            filename="expense_report"
+            title="Expense Report"
+            summary={{
+              'Total Claims': expenses?.length || 0,
+              'Total Amount': `₹${totalExpenses.toLocaleString()}`,
+              'Approved': `₹${approvedExpenses.toLocaleString()}`,
+              'Pending': pendingCount,
+            }}
+            disabled={isLoading}
+          />
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
               <Button size="sm">
