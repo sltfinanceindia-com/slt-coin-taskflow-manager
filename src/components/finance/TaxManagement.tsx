@@ -13,7 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { Receipt, Plus, Calculator, FileText, Download, Users, Percent, IndianRupee } from 'lucide-react';
+import { Receipt, Plus, Calculator, FileText, Download, Users, Percent, IndianRupee, AlertCircle } from 'lucide-react';
 
 interface TaxDeclaration {
   id: string;
@@ -58,7 +58,7 @@ export function TaxManagement() {
     enabled: !!profile?.organization_id,
   });
 
-  const { data: declarations, isLoading } = useQuery({
+  const { data: declarations, isLoading, error: queryError } = useQuery({
     queryKey: ['tax-declarations', profile?.organization_id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -217,7 +217,7 @@ export function TaxManagement() {
           <Card>
             <CardHeader><CardTitle>Tax Declarations</CardTitle><CardDescription>Employee investment declarations for tax saving</CardDescription></CardHeader>
             <CardContent>
-              {isLoading ? <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div> : declarations && declarations.length > 0 ? (
+              {queryError ? <div className="text-center py-12" data-testid="error-tax"><AlertCircle className="h-12 w-12 mx-auto mb-4 text-destructive opacity-70" /><p className="font-medium">Failed to load tax declarations</p><p className="text-sm text-muted-foreground mt-1">Please try again later.</p></div> : isLoading ? <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div> : declarations && declarations.length > 0 ? (
                 <div className="overflow-x-auto"><Table>
                   <TableHeader><TableRow><TableHead>Employee</TableHead><TableHead>FY</TableHead><TableHead>Regime</TableHead><TableHead>80C</TableHead><TableHead>80D</TableHead><TableHead>Total</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
                   <TableBody>

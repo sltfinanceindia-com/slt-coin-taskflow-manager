@@ -100,22 +100,34 @@ export function VideoProgressTracker({
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-4 space-y-4">
-        {/* Video placeholder - in real app this would be actual video player */}
         <div className="relative aspect-video bg-muted rounded-lg overflow-hidden flex items-center justify-center">
           {isCompleted && (
             <div className="absolute top-2 right-2 z-10">
-              <Badge className="bg-primary text-primary-foreground gap-1">
+              <Badge className="bg-primary text-primary-foreground gap-1" data-testid="badge-video-completed">
                 <CheckCircle className="h-3 w-3" />
                 Completed
               </Badge>
             </div>
           )}
-          <div className="text-center p-4">
-            <div className="text-6xl mb-4">{isPlaying ? '▶️' : '⏸️'}</div>
-            <p className="text-sm text-muted-foreground">
-              {videoUrl ? 'Video player simulation' : 'No video URL provided'}
-            </p>
-          </div>
+          {videoUrl ? (
+            <div className="text-center p-4">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                {isPlaying ? (
+                  <Pause className="h-8 w-8 text-primary" />
+                ) : (
+                  <Play className="h-8 w-8 text-primary ml-1" />
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {isPlaying ? 'Playing...' : currentPosition > 0 ? 'Paused' : 'Ready to play'}
+              </p>
+            </div>
+          ) : (
+            <div className="text-center p-4">
+              <Play className="h-10 w-10 text-muted-foreground/50 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">No video URL provided</p>
+            </div>
+          )}
         </div>
 
         {/* Progress bar */}

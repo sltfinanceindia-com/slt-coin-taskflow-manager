@@ -18,8 +18,8 @@ export interface TabConfig {
 }
 
 /**
- * Registry of all dashboard tab components
- * Components are lazy-loaded to reduce initial bundle size
+ * Registry of all dashboard tab components.
+ * Components are lazy-loaded to reduce initial bundle size.
  */
 export const tabRegistry: Record<string, TabConfig> = {
   // Main tabs - inline rendering (no lazy loading for frequently used)

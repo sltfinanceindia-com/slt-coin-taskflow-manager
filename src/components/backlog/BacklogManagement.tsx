@@ -12,7 +12,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
-import { Layers, Plus, GripVertical, Star, AlertTriangle, Tag, User } from 'lucide-react';
+import { Layers, Plus, GripVertical, Star, AlertTriangle, AlertCircle, Tag, User } from 'lucide-react';
 
 const PRIORITY_OPTIONS = [
   { value: 'urgent', label: 'Critical', color: 'bg-red-100 text-red-800' },
@@ -29,7 +29,7 @@ export function BacklogManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [newItem, setNewItem] = useState<{ title: string; description: string; story_points: string; priority: 'high' | 'low' | 'medium' | 'urgent'; project_id: string }>({ title: '', description: '', story_points: '0', priority: 'medium', project_id: '' });
 
-  const { data: backlogItems, isLoading } = useQuery({
+  const { data: backlogItems, isLoading, error: queryError } = useQuery({
     queryKey: ['backlog-items', profile?.organization_id, filter],
     queryFn: async () => {
       let query = supabase.from('tasks').select('id, title, description, priority, status, created_at, assigned_to, project_id').eq('organization_id', profile?.organization_id).is('parent_task_id', null).order('created_at', { ascending: false });
@@ -120,7 +120,7 @@ export function BacklogManagement() {
 
       <Card><CardHeader><CardTitle>Product Backlog</CardTitle><CardDescription>Drag to reorder items</CardDescription></CardHeader>
         <CardContent>
-          {isLoading ? <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div> : filteredItems.length > 0 ? (
+          {queryError ? <div className="text-center py-12" data-testid="error-backlog"><AlertCircle className="h-12 w-12 mx-auto mb-4 text-destructive opacity-70" /><p className="font-medium">Failed to load backlog</p><p className="text-sm text-muted-foreground mt-1">Please try again later.</p></div> : isLoading ? <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div> : filteredItems.length > 0 ? (
             <DragDropContext onDragEnd={handleDragEnd}><Droppable droppableId="backlog">{(provided) => (
               <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
                 {filteredItems.map((item, index) => (

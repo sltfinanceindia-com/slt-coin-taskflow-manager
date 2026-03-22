@@ -4,7 +4,6 @@ import {
   Home, FileText, BookOpen, Calendar
 } from 'lucide-react';
 
-// Sprint Planning
 export function SprintsTab() {
   return (
     <FeaturePlaceholder

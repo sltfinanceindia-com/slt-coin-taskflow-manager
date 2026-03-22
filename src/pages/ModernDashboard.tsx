@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { DashboardBuilder } from '@/components/dashboard/DashboardBuilder';
 import { BreadcrumbNav, BreadcrumbItem } from '@/components/navigation/BreadcrumbNav';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { getNavGroupsForRole } from '@/config/navigation/index';
 import type { AppRole, NavItem } from '@/config/navigation/types';
 
@@ -204,16 +205,18 @@ export default function ModernDashboard() {
         if (tabConfig) {
           const TabComponent = tabConfig.component;
           return (
-            <Suspense fallback={
-              <div className="flex items-center justify-center py-20">
-                <div className="text-center">
-                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
-                  <p className="text-muted-foreground">Loading...</p>
+            <ErrorBoundary key={activeTab} fallbackMessage="This module encountered an error while loading. Please try switching tabs or refreshing the page.">
+              <Suspense fallback={
+                <div className="flex items-center justify-center py-20">
+                  <div className="text-center">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
+                    <p className="text-muted-foreground">Loading...</p>
+                  </div>
                 </div>
-              </div>
-            }>
-              <TabComponent />
-            </Suspense>
+              }>
+                <TabComponent />
+              </Suspense>
+            </ErrorBoundary>
           );
         }
         return <EnhancedDashboardWidgets />;
@@ -267,24 +270,26 @@ export default function ModernDashboard() {
           <main id="main-content" className="flex-1 overflow-y-auto overflow-x-hidden pb-20 md:pb-0" role="main">
             {/* Full-screen communication on mobile */}
             {activeTab === 'communication' && isMobile ? (
-              <Suspense fallback={
-                <div className="flex items-center justify-center py-20">
-                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                </div>
-              }>
-                {(() => {
-                  const tabConfig = getTabComponent('communication', isAdmin);
-                  if (tabConfig) {
-                    const TabComponent = tabConfig.component;
-                    return (
-                      <div className="h-full">
-                        <TabComponent />
-                      </div>
-                    );
-                  }
-                  return null;
-                })()}
-              </Suspense>
+              <ErrorBoundary fallbackMessage="Communication module encountered an error. Please try refreshing.">
+                <Suspense fallback={
+                  <div className="flex items-center justify-center py-20">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                  </div>
+                }>
+                  {(() => {
+                    const tabConfig = getTabComponent('communication', isAdmin);
+                    if (tabConfig) {
+                      const TabComponent = tabConfig.component;
+                      return (
+                        <div className="h-full">
+                          <TabComponent />
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+                </Suspense>
+              </ErrorBoundary>
             ) : (
               <div className="w-full max-w-none px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 lg:py-6">
                 {/* Breadcrumb Navigation */}

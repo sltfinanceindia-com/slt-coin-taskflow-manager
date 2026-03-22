@@ -25,6 +25,7 @@ export function SprintManagement() {
   const { 
     sprints, 
     isLoading, 
+    error: queryError,
     createSprint, 
     updateSprint, 
     deleteSprint 
@@ -178,7 +179,7 @@ export function SprintManagement() {
       <Card>
         <CardHeader><CardTitle>All Sprints</CardTitle><CardDescription>View and manage your team's sprints</CardDescription></CardHeader>
         <CardContent>
-          {isLoading ? <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div> : filteredSprints.length > 0 ? (
+          {queryError ? <div className="text-center py-12" data-testid="error-sprints"><AlertTriangle className="h-12 w-12 mx-auto mb-4 text-destructive opacity-70" /><p className="font-medium">Failed to load sprints</p><p className="text-sm text-muted-foreground mt-1">Please try again later.</p></div> : isLoading ? <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div> : filteredSprints.length > 0 ? (
             <Table>
               <TableHeader><TableRow><TableHead>Sprint</TableHead><TableHead>Duration</TableHead><TableHead>Progress</TableHead><TableHead>Status</TableHead><TableHead>Days Left</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
               <TableBody>

@@ -3,13 +3,13 @@ import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { ClipboardCheck, CheckCircle, XCircle } from 'lucide-react';
+import { ClipboardCheck, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
 export function AssessmentsList() {
   const { profile } = useAuth();
 
-  const { data: attempts, isLoading } = useQuery({
+  const { data: attempts, isLoading, error: queryError } = useQuery({
     queryKey: ['assessment-attempts', profile?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -33,7 +33,13 @@ export function AssessmentsList() {
         <CardDescription>View your assessment attempts and scores</CardDescription>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
+        {queryError ? (
+          <div className="text-center py-12" data-testid="error-assessments">
+            <AlertCircle className="h-12 w-12 mx-auto mb-4 text-destructive opacity-70" />
+            <p className="font-medium">Failed to load assessments</p>
+            <p className="text-sm text-muted-foreground mt-1">Please try again later.</p>
+          </div>
+        ) : isLoading ? (
           <div className="flex justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
           </div>

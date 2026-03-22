@@ -5,7 +5,6 @@ import {
   GitBranch, Inbox, Users, Building2
 } from 'lucide-react';
 
-// Tax Management
 export function TaxManagementTab() {
   return (
     <FeaturePlaceholder

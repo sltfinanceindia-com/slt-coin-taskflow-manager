@@ -69,9 +69,7 @@ export default function ForwardMessageDialog({
     setIsForwarding(true);
     try {
       await onForward(Array.from(selectedTargets));
-      toast.success(`Message forwarded to ${selectedTargets.size} ${selectedTargets.size === 1 ? 'recipient' : 'recipients'}`);
       setSelectedTargets(new Set());
-      onOpenChange(false);
     } catch (error) {
       toast.error('Failed to forward message');
     } finally {

@@ -12,7 +12,8 @@ import {
   Laugh,
   Frown,
   AlertCircle,
-  CheckCheck
+  CheckCheck,
+  Pencil
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -30,6 +31,7 @@ interface MessageActionsProps {
   isOwn: boolean;
   onReply?: () => void;
   onForward?: () => void;
+  onEdit?: () => void;
   onDelete?: (forEveryone: boolean) => void;
   onReact?: (emoji: string) => void;
   className?: string;
@@ -50,6 +52,7 @@ export default function MessageActions({
   isOwn,
   onReply,
   onForward,
+  onEdit,
   onDelete,
   onReact,
   className
@@ -121,12 +124,17 @@ export default function MessageActions({
             <Copy className="h-4 w-4 mr-2" />
             Copy
           </DropdownMenuItem>
+          {isOwn && onEdit && (
+            <DropdownMenuItem onClick={onEdit}>
+              <Pencil className="h-4 w-4 mr-2" />
+              Edit
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem>
             <Pin className="h-4 w-4 mr-2" />
             Pin message
           </DropdownMenuItem>
           
-          {/* More Reactions Submenu */}
           <DropdownMenuSeparator />
           <div className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
             React
@@ -147,22 +155,13 @@ export default function MessageActions({
           
           <DropdownMenuSeparator />
           {isOwn && (
-            <>
-              <DropdownMenuItem 
-                className="text-destructive"
-                onClick={() => handleDelete(false)}
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete for me
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                className="text-destructive"
-                onClick={() => handleDelete(true)}
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete for everyone
-              </DropdownMenuItem>
-            </>
+            <DropdownMenuItem 
+              className="text-destructive"
+              onClick={() => handleDelete(true)}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete message
+            </DropdownMenuItem>
           )}
         </DropdownMenuContent>
       </DropdownMenu>

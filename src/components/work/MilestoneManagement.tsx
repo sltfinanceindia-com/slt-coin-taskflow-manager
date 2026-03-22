@@ -14,7 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { format, differenceInDays, isPast } from 'date-fns';
-import { Target, Plus, CheckCircle, Clock, AlertTriangle, Calendar, Trash2, Edit } from 'lucide-react';
+import { Target, Plus, CheckCircle, Clock, AlertTriangle, AlertCircle, Calendar, Trash2, Edit } from 'lucide-react';
 
 interface Milestone {
   id: string;
@@ -53,7 +53,7 @@ export function MilestoneManagement() {
     enabled: !!profile?.organization_id,
   });
 
-  const { data: milestones, isLoading } = useQuery({
+  const { data: milestones, isLoading, error: queryError } = useQuery({
     queryKey: ['milestones', profile?.organization_id, filter],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -205,7 +205,7 @@ export function MilestoneManagement() {
       <Card>
         <CardHeader><CardTitle>Milestones</CardTitle><CardDescription>All project milestones</CardDescription></CardHeader>
         <CardContent>
-          {isLoading ? <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div> : filteredMilestones.length > 0 ? (
+          {queryError ? <div className="text-center py-12" data-testid="error-milestones"><AlertCircle className="h-12 w-12 mx-auto mb-4 text-destructive opacity-70" /><p className="font-medium">Failed to load milestones</p><p className="text-sm text-muted-foreground mt-1">Please try again later.</p></div> : isLoading ? <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div> : filteredMilestones.length > 0 ? (
             <Table>
               <TableHeader><TableRow><TableHead>Milestone</TableHead><TableHead>Project</TableHead><TableHead>Due Date</TableHead><TableHead>Progress</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
               <TableBody>

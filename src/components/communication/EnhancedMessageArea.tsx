@@ -62,12 +62,13 @@ export default function EnhancedMessageArea({
 }: EnhancedMessageAreaProps) {
   const { profile } = useAuth();
 
-  // State management
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showForwardDialog, setShowForwardDialog] = useState(false);
   const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
   const [forwardMessage, setForwardMessage] = useState<Message | null>(null);
-  const [messageReactions, setMessageReactions] = useState<{[key: string]: any[]}>({});
+  const [messageReactions, setMessageReactions] = useState<{[key: string]: string[]}>({});
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState('');
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -168,47 +169,159 @@ export default function EnhancedMessageArea({
     }
   };
 
-  /**
-   * Handle message reaction
-   */
   const handleReaction = (messageId: string, emoji: string) => {
     setMessageReactions(prev => ({
       ...prev,
       [messageId]: [...(prev[messageId] || []), emoji]
     }));
     toast.success('Reaction added');
-    // TODO: Save reaction to database
   };
 
-  /**
-   * Handle message reply
-   */
   const handleReply = (message: Message) => {
     setReplyToMessage(message);
   };
 
-  /**
-   * Handle message forward
-   */
   const handleForward = (message: Message) => {
     setForwardMessage(message);
     setShowForwardDialog(true);
+  };
+
+  const handleEditStart = (message: Message) => {
+    setEditingMessageId(message.id);
+    setEditContent(message.content);
+  };
+
+  const handleEditSave = async () => {
+    if (!editingMessageId || !editContent.trim() || !profile?.id) return;
+
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .update({ content: editContent.trim(), is_edited: true })
+        .eq('id', editingMessageId)
+        .eq('sender_id', profile.id);
+
+      if (error) {
+        toast.error('Failed to edit message');
+        return;
+      }
+      toast.success('Message updated');
+    } catch {
+      toast.error('Failed to edit message');
+    }
+    setEditingMessageId(null);
+    setEditContent('');
+  };
+
+  const handleEditCancel = () => {
+    setEditingMessageId(null);
+    setEditContent('');
   };
 
   /**
    * Handle message delete
    */
   const handleDelete = async (messageId: string) => {
-    // TODO: Implement delete logic
-    toast.success('Message deleted');
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .update({ content: '[This message was deleted]', is_edited: true })
+        .eq('id', messageId)
+        .eq('sender_id', profile?.id);
+
+      if (error) {
+        console.error('Error deleting message:', error);
+        toast.error('Failed to delete message');
+        return;
+      }
+      toast.success('Message deleted');
+    } catch (err) {
+      console.error('Error deleting message:', err);
+      toast.error('Failed to delete message');
+    }
   };
 
   /**
    * Handle forward to targets
    */
   const handleForwardToTargets = async (targetIds: string[]) => {
-    // TODO: Implement forward logic
-    console.log('Forwarding to:', targetIds);
+    if (!forwardMessage || !profile?.id) return;
+
+    let successCount = 0;
+    let failedCount = 0;
+
+    for (const targetId of targetIds) {
+      try {
+        const { data: channels, error: channelError } = await supabase
+          .from('communication_channels')
+          .select('id')
+          .eq('is_direct_message', true)
+          .contains('participant_ids', [profile.id, targetId])
+          .limit(1);
+
+        if (channelError) {
+          failedCount++;
+          continue;
+        }
+
+        let channelId: string;
+
+        if (channels && channels.length > 0) {
+          channelId = channels[0].id;
+        } else {
+          const { data: newChannel, error: createError } = await supabase
+            .from('communication_channels')
+            .insert({
+              name: `dm-${profile.id}-${targetId}`,
+              is_direct_message: true,
+              participant_ids: [profile.id, targetId],
+              organization_id: profile.organization_id,
+              created_by: profile.id,
+            })
+            .select('id')
+            .single();
+
+          if (createError || !newChannel) {
+            failedCount++;
+            continue;
+          }
+          channelId = newChannel.id;
+        }
+
+        const { error: insertError } = await supabase.from('messages').insert({
+          channel_id: channelId,
+          sender_id: profile.id,
+          content: `[Forwarded] ${forwardMessage.content}`,
+          message_type: 'text',
+          organization_id: profile.organization_id,
+        });
+
+        if (insertError) {
+          failedCount++;
+          continue;
+        }
+
+        await supabase
+          .from('communication_channels')
+          .update({ last_message_at: new Date().toISOString() })
+          .eq('id', channelId);
+
+        successCount++;
+      } catch {
+        failedCount++;
+      }
+    }
+
+    if (successCount > 0 && failedCount === 0) {
+      toast.success(`Message forwarded to ${successCount} recipient(s)`);
+    } else if (successCount > 0 && failedCount > 0) {
+      toast.warning(`Forwarded to ${successCount} recipient(s), ${failedCount} failed`);
+    } else {
+      toast.error('Failed to forward message. No active conversations found with selected recipients.');
+    }
+
+    setShowForwardDialog(false);
+    setForwardMessage(null);
   };
 
 
@@ -292,7 +405,29 @@ export default function EnhancedMessageArea({
             "bg-card border rounded-lg px-3 py-2 max-w-md break-words relative",
             isOwn ? "bg-primary text-primary-foreground" : "bg-muted"
           )}>
-            <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+            {editingMessageId === message.id ? (
+              <div className="space-y-2">
+                <textarea
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  className="w-full text-sm bg-background text-foreground border rounded p-2 resize-none min-h-[60px]"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleEditSave();
+                    }
+                    if (e.key === 'Escape') handleEditCancel();
+                  }}
+                />
+                <div className="flex gap-1 justify-end">
+                  <Button size="sm" variant="ghost" className="h-6 text-xs" onClick={handleEditCancel}>Cancel</Button>
+                  <Button size="sm" className="h-6 text-xs" onClick={handleEditSave}>Save</Button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+            )}
             
             {/* File Attachments Display */}
             {(message as any).file_attachments && (message as any).file_attachments.length > 0 && (
@@ -359,6 +494,7 @@ export default function EnhancedMessageArea({
               isOwn={isOwn}
               onReply={() => handleReply(message)}
               onForward={() => handleForward(message)}
+              onEdit={() => handleEditStart(message)}
               onDelete={() => handleDelete(message.id)}
               onReact={(emoji) => handleReaction(message.id, emoji)}
               className="mt-2"

@@ -3,12 +3,12 @@ import { Progress } from '@/components/ui/progress';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { PlayCircle, CheckCircle } from 'lucide-react';
+import { PlayCircle, AlertCircle } from 'lucide-react';
 
 export function TrainingProgressList() {
   const { profile } = useAuth();
 
-  const { data: videos, isLoading } = useQuery({
+  const { data: videos, isLoading, error: queryError } = useQuery({
     queryKey: ['training-videos-progress', profile?.organization_id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -29,7 +29,13 @@ export function TrainingProgressList() {
         <CardDescription>Track your video completion progress</CardDescription>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
+        {queryError ? (
+          <div className="text-center py-12" data-testid="error-training-progress">
+            <AlertCircle className="h-12 w-12 mx-auto mb-4 text-destructive opacity-70" />
+            <p className="font-medium">Failed to load training progress</p>
+            <p className="text-sm text-muted-foreground mt-1">Please try again later.</p>
+          </div>
+        ) : isLoading ? (
           <div className="flex justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
           </div>
