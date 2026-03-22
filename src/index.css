@@ -1176,20 +1176,6 @@ html, body, #root {
   max-width: 100vw;
 }
 
-@layer base {
-  /* All tables within the app get horizontal scroll containment */
-  table {
-    display: block;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    max-width: 100%;
-  }
-  
-  thead, tbody, tfoot {
-    display: table;
-    width: 100%;
-  }
-}
 
 @layer components {
   /* Dialog/sheet content - ensure forms don't overflow on mobile */
