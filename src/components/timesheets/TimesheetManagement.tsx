@@ -539,7 +539,7 @@ export function TimesheetManagement() {
       {/* Week Navigation */}
       <Card>
         <CardContent className="py-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <Button variant="ghost" size="icon" onClick={goToPreviousWeek}>
               <ChevronLeft className="h-4 w-4" />
             </Button>

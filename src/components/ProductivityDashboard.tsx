@@ -145,20 +145,20 @@ export function ProductivityDashboard({ userId }: ProductivityDashboardProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-50 mb-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+        <div className="min-w-0">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-50 mb-1 sm:mb-2">
             {isOwnDashboard ? 'Your Productivity' : 'Employee Productivity'}
           </h2>
-          <p className="text-base text-gray-600 dark:text-gray-400">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
             Track productivity metrics and performance insights
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Badge variant={productivityCard.variant}>
             {productivityCard.text}
           </Badge>
-          <span className={`text-2xl font-bold ${getScoreColor(productivityScore)}`}>
+          <span className={`text-xl sm:text-2xl font-bold ${getScoreColor(productivityScore)}`}>
             {productivityScore}%
           </span>
         </div>

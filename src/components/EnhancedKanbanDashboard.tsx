@@ -371,7 +371,7 @@ export function EnhancedKanbanDashboard() {
           </div>
 
           {/* Quick Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">

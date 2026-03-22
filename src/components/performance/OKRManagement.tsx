@@ -414,7 +414,7 @@ function ObjectiveCard({ objective, onUpdate, onDelete, isAdmin }: any) {
             )}
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <h4 className="font-semibold">Key Results</h4>
                 <Dialog open={krDialogOpen} onOpenChange={setKrDialogOpen}>
                   <DialogTrigger asChild>

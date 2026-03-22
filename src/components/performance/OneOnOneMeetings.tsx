@@ -343,7 +343,7 @@ function MeetingDetailsPanel({ meetingId, onClose }: { meetingId: string; onClos
   return (
     <Card className="mt-6">
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <CardTitle>Meeting Details</CardTitle>
           <Button variant="ghost" size="sm" onClick={onClose}>Close</Button>
         </div>

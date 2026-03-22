@@ -315,7 +315,7 @@ export function AnalyticsPage() {
                     .sort((a, b) => b.total_coins - a.total_coins)
                     .slice(0, 5)
                     .map((member, index) => (
-                      <div key={member.id} className="flex items-center justify-between">
+                      <div key={member.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="flex items-center space-x-3">
                           <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${
                             index === 0 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30' :

@@ -190,7 +190,7 @@ export function ShiftTypeManager() {
                       {...register('description')}
                     />
                   </div>
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <Label htmlFor="is_active">Active</Label>
                     <Switch
                       id="is_active"

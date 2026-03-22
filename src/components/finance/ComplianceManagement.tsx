@@ -55,7 +55,7 @@ export function ComplianceManagement() {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold">Statutory Compliance</h1>
           <p className="text-muted-foreground">Manage PF, ESI, PT, and LWF compliance and filings</p>

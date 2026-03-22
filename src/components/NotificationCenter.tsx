@@ -224,7 +224,7 @@ export function NotificationCenter() {
                   {notification.message}
                 </p>
                 
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <span className="text-xs text-muted-foreground">
                     {formatTimestamp(notification.timestamp)}
                   </span>

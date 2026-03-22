@@ -53,7 +53,7 @@ export const AttendanceHistory: React.FC = () => {
                 const status = statusConfig[record.status as keyof typeof statusConfig] || { label: record.status, className: 'bg-gray-500' };
                 return (
                   <div key={record.id} className="p-3 rounded-lg border space-y-2">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <span className="font-medium text-sm">
                         {format(new Date(record.attendance_date), 'EEE, MMM d')}
                       </span>

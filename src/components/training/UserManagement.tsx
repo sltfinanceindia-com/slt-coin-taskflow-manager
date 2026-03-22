@@ -57,7 +57,7 @@ export function UserManagement() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <CardTitle>User Management</CardTitle>
               <CardDescription>Manage training participants and assign assessments</CardDescription>

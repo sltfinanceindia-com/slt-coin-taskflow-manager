@@ -319,7 +319,7 @@ export function LoanManagement() {
               {formData.amount && formData.tenure_months && (
                 <Card className="bg-muted/50">
                   <CardContent className="pt-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <span className="text-sm text-muted-foreground">Estimated EMI</span>
                       <span className="font-bold text-lg">
                         ₹{(parseFloat(formData.amount) / parseInt(formData.tenure_months)).toLocaleString('en-IN', { maximumFractionDigits: 0 })}

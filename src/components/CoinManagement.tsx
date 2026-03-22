@@ -191,7 +191,7 @@ export function CoinManagement() {
                   pendingTasks.map((task) => (
                     <Card key={task.id} className="border-orange-200 bg-orange-50/50">
                       <CardHeader>
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                           <div>
                             <CardTitle className="text-lg">{task.title}</CardTitle>
                             <CardDescription>Assigned to: {task.assigned_profile?.full_name}</CardDescription>

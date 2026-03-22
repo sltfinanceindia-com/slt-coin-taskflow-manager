@@ -70,7 +70,7 @@ export function Achievements() {
   return (
     <Card className="h-full">
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <CardTitle className="flex items-center gap-2">
             <Award className="h-5 w-5 text-primary" />
             Achievements

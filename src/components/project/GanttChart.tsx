@@ -245,7 +245,7 @@ export function GanttChart({ projectId }: GanttChartProps) {
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 text-sm">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 rounded bg-red-500" />
           <span>Critical Path</span>
@@ -278,9 +278,9 @@ export function GanttChart({ projectId }: GanttChartProps) {
 
       {/* Gantt Chart */}
       <Card className="card-gradient overflow-hidden">
-        <div className="flex">
+        <div className="flex overflow-x-auto">
           {/* Task list */}
-          <div className="w-64 shrink-0 border-r border-border">
+          <div className="w-40 sm:w-64 shrink-0 border-r border-border">
             <div className="h-12 border-b border-border bg-muted/50 px-4 flex items-center font-medium">
               Task Name
             </div>

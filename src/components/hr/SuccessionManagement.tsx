@@ -111,7 +111,7 @@ export function SuccessionManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-2xl font-bold">Succession Planning</h2>
           <p className="text-muted-foreground">Identify and develop future leaders</p>

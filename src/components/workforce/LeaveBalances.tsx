@@ -183,7 +183,7 @@ export const LeaveBalances: React.FC = () => {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <Label htmlFor="is_paid">Paid Leave</Label>
               <Switch
                 id="is_paid"

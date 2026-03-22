@@ -245,18 +245,20 @@ export function TaskEditDialog({ task, onUpdateTask, isUpdating }: TaskEditDialo
         
         <form onSubmit={handleSubmit} className="flex-1 overflow-hidden flex flex-col">
           <Tabs defaultValue="basic" className="flex-1 flex flex-col">
-            <TabsList className="grid w-full grid-cols-7 shrink-0">
-              <TabsTrigger value="basic" className="text-xs">Basic</TabsTrigger>
-              <TabsTrigger value="assignment" className="text-xs">Assign</TabsTrigger>
-              <TabsTrigger value="timeline" className="text-xs">Timeline</TabsTrigger>
-              <TabsTrigger value="effort" className="text-xs">Effort</TabsTrigger>
-              <TabsTrigger value="content" className="text-xs">Content</TabsTrigger>
-              <TabsTrigger value="subtasks" className="text-xs">Subtasks</TabsTrigger>
-              <TabsTrigger value="activity" className="text-xs flex items-center gap-1">
-                <Activity className="h-3 w-3" />
-                Activity
-              </TabsTrigger>
-            </TabsList>
+            <div className="w-full overflow-x-auto shrink-0">
+              <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-7">
+                <TabsTrigger value="basic" className="text-xs whitespace-nowrap">Basic</TabsTrigger>
+                <TabsTrigger value="assignment" className="text-xs whitespace-nowrap">Assign</TabsTrigger>
+                <TabsTrigger value="timeline" className="text-xs whitespace-nowrap">Timeline</TabsTrigger>
+                <TabsTrigger value="effort" className="text-xs whitespace-nowrap">Effort</TabsTrigger>
+                <TabsTrigger value="content" className="text-xs whitespace-nowrap">Content</TabsTrigger>
+                <TabsTrigger value="subtasks" className="text-xs whitespace-nowrap">Subtasks</TabsTrigger>
+                <TabsTrigger value="activity" className="text-xs whitespace-nowrap flex items-center gap-1">
+                  <Activity className="h-3 w-3" />
+                  Activity
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
             <ScrollArea className="flex-1 pr-4">
               {/* Basic Info Tab */}

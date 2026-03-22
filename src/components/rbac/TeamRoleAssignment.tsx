@@ -405,7 +405,7 @@ export function TeamRoleAssignment() {
                   ) : (
                     roleHistory.map((log) => (
                       <div key={log.id} className="border rounded-lg p-3 space-y-2">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                           <span className="font-medium">{log.user_name}</span>
                           <span className="text-xs text-muted-foreground">
                             {format(new Date(log.timestamp), 'MMM d, yyyy h:mm a')}

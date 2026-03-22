@@ -89,7 +89,7 @@ export function RecurringTasksManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <RefreshCcw className="h-6 w-6" />

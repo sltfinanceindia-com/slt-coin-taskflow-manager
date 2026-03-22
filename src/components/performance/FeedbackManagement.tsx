@@ -189,7 +189,7 @@ function FeedbackCycles() {
           {cycles.map((cycle: any) => (
             <Card key={cycle.id}>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <CardTitle className="flex items-center gap-2">
                       {cycle.name}

@@ -206,13 +206,15 @@ export function EnhancedDashboard({ userId }: EnhancedDashboardProps) {
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="productivity" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="productivity">📊 Productivity</TabsTrigger>
-          <TabsTrigger value="time-tracking">⏱️ Time Tracking</TabsTrigger>
-          <TabsTrigger value="communication">💬 Communication</TabsTrigger>
-          <TabsTrigger value="analytics">📈 Analytics</TabsTrigger>
-          <TabsTrigger value="features">✨ Features</TabsTrigger>
-        </TabsList>
+        <div className="w-full overflow-x-auto">
+          <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-5">
+            <TabsTrigger value="productivity" className="text-xs sm:text-sm whitespace-nowrap">📊 Productivity</TabsTrigger>
+            <TabsTrigger value="time-tracking" className="text-xs sm:text-sm whitespace-nowrap">⏱️ Time Tracking</TabsTrigger>
+            <TabsTrigger value="communication" className="text-xs sm:text-sm whitespace-nowrap">💬 Communication</TabsTrigger>
+            <TabsTrigger value="analytics" className="text-xs sm:text-sm whitespace-nowrap">📈 Analytics</TabsTrigger>
+            <TabsTrigger value="features" className="text-xs sm:text-sm whitespace-nowrap">✨ Features</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="productivity" className="space-y-6">
           <ProductivityDashboard userId={targetUserId} />

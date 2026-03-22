@@ -159,10 +159,10 @@ export function SecurityDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Security Dashboard</h1>
-          <p className="text-muted-foreground">Monitor security events and system health</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold">Security Dashboard</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Monitor security events and system health</p>
         </div>
         <Button 
           onClick={() => {
@@ -170,6 +170,7 @@ export function SecurityDashboard() {
             refetchAuditLogs();
           }}
           variant="outline"
+          className="shrink-0 self-start sm:self-auto"
         >
           Refresh Data
         </Button>
