@@ -219,7 +219,7 @@ export function DepartmentManagement() {
               <p className="text-sm">Create your first department to get started</p>
             </div>
           ) : (
-            <Table>
+            <div className="overflow-x-auto"><Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Department</TableHead>
@@ -269,7 +269,7 @@ export function DepartmentManagement() {
                 </TableRow>
               ))}
             </TableBody>
-            </Table>
+            </Table></div>
           )}
         </CardContent>
       </Card>

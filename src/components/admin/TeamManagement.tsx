@@ -204,7 +204,7 @@ export function TeamManagement() {
               <p className="text-sm">Create your first team to get started</p>
             </div>
           ) : (
-            <Table>
+            <div className="overflow-x-auto"><Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Team Name</TableHead>
@@ -259,7 +259,7 @@ export function TeamManagement() {
                   </TableRow>
                 ))}
               </TableBody>
-            </Table>
+            </Table></div>
           )}
         </CardContent>
       </Card>

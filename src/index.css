@@ -1167,6 +1167,76 @@ All colors MUST be HSL.
 }
 
 /* ============================================
+ * GLOBAL RESPONSIVE CONTAINMENT
+ * Prevents horizontal overflow across all pages/modules
+ * ============================================ */
+
+html, body, #root {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+@layer base {
+  /* All tables within the app get horizontal scroll containment */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+  
+  thead, tbody, tfoot {
+    display: table;
+    width: 100%;
+  }
+}
+
+@layer components {
+  /* Dialog/sheet content - ensure forms don't overflow on mobile */
+  [role="dialog"] {
+    max-width: calc(100vw - 2rem);
+    overflow-x: hidden;
+  }
+  
+  [role="dialog"] form {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* All cards within dashboard - prevent content overflow */
+  main [class*="CardContent"] {
+    min-width: 0;
+  }
+}
+
+/* Very small screens (< 400px): stack all grids to single column */
+@media (max-width: 399px) {
+  .grid-cols-2,
+  .grid-cols-3,
+  .grid-cols-4 {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Small mobile (400px-640px): allow 2-col grids */
+@media (min-width: 400px) and (max-width: 640px) {
+  .grid-cols-3,
+  .grid-cols-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Mobile form inputs - larger touch targets and prevent iOS zoom */
+@media (max-width: 640px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    min-height: 44px;
+    font-size: 16px;
+  }
+}
+
+/* ============================================
  * TYPOGRAPHY UTILITY LAYER
  * Responsive text utilities for consistent sizing
  * ============================================ */

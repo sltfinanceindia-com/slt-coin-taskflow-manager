@@ -86,13 +86,13 @@ export default function Dashboard() {
   const pendingCoins = getPendingCoins();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background min-w-0 overflow-x-hidden">
       {/* Header */}
       <header className="border-b bg-card sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-3">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between min-w-0">
+            <div className="flex items-center space-x-3 sm:space-x-4 min-w-0">
+              <div className="flex items-center space-x-2 sm:space-x-3">
                 <img 
                   src="/slt-hub-icon.png" 
                   alt="Tenexa"
@@ -144,9 +144,9 @@ export default function Dashboard() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-50 mb-2">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-8">
+        <div className="mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-50 mb-2">
             <span className="font-normal text-gray-600 dark:text-gray-400">Welcome back, </span>
             <span className="font-bold">{profile?.full_name}</span>!
           </h2>

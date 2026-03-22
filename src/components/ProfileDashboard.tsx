@@ -79,12 +79,12 @@ export function ProfileDashboard() {
   if (!profile) return <div>Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background min-w-0 overflow-x-hidden">
       {/* Header with navigation */}
       <header className="border-b bg-card sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between min-w-0">
+            <div className="flex items-center space-x-3 sm:space-x-4 min-w-0">
               <img 
                 src="/slt-hub-icon.png" 
                 alt="Tenexa"

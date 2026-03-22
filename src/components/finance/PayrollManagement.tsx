@@ -143,11 +143,11 @@ export function PayrollManagement() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Payroll Management</h1>
-          <p className="text-muted-foreground">Process salaries, generate payslips, and manage compensation</p>
+    <div className="space-y-4 sm:space-y-6 min-w-0">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold truncate">Payroll Management</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm">Process salaries, generate payslips, and manage compensation</p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
@@ -271,7 +271,7 @@ export function PayrollManagement() {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
               ) : payrollRuns.length > 0 ? (
-                <Table>
+                <div className="overflow-x-auto"><Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Period</TableHead>
@@ -327,7 +327,7 @@ export function PayrollManagement() {
                       </TableRow>
                     ))}
                   </TableBody>
-                </Table>
+                </Table></div>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <Wallet className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -347,7 +347,7 @@ export function PayrollManagement() {
             </CardHeader>
             <CardContent>
               {employeesWithSalary && employeesWithSalary.length > 0 ? (
-                <Table>
+                <div className="overflow-x-auto"><Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Employee</TableHead>
@@ -389,7 +389,7 @@ export function PayrollManagement() {
                       );
                     })}
                   </TableBody>
-                </Table>
+                </Table></div>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />

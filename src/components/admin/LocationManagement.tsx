@@ -250,7 +250,7 @@ export function LocationManagement() {
               <p className="text-sm">Add your first location to get started</p>
             </div>
           ) : (
-            <Table>
+            <div className="overflow-x-auto"><Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Location</TableHead>
@@ -304,7 +304,7 @@ export function LocationManagement() {
                   </TableRow>
                 ))}
               </TableBody>
-            </Table>
+            </Table></div>
           )}
         </CardContent>
       </Card>

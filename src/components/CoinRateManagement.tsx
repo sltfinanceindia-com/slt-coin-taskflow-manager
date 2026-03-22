@@ -277,7 +277,7 @@ export function CoinRateManagement() {
               <Skeleton className="h-12 w-full" />
             </div>
           ) : rates && rates.length > 0 ? (
-            <div className="rounded-lg border overflow-hidden">
+            <div className="rounded-lg border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>

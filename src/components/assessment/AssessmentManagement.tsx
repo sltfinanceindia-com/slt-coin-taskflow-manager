@@ -150,7 +150,7 @@ export function AssessmentManagement() {
           </div>
 
           {/* Results Table */}
-          <div className="border rounded-lg">
+          <div className="border rounded-lg overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>

@@ -249,7 +249,7 @@ export function MaintenanceScheduler({ assetId }: MaintenanceSchedulerProps) {
       </div>
 
       {maintenanceRecords && maintenanceRecords.length > 0 ? (
-        <Table>
+        <div className="overflow-x-auto"><Table>
           <TableHeader>
             <TableRow>
               <TableHead>Type</TableHead>
@@ -278,7 +278,7 @@ export function MaintenanceScheduler({ assetId }: MaintenanceSchedulerProps) {
               </TableRow>
             ))}
           </TableBody>
-        </Table>
+        </Table></div>
       ) : (
         <p className="text-sm text-muted-foreground text-center py-4">
           No maintenance records yet

@@ -204,9 +204,9 @@ export function GanttChart({ projectId }: GanttChartProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 min-w-0">
       {/* Toolbar */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => navigate('prev')}>
             <ChevronLeft className="h-4 w-4" />

@@ -313,7 +313,7 @@ export function SalaryStructureManagement() {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
               ) : templates && templates.length > 0 ? (
-                <Table>
+                <div className="overflow-x-auto"><Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Template Name</TableHead>
@@ -359,7 +359,7 @@ export function SalaryStructureManagement() {
                       </TableRow>
                     ))}
                   </TableBody>
-                </Table>
+                </Table></div>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <Wallet className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -509,7 +509,7 @@ export function SalaryStructureManagement() {
                     <h4 className="font-medium mb-2 flex items-center gap-2">
                       <Badge className="bg-red-100 text-red-800">Deductions</Badge>
                     </h4>
-                    <Table>
+                    <div className="overflow-x-auto"><Table>
                       <TableHeader>
                         <TableRow>
                           <TableHead>Component</TableHead>
@@ -542,7 +542,7 @@ export function SalaryStructureManagement() {
                           </TableRow>
                         ))}
                       </TableBody>
-                    </Table>
+                    </Table></div>
                   </div>
 
                   {/* Summary */}
