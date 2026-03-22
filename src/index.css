@@ -1189,10 +1189,6 @@ html, body, #root {
     overflow-x: hidden;
   }
 
-  /* All cards within dashboard - prevent content overflow */
-  main [class*="CardContent"] {
-    min-width: 0;
-  }
 }
 
 /* Very small screens (< 400px): stack all grids to single column */
