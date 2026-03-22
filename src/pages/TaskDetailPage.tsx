@@ -127,36 +127,39 @@ export default function TaskDetailPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-start sm:items-center justify-between gap-2">
+            <div className="flex items-start sm:items-center gap-2 sm:gap-4 min-w-0">
               <Button 
                 variant="ghost" 
                 size="icon"
+                className="shrink-0 mt-0.5 sm:mt-0"
                 onClick={() => window.close()}
+                data-testid="button-back"
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground font-mono">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  <span className="text-xs sm:text-sm text-muted-foreground font-mono" data-testid="text-task-number">
                     {task.task_number}
                   </span>
-                  <Badge className={statusColors[task.status] || ''}>
+                  <Badge className={statusColors[task.status] || ''} data-testid="status-task">
                     {task.status.replace('_', ' ')}
                   </Badge>
-                  <Badge className={priorityColors[task.priority] || ''}>
+                  <Badge className={priorityColors[task.priority] || ''} data-testid="status-priority">
                     <Flag className="h-3 w-3 mr-1" />
                     {task.priority}
                   </Badge>
                 </div>
-                <h1 className="text-xl font-bold mt-1">{task.title}</h1>
+                <h1 className="text-lg sm:text-xl font-bold mt-1 truncate" data-testid="text-task-title">{task.title}</h1>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="gap-1">
+            <div className="flex items-center gap-2 shrink-0">
+              <Badge variant="outline" className="gap-1 text-xs sm:text-sm" data-testid="text-coin-value">
                 <Coins className="h-3 w-3 text-amber-500" />
-                {task.slt_coin_value} coins
+                <span className="hidden sm:inline">{task.slt_coin_value} coins</span>
+                <span className="sm:hidden">{task.slt_coin_value}</span>
               </Badge>
             </div>
           </div>
@@ -164,8 +167,8 @@ export default function TaskDetailPage() {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Left Column - Task Details */}
           <div className="lg:col-span-2 space-y-6">
             {/* Progress Overview */}

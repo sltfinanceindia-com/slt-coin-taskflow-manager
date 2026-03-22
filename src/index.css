@@ -1129,6 +1129,31 @@ All colors MUST be HSL.
     @apply transition-colors duration-200 focus:ring-2 focus:ring-ring focus:ring-offset-2;
   }
 
+  /* Responsive table wrapper - prevents horizontal page overflow */
+  .table-responsive {
+    @apply overflow-x-auto -mx-3 sm:-mx-4;
+  }
+
+  .table-responsive > table {
+    @apply min-w-full;
+  }
+
+  .table-responsive > div {
+    @apply min-w-0;
+  }
+
+  /* Responsive overflow container */
+  .overflow-container {
+    @apply overflow-x-auto overflow-y-visible;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent content from pushing page wider than viewport */
+  .contain-width {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
   /* Mobile-optimized spacing */
   @media (max-width: 640px) {
     .mobile-compact {

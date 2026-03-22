@@ -290,32 +290,34 @@ export default function OrganizationSettings() {
               </div>
 
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 h-auto">
-          <TabsTrigger value="general" className="text-xs sm:text-sm py-2">
-            <Building2 className="h-4 w-4 mr-1.5 hidden sm:inline" />
-            General
-          </TabsTrigger>
-          <TabsTrigger value="branding" className="text-xs sm:text-sm py-2">
-            <Palette className="h-4 w-4 mr-1.5 hidden sm:inline" />
-            Branding
-          </TabsTrigger>
-          <TabsTrigger value="preferences" className="text-xs sm:text-sm py-2">
-            <Globe className="h-4 w-4 mr-1.5 hidden sm:inline" />
-            Preferences
-          </TabsTrigger>
-          <TabsTrigger value="features" className="text-xs sm:text-sm py-2">
-            <ToggleLeft className="h-4 w-4 mr-1.5 hidden sm:inline" />
-            Features
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="text-xs sm:text-sm py-2">
-            <Bell className="h-4 w-4 mr-1.5 hidden sm:inline" />
-            Notifications
-          </TabsTrigger>
-          <TabsTrigger value="security" className="text-xs sm:text-sm py-2">
-            <Shield className="h-4 w-4 mr-1.5 hidden sm:inline" />
-            Security
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-thin">
+          <TabsList className="inline-flex w-max sm:w-full sm:grid sm:grid-cols-6 h-auto gap-1 sm:gap-0">
+            <TabsTrigger value="general" className="text-xs sm:text-sm py-2 min-h-[40px]" data-testid="tab-general">
+              <Building2 className="h-4 w-4 mr-1.5 hidden sm:inline" />
+              General
+            </TabsTrigger>
+            <TabsTrigger value="branding" className="text-xs sm:text-sm py-2 min-h-[40px]" data-testid="tab-branding">
+              <Palette className="h-4 w-4 mr-1.5 hidden sm:inline" />
+              Branding
+            </TabsTrigger>
+            <TabsTrigger value="preferences" className="text-xs sm:text-sm py-2 min-h-[40px]" data-testid="tab-preferences">
+              <Globe className="h-4 w-4 mr-1.5 hidden sm:inline" />
+              Preferences
+            </TabsTrigger>
+            <TabsTrigger value="features" className="text-xs sm:text-sm py-2 min-h-[40px]" data-testid="tab-features">
+              <ToggleLeft className="h-4 w-4 mr-1.5 hidden sm:inline" />
+              Features
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="text-xs sm:text-sm py-2 min-h-[40px]" data-testid="tab-notifications">
+              <Bell className="h-4 w-4 mr-1.5 hidden sm:inline" />
+              Notifications
+            </TabsTrigger>
+            <TabsTrigger value="security" className="text-xs sm:text-sm py-2 min-h-[40px]" data-testid="tab-security">
+              <Shield className="h-4 w-4 mr-1.5 hidden sm:inline" />
+              Security
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* General Tab */}
         <TabsContent value="general" className="space-y-4 mt-4">

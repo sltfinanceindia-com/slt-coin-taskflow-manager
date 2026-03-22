@@ -148,32 +148,35 @@ export default function ProjectDetailPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-start sm:items-center justify-between gap-2">
+            <div className="flex items-start sm:items-center gap-2 sm:gap-4 min-w-0">
               <Button 
                 variant="ghost" 
                 size="icon"
+                className="shrink-0 mt-0.5 sm:mt-0"
                 onClick={() => navigate(-1)}
+                data-testid="button-back"
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-xl font-bold">{project.name}</h1>
-                  <Badge className={statusColors[project.status] || ''}>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  <h1 className="text-lg sm:text-xl font-bold truncate" data-testid="text-project-name">{project.name}</h1>
+                  <Badge className={statusColors[project.status] || ''} data-testid="status-project">
                     {project.status?.replace('_', ' ')}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground mt-1">
                   {project.program && <span>{(project.program as any).name}</span>}
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               {project.priority && (
-                <Badge variant="outline" className="capitalize">
-                  {project.priority} priority
+                <Badge variant="outline" className="capitalize text-xs sm:text-sm" data-testid="status-priority">
+                  <span className="hidden sm:inline">{project.priority} priority</span>
+                  <span className="sm:hidden">{project.priority}</span>
                 </Badge>
               )}
             </div>
@@ -182,9 +185,9 @@ export default function ProjectDetailPage() {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-4 sm:mb-6">
           <Card>
             <CardContent className="pt-4">
               <div className="flex items-center gap-2 text-muted-foreground text-sm">
@@ -257,8 +260,8 @@ export default function ProjectDetailPage() {
 
         {/* 9-Tab Structure */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <div className="overflow-x-auto pb-2 -mx-4 px-4">
-            <TabsList className="inline-flex w-auto min-w-full h-auto flex-wrap gap-1">
+          <div className="overflow-x-auto pb-2 -mx-3 px-3 sm:-mx-4 sm:px-4 scrollbar-thin">
+            <TabsList className="inline-flex w-max sm:w-auto sm:min-w-full h-auto gap-1">
               <TabsTrigger value="overview" className="flex items-center gap-1.5 text-xs sm:text-sm min-h-[44px]">
                 <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span>Overview</span>

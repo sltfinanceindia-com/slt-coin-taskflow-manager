@@ -148,38 +148,41 @@ export default function EmployeeDetailPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-start sm:items-center justify-between gap-2">
+            <div className="flex items-start sm:items-center gap-2 sm:gap-4 min-w-0">
               <Button 
                 variant="ghost" 
                 size="icon"
+                className="shrink-0 mt-0.5 sm:mt-0"
                 onClick={() => navigate(-1)}
+                data-testid="button-back"
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <div className="flex items-center gap-3">
-                <Avatar className="h-12 w-12">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0">
                   <AvatarImage src={employee.avatar_url || ''} />
                   <AvatarFallback>{employee.full_name?.charAt(0) || 'E'}</AvatarFallback>
                 </Avatar>
-                <div>
-                  <h1 className="text-xl font-bold">{employee.full_name}</h1>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="min-w-0">
+                  <h1 className="text-lg sm:text-xl font-bold truncate" data-testid="text-employee-name">{employee.full_name}</h1>
+                  <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
                     <span>{employee.employee_id || 'No ID'}</span>
-                    <span>•</span>
-                    <span>{employee.department || 'No Department'}</span>
-                    <Badge variant={employee.is_active !== false ? 'default' : 'destructive'} className="ml-2">
+                    <span className="hidden sm:inline">•</span>
+                    <span className="hidden sm:inline">{employee.department || 'No Department'}</span>
+                    <Badge variant={employee.is_active !== false ? 'default' : 'destructive'} className="text-[10px] sm:text-xs" data-testid="status-employee">
                       {employee.is_active !== false ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="gap-1">
+            <div className="flex items-center gap-2 shrink-0">
+              <Badge variant="outline" className="gap-1 text-xs sm:text-sm" data-testid="text-coins">
                 <Award className="h-3 w-3 text-amber-500" />
-                {employee.total_coins || 0} coins
+                <span className="hidden sm:inline">{employee.total_coins || 0} coins</span>
+                <span className="sm:hidden">{employee.total_coins || 0}</span>
               </Badge>
             </div>
           </div>
@@ -187,9 +190,9 @@ export default function EmployeeDetailPage() {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
           <Card>
             <CardContent className="pt-4">
               <div className="flex items-center gap-2 text-muted-foreground text-sm">
@@ -247,8 +250,8 @@ export default function EmployeeDetailPage() {
 
         {/* 11-Tab Structure */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <div className="overflow-x-auto pb-2 -mx-4 px-4">
-            <TabsList className="inline-flex w-auto min-w-full h-auto flex-wrap gap-1">
+          <div className="overflow-x-auto pb-2 -mx-3 px-3 sm:-mx-4 sm:px-4 scrollbar-thin">
+            <TabsList className="inline-flex w-max sm:w-auto sm:min-w-full h-auto gap-1">
               <TabsTrigger value="overview" className="flex items-center gap-1.5 text-xs sm:text-sm min-h-[44px]">
                 <User className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span>Overview</span>
