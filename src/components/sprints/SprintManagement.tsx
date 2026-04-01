@@ -17,7 +17,7 @@ import { useQuery } from '@tanstack/react-query';
 import { format, differenceInDays, addDays } from 'date-fns';
 import { 
   Target, Plus, Play, CheckCircle, Clock, 
-  BarChart3, Calendar, Trash2, LinkIcon
+  BarChart3, Calendar, Trash2, LinkIcon, AlertTriangle
 } from 'lucide-react';
 
 export function SprintManagement() {
