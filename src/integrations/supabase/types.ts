@@ -15957,7 +15957,17 @@ export type Database = {
         | "completed"
         | "verified"
         | "rejected"
-      user_role: "admin" | "intern" | "super_admin" | "org_admin" | "employee"
+      user_role:
+        | "admin"
+        | "intern"
+        | "super_admin"
+        | "org_admin"
+        | "employee"
+        | "hr_admin"
+        | "project_manager"
+        | "finance_manager"
+        | "manager"
+        | "team_lead"
       verification_status_enum: "pending" | "verified" | "rejected" | "expired"
     }
     CompositeTypes: {
@@ -16115,7 +16125,18 @@ export const Constants = {
         "verified",
         "rejected",
       ],
-      user_role: ["admin", "intern", "super_admin", "org_admin", "employee"],
+      user_role: [
+        "admin",
+        "intern",
+        "super_admin",
+        "org_admin",
+        "employee",
+        "hr_admin",
+        "project_manager",
+        "finance_manager",
+        "manager",
+        "team_lead",
+      ],
       verification_status_enum: ["pending", "verified", "rejected", "expired"],
     },
   },

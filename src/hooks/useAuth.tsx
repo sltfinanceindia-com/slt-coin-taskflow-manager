@@ -26,7 +26,7 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
-  signUp: (email: string, password: string, fullName: string, role?: 'admin' | 'intern') => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName: string, role?: Profile['role']) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
   refreshProfile: () => Promise<void>;
@@ -83,11 +83,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         'manager': 7, 'team_lead': 6, 'employee': 5, 'intern': 4,
       };
 
-      let authoritativeRole = profileData.role;
+      let authoritativeRole: Profile['role'] = profileData.role;
       if (userRoleData && userRoleData.length > 0) {
         authoritativeRole = userRoleData.reduce((highest, current) =>
           (ROLE_PRIORITY[current.role] || 0) > (ROLE_PRIORITY[highest.role] || 0) ? current : highest
-        , userRoleData[0]).role;
+        , userRoleData[0]).role as Profile['role'];
       }
 
       console.log('✅ Profile loaded:', profileData.id, profileData.full_name, 'Role from user_roles:', authoritativeRole);
