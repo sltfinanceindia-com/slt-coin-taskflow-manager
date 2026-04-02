@@ -39,7 +39,29 @@ export function EnhancedDashboardWidgets() {
   const { isAdmin } = useUserRole();
   const { channels, teamMembers, status: commStatus } = useCommunication();
   const { organization } = useOrganization();
-  
+
+  // Fetch dashboard widget visibility preferences
+  const { data: widgetPrefs } = useQuery({
+    queryKey: ['dashboard-widgets', profile?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('dashboard_widgets')
+        .select('widget_type, is_visible, position')
+        .eq('user_id', profile?.id)
+        .order('position');
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profile?.id,
+  });
+
+  // Helper to check if a widget section is visible
+  const isWidgetVisible = (widgetType: string) => {
+    if (!widgetPrefs || widgetPrefs.length === 0) return true; // Show all by default
+    const pref = widgetPrefs.find(w => w.widget_type === widgetType);
+    return pref ? pref.is_visible : true;
+  };
+
   const coinName = organization?.coin_name || 'Coins';
 
   // Fetch real daily hours from time_logs for the past 7 days
