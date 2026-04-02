@@ -39,7 +39,29 @@ export function EnhancedDashboardWidgets() {
   const { isAdmin } = useUserRole();
   const { channels, teamMembers, status: commStatus } = useCommunication();
   const { organization } = useOrganization();
-  
+
+  // Fetch dashboard widget visibility preferences
+  const { data: widgetPrefs } = useQuery({
+    queryKey: ['dashboard-widgets', profile?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('dashboard_widgets')
+        .select('widget_type, is_visible, position')
+        .eq('user_id', profile?.id)
+        .order('position');
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profile?.id,
+  });
+
+  // Helper to check if a widget section is visible
+  const isWidgetVisible = (widgetType: string) => {
+    if (!widgetPrefs || widgetPrefs.length === 0) return true; // Show all by default
+    const pref = widgetPrefs.find(w => w.widget_type === widgetType);
+    return pref ? pref.is_visible : true;
+  };
+
   const coinName = organization?.coin_name || 'Coins';
 
   // Fetch real daily hours from time_logs for the past 7 days
@@ -190,6 +212,7 @@ export function EnhancedDashboardWidgets() {
   return (
     <div className="section-spacing">
       {/* Main Stats Grid */}
+      {isWidgetVisible('stats_overview') && (
       <div className="dashboard-grid-stats">
         {mainStats.map((stat, index) => (
           <Card key={index} className="hover-scale card-gradient h-full card-stat">
@@ -221,8 +244,10 @@ export function EnhancedDashboardWidgets() {
           </Card>
         ))}
       </div>
+      )}
 
       {/* Quick Action Cards */}
+      {isWidgetVisible('my_tasks') && (
       <div className="dashboard-grid-3">
         {quickActions.map((action, index) => (
           <Card 
@@ -243,8 +268,10 @@ export function EnhancedDashboardWidgets() {
           </Card>
         ))}
       </div>
+      )}
 
       {/* Communication Quick Access Widget */}
+      {isWidgetVisible('team_activity') && (
       <Card className="card-gradient border-primary/20">
         <CardHeader className="pb-3 sm:pb-4">
           <CardTitle className="text-card-title flex items-center justify-between">
@@ -334,8 +361,10 @@ export function EnhancedDashboardWidgets() {
           )}
         </CardContent>
       </Card>
+      )}
 
       {/* Charts Section */}
+      {isWidgetVisible('performance_chart') && (
       <div className="dashboard-grid-2">
         {/* Weekly Activity Chart */}
         <Card className="card-gradient h-full card-chart">
@@ -387,8 +416,10 @@ export function EnhancedDashboardWidgets() {
           </CardContent>
         </Card>
       </div>
+      )}
 
       {/* Recent Activity */}
+      {isWidgetVisible('recent_activity') && (
       <Card className="card-gradient card-list">
         <CardHeader className="pb-3 sm:pb-4">
           <CardTitle className="text-card-title flex items-center gap-2">
@@ -428,6 +459,7 @@ export function EnhancedDashboardWidgets() {
           </div>
         </CardContent>
       </Card>
+      )}
     </div>
   );
 }
