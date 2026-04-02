@@ -416,8 +416,10 @@ export function EnhancedDashboardWidgets() {
           </CardContent>
         </Card>
       </div>
+      )}
 
       {/* Recent Activity */}
+      {isWidgetVisible('recent_activity') && (
       <Card className="card-gradient card-list">
         <CardHeader className="pb-3 sm:pb-4">
           <CardTitle className="text-card-title flex items-center gap-2">
@@ -457,6 +459,7 @@ export function EnhancedDashboardWidgets() {
           </div>
         </CardContent>
       </Card>
+      )}
     </div>
   );
 }
