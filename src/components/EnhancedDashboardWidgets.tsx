@@ -268,8 +268,10 @@ export function EnhancedDashboardWidgets() {
           </Card>
         ))}
       </div>
+      )}
 
       {/* Communication Quick Access Widget */}
+      {isWidgetVisible('team_activity') && (
       <Card className="card-gradient border-primary/20">
         <CardHeader className="pb-3 sm:pb-4">
           <CardTitle className="text-card-title flex items-center justify-between">
