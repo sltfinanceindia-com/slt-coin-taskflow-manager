@@ -244,8 +244,10 @@ export function EnhancedDashboardWidgets() {
           </Card>
         ))}
       </div>
+      )}
 
       {/* Quick Action Cards */}
+      {isWidgetVisible('my_tasks') && (
       <div className="dashboard-grid-3">
         {quickActions.map((action, index) => (
           <Card 
