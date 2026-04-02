@@ -9,6 +9,7 @@ import { Calendar, ChevronLeft, ChevronRight, Users, Clock, CalendarDays, Star }
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths, startOfWeek, addDays } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useCalendarEvents } from '@/hooks/useCalendarEvents';
+import { useWorkCalendars } from '@/hooks/useWorkCalendars';
 
 export function WorkCalendarsManagement() {
   const { profile } = useAuth();
@@ -17,6 +18,8 @@ export function WorkCalendarsManagement() {
   
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
+  
+  const { calendars, isLoading: calendarsLoading } = useWorkCalendars();
   
   const { events, isLoading } = useCalendarEvents(monthStart, monthEnd);
 
@@ -208,6 +211,52 @@ export function WorkCalendarsManagement() {
         </CardContent>
       </Card>
 
+      {/* Work Calendars from DB */}
+      {calendars.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <CalendarDays className="h-4 w-4" />
+              Work Calendars
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {calendars.map((cal) => (
+                <div key={cal.id} className="border rounded-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium text-sm">{cal.name}</h4>
+                    <div className="flex items-center gap-1">
+                      {cal.is_default && <Badge variant="default" className="text-xs">Default</Badge>}
+                      <Badge variant="outline" className="text-xs capitalize">{cal.status || 'active'}</Badge>
+                    </div>
+                  </div>
+                  {cal.description && <p className="text-xs text-muted-foreground">{cal.description}</p>}
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    <span>Year: {cal.year}</span>
+                    {cal.work_start_time && cal.work_end_time && (
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {cal.work_start_time} - {cal.work_end_time}
+                      </span>
+                    )}
+                  </div>
+                  {cal.working_days && (
+                    <div className="flex gap-1">
+                      {['S','M','T','W','T','F','S'].map((d, i) => (
+                        <span key={i} className={`text-xs w-5 h-5 rounded-full flex items-center justify-center ${
+                          cal.working_days?.includes(i) ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                        }`}>{d}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
@@ -219,9 +268,9 @@ export function WorkCalendarsManagement() {
                 <div key={event.id} className="flex items-center justify-between p-2 border rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className={`w-3 h-3 rounded-full ${
-                      event.event_type === 'meeting' ? 'bg-blue-500' :
-                      event.event_type === 'deadline' ? 'bg-red-500' :
-                      event.event_type === 'leave' ? 'bg-green-500' : 'bg-yellow-500'
+                      event.event_type === 'meeting' ? 'bg-primary' :
+                      event.event_type === 'deadline' ? 'bg-destructive' :
+                      event.event_type === 'leave' ? 'bg-accent' : 'bg-secondary'
                     }`} />
                     <div>
                       <p className="font-medium text-sm">{event.title}</p>
