@@ -212,6 +212,7 @@ export function EnhancedDashboardWidgets() {
   return (
     <div className="section-spacing">
       {/* Main Stats Grid */}
+      {isWidgetVisible('stats_overview') && (
       <div className="dashboard-grid-stats">
         {mainStats.map((stat, index) => (
           <Card key={index} className="hover-scale card-gradient h-full card-stat">
