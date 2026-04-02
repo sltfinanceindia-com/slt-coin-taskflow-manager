@@ -9,6 +9,7 @@ import { Calendar, ChevronLeft, ChevronRight, Users, Clock, CalendarDays, Star }
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths, startOfWeek, addDays } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useCalendarEvents } from '@/hooks/useCalendarEvents';
+import { useWorkCalendars } from '@/hooks/useWorkCalendars';
 
 export function WorkCalendarsManagement() {
   const { profile } = useAuth();
@@ -17,6 +18,8 @@ export function WorkCalendarsManagement() {
   
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
+  
+  const { calendars, isLoading: calendarsLoading } = useWorkCalendars();
   
   const { events, isLoading } = useCalendarEvents(monthStart, monthEnd);
 
