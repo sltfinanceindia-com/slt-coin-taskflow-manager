@@ -361,8 +361,10 @@ export function EnhancedDashboardWidgets() {
           )}
         </CardContent>
       </Card>
+      )}
 
       {/* Charts Section */}
+      {isWidgetVisible('performance_chart') && (
       <div className="dashboard-grid-2">
         {/* Weekly Activity Chart */}
         <Card className="card-gradient h-full card-chart">
