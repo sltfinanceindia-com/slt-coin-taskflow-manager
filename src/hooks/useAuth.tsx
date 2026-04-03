@@ -345,12 +345,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const handleBeforeUnload = () => {
       const currentProfile = profileRef.current;
       if (currentProfile?.id) {
-        // Try to update session log (may not complete in beforeunload)
-        supabase
-          .from('session_logs')
-          .update({ logout_time: new Date().toISOString() })
-          .eq('user_id', currentProfile.id)
-          .is('logout_time', null);
+        // Use sendBeacon to reliably send data during page unload
+        const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/session_logs?user_id=eq.${currentProfile.id}&logout_time=is.null`;
+        const body = JSON.stringify({ logout_time: new Date().toISOString() });
+        navigator.sendBeacon(
+          url,
+          new Blob([body], { type: 'application/json' })
+        );
       }
     };
     
