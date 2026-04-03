@@ -198,8 +198,13 @@ export default function Auth() {
           variant: "destructive",
         });
       } else if (data.magicLink) {
-        // Redirect to magic link for authentication
-        window.location.href = data.magicLink;
+        // Validate origin to prevent open redirect
+        const linkUrl = new URL(data.magicLink);
+        if (linkUrl.origin !== window.location.origin) {
+          toast({ title: 'Security Error', description: 'Invalid redirect detected.', variant: 'destructive' });
+        } else {
+          window.location.href = data.magicLink;
+        }
       }
     } catch (error: any) {
       console.error('OTP verification error:', error);

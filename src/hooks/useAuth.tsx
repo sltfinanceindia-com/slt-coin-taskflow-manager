@@ -553,7 +553,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Sign out from Supabase with global scope to clear all sessions
       try {
-        await supabase.auth.signOut({ scope: 'global' });
+        await supabase.auth.signOut({ scope: 'local' });
       } catch (signOutError: any) {
         // Handle any signOut errors gracefully - session may already be invalid
         console.log('ℹ️ SignOut completed (may have been already signed out):', signOutError?.message);

@@ -19,7 +19,7 @@ export default function Landing() {
         title="TeneXA - Complete Enterprise HR & Workforce Management Platform"
         description="All-in-one HR, BPO, and project management platform for modern enterprises. Streamline attendance, payroll, performance, and team collaboration. Start your free trial today."
         keywords="HR software, workforce management, attendance tracking, payroll processing, project management, employee management, BPO platform, TeneXA"
-        canonical="https://tenexa.lovable.app/"
+        canonical="https://sltwork.lovable.app/"
         structuredData={generateOrganizationSchema()}
       />
       
