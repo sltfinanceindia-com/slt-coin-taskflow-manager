@@ -338,6 +338,11 @@ export default function Auth() {
                       </Button>
                     </div>
                   </div>
+                  <div className="text-right">
+                    <Link to="/forgot-password" className="text-xs text-primary hover:underline">
+                      Forgot password?
+                    </Link>
+                  </div>
                   <Button 
                     type="submit" 
                     className="w-full" 
