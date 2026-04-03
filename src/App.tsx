@@ -297,7 +297,8 @@ const App = () => (
       <AuthProvider>
         <OrganizationProvider>
           <AppSidebarProvider>
-            <AppContent />
+            <ErrorBoundary fallbackMessage="The application encountered an unexpected error. Please refresh the page.">
+              <AppContent />
           </AppSidebarProvider>
         </OrganizationProvider>
       </AuthProvider>
