@@ -1,281 +1,229 @@
 
 
-# TeneXA Platform — Comprehensive Application Report (April 1, 2026)
+# TeneXA Platform — Complete Production Audit Report
+**Audit Date: April 3, 2026**
 
 ---
 
-## 1. PLATFORM OVERVIEW
+## 🔴 Critical Issues (Production-Breaking)
 
-TeneXA is an enterprise HR and Project Management SaaS platform built with **React 18, Vite 5, TypeScript 5, Tailwind CSS v3**, and **Supabase** (Postgres + RLS + Edge Functions). Published at **sltwork.lovable.app**.
+### C1: No Password Reset / Forgot Password Flow
+There is **no forgot password page**, no `/reset-password` route, and no password reset link anywhere in the Auth page. Users who forget their password have **zero recovery path**. This is a production blocker.
+- **File**: `src/pages/Auth.tsx` — no forgot password link
+- **Routes**: No `/reset-password` route in `App.tsx`
+- **Fix**: Create forgot password component calling `supabase.auth.resetPasswordForEmail()` + `/reset-password` page calling `supabase.auth.updateUser({ password })`
 
-- **10-tier RBAC**: super_admin, org_admin, admin, hr_admin, project_manager, finance_manager, manager, team_lead, employee, intern
-- **180+ database tables** in public schema
-- **73 routes** defined in App.tsx
-- **80+ component modules** across 70+ component directories
-- **10 organizations** registered on the platform
-- **29 total user profiles** (18 active)
+### C2: Duplicate WelcomeDialog & GuidedTour Rendered Twice
+In `App.tsx` lines 186-190, `WelcomeDialog` and `GuidedTour` are rendered **twice** — once outside `<BrowserRouter>` and once inside. Components using React Router hooks (useNavigate, useLocation) will crash when rendered outside BrowserRouter.
+- **File**: `src/App.tsx` lines 186-190
+- **Fix**: Remove the duplicate pair outside `<BrowserRouter>` (lines 186-187)
 
----
+### C3: OTP Login Calls Non-Existent Edge Function Pattern
+The OTP login calls `supabase.functions.invoke('send-otp')` but the `send-otp` edge function exists — however if it returns a `magicLink` (line 201), the app does `window.location.href = data.magicLink` which is an open redirect vulnerability. Any response manipulation could redirect users to a phishing site.
+- **Fix**: Validate the magicLink URL starts with `window.location.origin` before redirecting
 
-## 2. BUILD STATUS — 2 ERRORS (BLOCKING)
+### C4: Admin Pages Lack Admin-Level Route Protection
+`/admin/settings` and `/admin/organization-settings` use generic `ProtectedRoute` (checks `user` only). **Any authenticated user** — including interns and employees — can access Organization Settings. Only `SuperAdminRoute` checks roles.
+- **File**: `src/App.tsx` lines 225-229
+- **Fix**: Create `AdminRoute` wrapper that checks `isAdmin` from `useUserRole()` and wrap admin routes
 
-| # | File | Error | Fix |
-|---|------|-------|-----|
-| 1 | `src/components/sprints/SprintManagement.tsx:182` | `AlertTriangle` is used but never imported from lucide-react | Add `AlertTriangle` to the lucide-react import |
-| 2 | `src/hooks/useAuth.tsx:88` | Profile `role` type is limited to 5 values (`admin|employee|intern|org_admin|super_admin`) but `user_roles` query returns all 10 role types | The `Profile.role` type on line 11 already has all 10 roles, but the `signUp` function parameter on line 29 restricts to `'admin' | 'intern'`. The actual type error is that the DB query returns `app_role` which includes all 10 types, being assigned to a narrower type somewhere in the chain. Fix: ensure the cast on line 94 uses the full `Profile['role']` type |
-
-**These must be fixed before the app can build.**
-
----
-
-## 3. ORGANIZATION & USER STATUS
-
-### Organizations (10 total)
-
-| Organization | Status | Trial Ends | Active Users | Issue |
-|-------------|--------|-----------|-------------|-------|
-| **SLT Finance India** | active | 2026-06-12 | 3 | OK (primary org) |
-| Johnny | trialing | 2026-01-02 | 2 | **EXPIRED** |
-| GAG Tech | trialing | 2026-01-06 | 3 | **EXPIRED** |
-| Payara Labs | trialing | 2026-03-13 | 1 | **EXPIRED** |
-| PAYARA LABAS | trialing | 2026-03-13 | 1 | **EXPIRED** |
-| Test | trialing | 2025-12-27 | 2 | **EXPIRED** |
-| MilaaN | trialing | 2026-01-03 | 2 | **EXPIRED** |
-| Johndeere | trialing | 2026-01-02 | 1 | **EXPIRED** |
-| Emug | trialing | 2026-01-02 | 1 | **EXPIRED** |
-| BN SMART BEES | trialing | 2026-01-02 | 2 | **EXPIRED** |
-
-**9 of 10 organizations have expired trials.** Only SLT Finance India is active.
-
-### Active Users with Role Mismatches (6 of 18)
-
-| Email | profiles.role | user_roles | Status |
-|-------|--------------|------------|--------|
-| komirisetti966@gmail.com | intern | admin | MISMATCH |
-| gopi@123gmail.com | intern | employee | MISMATCH |
-| komirisettivenkateswaramma@gmail.com | intern | manager | MISMATCH |
-| mayur123@gmail.com | intern | manager | MISMATCH |
-| slthostels@gmail.com | intern | employee | MISMATCH |
-| sprayer@gmail.com | intern | employee | MISMATCH |
-
-**6 users still have role mismatches** between `profiles.role` and `user_roles`. Previous fix only corrected SLT Finance India org users.
+### C5: signUp Function Has Hardcoded Role Parameter
+`signUp` in `useAuth.tsx` line 361: `role: 'admin' | 'intern' = 'intern'`. This allows callers to pass `'admin'` and self-elevate to admin during signup. The Supabase trigger `handle_new_user` trusts the role from `raw_user_meta_data`.
+- **Fix**: Remove the role parameter from signUp entirely, or hardcode it to `'intern'` and never expose it to user input
 
 ---
 
-## 4. DATABASE DATA AUDIT
+## 🟠 High Priority Issues
 
-### Tables WITH Data (30 tables)
+### H1: Index Page Serves Stale Dashboard at /index
+`src/pages/Index.tsx` renders `AdminDashboard` or `InternDashboard` but is NOT used by any route in `App.tsx`. The `/` route redirects authenticated users to `/dashboard` (ModernDashboard). However, the user's current route shows `/index` which means this dead page could be accessible, showing an outdated UI.
 
-| Table | Records | Health |
-|-------|---------|--------|
-| session_logs | 2,591 | Healthy |
-| time_logs | 151 | Healthy |
-| leave_balances | 78 | Healthy |
-| tasks | 55 | Healthy |
-| communication_channels | 34 | Healthy |
-| coin_transactions | 33 | OK |
-| user_roles | 31 | OK |
-| profiles | 29 | OK |
-| attendance_records | 20 | OK |
-| chat_users | ~29 | OK |
-| audit_logs | 13 | OK |
-| holidays | 11 | OK |
-| timesheets | 10 | OK |
-| custom_roles | 10 | OK |
-| departments | 7 | OK |
-| assessments | 6 | OK |
-| feedback_responses | 6 | OK |
-| messages | 6 | OK |
-| notifications | 5 | OK |
-| calendar_events | 5 | OK |
-| kudos | 5 | OK |
-| automation_rules | 5 | OK |
-| wfh_requests | 4 | OK |
-| one_on_one_meetings | 4 | OK |
-| performance_improvement_plans | 4 | OK |
-| projects | 3 | OK |
-| shifts | 3 | OK |
-| job_postings | 3 | OK |
-| training_programs | 2 | OK |
-| announcements | 2 | OK |
+### H2: Client-Side Rate Limiter is Trivially Bypassable
+`src/utils/security.ts` implements `RateLimiter` in memory on the client. Refreshing the page or using a different tab resets it entirely. The server-side lockout via `check-login-status` edge function is the actual protection, but the client rate limiter gives false sense of security.
 
-### Tables with Data (Low, 1-2 records)
+### H3: Content Protection is Security Theater
+`ContentProtection.tsx` prevents right-click, PrintScreen, Ctrl+S, F12 — but none of these work against browser extensions, mobile screenshots, OS-level screen recording, or DevTools opened before page load. The watermark opacity is `0.015` — practically invisible.
 
-| Table | Records |
-|-------|---------|
-| budget_allocations | 2 |
-| objectives | 2 |
-| pulse_surveys | 2 |
-| leave_requests | 1 |
-| payroll_runs | 1 |
-| expense_claims | 1 |
-| loan_requests | 1 |
-| reimbursements | 1 |
-| onboarding_records | 1 |
-| employee_benefits | 1 |
-| investment_declarations | 1 |
-| sprints | 1 |
-| training_sections | 1 |
+### H4: Global signOut with `scope: 'global'` Kills All Sessions
+`signOut` at line 557 uses `{ scope: 'global' }` which signs out ALL devices/sessions. If a user signs out on their phone, their desktop session also dies. This should be `{ scope: 'local' }` by default with an explicit "Sign out all devices" option.
 
-### Tables STILL at 0 Records (5 critical)
+### H5: 939 console.log/error Calls Across 41 Files
+Production builds ship with extensive debug logging (`console.log('📋 Fetching profile...')`, `console.log('✅ Session refreshed')`). This leaks internal state, profile IDs, and role data to anyone opening DevTools.
 
-| Table | Impact |
-|-------|--------|
-| salary_structures | Payroll module incomplete |
-| employee_contracts | HR Lifecycle gaps |
-| employee_documents | Document management empty |
-| exit_requests | Offboarding untestable |
-| grievances | HR workflow untestable |
-| tax_declarations | Finance module empty |
-| work_calendars | Work calendar feature empty |
-| security_alerts | Security monitoring empty |
-| issues | Issue tracker empty |
-| login_attempts | OK (expected) |
+### H6: Organization Settings Page Lacks Admin Check in Component
+`OrganizationSettings.tsx` does not verify admin role internally. While the route uses `ProtectedRoute`, that only checks authentication. An employee navigating directly to `/admin/organization-settings` can view and potentially modify org settings.
+
+### H7: Sidebar Hidden on Mobile (`hidden md:flex`)
+`AppSidebar.tsx` line 254: `className="...hidden md:flex"` — the sidebar is completely hidden below `md` breakpoint. Mobile users rely entirely on `BottomNavigation`, which only shows 5 items + "More" dropdown. The vast majority of 80+ modules are inaccessible on mobile without knowing the URL.
 
 ---
 
-## 5. SECURITY AUDIT
+## 🟡 Medium Issues
 
-### Supabase Linter: 5 Warnings
+### M1: No Error Boundary at App Root
+Only `ModernDashboard` wraps tab content in `ErrorBoundary`. An error in `Auth.tsx`, `Landing.tsx`, or any public page crashes the entire app with a white screen.
 
-| # | Issue | Status |
-|---|-------|--------|
-| 1-2 | Permissive RLS (INSERT true) | `contact_submissions` + `trial_signups` — **Intentional** (public forms) |
-| 3 | OTP expiry too long | **MANUAL FIX needed** in Supabase Dashboard |
-| 4 | Leaked password protection disabled | **MANUAL FIX needed** in Supabase Dashboard |
-| 5 | Postgres security patches available | **MANUAL FIX needed** in Supabase Dashboard |
+### M2: `dangerouslySetInnerHTML` Used in SearchAndFilters
+`src/components/communication/SearchAndFilters.tsx` uses `dangerouslySetInnerHTML` with DOMPurify. While sanitized, this is a fragile pattern — if DOMPurify is misconfigured or bypassed in future edits, it becomes an XSS vector.
 
-### Security Features Implemented
-- RLS enabled on all 180+ tables
-- Account lockout (5 failed attempts / 15 min window)
-- Content protection for non-admins
-- Session tracking with device/location
-- Organization-level data isolation
-- SECURITY DEFINER functions for role checks
+### M3: Framer Motion on Landing Page Adds ~40KB
+The Landing page imports `framer-motion` for a simple fade-in animation (`opacity: 0 → 1`). This can be replaced with a CSS animation or `@starting-style` to save bundle size.
 
-### Security Gaps
-- 3 manual Supabase Dashboard fixes still pending
-- 6 cross-org role mismatches could cause access issues
+### M4: `BrowserRouter` Nested Inside ContentProtection & TourStateProvider
+The component tree in `App.tsx` has `BrowserRouter` deeply nested. Components rendered outside it (like the duplicate `WelcomeDialog`) cannot use routing hooks. Additionally, `ContentProtection` wraps everything including public pages, adding unnecessary event listeners and DOM elements for unauthenticated users.
 
----
+### M5: QueryClient staleTime is 2 Minutes
+`staleTime: 1000 * 60 * 2` means data goes stale after 2 minutes. For an enterprise app with real-time needs (attendance, tasks), this is reasonable, but `refetchOnWindowFocus: true` combined with this causes unnecessary refetches when users alt-tab frequently.
 
-## 6. ROUTES & PAGES (73 total)
+### M6: beforeunload Session Log Update Never Completes
+`useAuth.tsx` lines 345-354: The `beforeunload` handler fires a Supabase update but doesn't `await` or use `navigator.sendBeacon()`. The browser terminates the connection before the request completes, so session logs rarely get `logout_time` set.
 
-### Public Pages (11)
-Landing, Auth, Signup, Pricing, Features, Terms, Privacy, Contact, About, Resources, Start Trial
-
-### Super Admin Pages (13)
-Dashboard, Organizations (list/create/detail), Users, Billing, Analytics, Plans, Settings, Feedback Rewards, System Health, Audit Trail, Announcements
-
-### Admin Pages (3)
-Organization Settings, Roles & Permissions, Org Chart
-
-### Protected Module Pages (12)
-Dashboard, Profile, Training, Assessment, Kudos, Pulse Surveys, My Goals, Tutorial, Calendar, Help, Employees, Projects, Tasks, Attendance, Leaves, Payroll, Performance, Approvals, Reports
-
-### Detail Pages (5)
-Task Detail, Portfolio Detail, Program Detail, Employee Detail, Project Detail
+### M7: 10+ Empty Tables Still Need Data
+Tables like `salary_structures`, `employee_contracts`, `employee_documents`, `exit_requests`, `grievances`, `tax_declarations`, `work_calendars`, `issues` remain at 0 records, making those modules appear broken.
 
 ---
 
-## 7. COMPONENT MODULES (70+ directories)
+## 🟢 Minor Issues
 
-| Category | Modules |
-|----------|---------|
-| **Work Management** | tasks, kanban, sprints, backlog, projects, baselines, capacity, workload, scoring |
-| **HR & People** | employee, hr, lifecycle, onboarding, workforce, recognition, kudos, pulse |
-| **Finance** | payroll, expenses, finance, loans |
-| **Performance** | performance, goals, assessment, training |
-| **Communication** | communication, collaboration, updates |
-| **Admin** | admin, super-admin, rbac, settings, automation |
-| **Analytics** | charts, reports, health |
-| **Other** | calendar, documents, files, servicedesk, requests, changes, search, tour |
+### L1: SEO Canonical URL Points to Wrong Domain
+`Landing.tsx` line 22: `canonical="https://tenexa.lovable.app/"` but the actual published URL is `sltwork.lovable.app`.
+
+### L2: Splash Screen Forces 2.5s Minimum Wait
+`AppContent` lines 153-156: `setTimeout(() => setMinTimeElapsed(true), 2500)` — users always wait 2.5 seconds even if auth resolves instantly.
+
+### L3: `isPublicRoute` Uses `window.location.pathname` Instead of Router
+Line 164: Checking `window.location.pathname` directly instead of using React Router's `useLocation()` breaks with hash routing or any router changes.
+
+### L4: Help Page is Not Protected
+`/help` route (line 241) uses `<HelpCenterPage />` without `ProtectedRoute`. This is likely intentional but inconsistent with other authenticated pages.
+
+### L5: Password Validation Inconsistency
+Auth page checks `password.length < 6` (line 52) but `security.ts` requires `length >= 8` plus uppercase, lowercase, digit, and special char. Users meeting the lenient Auth check will fail the strict validation elsewhere.
 
 ---
 
-## 8. FRONTEND ISSUES
+## 📈 Performance Metrics (Estimated)
+
+| Metric | Estimate | Target | Status |
+|--------|----------|--------|--------|
+| First Contentful Paint | ~1.5-2.0s | <1.8s | ⚠️ BORDERLINE |
+| Time to Interactive | ~3.5-4.5s | <3.5s | ❌ SLOW (splash + auth + profile) |
+| Largest Contentful Paint | ~2.5-3.5s | <2.5s | ❌ SLOW |
+| Bundle Size (initial) | ~350-450KB | <300KB | ⚠️ LARGE |
+| Lazy Chunks | 50+ chunks | Good | ✅ |
+| Supabase Round-trips on Login | 5+ (session + profile + roles + lockout check + session_log + presence) | 2-3 | ❌ TOO MANY |
+
+### Performance Bottlenecks
+1. **5+ sequential Supabase calls on login**: Session → Profile → user_roles → check-login-status → session_log INSERT → update_user_presence RPC
+2. **2.5s mandatory splash screen delay** even when auth resolves in <100ms
+3. **framer-motion** imported on the landing page for trivial animation
+4. **939 console statements** in production adds processing overhead
+
+---
+
+## 🔐 Security Risks
+
+| # | Risk | Severity | Status |
+|---|------|----------|--------|
+| 1 | No password reset flow | CRITICAL | Missing |
+| 2 | Self-elevation via signUp role param | CRITICAL | Exploitable |
+| 3 | Admin pages lack role checks | CRITICAL | Exploitable |
+| 4 | Open redirect via OTP magicLink | HIGH | Exploitable |
+| 5 | OTP expiry too long | MEDIUM | Manual fix needed |
+| 6 | Leaked password protection disabled | MEDIUM | Manual fix needed |
+| 7 | Postgres security patches pending | MEDIUM | Manual fix needed |
+| 8 | 2 permissive RLS policies remain | LOW | Intentional (public forms) |
+| 9 | Client-side rate limiter only | LOW | Server lockout exists |
+| 10 | Debug logs expose internal state | LOW | 939 console statements |
+| 11 | Global scope signout | LOW | UX issue, not exploitable |
+
+---
+
+## 📱 Responsiveness Report
+
+| Device | Issue | Severity |
+|--------|-------|----------|
+| Mobile (<768px) | Sidebar completely hidden, 80+ modules inaccessible via nav | HIGH |
+| Mobile (<768px) | BottomNavigation shows only 5 items + overflow menu | MEDIUM |
+| Mobile (<768px) | OrganizationSwitcher hidden (`hidden md:flex`) | MEDIUM |
+| Mobile (360px viewport) | Auth page cards may have tight padding | LOW |
+| Tablet | Generally OK with sidebar auto-collapse | LOW |
+| Desktop | Full functionality | OK |
+
+---
+
+## 🧭 UX/Navigation Issues
 
 | # | Issue | Severity |
 |---|-------|----------|
-| 1 | **Build error**: `AlertTriangle` not imported in SprintManagement.tsx | CRITICAL |
-| 2 | **Build error**: Type mismatch in useAuth.tsx role assignment | CRITICAL |
-| 3 | `useTrainingPrograms` hook not wired to Training page | HIGH |
-| 4 | `useWorkCalendars` hook not wired to any component | HIGH |
-| 5 | No `React.lazy` code splitting (was reportedly added but not found) | MEDIUM |
-| 6 | Time logs show 0 for both test users (151 logs belong to inactive accounts) | MEDIUM |
+| 1 | No forgot password link on login page | CRITICAL |
+| 2 | 80+ modules only accessible via sidebar, which is hidden on mobile | HIGH |
+| 3 | No breadcrumb on most pages to show current location | MEDIUM |
+| 4 | Super Admin link only visible when sidebar header is expanded | MEDIUM |
+| 5 | "Settings" nav item points to `/profile` which is confusing (Settings ≠ Profile) | LOW |
+| 6 | Splash screen delay is annoying for returning users | LOW |
+| 7 | WelcomeDialog & GuidedTour render twice (visual duplication possible) | MEDIUM |
 
 ---
 
-## 9. DATABASE FUNCTION STATUS
+## 🛠 Recommended Fixes (Priority Order)
 
-| Function | Status | Notes |
-|----------|--------|-------|
-| `get_current_user_role()` | FIXED | Reads from user_roles with all 10 role priorities |
-| `can_update_profile()` | FIXED | Checks user_roles for admin/super_admin/org_admin |
-| `get_user_highest_role()` | FIXED | Includes all 10 role types |
-| `is_super_admin()` | OK | Checks user_roles |
-| `is_org_admin()` | OK | Checks user_roles |
-| `is_any_admin()` | OK | Checks user_roles |
-| `has_role()` | OK | Checks user_roles |
-| `handle_new_user()` | OK | Creates profile + user_role + chat_user |
-| `is_account_locked()` | OK | 5 attempts / 15 min lockout |
+### Immediate (Week 1) — Security & Critical
 
----
+| # | Fix | Files |
+|---|-----|-------|
+| 1 | **Add forgot password flow** — Create reset password page + link on Auth page | New: `src/pages/ResetPassword.tsx`, Edit: `src/pages/Auth.tsx`, `src/App.tsx` |
+| 2 | **Remove role param from signUp** — Hardcode to 'intern', never trust client role | `src/hooks/useAuth.tsx` line 361 |
+| 3 | **Create AdminRoute wrapper** — Check `isAdmin` for admin pages | `src/App.tsx` |
+| 4 | **Remove duplicate WelcomeDialog/GuidedTour** — Delete lines 186-187 | `src/App.tsx` |
+| 5 | **Validate OTP magicLink origin** — Check URL starts with `window.location.origin` | `src/pages/Auth.tsx` line 201 |
+| 6 | **Add admin role check in OrganizationSettings** — Redirect non-admins | `src/pages/admin/OrganizationSettings.tsx` |
 
-## 10. RBAC & PERMISSIONS
+### Short-Term (Week 2) — UX & Performance
 
-- **10 custom_roles** seeded for SLT Finance India
-- **64 role_permissions** mapped across modules
-- Admin roles (super_admin/org_admin/admin) bypass permission checks via code
-- Non-admin roles use `hasPermission()` / `canAccessModule()` from role_permissions
-- **Issue**: Admin roles have 0 role_permissions entries (works due to bypass but `getAccessibleModules()` returns empty for them)
+| # | Fix | Files |
+|---|-----|-------|
+| 7 | **Fix mobile navigation** — Add full module access via mobile menu/drawer | `src/components/BottomNavigation.tsx` |
+| 8 | **Reduce splash screen to 1s or remove** | `src/App.tsx` lines 153-156 |
+| 9 | **Fix global signOut scope** — Change to `{ scope: 'local' }` | `src/hooks/useAuth.tsx` line 557 |
+| 10 | **Strip console.logs for production** — Add Vite plugin `vite-plugin-strip` or conditional logging | `vite.config.ts` |
+| 11 | **Use sendBeacon for beforeunload** — Ensure session logs complete | `src/hooks/useAuth.tsx` lines 345-354 |
+| 12 | **Fix canonical URL** | `src/pages/Landing.tsx` line 22 |
 
----
+### Medium-Term (Week 3-4) — Hardening
 
-## 11. EDGE FUNCTIONS
-
-Functions deployed in `supabase/functions/`:
-- `check-login-status` — Account lockout verification
-- `_shared/auth.ts` — Shared authentication (refactored to use user_roles)
-
----
-
-## 12. MATURITY SCORECARD
-
-| Category | Score | Notes |
-|----------|-------|-------|
-| Architecture | 9/10 | Clean React + Supabase + RBAC |
-| Database Design | 8/10 | 180+ tables, comprehensive schema |
-| Security | 6/10 | RLS + lockout done, 3 manual fixes pending |
-| Data Coverage | 5/10 | 30 tables with data, 10+ still empty |
-| Functionality | 5/10 | ~50% modules have live data flowing |
-| Build Health | 3/10 | 2 blocking TypeScript errors |
-| Scalability | 7/10 | Org isolation, unlimited users supported |
-
-**Overall Platform Readiness: 6/10**
+| # | Fix | Files |
+|---|-----|-------|
+| 13 | **Add ErrorBoundary at App root** | `src/App.tsx` |
+| 14 | **Seed remaining empty tables** | SQL migration |
+| 15 | **Manual Supabase Dashboard fixes** — OTP expiry, leaked passwords, patches | Dashboard |
+| 16 | **Reduce login round-trips** — Batch profile + roles into single RPC call | New DB function + `useAuth.tsx` |
+| 17 | **Password validation consistency** — Align Auth page with security.ts | `src/pages/Auth.tsx` |
 
 ---
 
-## 13. IMPLEMENTATION PLAN (Priority Order)
+## 🚀 Final Verdict
 
-### Step 1: Fix Build Errors (CRITICAL — blocks everything)
-- Add `AlertTriangle` import to `src/components/sprints/SprintManagement.tsx`
-- Fix type mismatch in `src/hooks/useAuth.tsx` — the `signUp` role parameter type is too narrow and the profile role assignment at line 88-90 needs a proper type cast
+### Production Readiness Score: 4.5 / 10
 
-### Step 2: Fix Cross-Org Role Mismatches
-- SQL migration to sync `profiles.role` with highest `user_roles.role` for 6 mismatched users across all organizations
+| Category | Score | Weight | Weighted |
+|----------|-------|--------|----------|
+| Architecture | 8/10 | 15% | 1.20 |
+| Security | 3/10 | 25% | 0.75 |
+| Functionality | 5/10 | 20% | 1.00 |
+| Performance | 5/10 | 10% | 0.50 |
+| UX/Navigation | 4/10 | 10% | 0.40 |
+| Responsiveness | 4/10 | 10% | 0.40 |
+| Code Quality | 5/10 | 10% | 0.50 |
+| **Total** | | **100%** | **4.75** |
 
-### Step 3: Wire Unused Hooks
-- Import `useTrainingPrograms` into Training page to display programs from DB
-- Wire `useWorkCalendars` into a UI component
+### Explanation
+The platform has strong architectural foundations (React + Supabase + 10-tier RBAC + 180+ tables) but has **critical security gaps** that make it unsuitable for production:
 
-### Step 4: Seed Remaining Empty Tables
-- `salary_structures`, `employee_contracts`, `employee_documents`, `exit_requests`, `grievances`, `tax_declarations`, `work_calendars`, `issues`
+1. **No password reset** means locked-out users have no recovery
+2. **Self-elevation via signup** means any user can create an admin account
+3. **Admin pages accessible to all authenticated users** means data exposure
+4. **Mobile users cannot access 75+ modules** via navigation
 
-### Step 5: Manual Supabase Dashboard Fixes
-- Reduce OTP expiry to 5 minutes
-- Enable leaked password protection
-- Apply Postgres security patches
-
-**Estimated scope: 2 file fixes + 1 SQL migration + 2 hook integrations + 1 data seed**
+The codebase is well-structured with good patterns (lazy loading, error boundaries, DOMPurify), but the security issues alone make this a **4.5/10 — not production-ready**. Fixing the 6 critical issues in Week 1 would raise the score to approximately **6.5/10**, and completing all recommended fixes would bring it to **7.5-8/10**.
 
