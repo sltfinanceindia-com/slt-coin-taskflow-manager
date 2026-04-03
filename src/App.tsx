@@ -20,6 +20,7 @@ import { useVisibilityHandler } from '@/hooks/useVisibilityHandler';
 import { TourStateProvider } from "@/hooks/useTour";
 import { GuidedTour } from "@/components/tour/GuidedTour";
 import { WelcomeDialog } from "@/components/tour/WelcomeDialog";
+import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 
 // Eagerly loaded public pages (small, critical path)
 import Landing from "./pages/Landing";
