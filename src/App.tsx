@@ -244,10 +244,10 @@ function AppContent() {
           <Route path="/feedback" element={<FeedbackPage />} />
           
           {/* Admin Routes */}
-          <Route path="/admin/settings" element={<ProtectedRoute><OrganizationSettings /></ProtectedRoute>} />
-          <Route path="/admin/organization-settings" element={<ProtectedRoute><OrganizationSettings /></ProtectedRoute>} />
+          <Route path="/admin/settings" element={<AdminRoute><OrganizationSettings /></AdminRoute>} />
+          <Route path="/admin/organization-settings" element={<AdminRoute><OrganizationSettings /></AdminRoute>} />
           <Route path="/settings" element={<Navigate to="/admin/organization-settings" replace />} />
-          <Route path="/admin/roles-permissions" element={<ProtectedRoute><RolesPermissions /></ProtectedRoute>} />
+          <Route path="/admin/roles-permissions" element={<AdminRoute><RolesPermissions /></AdminRoute>} />
           <Route path="/organization/chart" element={<ProtectedRoute><OrgChartPage /></ProtectedRoute>} />
           
           {/* Protected Routes */}
