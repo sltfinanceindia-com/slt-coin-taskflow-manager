@@ -173,7 +173,7 @@ function AppContent() {
   const [initialAuthChecked, setInitialAuthChecked] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setMinTimeElapsed(true), 2500);
+    const timer = setTimeout(() => setMinTimeElapsed(true), 1000);
     return () => clearTimeout(timer);
   }, []);
 
