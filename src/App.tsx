@@ -214,6 +214,8 @@ function AppContent() {
           <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Landing />} />
           <Route path="/auth" element={user ? <Navigate to="/dashboard" replace /> : <Auth />} />
           <Route path="/signup" element={user ? <Navigate to="/dashboard" replace /> : <Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/features" element={<Features />} />
           <Route path="/terms" element={<Terms />} />
