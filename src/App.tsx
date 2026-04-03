@@ -205,8 +205,6 @@ function AppContent() {
         <Sonner />
         <PWAInstallPrompt />
         {user && <UnifiedAssistant />}
-        {user && <WelcomeDialog />}
-        {user && <GuidedTour />}
       <BrowserRouter>
         {user && <WelcomeDialog />}
         {user && <GuidedTour />}
