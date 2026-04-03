@@ -192,7 +192,7 @@ function AppContent() {
     (user || !initialAuthChecked);
 
   if (shouldShowSplash) {
-    return <SplashScreen onComplete={() => setShowSplash(false)} minDuration={2500} />;
+    return <SplashScreen onComplete={() => setShowSplash(false)} minDuration={1000} />;
   }
 
   return (
