@@ -125,6 +125,25 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  const { isAdmin, isLoading: roleLoading } = useUserRole();
+
+  if (loading || roleLoading) {
+    return <PageLoader />;
+  }
+
+  if (!user) {
+    return <Navigate to="/" replace />;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 function SuperAdminRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const { isSuperAdmin, isLoading: roleLoading } = useUserRole();
