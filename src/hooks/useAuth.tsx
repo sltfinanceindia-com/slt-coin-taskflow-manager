@@ -345,12 +345,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const handleBeforeUnload = () => {
       const currentProfile = profileRef.current;
       if (currentProfile?.id) {
-        // Try to update session log (may not complete in beforeunload)
-        supabase
-          .from('session_logs')
-          .update({ logout_time: new Date().toISOString() })
-          .eq('user_id', currentProfile.id)
-          .is('logout_time', null);
+        // Use sendBeacon to reliably send data during page unload
+        const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/session_logs?user_id=eq.${currentProfile.id}&logout_time=is.null`;
+        const body = JSON.stringify({ logout_time: new Date().toISOString() });
+        navigator.sendBeacon(
+          url,
+          new Blob([body], { type: 'application/json' })
+        );
       }
     };
     
@@ -358,10 +359,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string, role: 'admin' | 'intern' = 'intern') => {
+  const signUp = async (email: string, password: string, fullName: string) => {
     const redirectUrl = `${window.location.origin}/`;
-    
-    console.log('📝 Signing up user:', email);
     
     const { error } = await supabase.auth.signUp({
       email,
@@ -370,7 +369,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         emailRedirectTo: redirectUrl,
         data: {
           full_name: fullName,
-          role: role
+          role: 'intern'
         }
       }
     });
@@ -554,7 +553,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Sign out from Supabase with global scope to clear all sessions
       try {
-        await supabase.auth.signOut({ scope: 'global' });
+        await supabase.auth.signOut({ scope: 'local' });
       } catch (signOutError: any) {
         // Handle any signOut errors gracefully - session may already be invalid
         console.log('ℹ️ SignOut completed (may have been already signed out):', signOutError?.message);

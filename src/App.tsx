@@ -20,6 +20,7 @@ import { useVisibilityHandler } from '@/hooks/useVisibilityHandler';
 import { TourStateProvider } from "@/hooks/useTour";
 import { GuidedTour } from "@/components/tour/GuidedTour";
 import { WelcomeDialog } from "@/components/tour/WelcomeDialog";
+import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 
 // Eagerly loaded public pages (small, critical path)
 import Landing from "./pages/Landing";
@@ -38,6 +39,8 @@ const StartTrial = lazy(() => import("./pages/StartTrial"));
 const FeedbackPage = lazy(() => import('./pages/Feedback'));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const HelpCenterPage = lazy(() => import("./pages/HelpCenterPage"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 // Protected pages - lazy loaded
 const ModernDashboard = lazy(() => import("./pages/ModernDashboard"));
@@ -122,6 +125,25 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  const { isAdmin, isLoading: roleLoading } = useUserRole();
+
+  if (loading || roleLoading) {
+    return <PageLoader />;
+  }
+
+  if (!user) {
+    return <Navigate to="/" replace />;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 function SuperAdminRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const { isSuperAdmin, isLoading: roleLoading } = useUserRole();
@@ -151,7 +173,7 @@ function AppContent() {
   const [initialAuthChecked, setInitialAuthChecked] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setMinTimeElapsed(true), 2500);
+    const timer = setTimeout(() => setMinTimeElapsed(true), 1000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -170,7 +192,7 @@ function AppContent() {
     (user || !initialAuthChecked);
 
   if (shouldShowSplash) {
-    return <SplashScreen onComplete={() => setShowSplash(false)} minDuration={2500} />;
+    return <SplashScreen onComplete={() => setShowSplash(false)} minDuration={1000} />;
   }
 
   return (
@@ -183,8 +205,6 @@ function AppContent() {
         <Sonner />
         <PWAInstallPrompt />
         {user && <UnifiedAssistant />}
-        {user && <WelcomeDialog />}
-        {user && <GuidedTour />}
       <BrowserRouter>
         {user && <WelcomeDialog />}
         {user && <GuidedTour />}
@@ -194,6 +214,8 @@ function AppContent() {
           <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Landing />} />
           <Route path="/auth" element={user ? <Navigate to="/dashboard" replace /> : <Auth />} />
           <Route path="/signup" element={user ? <Navigate to="/dashboard" replace /> : <Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/features" element={<Features />} />
           <Route path="/terms" element={<Terms />} />
@@ -222,10 +244,10 @@ function AppContent() {
           <Route path="/feedback" element={<FeedbackPage />} />
           
           {/* Admin Routes */}
-          <Route path="/admin/settings" element={<ProtectedRoute><OrganizationSettings /></ProtectedRoute>} />
-          <Route path="/admin/organization-settings" element={<ProtectedRoute><OrganizationSettings /></ProtectedRoute>} />
+          <Route path="/admin/settings" element={<AdminRoute><OrganizationSettings /></AdminRoute>} />
+          <Route path="/admin/organization-settings" element={<AdminRoute><OrganizationSettings /></AdminRoute>} />
           <Route path="/settings" element={<Navigate to="/admin/organization-settings" replace />} />
-          <Route path="/admin/roles-permissions" element={<ProtectedRoute><RolesPermissions /></ProtectedRoute>} />
+          <Route path="/admin/roles-permissions" element={<AdminRoute><RolesPermissions /></AdminRoute>} />
           <Route path="/organization/chart" element={<ProtectedRoute><OrgChartPage /></ProtectedRoute>} />
           
           {/* Protected Routes */}
@@ -275,7 +297,9 @@ const App = () => (
       <AuthProvider>
         <OrganizationProvider>
           <AppSidebarProvider>
-            <AppContent />
+            <ErrorBoundary fallbackMessage="The application encountered an unexpected error. Please refresh the page.">
+              <AppContent />
+            </ErrorBoundary>
           </AppSidebarProvider>
         </OrganizationProvider>
       </AuthProvider>

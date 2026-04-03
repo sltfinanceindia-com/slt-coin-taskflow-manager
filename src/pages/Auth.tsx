@@ -49,8 +49,8 @@ export default function Auth() {
       errors.push('Please enter a valid email address');
     }
     
-    if (password.length < 6) {
-      errors.push('Password must be at least 6 characters long');
+    if (password.length < 8) {
+      errors.push('Password must be at least 8 characters long');
     }
 
     // Rate limiting check
@@ -198,8 +198,13 @@ export default function Auth() {
           variant: "destructive",
         });
       } else if (data.magicLink) {
-        // Redirect to magic link for authentication
-        window.location.href = data.magicLink;
+        // Validate origin to prevent open redirect
+        const linkUrl = new URL(data.magicLink);
+        if (linkUrl.origin !== window.location.origin) {
+          toast({ title: 'Security Error', description: 'Invalid redirect detected.', variant: 'destructive' });
+        } else {
+          window.location.href = data.magicLink;
+        }
       }
     } catch (error: any) {
       console.error('OTP verification error:', error);
@@ -337,6 +342,11 @@ export default function Auth() {
                         )}
                       </Button>
                     </div>
+                  </div>
+                  <div className="text-right">
+                    <Link to="/forgot-password" className="text-xs text-primary hover:underline">
+                      Forgot password?
+                    </Link>
                   </div>
                   <Button 
                     type="submit" 
