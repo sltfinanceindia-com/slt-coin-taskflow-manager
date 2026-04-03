@@ -359,10 +359,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string, role: 'admin' | 'intern' = 'intern') => {
+  const signUp = async (email: string, password: string, fullName: string) => {
     const redirectUrl = `${window.location.origin}/`;
-    
-    console.log('📝 Signing up user:', email);
     
     const { error } = await supabase.auth.signUp({
       email,
@@ -371,7 +369,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         emailRedirectTo: redirectUrl,
         data: {
           full_name: fullName,
-          role: role
+          role: 'intern'
         }
       }
     });
