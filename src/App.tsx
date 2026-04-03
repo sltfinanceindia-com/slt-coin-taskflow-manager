@@ -39,6 +39,8 @@ const StartTrial = lazy(() => import("./pages/StartTrial"));
 const FeedbackPage = lazy(() => import('./pages/Feedback'));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const HelpCenterPage = lazy(() => import("./pages/HelpCenterPage"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 // Protected pages - lazy loaded
 const ModernDashboard = lazy(() => import("./pages/ModernDashboard"));
