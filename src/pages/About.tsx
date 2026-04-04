@@ -65,7 +65,7 @@ export default function About() {
         title="About Us - TeneXA | Our Mission & Team"
         description="Learn about TeneXA's mission to transform workforce management. Meet our team and discover our values that drive innovation in HR technology."
         keywords="about TeneXA, HR software company, workforce management, our team, company values"
-        canonical="https://tenexa.lovable.app/about"
+        canonical="https://sltwork.lovable.app/about"
       />
       
       <div className="min-h-screen bg-background">
