@@ -73,7 +73,7 @@ export default function About() {
         
         <main>
           {/* Hero Section */}
-          <section className="relative py-24 lg:py-32 overflow-hidden">
+          <section className="relative py-14 overflow-hidden">
             <AnimatedBackground variant="hero" />
             
             <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
