@@ -188,13 +188,13 @@ export default function Pricing() {
                 <Sparkles className="h-3 w-3 mr-1" />
                 Simple, Transparent Pricing
               </Badge>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 tracking-tight">
+              <h1 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">
                 Choose Your{' '}
                 <span className="bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
                   Perfect Plan
                 </span>
               </h1>
-              <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+              <p className="text-sm md:text-base text-muted-foreground mb-6 max-w-2xl mx-auto">
                 No hidden fees. No surprises. Scale as you grow. All plans include a 14-day free trial.
               </p>
 
