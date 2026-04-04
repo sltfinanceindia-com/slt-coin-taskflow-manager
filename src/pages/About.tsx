@@ -102,7 +102,7 @@ export default function About() {
                 
                 <motion.p 
                   variants={fadeInUp}
-                  className="text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+                  className="text-sm md:text-base text-muted-foreground max-w-3xl mx-auto leading-relaxed"
                 >
                   Our mission is to empower organizations with intelligent, integrated workforce solutions 
                   that simplify complexity and unlock human potential.
