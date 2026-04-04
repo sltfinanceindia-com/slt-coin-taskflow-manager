@@ -177,7 +177,7 @@ export default function Resources() {
         title="Resources - Tenexa | Guides, Tutorials & Best Practices"
         description="Explore TeneXA's resource library: HR guides, project management tutorials, payroll tips, and product updates to help you succeed."
         keywords="HR resources, workforce management guides, project management tutorials, payroll compliance, TeneXA blog"
-        canonical="https://tenexa.lovable.app/resources"
+        canonical="https://sltwork.lovable.app/resources"
       />
       <div className="min-h-screen bg-background">
         <PublicHeader />
