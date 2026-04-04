@@ -238,13 +238,13 @@ export default function Features() {
                 <Sparkles className="h-3 w-3 mr-1" />
                 All-in-One Platform
               </Badge>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 tracking-tight">
+              <h1 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">
                 Powerful Features for{' '}
                 <span className="bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
                   Complete Control
                 </span>
               </h1>
-              <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+              <p className="text-sm md:text-base text-muted-foreground mb-6 max-w-2xl mx-auto">
                 Everything you need to manage HR, attendance, projects, payroll, and performance — all in one integrated platform.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
