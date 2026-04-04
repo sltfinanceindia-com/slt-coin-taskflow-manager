@@ -165,7 +165,7 @@ export default function Pricing() {
         title="Pricing - Tenexa | Transparent, Affordable Plans"
         description="Choose the perfect TeneXA plan for your team. From free to enterprise, with flexible monthly or annual billing. Start your 14-day free trial today."
         keywords="pricing, Tenexa pricing, HR software cost, workforce management pricing, affordable HR software"
-        canonical="https://tenexa.lovable.app/pricing"
+        canonical="https://sltwork.lovable.app/pricing"
         structuredData={generateFAQSchema(faqs)}
       />
       <div className="min-h-screen bg-background">
