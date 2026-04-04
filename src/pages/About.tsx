@@ -92,7 +92,7 @@ export default function About() {
                 
                 <motion.h1 
                   variants={fadeInUp}
-                  className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight"
+                  className="text-3xl md:text-4xl font-bold text-foreground mb-4 leading-tight"
                 >
                   Building the Future of
                   <span className="block bg-gradient-to-r from-primary to-[#64A8FF] bg-clip-text text-transparent">
