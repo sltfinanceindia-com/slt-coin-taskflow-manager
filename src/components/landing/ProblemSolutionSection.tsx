@@ -24,37 +24,37 @@ export function ProblemSolutionSection() {
   const [hoveredId, setHoveredId] = useState<number | null>(null);
 
   return (
-    <section className="relative py-24 lg:py-32 overflow-hidden">
+    <section className="relative py-14 overflow-hidden">
       <AnimatedBackground variant="dark" />
       
       <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div className="text-center mb-16" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">From Problems to Solutions</h2>
-          <p className="text-lg text-slate-400 max-w-2xl mx-auto">See how TeneXA transforms your biggest HR challenges into streamlined solutions</p>
+        <motion.div className="text-center mb-10" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">From Problems to Solutions</h2>
+          <p className="text-sm md:text-base text-slate-400 max-w-2xl mx-auto">See how TeneXA transforms your biggest HR challenges into streamlined solutions</p>
         </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 max-w-6xl mx-auto">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-14 max-w-6xl mx-auto">
           <motion.div variants={staggerContainer} initial="initial" whileInView="animate" viewport={{ once: true }}>
-            <div className="flex items-center gap-3 mb-8">
-              <div className="p-2 rounded-lg bg-red-500/20"><AlertCircle className="h-6 w-6 text-red-400" /></div>
-              <h3 className="text-xl font-semibold text-white">Struggling with...</h3>
+            <div className="flex items-center gap-2 mb-6">
+              <div className="p-1.5 rounded-lg bg-red-500/20"><AlertCircle className="h-5 w-5 text-red-400" /></div>
+              <h3 className="text-base font-semibold text-white">Struggling with...</h3>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {problems.map((problem) => (
                 <motion.div
                   key={problem.id} variants={fadeInLeft}
-                  className={`p-5 rounded-xl border transition-all duration-300 cursor-pointer ${
+                  className={`p-4 rounded-xl border transition-all duration-300 cursor-pointer ${
                     hoveredId === problem.id ? 'bg-red-500/10 border-red-500/50 scale-[1.02]' : 'bg-[#1A1A1A]/50 border-[#3A3A3A]/50 hover:border-[#3A3A3A]'
                   }`}
                   onMouseEnter={() => setHoveredId(problem.id)} onMouseLeave={() => setHoveredId(null)}
                 >
-                  <div className="flex items-start gap-4">
-                    <div className={`p-2 rounded-lg transition-colors ${hoveredId === problem.id ? 'bg-red-500/20' : 'bg-[#2A2A2A]/50'}`}>
-                      <problem.icon className={`h-5 w-5 ${hoveredId === problem.id ? 'text-red-400' : 'text-slate-400'}`} />
+                  <div className="flex items-start gap-3">
+                    <div className={`p-1.5 rounded-lg transition-colors ${hoveredId === problem.id ? 'bg-red-500/20' : 'bg-[#2A2A2A]/50'}`}>
+                      <problem.icon className={`h-4 w-4 ${hoveredId === problem.id ? 'text-red-400' : 'text-slate-400'}`} />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-white mb-1">{problem.title}</h4>
-                      <p className="text-sm text-slate-400">{problem.description}</p>
+                      <h4 className="text-sm font-semibold text-white mb-0.5">{problem.title}</h4>
+                      <p className="text-xs text-slate-400">{problem.description}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -63,29 +63,29 @@ export function ProblemSolutionSection() {
           </motion.div>
 
           <motion.div variants={staggerContainer} initial="initial" whileInView="animate" viewport={{ once: true }}>
-            <div className="flex items-center gap-3 mb-8">
-              <div className="p-2 rounded-lg bg-[#4A90E2]/20"><CheckCircle2 className="h-6 w-6 text-[#64A8FF]" /></div>
-              <h3 className="text-xl font-semibold text-white">TeneXA solves it all</h3>
+            <div className="flex items-center gap-2 mb-6">
+              <div className="p-1.5 rounded-lg bg-[#4A90E2]/20"><CheckCircle2 className="h-5 w-5 text-[#64A8FF]" /></div>
+              <h3 className="text-base font-semibold text-white">TeneXA solves it all</h3>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {solutions.map((solution) => (
                 <motion.div
                   key={solution.id} variants={fadeInRight}
-                  className={`p-5 rounded-xl border transition-all duration-300 cursor-pointer ${
+                  className={`p-4 rounded-xl border transition-all duration-300 cursor-pointer ${
                     hoveredId === solution.id ? 'bg-[#4A90E2]/10 border-[#4A90E2]/50 scale-[1.02]' : 'bg-[#1A1A1A]/50 border-[#3A3A3A]/50 hover:border-[#3A3A3A]'
                   }`}
                   onMouseEnter={() => setHoveredId(solution.id)} onMouseLeave={() => setHoveredId(null)}
                 >
-                  <div className="flex items-start gap-4">
-                    <div className={`p-2 rounded-lg transition-colors ${hoveredId === solution.id ? 'bg-[#4A90E2]/20' : 'bg-[#2A2A2A]/50'}`}>
-                      <solution.icon className={`h-5 w-5 ${hoveredId === solution.id ? 'text-[#64A8FF]' : 'text-slate-400'}`} />
+                  <div className="flex items-start gap-3">
+                    <div className={`p-1.5 rounded-lg transition-colors ${hoveredId === solution.id ? 'bg-[#4A90E2]/20' : 'bg-[#2A2A2A]/50'}`}>
+                      <solution.icon className={`h-4 w-4 ${hoveredId === solution.id ? 'text-[#64A8FF]' : 'text-slate-400'}`} />
                     </div>
                     <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <CheckCircle2 className="h-4 w-4 text-[#4A90E2]" />
-                        <h4 className="font-semibold text-white">{solution.title}</h4>
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-[#4A90E2]" />
+                        <h4 className="text-sm font-semibold text-white">{solution.title}</h4>
                       </div>
-                      <p className="text-sm text-slate-400">{solution.description}</p>
+                      <p className="text-xs text-slate-400">{solution.description}</p>
                     </div>
                   </div>
                 </motion.div>

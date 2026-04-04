@@ -15,11 +15,11 @@ export function HowItWorksSection() {
   const lineHeight = useTransform(scrollYProgress, [0.2, 0.8], ['0%', '100%']);
 
   return (
-    <section ref={containerRef} className="py-24 lg:py-32 overflow-hidden">
+    <section ref={containerRef} className="py-14 overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div className="text-center mb-16 lg:mb-24" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">Get Started in 3 Simple Steps</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">From sign-up to fully operational in less than a day</p>
+        <motion.div className="text-center mb-10" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">Get Started in 3 Simple Steps</h2>
+          <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">From sign-up to fully operational in less than a day</p>
         </motion.div>
 
         <div className="relative max-w-5xl mx-auto">
@@ -27,23 +27,23 @@ export function HowItWorksSection() {
             <motion.div className="w-full bg-gradient-to-b from-primary to-[#2E5F99] origin-top" style={{ height: lineHeight }} />
           </div>
 
-          <motion.div className="space-y-16 lg:space-y-24" variants={staggerContainer} initial="initial" whileInView="animate" viewport={{ once: true }}>
+          <motion.div className="space-y-12 lg:space-y-16" variants={staggerContainer} initial="initial" whileInView="animate" viewport={{ once: true }}>
             {steps.map((step, index) => (
               <motion.div
                 key={step.number}
                 variants={fadeInUp}
-                className={`relative flex flex-col lg:flex-row items-center gap-8 lg:gap-16 ${step.position === 'right' ? 'lg:flex-row-reverse' : ''}`}
+                className={`relative flex flex-col lg:flex-row items-center gap-6 lg:gap-12 ${step.position === 'right' ? 'lg:flex-row-reverse' : ''}`}
               >
                 <div className={`flex-1 ${step.position === 'right' ? 'lg:text-left' : 'lg:text-right'}`}>
-                  <div className={`inline-flex items-center gap-3 mb-4 ${step.position === 'right' ? '' : 'lg:flex-row-reverse'}`}>
-                    <span className="text-5xl lg:text-6xl font-bold text-primary/20">{step.number}</span>
+                  <div className={`inline-flex items-center gap-3 mb-3 ${step.position === 'right' ? '' : 'lg:flex-row-reverse'}`}>
+                    <span className="text-3xl font-bold text-primary/20">{step.number}</span>
                   </div>
-                  <h3 className="text-2xl lg:text-3xl font-bold text-foreground mb-3">{step.title}</h3>
-                  <p className="text-muted-foreground mb-6 leading-relaxed">{step.description}</p>
+                  <h3 className="text-xl font-bold text-foreground mb-2">{step.title}</h3>
+                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{step.description}</p>
                   <div className={`flex flex-wrap gap-3 ${step.position === 'right' ? '' : 'lg:justify-end'}`}>
                     {step.highlights.map((highlight) => (
-                      <div key={highlight} className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                      <div key={highlight} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
                         {highlight}
                       </div>
                     ))}
@@ -51,8 +51,8 @@ export function HowItWorksSection() {
                 </div>
 
                 <motion.div className="relative z-10 flex items-center justify-center" whileHover={{ scale: 1.1 }} transition={{ type: 'spring', stiffness: 300 }}>
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-[#2E5F99] flex items-center justify-center shadow-lg shadow-primary/30">
-                    <step.icon className="h-8 w-8 text-white" />
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-[#2E5F99] flex items-center justify-center shadow-lg shadow-primary/30">
+                    <step.icon className="h-6 w-6 text-white" />
                   </div>
                   <motion.div
                     className="absolute inset-0 rounded-full border-2 border-primary/50"
