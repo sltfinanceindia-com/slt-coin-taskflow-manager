@@ -260,7 +260,7 @@ function AppContent() {
           <Route path="/my-goals" element={<ProtectedRoute><MyGoalsPage /></ProtectedRoute>} />
           <Route path="/tutorial" element={<ProtectedRoute><TutorialPage /></ProtectedRoute>} />
           <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
-          <Route path="/help" element={<HelpCenterPage />} />
+          <Route path="/help" element={<ProtectedRoute><HelpCenterPage /></ProtectedRoute>} />
           
           {/* Module Landing Pages */}
           <Route path="/employees" element={<ProtectedRoute><EmployeesPage /></ProtectedRoute>} />
