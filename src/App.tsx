@@ -241,7 +241,7 @@ function AppContent() {
           <Route path="/super-admin/announcements" element={<SuperAdminRoute><PlatformAnnouncements /></SuperAdminRoute>} />
           
           {/* Public Routes */}
-          <Route path="/feedback" element={<FeedbackPage />} />
+          <Route path="/feedback" element={<ProtectedRoute><FeedbackPage /></ProtectedRoute>} />
           
           {/* Admin Routes */}
           <Route path="/admin/settings" element={<AdminRoute><OrganizationSettings /></AdminRoute>} />
