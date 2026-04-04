@@ -192,11 +192,11 @@ export default function About() {
                     variants={fadeInUp}
                     className="group p-6 rounded-2xl bg-background border border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg"
                   >
-                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${value.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-                      <value.icon className="h-7 w-7 text-white" />
+                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${value.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                      <value.icon className="h-5 w-5 text-white" />
                     </div>
-                    <h3 className="text-xl font-semibold text-foreground mb-3">{value.title}</h3>
-                    <p className="text-muted-foreground leading-relaxed">{value.description}</p>
+                    <h3 className="text-base font-semibold text-foreground mb-2">{value.title}</h3>
+                    <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">{value.description}</p>
                   </motion.div>
                 ))}
               </motion.div>
