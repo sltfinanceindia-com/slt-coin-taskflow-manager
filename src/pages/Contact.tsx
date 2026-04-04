@@ -110,11 +110,11 @@ const Contact = () => {
               <MessageSquare className="h-3 w-3 mr-1" />
               Get in Touch
             </Badge>
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-4 sm:mb-6 tracking-tight leading-tight animate-fade-in">
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight leading-tight animate-fade-in">
               Contact
               <span className="block text-primary">Our Team</span>
             </h1>
-            <p className="text-base sm:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto px-4 leading-relaxed animate-fade-in" style={{ animationDelay: '100ms' }}>
+            <p className="text-sm md:text-base text-muted-foreground max-w-3xl mx-auto px-4 leading-relaxed animate-fade-in" style={{ animationDelay: '100ms' }}>
               Have questions about our enterprise plans or need custom solutions? 
               Our team is here to help you find the perfect fit for your organization.
             </p>

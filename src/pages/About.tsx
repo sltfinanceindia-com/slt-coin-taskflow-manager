@@ -234,7 +234,7 @@ export default function About() {
                     className="group text-center"
                   >
                     <div className="relative mb-4">
-                      <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-primary to-[#2E5F99] flex items-center justify-center text-white text-2xl font-bold group-hover:scale-105 transition-transform">
+                      <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-primary to-[#2E5F99] flex items-center justify-center text-white text-2xl font-bold group-hover:scale-105 transition-transform">
                         {member.name.split(' ').map(n => n[0]).join('')}
                       </div>
                       {/* Social overlay on hover */}

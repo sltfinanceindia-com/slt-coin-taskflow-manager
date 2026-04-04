@@ -379,15 +379,15 @@ export default function Features() {
         </section>
 
         {/* Comparison Table */}
-        <section className="py-16 lg:py-24 bg-muted/30">
+        <section className="py-14 bg-muted/30">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div 
-              className="text-center mb-12"
+              className="text-center mb-10"
               {...fadeInUp}
               viewport={viewportOnce}
             >
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">TeneXA vs Traditional Solutions</h2>
-              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              <h2 className="text-2xl md:text-3xl font-bold mb-3">TeneXA vs Traditional Solutions</h2>
+              <p className="text-muted-foreground text-sm md:text-base max-w-2xl mx-auto">
                 See how TeneXA compares to legacy HR software and spreadsheet-based solutions.
               </p>
             </motion.div>
