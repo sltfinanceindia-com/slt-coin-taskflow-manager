@@ -263,15 +263,15 @@ export default function Features() {
         </section>
 
         {/* Tabbed Features Section */}
-        <section id="features-tabs" className="py-16 lg:py-24">
+        <section id="features-tabs" className="py-14">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div 
-              className="text-center mb-12"
+              className="text-center mb-10"
               {...fadeInUp}
               viewport={viewportOnce}
             >
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">Explore Our Features</h2>
-              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              <h2 className="text-2xl md:text-3xl font-bold mb-3">Explore Our Features</h2>
+              <p className="text-muted-foreground text-sm md:text-base max-w-2xl mx-auto">
                 Click on each module to discover how TeneXA transforms your workforce management.
               </p>
             </motion.div>
