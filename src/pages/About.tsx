@@ -171,10 +171,10 @@ export default function About() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
                   Our Values
                 </h2>
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
                   The principles that guide everything we do
                 </p>
               </motion.div>
