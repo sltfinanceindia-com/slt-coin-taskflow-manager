@@ -90,7 +90,7 @@ const Contact = () => {
 
         {/* Hero with Background */}
         <section 
-          className="relative py-16 sm:py-24 lg:py-32 text-center overflow-hidden"
+          className="relative py-14 text-center overflow-hidden"
           style={{
             backgroundImage: `url(${bgPatternFeatures})`,
             backgroundSize: 'cover',
