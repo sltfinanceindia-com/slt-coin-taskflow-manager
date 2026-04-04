@@ -247,14 +247,14 @@ export default function Features() {
               <p className="text-sm md:text-base text-muted-foreground mb-6 max-w-2xl mx-auto">
                 Everything you need to manage HR, attendance, projects, payroll, and performance — all in one integrated platform.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="h-12 px-8 text-base" asChild>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button size="default" asChild>
                   <Link to="/signup">
                     Start Free Trial
-                    <ArrowRight className="ml-2 h-5 w-5" />
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="h-12 px-8 text-base" asChild>
+                <Button size="default" variant="outline" asChild>
                   <Link to="/contact">Schedule Demo</Link>
                 </Button>
               </div>
