@@ -82,7 +82,7 @@ const Contact = () => {
         title="Contact Us - Tenexa | Get in Touch"
         description="Contact Tenexa for enterprise solutions, custom integrations, or any questions. Our team is ready to help you transform your workplace."
         keywords="contact, support, enterprise solutions, custom integrations, Tenexa contact"
-        canonical="https://tenexa.lovable.app/contact"
+        canonical="https://sltwork.lovable.app/contact"
       />
       <div className="min-h-screen bg-background">
         {/* Shared Header */}
