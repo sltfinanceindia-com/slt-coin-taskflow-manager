@@ -215,7 +215,7 @@ export default function Features() {
         title="Features - Tenexa | Complete Workforce Management Platform"
         description="Discover TeneXA's powerful features: HR management, GPS attendance, project tracking, automated payroll, performance management, and real-time analytics."
         keywords="HR software features, attendance tracking, project management, payroll automation, performance management, workforce analytics"
-        canonical="https://tenexa.lovable.app/features"
+        canonical="https://sltwork.lovable.app/features"
       />
       <div className="min-h-screen bg-background">
         <PublicHeader />
