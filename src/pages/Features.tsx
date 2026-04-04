@@ -309,9 +309,9 @@ export default function Features() {
                                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                                   <tab.icon className="h-6 w-6 text-primary" />
                                 </div>
-                                <h3 className="text-2xl lg:text-3xl font-bold">{tab.title}</h3>
+                                <h3 className="text-xl font-bold">{tab.title}</h3>
                               </div>
-                              <p className="text-muted-foreground text-lg mb-8">{tab.description}</p>
+                              <p className="text-muted-foreground text-sm mb-6">{tab.description}</p>
                               
                               <div className="grid sm:grid-cols-2 gap-3 mb-8">
                                 {tab.features.map((feature, idx) => (
