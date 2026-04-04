@@ -183,8 +183,9 @@ function AppContent() {
     }
   }, [loading]);
 
-  const isPublicRoute = typeof window !== 'undefined' && 
-    ['/', '/auth', '/signup', '/pricing', '/features', '/terms', '/privacy', '/contact', '/about', '/resources', '/start-trial', '/feedback'].includes(window.location.pathname);
+  const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
+  const publicPaths = ['/', '/auth', '/signup', '/pricing', '/features', '/terms', '/privacy', '/contact', '/about', '/resources', '/start-trial', '/forgot-password', '/reset-password'];
+  const isPublicRoute = publicPaths.includes(currentPath);
 
   const shouldShowSplash = showSplash && 
     (!minTimeElapsed || loading) && 
@@ -241,7 +242,7 @@ function AppContent() {
           <Route path="/super-admin/announcements" element={<SuperAdminRoute><PlatformAnnouncements /></SuperAdminRoute>} />
           
           {/* Public Routes */}
-          <Route path="/feedback" element={<FeedbackPage />} />
+          <Route path="/feedback" element={<ProtectedRoute><FeedbackPage /></ProtectedRoute>} />
           
           {/* Admin Routes */}
           <Route path="/admin/settings" element={<AdminRoute><OrganizationSettings /></AdminRoute>} />
@@ -260,7 +261,7 @@ function AppContent() {
           <Route path="/my-goals" element={<ProtectedRoute><MyGoalsPage /></ProtectedRoute>} />
           <Route path="/tutorial" element={<ProtectedRoute><TutorialPage /></ProtectedRoute>} />
           <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
-          <Route path="/help" element={<HelpCenterPage />} />
+          <Route path="/help" element={<ProtectedRoute><HelpCenterPage /></ProtectedRoute>} />
           
           {/* Module Landing Pages */}
           <Route path="/employees" element={<ProtectedRoute><EmployeesPage /></ProtectedRoute>} />

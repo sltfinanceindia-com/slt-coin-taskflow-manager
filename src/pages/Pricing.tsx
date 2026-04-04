@@ -165,14 +165,14 @@ export default function Pricing() {
         title="Pricing - Tenexa | Transparent, Affordable Plans"
         description="Choose the perfect TeneXA plan for your team. From free to enterprise, with flexible monthly or annual billing. Start your 14-day free trial today."
         keywords="pricing, Tenexa pricing, HR software cost, workforce management pricing, affordable HR software"
-        canonical="https://tenexa.lovable.app/pricing"
+        canonical="https://sltwork.lovable.app/pricing"
         structuredData={generateFAQSchema(faqs)}
       />
       <div className="min-h-screen bg-background">
         <PublicHeader />
 
         {/* Hero Section */}
-        <section className="relative py-20 lg:py-32 overflow-hidden">
+        <section className="relative py-14 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5" />
           <div className="absolute top-0 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
@@ -188,13 +188,13 @@ export default function Pricing() {
                 <Sparkles className="h-3 w-3 mr-1" />
                 Simple, Transparent Pricing
               </Badge>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 tracking-tight">
+              <h1 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">
                 Choose Your{' '}
                 <span className="bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
                   Perfect Plan
                 </span>
               </h1>
-              <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+              <p className="text-sm md:text-base text-muted-foreground mb-6 max-w-2xl mx-auto">
                 No hidden fees. No surprises. Scale as you grow. All plans include a 14-day free trial.
               </p>
 
@@ -337,15 +337,15 @@ export default function Pricing() {
         </section>
 
         {/* Feature Comparison Table */}
-        <section className="py-16 lg:py-24 bg-muted/30">
+        <section className="py-14 bg-muted/30">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div 
-              className="text-center mb-12"
+              className="text-center mb-10"
               {...fadeInUp}
               viewport={viewportOnce}
             >
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">Compare All Features</h2>
-              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              <h2 className="text-2xl md:text-3xl font-bold mb-3">Compare All Features</h2>
+              <p className="text-muted-foreground text-sm md:text-base max-w-2xl mx-auto">
                 Detailed breakdown of what's included in each plan.
               </p>
             </motion.div>

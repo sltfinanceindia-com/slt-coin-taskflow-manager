@@ -345,13 +345,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const handleBeforeUnload = () => {
       const currentProfile = profileRef.current;
       if (currentProfile?.id) {
-        // Use sendBeacon to reliably send data during page unload
+        // Use fetch with keepalive to reliably send data with auth headers during page unload
         const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/session_logs?user_id=eq.${currentProfile.id}&logout_time=is.null`;
         const body = JSON.stringify({ logout_time: new Date().toISOString() });
-        navigator.sendBeacon(
-          url,
-          new Blob([body], { type: 'application/json' })
-        );
+        fetch(url, {
+          method: 'PATCH',
+          keepalive: true,
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            'Prefer': 'return=minimal'
+          },
+          body
+        }).catch(() => {});
       }
     };
     

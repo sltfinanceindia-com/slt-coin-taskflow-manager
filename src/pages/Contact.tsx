@@ -82,7 +82,7 @@ const Contact = () => {
         title="Contact Us - Tenexa | Get in Touch"
         description="Contact Tenexa for enterprise solutions, custom integrations, or any questions. Our team is ready to help you transform your workplace."
         keywords="contact, support, enterprise solutions, custom integrations, Tenexa contact"
-        canonical="https://tenexa.lovable.app/contact"
+        canonical="https://sltwork.lovable.app/contact"
       />
       <div className="min-h-screen bg-background">
         {/* Shared Header */}
@@ -90,7 +90,7 @@ const Contact = () => {
 
         {/* Hero with Background */}
         <section 
-          className="relative py-16 sm:py-24 lg:py-32 text-center overflow-hidden"
+          className="relative py-14 text-center overflow-hidden"
           style={{
             backgroundImage: `url(${bgPatternFeatures})`,
             backgroundSize: 'cover',
@@ -110,11 +110,11 @@ const Contact = () => {
               <MessageSquare className="h-3 w-3 mr-1" />
               Get in Touch
             </Badge>
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-4 sm:mb-6 tracking-tight leading-tight animate-fade-in">
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight leading-tight animate-fade-in">
               Contact
               <span className="block text-primary">Our Team</span>
             </h1>
-            <p className="text-base sm:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto px-4 leading-relaxed animate-fade-in" style={{ animationDelay: '100ms' }}>
+            <p className="text-sm md:text-base text-muted-foreground max-w-3xl mx-auto px-4 leading-relaxed animate-fade-in" style={{ animationDelay: '100ms' }}>
               Have questions about our enterprise plans or need custom solutions? 
               Our team is here to help you find the perfect fit for your organization.
             </p>

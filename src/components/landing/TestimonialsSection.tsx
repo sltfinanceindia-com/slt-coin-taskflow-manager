@@ -12,20 +12,20 @@ const testimonials = [
 
 export function TestimonialsSection() {
   return (
-    <section className="py-24 lg:py-32 bg-muted/30 overflow-hidden">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 mb-12">
-        <motion.div className="text-center" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">Loved by Teams Worldwide</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">See what our customers have to say about transforming their workplace with TeneXA</p>
+    <section className="py-14 bg-muted/30 overflow-hidden">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+        <motion.div className="text-center" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">Loved by Teams Worldwide</h2>
+          <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">See what our customers have to say about transforming their workplace with TeneXA</p>
         </motion.div>
       </div>
 
       <div className="relative">
-        <div className="absolute left-0 top-0 bottom-0 w-32 lg:w-64 bg-gradient-to-r from-muted/80 to-transparent z-10 pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-32 lg:w-64 bg-gradient-to-l from-muted/80 to-transparent z-10 pointer-events-none" />
+        <div className="absolute left-0 top-0 bottom-0 w-24 lg:w-48 bg-gradient-to-r from-muted/80 to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-24 lg:w-48 bg-gradient-to-l from-muted/80 to-transparent z-10 pointer-events-none" />
         
-        <div className="flex overflow-hidden mb-6">
-          <motion.div className="flex gap-6" animate={{ x: ['0%', '-50%'] }} transition={{ x: { duration: 40, repeat: Infinity, ease: 'linear' } }}>
+        <div className="flex overflow-hidden mb-4">
+          <motion.div className="flex gap-4" animate={{ x: ['0%', '-50%'] }} transition={{ x: { duration: 40, repeat: Infinity, ease: 'linear' } }}>
             {[...testimonials, ...testimonials].map((testimonial, index) => (
               <TestimonialCard key={`row1-${index}`} testimonial={testimonial} />
             ))}
@@ -33,7 +33,7 @@ export function TestimonialsSection() {
         </div>
 
         <div className="flex overflow-hidden">
-          <motion.div className="flex gap-6" animate={{ x: ['-50%', '0%'] }} transition={{ x: { duration: 45, repeat: Infinity, ease: 'linear' } }}>
+          <motion.div className="flex gap-4" animate={{ x: ['-50%', '0%'] }} transition={{ x: { duration: 45, repeat: Infinity, ease: 'linear' } }}>
             {[...testimonials.slice(3), ...testimonials.slice(0, 3), ...testimonials.slice(3), ...testimonials.slice(0, 3)].map((testimonial, index) => (
               <TestimonialCard key={`row2-${index}`} testimonial={testimonial} />
             ))}
@@ -46,21 +46,21 @@ export function TestimonialsSection() {
 
 function TestimonialCard({ testimonial }: { testimonial: typeof testimonials[0] }) {
   return (
-    <div className="w-[400px] shrink-0 p-6 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-colors">
-      <Quote className="h-8 w-8 text-primary/30 mb-4" />
-      <div className="flex gap-1 mb-4">
+    <div className="w-[340px] shrink-0 p-5 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-colors">
+      <Quote className="h-6 w-6 text-primary/30 mb-3" />
+      <div className="flex gap-0.5 mb-3">
         {Array.from({ length: testimonial.rating }).map((_, i) => (
-          <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+          <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
         ))}
       </div>
-      <p className="text-foreground mb-6 leading-relaxed">"{testimonial.quote}"</p>
+      <p className="text-sm text-foreground mb-4 leading-relaxed">"{testimonial.quote}"</p>
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-[#2E5F99] flex items-center justify-center text-white font-semibold">
+        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-[#2E5F99] flex items-center justify-center text-white text-sm font-semibold">
           {testimonial.author.charAt(0)}
         </div>
         <div>
-          <p className="font-semibold text-foreground">{testimonial.author}</p>
-          <p className="text-sm text-muted-foreground">{testimonial.role}, {testimonial.company}</p>
+          <p className="text-sm font-semibold text-foreground">{testimonial.author}</p>
+          <p className="text-xs text-muted-foreground">{testimonial.role}, {testimonial.company}</p>
         </div>
       </div>
     </div>

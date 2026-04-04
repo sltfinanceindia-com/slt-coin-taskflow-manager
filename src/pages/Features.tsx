@@ -215,13 +215,13 @@ export default function Features() {
         title="Features - Tenexa | Complete Workforce Management Platform"
         description="Discover TeneXA's powerful features: HR management, GPS attendance, project tracking, automated payroll, performance management, and real-time analytics."
         keywords="HR software features, attendance tracking, project management, payroll automation, performance management, workforce analytics"
-        canonical="https://tenexa.lovable.app/features"
+        canonical="https://sltwork.lovable.app/features"
       />
       <div className="min-h-screen bg-background">
         <PublicHeader />
 
         {/* Hero Section */}
-        <section className="relative py-20 lg:py-32 overflow-hidden">
+        <section className="relative py-14 overflow-hidden">
           {/* Animated Background */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5" />
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
@@ -238,23 +238,23 @@ export default function Features() {
                 <Sparkles className="h-3 w-3 mr-1" />
                 All-in-One Platform
               </Badge>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 tracking-tight">
+              <h1 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">
                 Powerful Features for{' '}
                 <span className="bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
                   Complete Control
                 </span>
               </h1>
-              <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+              <p className="text-sm md:text-base text-muted-foreground mb-6 max-w-2xl mx-auto">
                 Everything you need to manage HR, attendance, projects, payroll, and performance — all in one integrated platform.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="h-12 px-8 text-base" asChild>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button size="default" asChild>
                   <Link to="/signup">
                     Start Free Trial
-                    <ArrowRight className="ml-2 h-5 w-5" />
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="h-12 px-8 text-base" asChild>
+                <Button size="default" variant="outline" asChild>
                   <Link to="/contact">Schedule Demo</Link>
                 </Button>
               </div>
@@ -263,15 +263,15 @@ export default function Features() {
         </section>
 
         {/* Tabbed Features Section */}
-        <section id="features-tabs" className="py-16 lg:py-24">
+        <section id="features-tabs" className="py-14">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div 
-              className="text-center mb-12"
+              className="text-center mb-10"
               {...fadeInUp}
               viewport={viewportOnce}
             >
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">Explore Our Features</h2>
-              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              <h2 className="text-2xl md:text-3xl font-bold mb-3">Explore Our Features</h2>
+              <p className="text-muted-foreground text-sm md:text-base max-w-2xl mx-auto">
                 Click on each module to discover how TeneXA transforms your workforce management.
               </p>
             </motion.div>
@@ -309,9 +309,9 @@ export default function Features() {
                                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                                   <tab.icon className="h-6 w-6 text-primary" />
                                 </div>
-                                <h3 className="text-2xl lg:text-3xl font-bold">{tab.title}</h3>
+                                <h3 className="text-xl font-bold">{tab.title}</h3>
                               </div>
-                              <p className="text-muted-foreground text-lg mb-8">{tab.description}</p>
+                              <p className="text-muted-foreground text-sm mb-6">{tab.description}</p>
                               
                               <div className="grid sm:grid-cols-2 gap-3 mb-8">
                                 {tab.features.map((feature, idx) => (
@@ -379,15 +379,15 @@ export default function Features() {
         </section>
 
         {/* Comparison Table */}
-        <section className="py-16 lg:py-24 bg-muted/30">
+        <section className="py-14 bg-muted/30">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div 
-              className="text-center mb-12"
+              className="text-center mb-10"
               {...fadeInUp}
               viewport={viewportOnce}
             >
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">TeneXA vs Traditional Solutions</h2>
-              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              <h2 className="text-2xl md:text-3xl font-bold mb-3">TeneXA vs Traditional Solutions</h2>
+              <p className="text-muted-foreground text-sm md:text-base max-w-2xl mx-auto">
                 See how TeneXA compares to legacy HR software and spreadsheet-based solutions.
               </p>
             </motion.div>

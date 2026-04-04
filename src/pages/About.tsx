@@ -65,7 +65,7 @@ export default function About() {
         title="About Us - TeneXA | Our Mission & Team"
         description="Learn about TeneXA's mission to transform workforce management. Meet our team and discover our values that drive innovation in HR technology."
         keywords="about TeneXA, HR software company, workforce management, our team, company values"
-        canonical="https://tenexa.lovable.app/about"
+        canonical="https://sltwork.lovable.app/about"
       />
       
       <div className="min-h-screen bg-background">
@@ -73,7 +73,7 @@ export default function About() {
         
         <main>
           {/* Hero Section */}
-          <section className="relative py-24 lg:py-32 overflow-hidden">
+          <section className="relative py-14 overflow-hidden">
             <AnimatedBackground variant="hero" />
             
             <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
@@ -92,7 +92,7 @@ export default function About() {
                 
                 <motion.h1 
                   variants={fadeInUp}
-                  className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight"
+                  className="text-3xl md:text-4xl font-bold text-foreground mb-4 leading-tight"
                 >
                   Building the Future of
                   <span className="block bg-gradient-to-r from-primary to-[#64A8FF] bg-clip-text text-transparent">
@@ -102,7 +102,7 @@ export default function About() {
                 
                 <motion.p 
                   variants={fadeInUp}
-                  className="text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+                  className="text-sm md:text-base text-muted-foreground max-w-3xl mx-auto leading-relaxed"
                 >
                   Our mission is to empower organizations with intelligent, integrated workforce solutions 
                   that simplify complexity and unlock human potential.
@@ -112,7 +112,7 @@ export default function About() {
           </section>
 
           {/* Our Story Timeline */}
-          <section className="py-24 lg:py-32 bg-muted/30">
+          <section className="py-14 bg-muted/30">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
               <motion.div
                 className="text-center mb-16"
@@ -120,10 +120,10 @@ export default function About() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
                   Our Journey
                 </h2>
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
                   From a small startup to serving 500+ organizations
                 </p>
               </motion.div>
@@ -163,7 +163,7 @@ export default function About() {
           </section>
 
           {/* Values Section */}
-          <section className="py-24 lg:py-32">
+          <section className="py-14">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
               <motion.div
                 className="text-center mb-16"
@@ -171,10 +171,10 @@ export default function About() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
                   Our Values
                 </h2>
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
                   The principles that guide everything we do
                 </p>
               </motion.div>
@@ -192,11 +192,11 @@ export default function About() {
                     variants={fadeInUp}
                     className="group p-6 rounded-2xl bg-background border border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg"
                   >
-                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${value.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-                      <value.icon className="h-7 w-7 text-white" />
+                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${value.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                      <value.icon className="h-5 w-5 text-white" />
                     </div>
-                    <h3 className="text-xl font-semibold text-foreground mb-3">{value.title}</h3>
-                    <p className="text-muted-foreground leading-relaxed">{value.description}</p>
+                    <h3 className="text-base font-semibold text-foreground mb-2">{value.title}</h3>
+                    <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">{value.description}</p>
                   </motion.div>
                 ))}
               </motion.div>
@@ -204,7 +204,7 @@ export default function About() {
           </section>
 
           {/* Team Section */}
-          <section className="py-24 lg:py-32 bg-muted/30">
+          <section className="py-14 bg-muted/30">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
               <motion.div
                 className="text-center mb-16"
@@ -212,10 +212,10 @@ export default function About() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
                   Meet Our Team
                 </h2>
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
                   The passionate people behind TeneXA
                 </p>
               </motion.div>
@@ -234,7 +234,7 @@ export default function About() {
                     className="group text-center"
                   >
                     <div className="relative mb-4">
-                      <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-primary to-[#2E5F99] flex items-center justify-center text-white text-2xl font-bold group-hover:scale-105 transition-transform">
+                      <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-primary to-[#2E5F99] flex items-center justify-center text-white text-2xl font-bold group-hover:scale-105 transition-transform">
                         {member.name.split(' ').map(n => n[0]).join('')}
                       </div>
                       {/* Social overlay on hover */}
