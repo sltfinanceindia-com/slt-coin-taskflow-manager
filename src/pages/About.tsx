@@ -112,7 +112,7 @@ export default function About() {
           </section>
 
           {/* Our Story Timeline */}
-          <section className="py-24 lg:py-32 bg-muted/30">
+          <section className="py-14 bg-muted/30">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
               <motion.div
                 className="text-center mb-16"
