@@ -183,7 +183,7 @@ function AppContent() {
     }
   }, [loading]);
 
-  const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
+  const currentPath = window.location.pathname;
   const publicPaths = ['/', '/auth', '/signup', '/pricing', '/features', '/terms', '/privacy', '/contact', '/about', '/resources', '/start-trial', '/forgot-password', '/reset-password'];
   const isPublicRoute = publicPaths.includes(currentPath);
 
