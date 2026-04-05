@@ -427,24 +427,24 @@ export default function Resources() {
         </section>
 
         {/* Newsletter CTA */}
-        <section className="py-16 lg:py-24 bg-muted/30">
+        <section className="py-14 bg-muted/30">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div 
               className="max-w-2xl mx-auto text-center"
               {...fadeInUp}
               viewport={viewportOnce}
             >
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">Stay Updated</h2>
-              <p className="text-lg text-muted-foreground mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold mb-3">Stay Updated</h2>
+              <p className="text-sm md:text-base text-muted-foreground mb-6">
                 Get the latest HR insights, product updates, and best practices delivered to your inbox.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+              <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
                 <Input 
                   type="email" 
                   placeholder="Enter your email"
-                  className="h-12 flex-1"
+                  className="flex-1"
                 />
-                <Button size="lg" className="h-12 px-8">
+                <Button size="default">
                   Subscribe
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>

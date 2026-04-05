@@ -121,7 +121,7 @@ const Contact = () => {
           </div>
         </section>
 
-        <main className="container mx-auto px-4 py-12 sm:py-20">
+        <main className="container mx-auto px-4 py-14">
           <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 max-w-6xl mx-auto">
             {/* Contact Form */}
             <Card className="shadow-lg">

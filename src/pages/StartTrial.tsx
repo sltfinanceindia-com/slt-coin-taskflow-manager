@@ -198,7 +198,7 @@ export default function StartTrial() {
       <div className="min-h-screen bg-background">
         <PublicHeader />
 
-        <main className="py-12 lg:py-20">
+        <main className="py-14">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
               {/* Header */}

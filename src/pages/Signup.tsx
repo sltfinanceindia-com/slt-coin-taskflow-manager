@@ -427,6 +427,9 @@ export default function Signup() {
                       }
                       setIsLoading(true);
                       try {
+                        // Persist company name before OAuth redirect so it can be used after callback
+                        localStorage.setItem('pending_org_company_name', formData.companyName.trim());
+                        localStorage.setItem('pending_org_full_name', formData.fullName.trim());
                         const { error } = await supabase.auth.signInWithOAuth({
                           provider: 'google',
                           options: {

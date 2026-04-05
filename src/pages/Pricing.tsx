@@ -222,7 +222,7 @@ export default function Pricing() {
         </section>
 
         {/* Pricing Cards */}
-        <section className="py-12 sm:py-20">
+        <section className="py-14">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             {isLoading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
@@ -285,7 +285,7 @@ export default function Pricing() {
                           </CardDescription>
                           <div className="pt-4">
                             <motion.span 
-                              className="text-4xl font-bold"
+                              className="text-3xl font-bold"
                               key={isAnnual ? 'annual' : 'monthly'}
                               initial={{ opacity: 0, y: -10 }}
                               animate={{ opacity: 1, y: 0 }}
@@ -414,7 +414,7 @@ export default function Pricing() {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-16 lg:py-24">
+        <section className="py-14">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div 
               className="text-center mb-12"
@@ -422,10 +422,10 @@ export default function Pricing() {
               viewport={viewportOnce}
             >
               <div className="flex items-center justify-center gap-2 mb-4">
-                <HelpCircle className="h-6 w-6 text-primary" />
-                <h2 className="text-3xl sm:text-4xl font-bold">Frequently Asked Questions</h2>
+                <HelpCircle className="h-5 w-5 text-primary" />
+                <h2 className="text-2xl md:text-3xl font-bold">Frequently Asked Questions</h2>
               </div>
-              <p className="text-muted-foreground text-lg">
+              <p className="text-muted-foreground text-sm md:text-base">
                 Got questions? We've got answers.
               </p>
             </motion.div>
@@ -454,28 +454,28 @@ export default function Pricing() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-16 lg:py-24 bg-muted/30">
+        <section className="py-14 bg-muted/30">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div 
               className="max-w-4xl mx-auto text-center"
               {...fadeInUp}
               viewport={viewportOnce}
             >
-              <Building2 className="h-12 w-12 text-primary mx-auto mb-6" />
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+              <Building2 className="h-6 w-6 text-primary mx-auto mb-4" />
+              <h2 className="text-2xl md:text-3xl font-bold mb-3">
                 Still Have Questions?
               </h2>
-              <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+              <p className="text-sm md:text-base text-muted-foreground mb-6 max-w-2xl mx-auto">
                 Our team is here to help you choose the right plan for your organization.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="h-12 px-8" asChild>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button size="default" asChild>
                   <Link to="/signup">
                     Start Free Trial
-                    <ArrowRight className="ml-2 h-5 w-5" />
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="h-12 px-8" asChild>
+                <Button size="default" variant="outline" asChild>
                   <Link to="/contact">Contact Sales</Link>
                 </Button>
               </div>
