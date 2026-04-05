@@ -14,7 +14,7 @@ export function HeroSection() {
   const words = headline.split(' ');
 
   return (
-    <section className="relative min-h-[60vh] flex items-center overflow-hidden py-14 lg:py-20">
+    <section className="relative min-h-[60vh] flex items-center overflow-hidden py-14">
       <AnimatedBackground variant="hero" />
       
       <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
@@ -78,10 +78,12 @@ export function HeroSection() {
             </motion.div>
             
             <motion.div variants={buttonMagnetic} whileHover="hover" whileTap="tap">
-              <Button size="default" variant="outline" className="w-full sm:w-auto border-2 hover:bg-muted/50">
-                <Play className="mr-2 h-4 w-4" />
-                Watch Demo
-              </Button>
+              <Link to="/features">
+                <Button size="default" variant="outline" className="w-full sm:w-auto border-2 hover:bg-muted/50">
+                  <Play className="mr-2 h-4 w-4" />
+                  Explore Features
+                </Button>
+              </Link>
             </motion.div>
           </motion.div>
 

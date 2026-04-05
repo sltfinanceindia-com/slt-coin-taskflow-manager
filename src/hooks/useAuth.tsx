@@ -333,19 +333,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []); // Empty dependency - one-time initialization
 
-  // Use ref to track profile for beforeunload handler without causing re-renders
+  // Use refs to track profile and session token for beforeunload handler
   const profileRef = useRef<Profile | null>(null);
+  const sessionTokenRef = useRef<string | null>(null);
   
   useEffect(() => {
     profileRef.current = profile;
   }, [profile]);
 
+  // Keep session token ref in sync
+  useEffect(() => {
+    sessionTokenRef.current = session?.access_token ?? null;
+  }, [session]);
+
   // Separate effect for beforeunload handler
   useEffect(() => {
     const handleBeforeUnload = () => {
       const currentProfile = profileRef.current;
-      if (currentProfile?.id) {
-        // Use fetch with keepalive to reliably send data with auth headers during page unload
+      const accessToken = sessionTokenRef.current;
+      if (currentProfile?.id && accessToken) {
+        // Use fetch with keepalive and the user's actual JWT for proper RLS auth
         const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/session_logs?user_id=eq.${currentProfile.id}&logout_time=is.null`;
         const body = JSON.stringify({ logout_time: new Date().toISOString() });
         fetch(url, {
@@ -354,7 +361,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           headers: {
             'Content-Type': 'application/json',
             'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            'Authorization': `Bearer ${accessToken}`,
             'Prefer': 'return=minimal'
           },
           body

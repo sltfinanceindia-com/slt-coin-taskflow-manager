@@ -466,15 +466,15 @@ export default function Features() {
         </section>
 
         {/* Additional Features Grid */}
-        <section className="py-16 lg:py-24">
+        <section className="py-14">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div 
-              className="text-center mb-12"
+              className="text-center mb-10"
               {...fadeInUp}
               viewport={viewportOnce}
             >
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">Built for Enterprise</h2>
-              <p className="text-muted-foreground text-lg">
+              <h2 className="text-2xl md:text-3xl font-bold mb-3">Built for Enterprise</h2>
+              <p className="text-muted-foreground text-sm md:text-base">
                 Enterprise-grade infrastructure to support teams of any size.
               </p>
             </motion.div>
@@ -489,11 +489,11 @@ export default function Features() {
               {additionalFeatures.map((feature, idx) => (
                 <motion.div key={idx} variants={fadeInUp}>
                   <Card className="h-full p-6 hover:shadow-lg transition-shadow border-2 hover:border-primary/20">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                      <feature.icon className="h-6 w-6 text-primary" />
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                      <feature.icon className="h-5 w-5 text-primary" />
                     </div>
-                    <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                    <p className="text-sm text-muted-foreground">{feature.description}</p>
+                    <h3 className="text-base font-semibold mb-2">{feature.title}</h3>
+                    <p className="text-xs md:text-sm text-muted-foreground">{feature.description}</p>
                   </Card>
                 </motion.div>
               ))}
@@ -502,7 +502,7 @@ export default function Features() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-16 lg:py-24">
+        <section className="py-14">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
               className="max-w-4xl mx-auto"
@@ -510,26 +510,26 @@ export default function Features() {
               viewport={viewportOnce}
             >
               <Card className="bg-gradient-to-br from-primary/10 via-purple-500/10 to-pink-500/10 border-2 border-primary/20 overflow-hidden">
-                <CardContent className="p-8 sm:p-12 lg:p-16 text-center relative">
+                <CardContent className="p-8 sm:p-10 text-center relative">
                   {/* Decorative elements */}
                   <div className="absolute top-0 left-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
                   <div className="absolute bottom-0 right-0 w-32 h-32 bg-pink-500/10 rounded-full blur-3xl" />
                   
                   <div className="relative">
-                    <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+                    <h2 className="text-2xl md:text-3xl font-bold mb-3">
                       Ready to Transform Your Workplace?
                     </h2>
-                    <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+                    <p className="text-sm md:text-base text-muted-foreground mb-6 max-w-2xl mx-auto">
                       Start your 14-day free trial today. No credit card required.
                     </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                      <Button size="lg" className="h-12 px-8 text-base" asChild>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                      <Button size="default" asChild>
                         <Link to="/signup">
                           Start Free Trial
-                          <ArrowRight className="ml-2 h-5 w-5" />
+                          <ArrowRight className="ml-2 h-4 w-4" />
                         </Link>
                       </Button>
-                      <Button size="lg" variant="outline" className="h-12 px-8 text-base" asChild>
+                      <Button size="default" variant="outline" asChild>
                         <Link to="/pricing">View Pricing</Link>
                       </Button>
                     </div>

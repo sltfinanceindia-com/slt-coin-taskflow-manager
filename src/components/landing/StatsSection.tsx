@@ -4,8 +4,8 @@ import { Building2, Users, Zap, Headphones } from 'lucide-react';
 import { fadeInUp, staggerContainer } from '@/lib/animations';
 
 const stats = [
-  { icon: Building2, value: 500, suffix: '+', label: 'Organizations', description: 'Trust TeneXA for their workforce management' },
-  { icon: Users, value: 50000, suffix: '+', label: 'Employees Managed', description: 'Across industries and company sizes' },
+  { icon: Building2, value: 10, suffix: '+', label: 'Organizations', description: 'Trust TeneXA for their workforce management' },
+  { icon: Users, value: 100, suffix: '+', label: 'Users Onboarded', description: 'Across industries and company sizes' },
   { icon: Zap, value: 99.9, suffix: '%', label: 'Uptime', description: 'Enterprise-grade reliability' },
   { icon: Headphones, value: 24, suffix: '/7', label: 'Support', description: 'Dedicated customer success team' }
 ];
