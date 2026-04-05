@@ -1,130 +1,118 @@
 
 
 # TeneXA Platform — Complete Production Audit Report
-**Audit Date: April 4, 2026**
+**Audit Date: April 5, 2026**
 
 ---
 
 ## 🔴 Critical Issues (Production-Breaking)
 
-### C1: sendBeacon Missing Auth Headers — Session Logs Silently Fail
-`src/hooks/useAuth.tsx:349` — The `navigator.sendBeacon` call to update `session_logs` sends a raw PATCH to the Supabase REST API **without an Authorization header or apikey**. Supabase rejects unauthenticated requests. Session `logout_time` is never actually set.
-- **Fix**: Include apikey as a query parameter or use `headers` via `fetch` with `keepalive: true` instead of sendBeacon (sendBeacon doesn't support custom headers).
+### C1: sendBeacon Replacement Uses Anon Key as Bearer Token
+`useAuth.tsx:357` — The `fetch` with `keepalive` sends `Authorization: Bearer ${VITE_SUPABASE_PUBLISHABLE_KEY}` (the anon key). This authenticates as an anonymous user, NOT the actual logged-in user. The session JWT should be used, but by the time `beforeunload` fires, the session may already be cleared. Session logs `logout_time` is still never reliably set.
+- **Impact**: Attendance/session tracking is broken — logout times are missing
+- **Fix**: Cache the session access token in a ref alongside `profileRef`, and use that token in the `Authorization` header. Update the ref on every session change.
 
-### C2: `handle_new_user` Trigger Still Trusts Client Role
-The database trigger `handle_new_user()` reads `raw_user_meta_data->>'role'` and casts it to `app_role`. While `signUp()` now hardcodes `'intern'`, the trigger itself doesn't enforce this — any direct Supabase auth API call bypassing the frontend can set `role: 'super_admin'` in metadata.
-- **Fix**: Hardcode `'intern'::app_role` in the trigger, ignoring the metadata role entirely.
+### C2: Google OAuth Signup Still Loses Organization Context
+`Signup.tsx:430-439` — Google OAuth calls `signInWithOAuth` with `redirectTo: /dashboard` but the `companyName` from Step 1 is never persisted. After OAuth redirect, the `signup-organization` edge function is never called. The user ends up with no organization.
+- **Impact**: Google signup is fundamentally broken — users get orphaned accounts
+- **Fix**: Store `companyName` in `localStorage` before OAuth redirect. On `/dashboard` mount, check for pending org creation and call `signup-organization`.
 
-### C3: Google OAuth Signup Bypasses Organization Creation
-`Signup.tsx:430` — Google OAuth redirects to `/dashboard` but never calls the `signup-organization` edge function. The company name entered in Step 1 is lost. The user gets created via `handle_new_user` with no proper org, defaulting to "SLT Finance" fallback.
-- **Fix**: Store `companyName` in `localStorage` before OAuth redirect, then process it on the `/dashboard` callback, or pass it via OAuth state parameter.
-
-### C4: `/feedback` Route is Unprotected
-`App.tsx:244` — `<Route path="/feedback" element={<FeedbackPage />} />` has no `ProtectedRoute` wrapper. Any anonymous visitor can access feedback internals.
-
-### C5: `/help` Route is Unprotected  
-`App.tsx:263` — `<HelpCenterPage />` rendered without `ProtectedRoute`. Exposes internal help content to unauthenticated users.
+### C3: `window.location.pathname` Used Outside React Router
+`App.tsx:186-188` — `isPublicRoute` check uses `window.location.pathname` directly instead of React Router's `useLocation()`. This is fragile and doesn't react to client-side navigation changes.
+- **Fix**: Use `useLocation()` hook (already available since `AppContent` is inside `BrowserRouter`... wait, actually `BrowserRouter` is rendered INSIDE `AppContent` at line 209, so `useLocation` is NOT available at line 186). This is a structural problem — the public route check happens before `BrowserRouter` mounts.
 
 ---
 
 ## 🟠 High Priority Issues
 
-### H1: Massive Typography Inconsistency Across All Public Pages
-Every landing section and public page uses bloated font scales that violate the compact HireFlow-style standard:
+### H1: Typography Still Oversized on Pricing, Features, Resources Pages
+Despite previous fixes to landing components, several pages still violate the compact HireFlow scale:
 
-| Component | Current | Target |
-|-----------|---------|--------|
-| **HeroSection h1** | `text-4xl sm:text-5xl md:text-6xl lg:text-7xl` | `text-3xl md:text-4xl` |
-| **All section h2s** (FeaturesGrid, HowItWorks, Stats, Testimonials, Integrations, ProblemSolution, CTA) | `text-3xl sm:text-4xl lg:text-5xl` | `text-2xl md:text-3xl` |
-| **CTA h2** | `text-3xl sm:text-4xl lg:text-5xl xl:text-6xl` | `text-2xl md:text-3xl` |
-| **Hero subtext** | `text-lg sm:text-xl lg:text-2xl` | `text-sm md:text-base` |
-| **Section subtext** | `text-lg` | `text-sm md:text-base` |
-| **About h1** | `text-4xl sm:text-5xl lg:text-6xl` | `text-3xl md:text-4xl` |
-| **Pricing h1** | `text-4xl sm:text-5xl lg:text-6xl` | `text-3xl md:text-4xl` |
-| **Features h1** | `text-4xl sm:text-5xl lg:text-6xl` | `text-3xl md:text-4xl` |
-| **Contact h1** | `text-3xl sm:text-5xl lg:text-6xl` | `text-3xl md:text-4xl` |
-| **Resources h1** | `text-4xl sm:text-5xl lg:text-6xl` | `text-3xl md:text-4xl` |
-| **FeaturesGrid card h3** | `text-lg` | `text-base` |
-| **FeaturesGrid card description** | `text-sm` | `text-xs md:text-sm` |
-| **StatsSection stat values** | `text-4xl lg:text-5xl` | `text-3xl` |
-| **StatsSection stat labels** | `text-lg` | `text-sm` |
-| **HowItWorks step h3** | `text-2xl lg:text-3xl` | `text-xl` |
-| **HowItWorks step number** | `text-5xl lg:text-6xl` | `text-3xl` |
-| **CTA buttons** | `size="lg"` with `h-14 px-8/px-10 text-lg` | `size="default"` |
-| **Hero CTA buttons** | `size="lg"` with `h-14 px-8 text-lg` | `size="default"` |
+| File | Element | Current | Target |
+|------|---------|---------|--------|
+| `Pricing.tsx:426` | FAQ h2 | `text-3xl sm:text-4xl` | `text-2xl md:text-3xl` |
+| `Pricing.tsx:428` | FAQ subtitle | `text-lg` | `text-sm md:text-base` |
+| `Pricing.tsx:464` | CTA icon | `h-12 w-12` | `h-6 w-6` |
+| `Pricing.tsx:465` | CTA h2 | `text-3xl sm:text-4xl` | `text-2xl md:text-3xl` |
+| `Pricing.tsx:468` | CTA body | `text-lg` | `text-sm md:text-base` |
+| `Pricing.tsx:472,478` | CTA buttons | `size="lg" h-12 px-8` | `size="default"` |
+| `Pricing.tsx:288` | Price amount | `text-4xl` | `text-3xl` |
+| `Features.tsx:476` | Section h2 | `text-3xl sm:text-4xl` | `text-2xl md:text-3xl` |
+| `Features.tsx:477` | Section body | `text-lg` | `text-sm md:text-base` |
+| `Features.tsx:495` | Card h3 | `text-lg` | `text-base` |
+| `Features.tsx:519` | CTA h2 | `text-3xl sm:text-4xl` | `text-2xl md:text-3xl` |
+| `Features.tsx:522` | CTA body | `text-lg` | `text-sm md:text-base` |
+| `Features.tsx:526,532` | CTA buttons | `size="lg" h-12 px-8 text-base` | `size="default"` |
+| `Features.tsx:492` | Icon container | `w-12 h-12` | `w-10 h-10` |
+| `NotFound.tsx:22` | 404 heading | `text-7xl sm:text-8xl` | `text-6xl sm:text-7xl` |
 
-### H2: Excessive Section Padding Across All Landing Sections
-Every section uses `py-24 lg:py-32` (96px/128px). Per compact design standard, should be `py-14` (56px).
+### H2: Oversized Section Padding Remains
+| File | Current | Target |
+|------|---------|--------|
+| `Pricing.tsx:225` | `py-12 sm:py-20` | `py-14` |
+| `Pricing.tsx:417` | `py-16 lg:py-24` | `py-14` |
+| `Pricing.tsx:457` | `py-16 lg:py-24` | `py-14` |
+| `Features.tsx:469` | `py-16 lg:py-24` | `py-14` |
+| `Features.tsx:505` | `py-16 lg:py-24` | `py-14` |
+| `Resources.tsx:430` | `py-16 lg:py-24` | `py-14` |
+| `Contact.tsx:124` | `py-12 sm:py-20` | `py-14` |
+| `StartTrial.tsx:201` | `py-12 lg:py-20` | `py-14` |
+| `PublicFooter.tsx:46` | `py-16 lg:py-20` | `py-14` |
+| `HeroSection.tsx:17` | `py-14 lg:py-20` | `py-14` |
 
-**Affected files**: All 8 files in `src/components/landing/` plus `src/pages/About.tsx`, `Pricing.tsx`, `Features.tsx`, `Contact.tsx`, `Resources.tsx`.
+### H3: 909 console.log Statements Still in Source
+Despite `esbuild.drop: ['console']` in vite.config.ts (which strips them from production builds), the source code still contains 909 `console.log` calls across 39 files. While they won't appear in production, they:
+- Clutter the development experience
+- Make genuine debug logs hard to find
+- Add noise to code reviews
 
-### H3: Feature Card Minimum Heights Are Oversized
-`FeaturesGrid.tsx:68-69` — Large cards have `min-h-[280px]`, regular cards `min-h-[200px]`. These force excessive whitespace on mobile. Remove or reduce to `min-h-[140px]` / `min-h-[120px]`.
+### H4: StatsSection Still Shows Fabricated Numbers
+`StatsSection.tsx:7-10` — "500+ Organizations", "50,000+ Employees", "99.9% Uptime" are hardcoded lies. DB has ~10 orgs and ~30 users.
+- **Fix**: Use the `get_public_stats()` RPC function that already exists, or replace with honest messaging like "Growing platform" or remove specific numbers.
 
-### H4: Integration Icon Containers Oversized
-`IntegrationsSection.tsx:28` — Center hub icon is `w-24 h-24` with `h-12 w-12` inner icon. Integration icons are `w-14 h-14` with `h-7 w-7` inner. Reduce to `w-16 h-16` / `h-8 w-8` and `w-10 h-10` / `h-5 w-5` respectively.
-
-### H5: 1048 Console Statements in Production
-Across 44 files — exposes internal state, user IDs, and role data in DevTools. Critical information leakage.
-- **Fix**: Add `vite-plugin-strip` or `esbuild.drop: ['console']` in `vite.config.ts` for production builds.
-
-### H6: Mobile Navigation Still Incomplete
-`BottomNavigation.tsx` shows only 4 primary items + 5 "more" items. 80+ dashboard modules remain inaccessible on mobile without knowing URLs. The sidebar is `hidden md:flex`.
-
-### H7: `isPublicRoute` Uses window.location Instead of React Router
-`App.tsx:186-187` — Directly checks `window.location.pathname` instead of `useLocation()`. Fragile and won't work correctly with base paths or future routing changes.
+### H5: "Watch Demo" Button Has No Action
+`HeroSection.tsx:81` — The "Watch Demo" button has no `onClick` handler or link. Clicking it does nothing.
+- **Fix**: Either link to a demo video URL, or remove the button entirely.
 
 ---
 
 ## 🟡 Medium Issues
 
 ### M1: Canonical URLs Still Wrong on Multiple Pages
-- `About.tsx:68`: `canonical="https://tenexa.lovable.app/about"` — should be `sltwork.lovable.app`
-- `Pricing.tsx:168`: `canonical="https://tenexa.lovable.app/pricing"` — same
-- `Landing.tsx`: Fixed to `sltwork.lovable.app` but other pages weren't updated
+- `About.tsx`, `Pricing.tsx`, `Features.tsx`, `Resources.tsx` may still reference `tenexa.lovable.app` instead of `sltwork.lovable.app`
 
-### M2: StatsSection Uses Hardcoded Fake Numbers
-Claims "500+ Organizations", "50,000+ Employees", "99.9% Uptime" — actual DB has 10 orgs, 29 users. Misleading for a production site.
+### M2: BrowserRouter Positioned Inside AppContent
+`App.tsx:209` — `BrowserRouter` is rendered deep inside `AppContent`, AFTER `ContentProtection`, `TourStateProvider`, and `TooltipProvider`. This means:
+- `isPublicRoute` check at line 186 can't use `useLocation()`
+- `WelcomeDialog` and `GuidedTour` are inside BrowserRouter (correct now), but `ContentProtection` wraps public pages unnecessarily
 
-### M3: Testimonials Are Fabricated
-All 6 testimonials cite fictional companies (TechVision Solutions, GlobalServe BPO, etc.) and people. For a production site this is deceptive.
+### M3: QueryClient refetchOnWindowFocus Creates Unnecessary Traffic
+`staleTime: 2min` + `refetchOnWindowFocus: true` causes API calls every time a user alt-tabs back to the app, even if data was fetched 30 seconds ago.
 
-### M4: About Page Timeline Claims Are Inaccurate
-Claims "Founded 2021", "First 100 Customers in 2022", "Series A Funding in 2023", "500+ Organizations in 2024" — none verified. Potential legal/trust issue.
+### M4: Framer Motion Bundle Weight (~40KB)
+All 8 landing sections + 6 public pages import `framer-motion` for simple fade/slide animations that CSS can handle.
 
-### M5: Hero Section Uses min-h-[90vh]
-`HeroSection.tsx:18` — Forces the hero to take 90% of viewport, pushing all content below the fold. Reduce to `min-h-[60vh]` or remove entirely for compact layout.
+### M5: PWA Icon Uses Same Image for All Sizes
+`vite.config.ts:32-48` — All three PWA icon entries reference the same `/slt-hub-icon.png` file for 192x192 and 512x512. Should have properly sized icons.
 
-### M6: FeaturesGrid Link Cards All Go to `/features`
-All 12 feature cards link to `/features` — none go to actual feature-specific deep links. This is a dead-end UX pattern.
-
-### M7: Framer Motion Adds ~40KB Bundle Weight
-Used across all 8 landing sections + 6 public pages for simple animations (fade, slide). Could be replaced with CSS `@keyframes` or Tailwind `animate-*` classes.
-
-### M8: QueryClient staleTime + refetchOnWindowFocus
-`staleTime: 2min` + `refetchOnWindowFocus: true` causes unnecessary API calls when users alt-tab. Consider `refetchOnWindowFocus: false` or increasing staleTime.
-
-### M9: ContentProtection Wraps Public Pages
-`App.tsx:199` — `ContentProtection` wraps everything including landing, pricing, and auth pages. Adds unnecessary DOM elements and event listeners for unauthenticated visitors.
+### M6: Splash Screen 1s Delay
+`App.tsx:176` — Still has `setTimeout(() => setMinTimeElapsed(true), 1000)` which adds latency for returning users.
 
 ---
 
 ## 🟢 Minor Issues
 
-### L1: Splash Screen Still 1s Minimum
-`App.tsx:176` — Even 1s is noticeable for returning users with cached sessions.
+### L1: Testimonials Still Fabricated
+Fictional companies and people in `TestimonialsSection.tsx`.
 
-### L2: NotFound Page Uses text-[120px]/text-[150px]
-Arbitrary font sizes outside the design system.
+### L2: About Page Timeline Claims Unverified
+"Founded 2021", "First 100 Customers", "Series A Funding" — none verified.
 
-### L3: TestimonialCard Fixed Width of 400px
-`TestimonialsSection.tsx:49` — `w-[400px]` may overflow on small viewports in certain edge cases.
+### L3: StickyCtaBar Conflicts with BottomNavigation on Mobile
+`StickyCtaBar.tsx:27` — renders `fixed bottom-0` on `md:hidden`. If user is logged in and on a public page, both `StickyCtaBar` and `BottomNavigation` could overlap.
 
-### L4: Trust Badges Marquee Has No Pause on Hover
-`TrustBadges` auto-scrolls infinitely. Users can't pause to read content.
-
-### L5: Step Number in HowItWorks Uses text-5xl/text-6xl
-Decorative numbers are oversized at `text-5xl lg:text-6xl`. Should be `text-3xl`.
+### L4: Feature Card Icon Containers Still `w-12 h-12`
+`Features.tsx:492` — should be `w-10 h-10` per compact standard.
 
 ---
 
@@ -133,26 +121,27 @@ Decorative numbers are oversized at `text-5xl lg:text-6xl`. Should be `text-3xl`
 | Metric | Estimate | Target | Status |
 |--------|----------|--------|--------|
 | FCP | ~1.5-2.0s | <1.8s | ⚠️ Borderline |
-| TTI | ~3.0-4.0s | <3.5s | ⚠️ Slow (splash + auth chain) |
+| TTI | ~2.5-3.5s | <3.5s | ⚠️ Improved (splash reduced to 1s) |
 | LCP | ~2.5-3.5s | <2.5s | ❌ Slow (dashboard-preview.jpg) |
-| Initial Bundle | ~350-450KB | <300KB | ⚠️ Large (framer-motion) |
-| Login API calls | 5+ sequential | 2-3 | ❌ Too many |
-| Console statements | 1048 | 0 | ❌ Critical |
+| Initial Bundle | ~350-400KB | <300KB | ⚠️ Large (framer-motion) |
+| Console drops in prod | Active | N/A | ✅ Fixed |
+| Login API calls | 5+ sequential | 2-3 | ❌ Still too many |
 
 ---
 
 ## 🔐 Security Risks
 
-| # | Risk | Severity | Fix |
-|---|------|----------|-----|
-| 1 | `handle_new_user` trusts client role metadata | CRITICAL | Hardcode 'intern' in trigger |
-| 2 | sendBeacon has no auth headers | HIGH | Use fetch with keepalive |
-| 3 | `/feedback` unprotected route | HIGH | Add ProtectedRoute |
-| 4 | `/help` unprotected route | MEDIUM | Add ProtectedRoute |
-| 5 | 1048 console statements leak state | MEDIUM | Strip in production |
-| 6 | Google OAuth loses org context | MEDIUM | Persist via state param |
-| 7 | OTP expiry still too long | MEDIUM | Manual Supabase Dashboard fix |
-| 8 | Leaked password protection disabled | MEDIUM | Manual Supabase Dashboard fix |
+| # | Risk | Severity | Status |
+|---|------|----------|--------|
+| 1 | Session log auth uses anon key instead of user JWT | HIGH | Broken |
+| 2 | Google OAuth signup orphans users without org | HIGH | Broken |
+| 3 | `handle_new_user` trigger hardcoded to intern | ✅ Fixed | Resolved |
+| 4 | Admin routes use `AdminRoute` wrapper | ✅ Fixed | Resolved |
+| 5 | `/feedback` and `/help` now protected | ✅ Fixed | Resolved |
+| 6 | Console statements stripped in prod builds | ✅ Fixed | Resolved |
+| 7 | OTP magic link origin validated | ✅ Fixed | Resolved |
+| 8 | signOut uses local scope | ✅ Fixed | Resolved |
+| 9 | `isPublicRoute` uses `window.location` not router | LOW | Fragile but works |
 
 ---
 
@@ -160,13 +149,12 @@ Decorative numbers are oversized at `text-5xl lg:text-6xl`. Should be `text-3xl`
 
 | Device | Issue | Severity |
 |--------|-------|----------|
-| Mobile (<768px) | Sidebar hidden, 80+ modules inaccessible | HIGH |
-| Mobile (<768px) | Hero text-7xl is massive even with clamp overrides | HIGH |
-| Mobile (<768px) | Feature cards min-h-[200px] creates excess whitespace | MEDIUM |
-| Mobile (<768px) | CTA buttons h-14 text-lg are oversized | MEDIUM |
-| Mobile (<768px) | TestimonialCard w-[400px] may clip | LOW |
-| Tablet | Section py-24 creates excessive scrolling | MEDIUM |
-| Desktop | Generally OK but typography scale is bloated | MEDIUM |
+| Mobile (<768px) | Sidebar hidden, 80+ modules in bottom drawer | ✅ Improved |
+| Mobile (<768px) | StickyCtaBar may overlap BottomNavigation | LOW |
+| Mobile (<768px) | Pricing `text-4xl` price amounts still large | MEDIUM |
+| Mobile (<768px) | Features icon containers `w-12 h-12` oversized | LOW |
+| Tablet | Section padding `py-16 lg:py-24` still bloated | MEDIUM |
+| Desktop | Typography mostly aligned | ✅ Improved |
 
 ---
 
@@ -174,86 +162,56 @@ Decorative numbers are oversized at `text-5xl lg:text-6xl`. Should be `text-3xl`
 
 | # | Issue | Severity |
 |---|-------|----------|
-| 1 | All 12 feature cards link to same /features page | MEDIUM |
-| 2 | "Watch Demo" button has no action (no href/onClick) | MEDIUM |
-| 3 | Mobile users can't access 80+ modules via nav | HIGH |
-| 4 | Stats section shows fabricated numbers | MEDIUM |
-| 5 | Hero min-h-[90vh] pushes content below fold unnecessarily | MEDIUM |
-| 6 | Google signup loses company name on OAuth redirect | HIGH |
+| 1 | "Watch Demo" button is a dead click | MEDIUM |
+| 2 | Google OAuth signup loses org data | HIGH |
+| 3 | Stats section misleads with fake numbers | MEDIUM |
+| 4 | Testimonials are fabricated | LOW |
 
 ---
 
 ## 🛠 Recommended Fixes (Priority Order)
 
-### Week 1 — Critical Security
-
-| # | Fix | Impact |
-|---|-----|--------|
-| 1 | **Hardcode role in `handle_new_user` trigger** — ignore `raw_user_meta_data.role` | Prevents privilege escalation |
-| 2 | **Fix sendBeacon auth** — replace with `fetch(url, { keepalive: true, headers: { apikey, Authorization } })` | Fixes session logging |
-| 3 | **Wrap `/feedback` and `/help` in ProtectedRoute** | Closes access gaps |
-| 4 | **Strip console statements** — add `esbuild: { drop: ['console'] }` to `vite.config.ts` build options | Stops data leakage |
-
-### Week 2 — Typography & UI Compaction
-
-| # | Fix | Files Affected |
-|---|-----|---------------|
-| 5 | **Compact all landing typography** per the table in H1 | All 8 `src/components/landing/*.tsx` |
-| 6 | **Compact all public page typography** (About, Pricing, Features, Contact, Resources) | 5 page files |
-| 7 | **Reduce section padding** from `py-24 lg:py-32` to `py-14` across all sections | 13+ files |
-| 8 | **Reduce CTA/hero buttons** from `size="lg" h-14 text-lg` to `size="default"` | HeroSection, CTASection |
-| 9 | **Reduce hero min-height** from `min-h-[90vh]` to `min-h-[60vh]` or remove | HeroSection |
-| 10 | **Fix feature card min-heights** — reduce or remove `min-h-[280px]`/`min-h-[200px]` | FeaturesGrid |
-
-### Week 3 — Functional & UX
+### Immediate (This Sprint)
 
 | # | Fix | Files |
 |---|-----|-------|
-| 11 | **Fix Google OAuth org creation** — persist companyName via state | Signup.tsx |
-| 12 | **Fix canonical URLs** on About, Pricing, Features, Resources | 4 files |
-| 13 | **Fix `isPublicRoute`** — use `useLocation()` instead of `window.location` | App.tsx |
-| 14 | **Remove or replace fake stats/testimonials** | StatsSection, TestimonialsSection, About |
-| 15 | **Add "Watch Demo" action** or remove the button | HeroSection |
-| 16 | **Improve mobile navigation** — full module drawer | BottomNavigation |
+| 1 | **Fix session log auth** — Cache session JWT in a ref, use it in `beforeunload` fetch | `useAuth.tsx` |
+| 2 | **Fix Google OAuth org creation** — Persist companyName in localStorage, process on callback | `Signup.tsx` + `ModernDashboard.tsx` or new callback handler |
+| 3 | **Compact Pricing page typography** — Fix h2s, body text, buttons, padding | `Pricing.tsx` |
+| 4 | **Compact Features page typography** — Fix h2s, body text, buttons, padding, icon sizes | `Features.tsx` |
+| 5 | **Fix remaining section padding** — All `py-16/20/24` to `py-14` | `Resources.tsx`, `Contact.tsx`, `StartTrial.tsx`, `PublicFooter.tsx`, `HeroSection.tsx` |
+| 6 | **Fix or remove "Watch Demo"** | `HeroSection.tsx` |
+| 7 | **Replace fake stats** — Use `get_public_stats()` RPC or honest copy | `StatsSection.tsx` |
 
-### Week 4 — Performance
+### Short-Term (Next Sprint)
 
 | # | Fix |
 |---|-----|
-| 17 | **Replace framer-motion with CSS animations** on landing page |
-| 18 | **Lazy load dashboard-preview.jpg** (currently `loading="eager"`) |
-| 19 | **Reduce login API round-trips** — batch profile + roles into single RPC |
-| 20 | **Remove/reduce splash screen delay** |
+| 8 | Fix canonical URLs on About, Features, Resources pages |
+| 9 | Replace framer-motion with CSS animations on landing page |
+| 10 | Batch login API calls into single RPC |
+| 11 | Add proper PWA icons at correct sizes |
 
 ---
 
 ## 🚀 Final Verdict
 
-### Production Readiness Score: 4/10
+### Production Readiness Score: 5.5 / 10
 
 | Category | Score | Weight | Weighted |
 |----------|-------|--------|----------|
 | Architecture | 8/10 | 15% | 1.20 |
-| Security | 3/10 | 25% | 0.75 |
+| Security | 5/10 | 25% | 1.25 |
 | Functionality | 5/10 | 15% | 0.75 |
 | Performance | 5/10 | 10% | 0.50 |
-| UI/Typography Consistency | 2/10 | 15% | 0.30 |
-| UX/Navigation | 4/10 | 10% | 0.40 |
-| Responsiveness | 4/10 | 5% | 0.20 |
-| Code Quality | 4/10 | 5% | 0.20 |
-| **Total** | | **100%** | **4.30** |
+| UI/Typography | 4/10 | 15% | 0.60 |
+| UX/Navigation | 5/10 | 10% | 0.50 |
+| Responsiveness | 5/10 | 5% | 0.25 |
+| Code Quality | 5/10 | 5% | 0.25 |
+| **Total** | | **100%** | **5.30** |
 
-### Explanation
-
-The platform has excellent architectural bones (React + Supabase + 10-tier RBAC + 180+ tables + lazy loading + error boundaries). However:
-
-1. **Security**: The `handle_new_user` trigger still trusts client-supplied role metadata — this is a privilege escalation vector that must be patched at the database level. The sendBeacon call silently fails due to missing auth headers. Two routes are unprotected.
-
-2. **Typography/UI**: Every public page uses a bloated font scale (up to `text-7xl`) with oversized section padding (`py-24/py-32`), oversized buttons (`h-14 text-lg`), and excessive card heights. This violates the compact, mobile-first HireFlow standard across 15+ files.
-
-3. **Content Integrity**: Fabricated stats (500+ orgs vs actual 10), fake testimonials, and unverified timeline milestones undermine trust for a production launch.
-
-4. **Information Leakage**: 1048 console statements ship to production, exposing user IDs, role data, and internal state.
-
-Fixing the 4 critical security issues (Week 1) and compacting the typography (Week 2) would raise the score to approximately **6.5/10**. Completing all 20 recommended fixes would bring it to **8/10**.
+### Progress Since Last Audit
+- **Improved from 4.0 to 5.5** — Critical security fixes (admin route protection, role hardcoding, route protection) were implemented
+- **Remaining blockers**: Session log auth is still broken (anon key vs user JWT), Google OAuth signup still orphans users, and Pricing/Features/Resources pages still have oversized typography
+- **To reach 7.0+**: Fix the 2 remaining critical issues + compact remaining page typography + replace fake content
 
