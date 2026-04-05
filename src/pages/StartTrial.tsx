@@ -193,7 +193,7 @@ export default function StartTrial() {
         title="Start Free Trial - Tenexa | 14-Day Full Access"
         description="Start your free 14-day TeneXA trial. No credit card required. Full access to all features including HR, attendance, projects, and payroll."
         keywords="free trial, TeneXA trial, HR software trial, workforce management trial"
-        canonical="https://tenexa.lovable.app/start-trial"
+        canonical="https://sltwork.lovable.app/start-trial"
       />
       <div className="min-h-screen bg-background">
         <PublicHeader />
