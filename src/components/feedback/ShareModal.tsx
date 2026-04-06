@@ -10,7 +10,7 @@ interface ShareModalProps {
 }
 
 export default function ShareModal({ isOpen, onClose, prizeAmount }: ShareModalProps) {
-  const shareMessage = `Hey! Check out Tenexa - the best all-in-one workspace for teams! It has task management, training, attendance, rewards & more. Try it free! 🚀\n\n👉 https://tenexa.lovable.app`;
+  const shareMessage = `Hey! Check out Tenexa - the best all-in-one workspace for teams! It has task management, training, attendance, rewards & more. Try it free! 🚀\n\n👉 https://sltwork.lovable.app`;
 
   const shareOnWhatsApp = () => {
     const url = `https://wa.me/?text=${encodeURIComponent(shareMessage)}`;
@@ -18,12 +18,12 @@ export default function ShareModal({ isOpen, onClose, prizeAmount }: ShareModalP
   };
 
   const shareOnFacebook = () => {
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://tenexa.lovable.app')}&quote=${encodeURIComponent(shareMessage)}`;
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://sltwork.lovable.app')}&quote=${encodeURIComponent(shareMessage)}`;
     window.open(url, '_blank');
   };
 
   const shareOnLinkedIn = () => {
-    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://tenexa.lovable.app')}`;
+    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://sltwork.lovable.app')}`;
     window.open(url, '_blank');
   };
 

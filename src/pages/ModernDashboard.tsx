@@ -1,5 +1,6 @@
-import { useMemo, Suspense } from 'react';
+import { useMemo, Suspense, useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useViewMode } from '@/hooks/useViewMode';
 import { useTasks } from '@/hooks/useTasks';
@@ -46,6 +47,37 @@ export default function ModernDashboard() {
   const isMobile = useIsMobile();
   
   const coinName = organization?.coin_name || 'Coins';
+
+  // C1 Fix: Handle Google OAuth callback — consume pending org data from localStorage
+  useEffect(() => {
+    const pendingCompany = localStorage.getItem('pending_org_company_name');
+    const pendingName = localStorage.getItem('pending_org_full_name');
+    
+    if (pendingCompany && user && !organizationId) {
+      const createOrg = async () => {
+        try {
+          const { data, error } = await supabase.functions.invoke('signup-organization', {
+            body: {
+              companyName: pendingCompany,
+              fullName: pendingName || user.user_metadata?.full_name || 'User',
+              email: user.email,
+              password: crypto.randomUUID(), // Not used for OAuth users but required by edge fn
+              isOAuthCallback: true,
+            },
+          });
+          if (!error) {
+            console.log('OAuth org creation completed');
+          }
+        } catch (err) {
+          console.error('OAuth org creation failed:', err);
+        } finally {
+          localStorage.removeItem('pending_org_company_name');
+          localStorage.removeItem('pending_org_full_name');
+        }
+      };
+      createOrg();
+    }
+  }, [user, organizationId]);
 
   if (loading || roleLoading) {
     return (
@@ -185,19 +217,13 @@ export default function ModernDashboard() {
         );
       
       case 'training':
-        // Redirect to standalone training page
-        navigate('/training');
-        return null;
+        return <Navigate to="/training" replace />;
       
       case 'roles':
-        // Redirect to standalone roles page
-        navigate('/admin/roles-permissions');
-        return null;
+        return <Navigate to="/admin/roles-permissions" replace />;
       
       case 'org-chart':
-        // Redirect to standalone org chart page
-        navigate('/organization/chart');
-        return null;
+        return <Navigate to="/organization/chart" replace />;
       
       default:
         // Load all other tabs dynamically from tab registry

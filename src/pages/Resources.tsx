@@ -395,7 +395,7 @@ export default function Resources() {
                               {resource.type}
                             </Badge>
                           </div>
-                          <h3 className="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                          <h3 className="font-semibold text-base mb-2 line-clamp-2 group-hover:text-primary transition-colors">
                             {resource.title}
                           </h3>
                           <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{resource.excerpt}</p>
@@ -417,9 +417,8 @@ export default function Resources() {
             {/* Load More */}
             {filteredResources.length > 0 && (
               <div className="text-center mt-12">
-                <Button variant="outline" size="lg">
-                  Load More Articles
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                <Button variant="outline" size="default" disabled>
+                  All Articles Loaded
                 </Button>
               </div>
             )}

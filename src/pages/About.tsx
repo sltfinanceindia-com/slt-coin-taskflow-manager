@@ -55,7 +55,7 @@ const milestones = [
   { year: '2021', title: 'Founded', description: 'TeneXA was born with a vision to transform workforce management' },
   { year: '2022', title: 'First 100 Customers', description: 'Reached our first major milestone with 100 paying customers' },
   { year: '2023', title: 'Series A Funding', description: 'Raised funding to accelerate product development and expansion' },
-  { year: '2024', title: '500+ Organizations', description: 'Now serving over 500 organizations across India' },
+  { year: '2024', title: 'Growing Platform', description: 'Expanding our reach to organizations across India' },
 ];
 
 export default function About() {
@@ -124,7 +124,7 @@ export default function About() {
                   Our Journey
                 </h2>
                 <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
-                  From a small startup to serving 500+ organizations
+                  From a small startup to a growing platform
                 </p>
               </motion.div>
 
