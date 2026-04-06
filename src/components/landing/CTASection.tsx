@@ -35,7 +35,7 @@ export function CTASection() {
             <span className="block">Workforce Management?</span>
           </motion.h2>
           <motion.p variants={fadeInUp} className="text-sm md:text-base text-white/80 mb-8 max-w-2xl mx-auto">
-            Join 500+ organizations using TeneXA to streamline HR, projects, and operations. Start your free trial today.
+            Join growing organizations using TeneXA to streamline HR, projects, and operations. Start your free trial today.
           </motion.p>
           <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
             <motion.div variants={buttonMagnetic} whileHover="hover" whileTap="tap">

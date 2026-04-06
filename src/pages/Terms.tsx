@@ -13,7 +13,7 @@ export default function Terms() {
         title="Terms of Service - Tenexa"
         description="Read the terms and conditions for using Tenexa workplace management platform."
         keywords="terms of service, terms and conditions, Tenexa terms"
-        canonical="https://tenexa.lovable.app/terms"
+        canonical="https://sltwork.lovable.app/terms"
       />
       <div className="min-h-screen bg-background">
         <PublicHeader />

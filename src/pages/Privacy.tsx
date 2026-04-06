@@ -13,7 +13,7 @@ export default function Privacy() {
         title="Privacy Policy - Tenexa"
         description="Learn how Tenexa protects your privacy and handles your personal data."
         keywords="privacy policy, data protection, Tenexa privacy"
-        canonical="https://tenexa.lovable.app/privacy"
+        canonical="https://sltwork.lovable.app/privacy"
       />
       <div className="min-h-screen bg-background">
         <PublicHeader />

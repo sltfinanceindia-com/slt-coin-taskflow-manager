@@ -10,7 +10,7 @@ export function TrustBadges() {
   return (
     <div className="w-full overflow-hidden py-8">
       <p className="text-center text-sm text-muted-foreground mb-8 font-medium">
-        Trusted by 500+ organizations across India
+        Trusted by organizations across India
       </p>
       
       <div className="relative">
