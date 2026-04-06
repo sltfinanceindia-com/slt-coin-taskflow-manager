@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { UnifiedAssistant } from "@/components/ai/UnifiedAssistant";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { OrganizationProvider } from "@/hooks/useOrganization";
@@ -215,7 +215,7 @@ function AppRoutes() {
           <Route path="/about" element={<About />} />
           <Route path="/resources" element={<Resources />} />
           <Route path="/start-trial" element={<StartTrial />} />
-          <Route path="/feedback" element={<ProtectedRoute><FeedbackRewardsPage /></ProtectedRoute>} />
+          <Route path="/feedback" element={<ProtectedRoute><FeedbackPage /></ProtectedRoute>} />
 
           {/* Main Dashboard */}
           <Route path="/dashboard" element={<ProtectedRoute><ModernDashboard /></ProtectedRoute>} />
@@ -227,12 +227,12 @@ function AppRoutes() {
           <Route path="/help" element={<ProtectedRoute><HelpCenterPage /></ProtectedRoute>} />
           
           {/* Training */}
-          <Route path="/training" element={<ProtectedRoute><TrainingPage /></ProtectedRoute>} />
-          <Route path="/training/:moduleId" element={<ProtectedRoute><TrainingPage /></ProtectedRoute>} />
+          <Route path="/training" element={<ProtectedRoute><Training /></ProtectedRoute>} />
+          <Route path="/training/:moduleId" element={<ProtectedRoute><Training /></ProtectedRoute>} />
           
           {/* Profile */}
-          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-          <Route path="/profile/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/profile/:userId" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
           {/* Admin Routes */}
           <Route path="/admin/roles-permissions" element={<AdminRoute><RolesPermissions /></AdminRoute>} />
@@ -241,7 +241,7 @@ function AppRoutes() {
           
           {/* Super Admin Routes */}
           <Route path="/super-admin" element={<SuperAdminRoute><SuperAdminDashboard /></SuperAdminRoute>} />
-          <Route path="/super-admin/organizations" element={<SuperAdminRoute><OrganizationManagement /></SuperAdminRoute>} />
+          <Route path="/super-admin/organizations" element={<SuperAdminRoute><OrganizationsList /></SuperAdminRoute>} />
           <Route path="/super-admin/settings" element={<SuperAdminRoute><SuperAdminSettings /></SuperAdminRoute>} />
           <Route path="/super-admin/billing" element={<SuperAdminRoute><BillingDashboard /></SuperAdminRoute>} />
           <Route path="/super-admin/analytics" element={<SuperAdminRoute><SubscriptionAnalytics /></SuperAdminRoute>} />
