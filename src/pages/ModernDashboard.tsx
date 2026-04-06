@@ -277,7 +277,7 @@ export default function ModernDashboard() {
                   </div>
                 }>
                   {(() => {
-                    const tabConfig = getTabComponent('communication', isAdmin);
+                    const tabConfig = getTabComponent('communication', isAdmin, role as any);
                     if (tabConfig) {
                       const TabComponent = tabConfig.component;
                       return (
