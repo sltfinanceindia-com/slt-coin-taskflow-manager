@@ -1,118 +1,81 @@
 
 
 # TeneXA Platform — Complete Production Audit Report
-**Audit Date: April 5, 2026**
+**Audit Date: April 6, 2026**
 
 ---
 
 ## 🔴 Critical Issues (Production-Breaking)
 
-### C1: sendBeacon Replacement Uses Anon Key as Bearer Token
-`useAuth.tsx:357` — The `fetch` with `keepalive` sends `Authorization: Bearer ${VITE_SUPABASE_PUBLISHABLE_KEY}` (the anon key). This authenticates as an anonymous user, NOT the actual logged-in user. The session JWT should be used, but by the time `beforeunload` fires, the session may already be cleared. Session logs `logout_time` is still never reliably set.
-- **Impact**: Attendance/session tracking is broken — logout times are missing
-- **Fix**: Cache the session access token in a ref alongside `profileRef`, and use that token in the `Authorization` header. Update the ref on every session change.
+### C1: Google OAuth Signup — No Post-Callback Org Creation Handler
+`Signup.tsx:431-432` now persists `companyName`/`fullName` to localStorage before OAuth redirect. However, **no code in `ModernDashboard.tsx` or anywhere else reads these values and calls `signup-organization`** after the OAuth callback. The localStorage data is set but never consumed. Google signup users still end up with orphaned accounts.
+- **Fix**: Add a `useEffect` in `ModernDashboard.tsx` (or a dedicated callback component) that checks for `pending_org_company_name` in localStorage on mount, calls the `signup-organization` edge function, then clears the localStorage keys.
 
-### C2: Google OAuth Signup Still Loses Organization Context
-`Signup.tsx:430-439` — Google OAuth calls `signInWithOAuth` with `redirectTo: /dashboard` but the `companyName` from Step 1 is never persisted. After OAuth redirect, the `signup-organization` edge function is never called. The user ends up with no organization.
-- **Impact**: Google signup is fundamentally broken — users get orphaned accounts
-- **Fix**: Store `companyName` in `localStorage` before OAuth redirect. On `/dashboard` mount, check for pending org creation and call `signup-organization`.
+### C2: `isPublicRoute` Check Runs Outside BrowserRouter
+`App.tsx:186-188` — `window.location.pathname` is used in `AppContent` which renders **above** `<BrowserRouter>` (line 209). This means `useLocation()` cannot be used here. More critically, this check only runs once on initial render — client-side navigations (e.g., clicking from `/pricing` to `/dashboard`) do NOT re-evaluate `isPublicRoute`, meaning `ContentProtection`, splash screen logic, and the `UnifiedAssistant` visibility may behave incorrectly during SPA navigation.
+- **Fix**: Move `BrowserRouter` to wrap the entire `AppContent` return, or extract the route-dependent logic into a child component inside `BrowserRouter` that uses `useLocation()`.
 
-### C3: `window.location.pathname` Used Outside React Router
-`App.tsx:186-188` — `isPublicRoute` check uses `window.location.pathname` directly instead of React Router's `useLocation()`. This is fragile and doesn't react to client-side navigation changes.
-- **Fix**: Use `useLocation()` hook (already available since `AppContent` is inside `BrowserRouter`... wait, actually `BrowserRouter` is rendered INSIDE `AppContent` at line 209, so `useLocation` is NOT available at line 186). This is a structural problem — the public route check happens before `BrowserRouter` mounts.
+### C3: CTASection Still Claims "500+ Organizations"
+`CTASection.tsx:38` — "Join 500+ organizations using TeneXA" is hardcoded. DB has ~10. This was flagged in previous audits and fixed in `StatsSection.tsx` but **not** in `CTASection`, `TrustBadges`, or `About.tsx`.
+- **Files still claiming 500+**: `CTASection.tsx:38`, `TrustBadges.tsx:13`, `About.tsx:58,127`
 
 ---
 
 ## 🟠 High Priority Issues
 
-### H1: Typography Still Oversized on Pricing, Features, Resources Pages
-Despite previous fixes to landing components, several pages still violate the compact HireFlow scale:
+### H1: Canonical URLs Still Wrong on 3 Files
+| File | Current | Should Be |
+|------|---------|-----------|
+| `Privacy.tsx:16` | `tenexa.lovable.app/privacy` | `sltwork.lovable.app/privacy` |
+| `Terms.tsx:16` | `tenexa.lovable.app/terms` | `sltwork.lovable.app/terms` |
+| `ShareModal.tsx:13,21,26` | `tenexa.lovable.app` | `sltwork.lovable.app` |
 
-| File | Element | Current | Target |
-|------|---------|---------|--------|
-| `Pricing.tsx:426` | FAQ h2 | `text-3xl sm:text-4xl` | `text-2xl md:text-3xl` |
-| `Pricing.tsx:428` | FAQ subtitle | `text-lg` | `text-sm md:text-base` |
-| `Pricing.tsx:464` | CTA icon | `h-12 w-12` | `h-6 w-6` |
-| `Pricing.tsx:465` | CTA h2 | `text-3xl sm:text-4xl` | `text-2xl md:text-3xl` |
-| `Pricing.tsx:468` | CTA body | `text-lg` | `text-sm md:text-base` |
-| `Pricing.tsx:472,478` | CTA buttons | `size="lg" h-12 px-8` | `size="default"` |
-| `Pricing.tsx:288` | Price amount | `text-4xl` | `text-3xl` |
-| `Features.tsx:476` | Section h2 | `text-3xl sm:text-4xl` | `text-2xl md:text-3xl` |
-| `Features.tsx:477` | Section body | `text-lg` | `text-sm md:text-base` |
-| `Features.tsx:495` | Card h3 | `text-lg` | `text-base` |
-| `Features.tsx:519` | CTA h2 | `text-3xl sm:text-4xl` | `text-2xl md:text-3xl` |
-| `Features.tsx:522` | CTA body | `text-lg` | `text-sm md:text-base` |
-| `Features.tsx:526,532` | CTA buttons | `size="lg" h-12 px-8 text-base` | `size="default"` |
-| `Features.tsx:492` | Icon container | `w-12 h-12` | `w-10 h-10` |
-| `NotFound.tsx:22` | 404 heading | `text-7xl sm:text-8xl` | `text-6xl sm:text-7xl` |
+### H2: Resources Page — "Load More" Button is size="lg" and Non-Functional
+`Resources.tsx:420` — `<Button variant="outline" size="lg">Load More Articles</Button>` has no `onClick` handler. It's a dead button. Also violates compact sizing standard (`size="lg"` → `size="default"`).
 
-### H2: Oversized Section Padding Remains
-| File | Current | Target |
-|------|---------|--------|
-| `Pricing.tsx:225` | `py-12 sm:py-20` | `py-14` |
-| `Pricing.tsx:417` | `py-16 lg:py-24` | `py-14` |
-| `Pricing.tsx:457` | `py-16 lg:py-24` | `py-14` |
-| `Features.tsx:469` | `py-16 lg:py-24` | `py-14` |
-| `Features.tsx:505` | `py-16 lg:py-24` | `py-14` |
-| `Resources.tsx:430` | `py-16 lg:py-24` | `py-14` |
-| `Contact.tsx:124` | `py-12 sm:py-20` | `py-14` |
-| `StartTrial.tsx:201` | `py-12 lg:py-20` | `py-14` |
-| `PublicFooter.tsx:46` | `py-16 lg:py-20` | `py-14` |
-| `HeroSection.tsx:17` | `py-14 lg:py-20` | `py-14` |
+### H3: Resources Page — Card Title Still `text-lg`
+`Resources.tsx:398` — Resource card title uses `text-lg` instead of `text-base` per HireFlow compact standard.
 
-### H3: 909 console.log Statements Still in Source
-Despite `esbuild.drop: ['console']` in vite.config.ts (which strips them from production builds), the source code still contains 909 `console.log` calls across 39 files. While they won't appear in production, they:
-- Clutter the development experience
-- Make genuine debug logs hard to find
-- Add noise to code reviews
+### H4: Testimonials Are Still Fabricated
+All 6 testimonials in `TestimonialsSection.tsx` cite fictional companies and people. No change since last audit.
 
-### H4: StatsSection Still Shows Fabricated Numbers
-`StatsSection.tsx:7-10` — "500+ Organizations", "50,000+ Employees", "99.9% Uptime" are hardcoded lies. DB has ~10 orgs and ~30 users.
-- **Fix**: Use the `get_public_stats()` RPC function that already exists, or replace with honest messaging like "Growing platform" or remove specific numbers.
+### H5: About Page Timeline Still Has Unverified Claims
+`About.tsx:55-59` — "Founded 2021", "First 100 Customers 2022", "Series A 2023", "500+ Orgs 2024" — none verified.
 
-### H5: "Watch Demo" Button Has No Action
-`HeroSection.tsx:81` — The "Watch Demo" button has no `onClick` handler or link. Clicking it does nothing.
-- **Fix**: Either link to a demo video URL, or remove the button entirely.
+### H6: `refetchOnWindowFocus: true` Still Active
+`App.tsx:99` — Causes unnecessary API calls on every tab switch. Should be `false` for a production app.
 
 ---
 
 ## 🟡 Medium Issues
 
-### M1: Canonical URLs Still Wrong on Multiple Pages
-- `About.tsx`, `Pricing.tsx`, `Features.tsx`, `Resources.tsx` may still reference `tenexa.lovable.app` instead of `sltwork.lovable.app`
+### M1: Framer Motion Still Used Across All Landing Sections (~40KB)
+All 8 landing sections + 6 public pages import `framer-motion` for simple fade/slide animations. CSS `@keyframes` or Tailwind `animate-*` classes would achieve the same effect at near-zero cost.
 
-### M2: BrowserRouter Positioned Inside AppContent
-`App.tsx:209` — `BrowserRouter` is rendered deep inside `AppContent`, AFTER `ContentProtection`, `TourStateProvider`, and `TooltipProvider`. This means:
-- `isPublicRoute` check at line 186 can't use `useLocation()`
-- `WelcomeDialog` and `GuidedTour` are inside BrowserRouter (correct now), but `ContentProtection` wraps public pages unnecessarily
+### M2: Splash Screen 1s Minimum Delay
+`App.tsx:176` — `setTimeout(() => setMinTimeElapsed(true), 1000)` adds 1s latency for returning users.
 
-### M3: QueryClient refetchOnWindowFocus Creates Unnecessary Traffic
-`staleTime: 2min` + `refetchOnWindowFocus: true` causes API calls every time a user alt-tabs back to the app, even if data was fetched 30 seconds ago.
+### M3: `ContentProtection` Wraps Public Pages
+`App.tsx:200` — Wraps everything including landing/pricing/auth. Adds unnecessary DOM overhead and event listeners for anonymous visitors.
 
-### M4: Framer Motion Bundle Weight (~40KB)
-All 8 landing sections + 6 public pages import `framer-motion` for simple fade/slide animations that CSS can handle.
+### M4: PWA Icons Use Same File for All Sizes
+`vite.config.ts:30+` — All PWA icon entries reference the same `/slt-hub-icon.png` regardless of the declared size.
 
-### M5: PWA Icon Uses Same Image for All Sizes
-`vite.config.ts:32-48` — All three PWA icon entries reference the same `/slt-hub-icon.png` file for 192x192 and 512x512. Should have properly sized icons.
-
-### M6: Splash Screen 1s Delay
-`App.tsx:176` — Still has `setTimeout(() => setMinTimeElapsed(true), 1000)` which adds latency for returning users.
+### M5: `navigate()` Called During Render
+`ModernDashboard.tsx:189,194,199` — `navigate('/training')` etc. called directly inside `renderTabContent()` during render phase. This is a React anti-pattern that can cause "Cannot update state during render" warnings. Should use `useEffect` or redirect components.
 
 ---
 
 ## 🟢 Minor Issues
 
-### L1: Testimonials Still Fabricated
-Fictional companies and people in `TestimonialsSection.tsx`.
+### L1: NotFound Page `console.error` Still in Source
+`NotFound.tsx:10-13` — `console.error` call. Stripped in prod builds by esbuild.drop, but pollutes dev logs.
 
-### L2: About Page Timeline Claims Unverified
-"Founded 2021", "First 100 Customers", "Series A Funding" — none verified.
+### L2: TestimonialCard Width `w-[340px]`
+Fixed from previous `w-[400px]` but may still clip on very small viewports (<360px).
 
-### L3: StickyCtaBar Conflicts with BottomNavigation on Mobile
-`StickyCtaBar.tsx:27` — renders `fixed bottom-0` on `md:hidden`. If user is logged in and on a public page, both `StickyCtaBar` and `BottomNavigation` could overlap.
-
-### L4: Feature Card Icon Containers Still `w-12 h-12`
-`Features.tsx:492` — should be `w-10 h-10` per compact standard.
+### L3: `Dashboard.tsx` Still Exists Alongside `ModernDashboard.tsx`
+The old `Dashboard.tsx` file is still in the codebase but no route points to it. Dead code.
 
 ---
 
@@ -121,11 +84,10 @@ Fictional companies and people in `TestimonialsSection.tsx`.
 | Metric | Estimate | Target | Status |
 |--------|----------|--------|--------|
 | FCP | ~1.5-2.0s | <1.8s | ⚠️ Borderline |
-| TTI | ~2.5-3.5s | <3.5s | ⚠️ Improved (splash reduced to 1s) |
-| LCP | ~2.5-3.5s | <2.5s | ❌ Slow (dashboard-preview.jpg) |
-| Initial Bundle | ~350-400KB | <300KB | ⚠️ Large (framer-motion) |
-| Console drops in prod | Active | N/A | ✅ Fixed |
-| Login API calls | 5+ sequential | 2-3 | ❌ Still too many |
+| TTI | ~2.5-3.5s | <3.5s | ⚠️ Splash adds 1s |
+| LCP | ~2.0-3.0s | <2.5s | ⚠️ dashboard-preview.jpg |
+| Bundle | ~350-400KB | <300KB | ⚠️ framer-motion |
+| Console drops | ✅ Active | N/A | ✅ Fixed |
 
 ---
 
@@ -133,15 +95,13 @@ Fictional companies and people in `TestimonialsSection.tsx`.
 
 | # | Risk | Severity | Status |
 |---|------|----------|--------|
-| 1 | Session log auth uses anon key instead of user JWT | HIGH | Broken |
-| 2 | Google OAuth signup orphans users without org | HIGH | Broken |
-| 3 | `handle_new_user` trigger hardcoded to intern | ✅ Fixed | Resolved |
-| 4 | Admin routes use `AdminRoute` wrapper | ✅ Fixed | Resolved |
-| 5 | `/feedback` and `/help` now protected | ✅ Fixed | Resolved |
-| 6 | Console statements stripped in prod builds | ✅ Fixed | Resolved |
-| 7 | OTP magic link origin validated | ✅ Fixed | Resolved |
-| 8 | signOut uses local scope | ✅ Fixed | Resolved |
-| 9 | `isPublicRoute` uses `window.location` not router | LOW | Fragile but works |
+| 1 | `handle_new_user` hardcoded to intern | ✅ Fixed | Resolved |
+| 2 | Session log uses cached JWT | ✅ Fixed | Resolved |
+| 3 | `/feedback` + `/help` protected | ✅ Fixed | Resolved |
+| 4 | Console stripped in prod | ✅ Fixed | Resolved |
+| 5 | Google OAuth still orphans users | HIGH | **Open** |
+| 6 | `isPublicRoute` outside BrowserRouter | LOW | Fragile |
+| 7 | `tenexa.lovable.app` URLs in ShareModal | LOW | Data leakage |
 
 ---
 
@@ -149,12 +109,10 @@ Fictional companies and people in `TestimonialsSection.tsx`.
 
 | Device | Issue | Severity |
 |--------|-------|----------|
-| Mobile (<768px) | Sidebar hidden, 80+ modules in bottom drawer | ✅ Improved |
-| Mobile (<768px) | StickyCtaBar may overlap BottomNavigation | LOW |
-| Mobile (<768px) | Pricing `text-4xl` price amounts still large | MEDIUM |
-| Mobile (<768px) | Features icon containers `w-12 h-12` oversized | LOW |
-| Tablet | Section padding `py-16 lg:py-24` still bloated | MEDIUM |
-| Desktop | Typography mostly aligned | ✅ Improved |
+| Mobile (<360px) | TestimonialCard w-[340px] may clip | LOW |
+| Mobile (<768px) | BottomNavigation drawer now covers 80+ modules | ✅ Fixed |
+| All | Typography now compact on most pages | ✅ Improved |
+| All | Section padding standardized to py-14 | ✅ Improved |
 
 ---
 
@@ -162,10 +120,10 @@ Fictional companies and people in `TestimonialsSection.tsx`.
 
 | # | Issue | Severity |
 |---|-------|----------|
-| 1 | "Watch Demo" button is a dead click | MEDIUM |
-| 2 | Google OAuth signup loses org data | HIGH |
-| 3 | Stats section misleads with fake numbers | MEDIUM |
-| 4 | Testimonials are fabricated | LOW |
+| 1 | "Load More" button on Resources page does nothing | MEDIUM |
+| 2 | Google OAuth signup completes but user has no org | HIGH |
+| 3 | `navigate()` during render can cause warnings | LOW |
+| 4 | Fabricated testimonials/stats undermine trust | MEDIUM |
 
 ---
 
@@ -175,43 +133,42 @@ Fictional companies and people in `TestimonialsSection.tsx`.
 
 | # | Fix | Files |
 |---|-----|-------|
-| 1 | **Fix session log auth** — Cache session JWT in a ref, use it in `beforeunload` fetch | `useAuth.tsx` |
-| 2 | **Fix Google OAuth org creation** — Persist companyName in localStorage, process on callback | `Signup.tsx` + `ModernDashboard.tsx` or new callback handler |
-| 3 | **Compact Pricing page typography** — Fix h2s, body text, buttons, padding | `Pricing.tsx` |
-| 4 | **Compact Features page typography** — Fix h2s, body text, buttons, padding, icon sizes | `Features.tsx` |
-| 5 | **Fix remaining section padding** — All `py-16/20/24` to `py-14` | `Resources.tsx`, `Contact.tsx`, `StartTrial.tsx`, `PublicFooter.tsx`, `HeroSection.tsx` |
-| 6 | **Fix or remove "Watch Demo"** | `HeroSection.tsx` |
-| 7 | **Replace fake stats** — Use `get_public_stats()` RPC or honest copy | `StatsSection.tsx` |
+| 1 | **Add OAuth callback handler** — read `pending_org_*` from localStorage in ModernDashboard, call signup-organization edge function, clear keys | `ModernDashboard.tsx` |
+| 2 | **Fix "500+" claims** — update to "10+" or use `get_public_stats()` RPC | `CTASection.tsx`, `TrustBadges.tsx`, `About.tsx` |
+| 3 | **Fix canonical URLs** | `Privacy.tsx`, `Terms.tsx`, `ShareModal.tsx` |
+| 4 | **Fix Resources "Load More"** — either implement pagination or remove the button; change to `size="default"` | `Resources.tsx` |
+| 5 | **Fix resource card title** — `text-lg` → `text-base` | `Resources.tsx:398` |
 
-### Short-Term (Next Sprint)
+### Short-Term
 
 | # | Fix |
 |---|-----|
-| 8 | Fix canonical URLs on About, Features, Resources pages |
-| 9 | Replace framer-motion with CSS animations on landing page |
-| 10 | Batch login API calls into single RPC |
-| 11 | Add proper PWA icons at correct sizes |
+| 6 | Move `BrowserRouter` higher in component tree or extract route-dependent logic |
+| 7 | Fix `navigate()` during render in ModernDashboard (use `<Navigate>` component) |
+| 8 | Set `refetchOnWindowFocus: false` |
+| 9 | Remove dead `Dashboard.tsx` file |
+| 10 | Replace framer-motion with CSS on landing page |
 
 ---
 
 ## 🚀 Final Verdict
 
-### Production Readiness Score: 5.5 / 10
+### Production Readiness Score: 6.0 / 10
 
 | Category | Score | Weight | Weighted |
 |----------|-------|--------|----------|
 | Architecture | 8/10 | 15% | 1.20 |
-| Security | 5/10 | 25% | 1.25 |
+| Security | 6/10 | 25% | 1.50 |
 | Functionality | 5/10 | 15% | 0.75 |
 | Performance | 5/10 | 10% | 0.50 |
-| UI/Typography | 4/10 | 15% | 0.60 |
+| UI/Typography | 7/10 | 15% | 1.05 |
 | UX/Navigation | 5/10 | 10% | 0.50 |
-| Responsiveness | 5/10 | 5% | 0.25 |
+| Responsiveness | 6/10 | 5% | 0.30 |
 | Code Quality | 5/10 | 5% | 0.25 |
-| **Total** | | **100%** | **5.30** |
+| **Total** | | **100%** | **6.05** |
 
 ### Progress Since Last Audit
-- **Improved from 4.0 to 5.5** — Critical security fixes (admin route protection, role hardcoding, route protection) were implemented
-- **Remaining blockers**: Session log auth is still broken (anon key vs user JWT), Google OAuth signup still orphans users, and Pricing/Features/Resources pages still have oversized typography
-- **To reach 7.0+**: Fix the 2 remaining critical issues + compact remaining page typography + replace fake content
+- **Improved from 5.5 to 6.0** — Session logging auth fixed, typography mostly compacted, routes protected
+- **Remaining blockers**: Google OAuth callback handler is the #1 functional gap. Fabricated content (500+ orgs, fake testimonials) is the #1 trust gap. 3 canonical URLs still wrong.
+- **To reach 7.5+**: Fix OAuth callback + remove fake content + fix canonical URLs + remove framer-motion
 
