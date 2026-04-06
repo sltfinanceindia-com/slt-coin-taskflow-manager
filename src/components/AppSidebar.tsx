@@ -175,11 +175,19 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
       navigate(standaloneRoutes[tab]);
     } else {
       // Handle tabs that include query params (e.g., "tasks?view=kanban")
-      if (tab.includes('?')) {
-        const [baseTab, queryString] = tab.split('?');
-        navigate(`/dashboard?tab=${baseTab}&${queryString}`);
+      const baseTab = tab.includes('?') ? tab.split('?')[0] : tab;
+      
+      // Call onTabChange prop directly for immediate state update
+      if (onTabChange) {
+        onTabChange(baseTab);
       } else {
-        navigate(`/dashboard?tab=${tab}`);
+        // Fallback to URL navigation
+        if (tab.includes('?')) {
+          const [bt, queryString] = tab.split('?');
+          navigate(`/dashboard?tab=${bt}&${queryString}`);
+        } else {
+          navigate(`/dashboard?tab=${tab}`);
+        }
       }
     }
     if (isMobile) {
