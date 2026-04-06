@@ -201,7 +201,7 @@ export default function ModernDashboard() {
       
       default:
         // Load all other tabs dynamically from tab registry
-        const tabConfig = getTabComponent(activeTab, isAdmin);
+        const tabConfig = getTabComponent(activeTab, isAdmin, role as any);
         if (tabConfig) {
           const TabComponent = tabConfig.component;
           return (
@@ -277,7 +277,7 @@ export default function ModernDashboard() {
                   </div>
                 }>
                   {(() => {
-                    const tabConfig = getTabComponent('communication', isAdmin);
+                    const tabConfig = getTabComponent('communication', isAdmin, role as any);
                     if (tabConfig) {
                       const TabComponent = tabConfig.component;
                       return (
