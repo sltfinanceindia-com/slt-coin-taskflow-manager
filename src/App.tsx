@@ -163,11 +163,10 @@ function SuperAdminRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-function AppContent() {
-  useAuthEmailNotifications();
-  useVisibilityHandler();
+function AppRoutes() {
   const { user, loading } = useAuth();
   const { isSuperAdmin } = useUserRole();
+  const location = useLocation();
   const [showSplash, setShowSplash] = useState(true);
   const [minTimeElapsed, setMinTimeElapsed] = useState(false);
   const [initialAuthChecked, setInitialAuthChecked] = useState(false);
@@ -183,9 +182,8 @@ function AppContent() {
     }
   }, [loading]);
 
-  const currentPath = window.location.pathname;
   const publicPaths = ['/', '/auth', '/signup', '/pricing', '/features', '/terms', '/privacy', '/contact', '/about', '/resources', '/start-trial', '/forgot-password', '/reset-password'];
-  const isPublicRoute = publicPaths.includes(currentPath);
+  const isPublicRoute = publicPaths.includes(location.pathname);
 
   const shouldShowSplash = showSplash && 
     (!minTimeElapsed || loading) && 
@@ -197,19 +195,11 @@ function AppContent() {
   }
 
   return (
-    <ContentProtection>
-      <TourStateProvider userId={user?.id}>
-      <TooltipProvider>
-        <ThemeApplier />
-        <SkipLink />
-        <Toaster />
-        <Sonner />
-        <PWAInstallPrompt />
-        {user && <UnifiedAssistant />}
-      <BrowserRouter>
-        {user && <WelcomeDialog />}
-        {user && <GuidedTour />}
-        <Suspense fallback={<PageLoader />}>
+    <>
+      {user && !isPublicRoute && <UnifiedAssistant />}
+      {user && <WelcomeDialog />}
+      {user && <GuidedTour />}
+      <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Landing />} />
@@ -225,58 +215,50 @@ function AppContent() {
           <Route path="/about" element={<About />} />
           <Route path="/resources" element={<Resources />} />
           <Route path="/start-trial" element={<StartTrial />} />
+          <Route path="/feedback" element={<ProtectedRoute><FeedbackRewardsPage /></ProtectedRoute>} />
+
+          {/* Main Dashboard */}
+          <Route path="/dashboard" element={<ProtectedRoute><ModernDashboard /></ProtectedRoute>} />
+          
+          {/* Calendar */}
+          <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
+          
+          {/* Help Center */}
+          <Route path="/help" element={<ProtectedRoute><HelpCenterPage /></ProtectedRoute>} />
+          
+          {/* Training */}
+          <Route path="/training" element={<ProtectedRoute><TrainingPage /></ProtectedRoute>} />
+          <Route path="/training/:moduleId" element={<ProtectedRoute><TrainingPage /></ProtectedRoute>} />
+          
+          {/* Profile */}
+          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/profile/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+
+          {/* Admin Routes */}
+          <Route path="/admin/roles-permissions" element={<AdminRoute><RolesPermissions /></AdminRoute>} />
+          <Route path="/admin/settings" element={<AdminRoute><OrganizationSettings /></AdminRoute>} />
+          <Route path="/organization/chart" element={<ProtectedRoute><OrgChartPage /></ProtectedRoute>} />
           
           {/* Super Admin Routes */}
           <Route path="/super-admin" element={<SuperAdminRoute><SuperAdminDashboard /></SuperAdminRoute>} />
-          <Route path="/super-admin/organizations" element={<SuperAdminRoute><OrganizationsList /></SuperAdminRoute>} />
-          <Route path="/super-admin/organizations/new" element={<SuperAdminRoute><CreateOrganization /></SuperAdminRoute>} />
-          <Route path="/super-admin/organizations/:id" element={<SuperAdminRoute><OrganizationDetail /></SuperAdminRoute>} />
-          <Route path="/super-admin/users" element={<SuperAdminRoute><SuperAdminUsers /></SuperAdminRoute>} />
+          <Route path="/super-admin/organizations" element={<SuperAdminRoute><OrganizationManagement /></SuperAdminRoute>} />
+          <Route path="/super-admin/settings" element={<SuperAdminRoute><SuperAdminSettings /></SuperAdminRoute>} />
           <Route path="/super-admin/billing" element={<SuperAdminRoute><BillingDashboard /></SuperAdminRoute>} />
           <Route path="/super-admin/analytics" element={<SuperAdminRoute><SubscriptionAnalytics /></SuperAdminRoute>} />
           <Route path="/super-admin/plans" element={<SuperAdminRoute><PlansManagement /></SuperAdminRoute>} />
-          <Route path="/super-admin/settings" element={<SuperAdminRoute><SuperAdminSettings /></SuperAdminRoute>} />
-          <Route path="/super-admin/feedback-rewards" element={<SuperAdminRoute><FeedbackRewards /></SuperAdminRoute>} />
           <Route path="/super-admin/health" element={<SuperAdminRoute><SystemHealth /></SuperAdminRoute>} />
           <Route path="/super-admin/audit" element={<SuperAdminRoute><AuditTrail /></SuperAdminRoute>} />
           <Route path="/super-admin/announcements" element={<SuperAdminRoute><PlatformAnnouncements /></SuperAdminRoute>} />
+          <Route path="/super-admin/feedback-rewards" element={<SuperAdminRoute><FeedbackRewards /></SuperAdminRoute>} />
           
-          {/* Public Routes */}
-          <Route path="/feedback" element={<ProtectedRoute><FeedbackPage /></ProtectedRoute>} />
-          
-          {/* Admin Routes */}
-          <Route path="/admin/settings" element={<AdminRoute><OrganizationSettings /></AdminRoute>} />
-          <Route path="/admin/organization-settings" element={<AdminRoute><OrganizationSettings /></AdminRoute>} />
-          <Route path="/settings" element={<Navigate to="/admin/organization-settings" replace />} />
-          <Route path="/admin/roles-permissions" element={<AdminRoute><RolesPermissions /></AdminRoute>} />
-          <Route path="/organization/chart" element={<ProtectedRoute><OrgChartPage /></ProtectedRoute>} />
-          
-          {/* Protected Routes */}
-          <Route path="/dashboard" element={<ProtectedRoute><ModernDashboard /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/training" element={<ProtectedRoute><Training /></ProtectedRoute>} />
-          <Route path="/assessment/:id" element={<ProtectedRoute><Assessment /></ProtectedRoute>} />
-          <Route path="/kudos" element={<ProtectedRoute><KudosWallPage /></ProtectedRoute>} />
-          <Route path="/pulse-surveys" element={<ProtectedRoute><PulseSurveysPage /></ProtectedRoute>} />
-          <Route path="/my-goals" element={<ProtectedRoute><MyGoalsPage /></ProtectedRoute>} />
-          <Route path="/tutorial" element={<ProtectedRoute><TutorialPage /></ProtectedRoute>} />
-          <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
-          <Route path="/help" element={<ProtectedRoute><HelpCenterPage /></ProtectedRoute>} />
-          
-          {/* Module Landing Pages */}
-          <Route path="/employees" element={<ProtectedRoute><EmployeesPage /></ProtectedRoute>} />
-          <Route path="/projects" element={<ProtectedRoute><ProjectsPage /></ProtectedRoute>} />
-          <Route path="/tasks" element={<ProtectedRoute><TasksPage /></ProtectedRoute>} />
-          <Route path="/attendance" element={<ProtectedRoute><AttendancePage /></ProtectedRoute>} />
-          <Route path="/leaves" element={<ProtectedRoute><LeavesPage /></ProtectedRoute>} />
-          <Route path="/payroll" element={<ProtectedRoute><PayrollPage /></ProtectedRoute>} />
-          <Route path="/performance" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />
-          <Route path="/approvals" element={<ProtectedRoute><ApprovalsPage /></ProtectedRoute>} />
-          <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+          {/* Standalone Module Pages */}
+          <Route path="/employees" element={<ProtectedRoute><Navigate to="/dashboard?tab=employees" replace /></ProtectedRoute>} />
+          <Route path="/projects" element={<ProtectedRoute><Navigate to="/dashboard?tab=projects" replace /></ProtectedRoute>} />
+          <Route path="/attendance" element={<ProtectedRoute><Navigate to="/dashboard?tab=attendance" replace /></ProtectedRoute>} />
+          <Route path="/leaves" element={<ProtectedRoute><Navigate to="/dashboard?tab=leaves" replace /></ProtectedRoute>} />
+          <Route path="/payroll" element={<ProtectedRoute><Navigate to="/dashboard?tab=payroll" replace /></ProtectedRoute>} />
           
           {/* Detail Pages */}
-          <Route path="/tasks/:id" element={<ProtectedRoute><TaskDetailPage /></ProtectedRoute>} />
-          <Route path="/portfolios/:id" element={<ProtectedRoute><PortfolioDetailPage /></ProtectedRoute>} />
           <Route path="/programs/:id" element={<ProtectedRoute><ProgramDetailPage /></ProtectedRoute>} />
           <Route path="/employees/:id" element={<ProtectedRoute><EmployeeDetailPage /></ProtectedRoute>} />
           <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetailPage /></ProtectedRoute>} />
@@ -284,7 +266,27 @@ function AppContent() {
           {/* 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
-        </Suspense>
+      </Suspense>
+    </>
+  );
+}
+
+function AppContent() {
+  useAuthEmailNotifications();
+  useVisibilityHandler();
+  const { user } = useAuth();
+
+  return (
+    <ContentProtection>
+      <TourStateProvider userId={user?.id}>
+      <TooltipProvider>
+        <ThemeApplier />
+        <SkipLink />
+        <Toaster />
+        <Sonner />
+        <PWAInstallPrompt />
+      <BrowserRouter>
+        <AppRoutes />
       </BrowserRouter>
     </TooltipProvider>
     </TourStateProvider>
